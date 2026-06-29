@@ -1,0 +1,26 @@
+{
+  "name": "cardwise",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "description": "CardWise — a personalized credit-card value-maximizing strategy app. Anchors recommendations to your airport, routes, spend, and redemption goals, valuing points through real transfer partners.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && firebase deploy",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "firebase": "^12.15.0",
+    "lucide-react": "^0.383.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.3.4",
+    "vitest": "^4.1.9"
+  }
+}

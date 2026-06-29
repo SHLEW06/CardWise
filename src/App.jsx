@@ -1,0 +1,249 @@
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders } from "lucide-react";
+import Layout from "./components/Layout.jsx";
+import Hero from "./components/Hero.jsx";
+import Onboarding from "./components/Onboarding.jsx";
+import StrategyDashboard from "./components/StrategyDashboard.jsx";
+import SpendRouter from "./components/SpendRouter.jsx";
+import CardExplorer from "./components/CardExplorer.jsx";
+import KeeperAnalyzer from "./components/KeeperAnalyzer.jsx";
+import AirportFit from "./components/AirportFit.jsx";
+import RedemptionExplorer from "./components/RedemptionExplorer.jsx";
+import WalletBuilder from "./components/WalletBuilder.jsx";
+import WarningsPanel from "./components/WarningsPanel.jsx";
+import CardModal from "./components/CardModal.jsx";
+import SavedStrategies from "./components/SavedStrategies.jsx";
+import ValuationsEditor from "./components/ValuationsEditor.jsx";
+
+import { PROGRAMS } from "./data/programs.js";
+import { BY_ID } from "./data/cards.js";
+import { defaultAnchor } from "./engine/transferValue.js";
+import { buildSpend } from "./engine/scoring.js";
+import { ensureUser } from "./firebase/auth.js";
+import {
+  saveProfile, loadProfile, saveWallet, loadWallet,
+  saveStrategy, loadStrategies, deleteStrategy,
+  saveValOverrides, loadValOverrides,
+} from "./firebase/firestore.js";
+
+const TABS = [
+  { id: "strategy", label: "Strategy", icon: TrendingUp },
+  { id: "router", label: "Spend router", icon: Zap },
+  { id: "explore", label: "Explore", icon: Search },
+  { id: "keepers", label: "Keepers", icon: Wallet },
+  { id: "airport", label: "Airport fit", icon: Plane },
+  { id: "redeem", label: "Redeem", icon: ArrowLeftRight },
+  { id: "warnings", label: "Watch-outs", icon: AlertTriangle },
+  { id: "wallet", label: "My wallet", icon: Compass },
+  { id: "saved", label: "Saved", icon: Archive },
+  { id: "valuations", label: "Valuations", icon: Sliders },
+];
+
+/* ── URL state ───────────────────────────────────────────────────────────── */
+/* Encode a shareable profile into the URL hash. Only serializes the fields
+   that the onboarding produces — never credentials or uid. */
+const PROFILE_URL_KEYS = [
+  "homeAirport", "destination", "goal", "level", "hotelUsage", "hotelBrands",
+  "lounge", "feeBudget", "cardCount", "spendSel", "simplicity", "pointPref",
+  "checkedBags", "travelSplit", "values", "routes",
+];
+
+function profileToHash(profile) {
+  if (!profile) return "";
+  const slim = {};
+  for (const k of PROFILE_URL_KEYS) {
+    if (profile[k] != null && profile[k] !== "" && !(Array.isArray(profile[k]) && profile[k].length === 0)) {
+      slim[k] = profile[k];
+    }
+  }
+  if (Object.keys(slim).length === 0) return "";
+  try {
+    return "#p=" + btoa(JSON.stringify(slim));
+  } catch { return ""; }
+}
+
+function profileFromHash() {
+  const hash = window.location.hash;
+  if (!hash.startsWith("#p=")) return null;
+  try {
+    return JSON.parse(atob(hash.slice(3)));
+  } catch { return null; }
+}
+
+/* ── anchors ─────────────────────────────────────────────────────────────── */
+function withAnchors(profile) {
+  const anchors = {};
+  for (const prog of Object.keys(PROGRAMS)) {
+    const a = defaultAnchor(prog, profile);
+    if (a) anchors[prog] = a;
+  }
+  return { ...profile, anchors };
+}
+
+export default function App() {
+  const [screen, setScreen] = useState("hero"); // hero | onboarding | app
+  const [tab, setTab] = useState("strategy");
+  const [profile, setProfile] = useState(null);
+  const [wallet, setWallet] = useState([]);
+  const [modalCard, setModalCard] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [strategies, setStrategies] = useState([]);
+  const [valOverrides, setValOverrides] = useState({});
+
+  // hydrate from storage + URL hash
+  useEffect(() => {
+    (async () => {
+      await ensureUser();
+      const [p, w, strats, vo] = await Promise.all([
+        loadProfile(), loadWallet(), loadStrategies(), loadValOverrides(),
+      ]);
+
+      // URL hash takes priority (shareable link)
+      const hashProfile = profileFromHash();
+      const sourceProfile = hashProfile || p;
+
+      if (vo && Object.keys(vo).length) setValOverrides(vo);
+      if (sourceProfile) {
+        setProfile(withAnchors({ ...sourceProfile, valOverrides: vo || {} }));
+        setScreen("app");
+      }
+      if (w && w.length) setWallet(w);
+      if (strats) setStrategies(strats);
+      setReady(true);
+    })();
+  }, []);
+
+  // Sync URL hash when profile changes
+  useEffect(() => {
+    if (screen === "app" && profile) {
+      const hash = profileToHash(profile);
+      if (hash && window.location.hash !== hash) {
+        window.history.replaceState(null, "", hash);
+      }
+    }
+  }, [profile, screen]);
+
+  const finishOnboarding = (p) => {
+    const withA = withAnchors({ ...p, valOverrides });
+    setProfile(withA);
+    setScreen("app");
+    setTab("strategy");
+    saveProfile(p);
+  };
+
+  const toggleWallet = (id) => {
+    setWallet((w) => {
+      const next = w.includes(id) ? w.filter((x) => x !== id) : [...w, id];
+      saveWallet(next);
+      return next;
+    });
+  };
+
+  const restart = () => {
+    setScreen("hero");
+    setTab("strategy");
+    window.history.replaceState(null, "", window.location.pathname);
+  };
+
+  // ── Valuations ──
+  const handleValChange = useCallback((next) => {
+    setValOverrides(next);
+    saveValOverrides(next);
+    setProfile((p) => p ? { ...p, valOverrides: next } : p);
+  }, []);
+  const handleValReset = useCallback(() => {
+    setValOverrides({});
+    saveValOverrides({});
+    setProfile((p) => p ? { ...p, valOverrides: {} } : p);
+  }, []);
+
+  // ── Strategies ──
+  const handleSaveStrategy = useCallback((strategyData) => {
+    const entry = {
+      ...strategyData,
+      profile: (() => {
+        const slim = {};
+        for (const k of PROFILE_URL_KEYS) if (profile?.[k] != null) slim[k] = profile[k];
+        return slim;
+      })(),
+    };
+    saveStrategy(entry).then(() => loadStrategies().then(setStrategies));
+  }, [profile]);
+
+  const handleLoadStrategy = useCallback((strategy) => {
+    if (strategy.profile) {
+      const loaded = withAnchors({ ...strategy.profile, valOverrides });
+      setProfile(loaded);
+      saveProfile(strategy.profile);
+    }
+    setTab("strategy");
+  }, [valOverrides]);
+
+  const handleDeleteStrategy = useCallback((id) => {
+    deleteStrategy(id).then(() => loadStrategies().then(setStrategies));
+  }, []);
+
+  const spend = useMemo(() => (profile ? buildSpend(profile) : {}), [profile]);
+  const held = wallet;
+
+  const openCard = (id) => setModalCard(id);
+
+  // ----- render -----
+  if (!ready) {
+    return <Layout><div className="cw-empty" style={{ paddingTop: 120 }}><Compass size={28} className="cw-spin" /><p>Loading CardWise…</p></div></Layout>;
+  }
+
+  if (screen === "hero") {
+    return (
+      <Layout onLogoClick={restart}>
+        <Hero onStart={() => setScreen("onboarding")} onExplore={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("explore"); }} />
+      </Layout>
+    );
+  }
+
+  if (screen === "onboarding") {
+    return <Layout onLogoClick={restart}><Onboarding onDone={finishOnboarding} /></Layout>;
+  }
+
+  const safeProfile = profile || withAnchors({ valOverrides });
+
+  const nav = (
+    <nav className="cw-nav">
+      {TABS.map((t) => {
+        const Icon = t.icon;
+        return (
+          <button key={t.id} className={["cw-nav-item", tab === t.id && "cw-nav-on"].filter(Boolean).join(" ")} onClick={() => setTab(t.id)}>
+            <Icon size={15} /> {t.label}
+          </button>
+        );
+      })}
+    </nav>
+  );
+
+  return (
+    <Layout nav={nav} onLogoClick={restart}>
+      {tab === "strategy" && <StrategyDashboard profile={safeProfile} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
+      {tab === "router" && <SpendRouter profile={safeProfile} wallet={wallet} />}
+      {tab === "explore" && <CardExplorer profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
+      {tab === "keepers" && <KeeperAnalyzer profile={safeProfile} wallet={wallet} onOpenCard={openCard} onGoWallet={() => setTab("wallet")} />}
+      {tab === "airport" && <AirportFit profile={safeProfile} />}
+      {tab === "redeem" && <RedemptionExplorer profile={safeProfile} />}
+      {tab === "warnings" && <WarningsPanel profile={safeProfile} wallet={wallet} />}
+      {tab === "wallet" && <WalletBuilder wallet={wallet} onToggle={toggleWallet} onOpenCard={openCard} />}
+      {tab === "saved" && <SavedStrategies strategies={strategies} onLoad={handleLoadStrategy} onDelete={handleDeleteStrategy} />}
+      {tab === "valuations" && <ValuationsEditor overrides={valOverrides} onChange={handleValChange} onReset={handleValReset} />}
+
+      {modalCard && (
+        <CardModal
+          card={BY_ID[modalCard]}
+          profile={safeProfile}
+          spend={spend}
+          held={held}
+          owned={wallet.includes(modalCard)}
+          onClose={() => setModalCard(null)}
+          onToggleOwn={toggleWallet}
+        />
+      )}
+    </Layout>
+  );
+}

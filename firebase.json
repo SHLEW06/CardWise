@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/api/narrate", "function": "narrateStrategy" },
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [{ "key": "Cache-Control", "value": "max-age=31536000, immutable" }]
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions"
+  }
+}
