@@ -941,5 +941,24 @@ export const CARDS = [
   },
 ];
 
+/* ──────────────────────────────────────────────────────────────────────────
+   v3.1 catalog merge: extra cards + schema enrichment.
+   Existing engines (scoring, lineupBuilder, keeperAnalyzer, etc.) read the
+   classic fields; they ignore the new fields. New UI surfaces (timeline,
+   approval realism) read the enriched fields.
+   ────────────────────────────────────────────────────────────────────────── */
+import { EXTRA_CARDS, EXTRA_ART } from "./cardsExtra.js";
+import { enrichCard } from "./cardSchema.js";
+
+Object.assign(ART, EXTRA_ART);
+
+const RAW_CARDS = [...CARDS, ...EXTRA_CARDS];
+const ENRICHED = RAW_CARDS.map((c) => enrichCard(c, ART));
+
+/* Replace CARDS contents in place so anything that already imported the
+   reference keeps the enriched objects. */
+CARDS.length = 0;
+for (const c of ENRICHED) CARDS.push(c);
+
 export const BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
 export default CARDS;

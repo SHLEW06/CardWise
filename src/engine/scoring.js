@@ -113,6 +113,50 @@ export function scoreCard(card, profile, spend, held = []) {
   s += (card.beginner || 5) * begW;
   s -= (card.complexity || 5) * (profile.level === "beginner" ? 13 : 5);
 
+  // v3.1: premium-fee realism gating. The lifestyle has to justify the fee,
+  // not just "feeBudget allows it". Premium cards lose ground unless the user
+  // shows real lounge use, frequent travel, or companion utility.
+  const fee = effectiveFee(card);
+  if (fee >= 395) {
+    if (profile.lounge !== "yes" && card.tags.includes("lounge")) s -= 80;
+    if (profile.checkedBags === "never" && card.tags.includes("airline")) s -= 60;
+    if (["none", "rare"].includes(profile.hotelUsage) && card.tags.includes("hotel")) s -= 80;
+    // approval realism trim
+    if (profile.credit?.score && profile.credit.score < 700) s -= 60;
+    if (profile.credit === "5+" && card.issuer === "Chase") s -= 200;
+  }
+
+  // v3.1: Robinhood Gold is NOT the default catch-all. Penalize unless the
+  // user explicitly wants pure cash + simplicity, AND will use the brokerage.
+  if (card.id === "robinhood-gold") {
+    const wantsRobinhood =
+      profile.pointPref === "cash" &&
+      profile.simplicity === "simple" &&
+      profile.goal === "cashback";
+    if (!wantsRobinhood) s -= 120;
+  }
+
+  // v3.1: Simplicity preference. Users who said "keep it simple" get a strong
+  // nudge toward low-complexity cards; "max value" users get the opposite.
+  if (profile.simplicity === "simple") s -= (card.complexity || 5) * 4;
+  if (profile.simplicity === "max")    s += (card.complexity || 5) * 1;
+
+  // v3.1: Ecosystem fit — if the user already holds cards in a currency family
+  // and this card slots into the same family, reward synergy.
+  const eco = card.ecosystemTags || [];
+  if (held.length && eco.length) {
+    const heldEco = new Set();
+    for (const id of held) (BY_ID[id]?.ecosystemTags || []).forEach((t) => heldEco.add(t));
+    let synergy = 0;
+    for (const t of eco) if (heldEco.has(t)) synergy += 20;
+    s += Math.min(80, synergy);
+  }
+
+  // v3.1: availability — never recommend product-change-only / discontinued
+  // cards as a "next card".
+  if (card.availabilityStatus === "discontinuedDoNotRecommend") s -= 1000;
+  if (["productChangeOnly", "inviteOnly", "downgradeOnly"].includes(card.availabilityStatus)) s -= 220;
+
   // category redundancy vs held cards
   const strong = topCategory(card);
   for (const id of held) {

@@ -1,0 +1,184 @@
+/* ============================================================================
+   cardSchema.js — v3.1 schema enrichment for the card catalog.
+   ----------------------------------------------------------------------------
+   The catalog in cards.js was written before the v3.1 strategy fields existed.
+   Rather than rewrite all 52 entries (risk: typos breaking the engine), we
+   enrich every card with sensible defaults for the new fields here, then let
+   per-card overrides win.
+
+   New fields (all additive — existing code reads what it always read):
+
+     availabilityStatus    — openToNewApplicants | productChangeOnly |
+                             downgradeOnly | inviteOnly |
+                             discontinuedDoNotRecommend
+     cardType              — consumer | business | student | secured | charge
+     approvalDifficulty    — 1 (easy) … 10 (very hard)
+     creditProfileFit      — { minScore, recommendedScore, idealIncome }
+     ecosystemTags         — currency-grouped: ["chase-ur", "amex-mr",
+                             "citi-typ", "c1-miles", "wf-rewards",
+                             "delta", "united", "aa", "marriott", "hilton",
+                             "hyatt", "ihg", "alaska", "bilt", "cash"]
+     recommendedFor        — list of profile hooks (subset of:
+                             "starter", "no-fee", "travel-beginner",
+                             "asia", "europe", "luxury", "renter",
+                             "hotel-loyalist", "airline-loyalist",
+                             "ecosystem-builder")
+     image                 — { imageUrl, localImage, fallbackGradient,
+                             imageSource, imageSourceType, imageNeedsVerification }
+     sub                   — { offer, spendRequirement, months, sourceDate,
+                             oncePerLifetime, frequency, needsVerification,
+                             scoringEnabled }   (UI-only by default)
+     premiumGate           — null or { minTravelFreq, minHotelNights,
+                             requiresLounge, requiresCompanion,
+                             requiresAirportFit }
+     issuerVelocity        — "chase-5-24" | "amex-1-per-5d" | "citi-velocity"
+                             | "c1-app-sensitive" | "boa-2-3-4" | "none"
+     ----------------------
+   Source: built-in defaults inferred from existing fields (fee, tags, issuer).
+   ========================================================================== */
+
+const DEFAULT_IMAGE = {
+  imageUrl: null,
+  localImage: null,
+  fallbackGradient: null,
+  imageSource: null,
+  imageSourceType: null,
+  imageNeedsVerification: true,
+};
+
+const DEFAULT_SUB = {
+  offer: null,
+  spendRequirement: null,
+  months: null,
+  estimatedValueUsd: null,
+  sourceDate: "2026-06",
+  oncePerLifetime: false,
+  frequency: "rare",
+  needsVerification: true,
+  scoringEnabled: false,
+};
+
+/* default availability rules */
+const APP_ONLY_AVAILABILITY = {
+  ritz: "productChangeOnly",
+};
+
+/* approval difficulty heuristic */
+function inferApprovalDifficulty(card) {
+  if (card.tags?.includes("student") || card.tags?.includes("builder")) return 2;
+  const fee = card.annualFee || 0;
+  if (fee >= 550) return 8;
+  if (fee >= 395) return 7;
+  if (fee >= 250) return 6;
+  if (fee >= 95) return 5;
+  return 4;
+}
+
+function inferCardType(card) {
+  if (card.tags?.includes("business")) return "business";
+  if (card.tags?.includes("student")) return "student";
+  if (card.id?.includes("secured")) return "secured";
+  if (card.id === "amex-plat" || card.id === "amex-gold" || card.id === "amex-green") return "charge";
+  return "consumer";
+}
+
+function inferCreditProfileFit(card) {
+  const fee = card.annualFee || 0;
+  if (card.tags?.includes("student") || card.tags?.includes("builder")) {
+    return { minScore: 600, recommendedScore: 670, idealIncome: 18000 };
+  }
+  if (fee >= 550) return { minScore: 720, recommendedScore: 760, idealIncome: 90000 };
+  if (fee >= 395) return { minScore: 710, recommendedScore: 750, idealIncome: 75000 };
+  if (fee >= 250) return { minScore: 700, recommendedScore: 740, idealIncome: 60000 };
+  if (fee >= 95)  return { minScore: 680, recommendedScore: 720, idealIncome: 45000 };
+  return { minScore: 670, recommendedScore: 700, idealIncome: 30000 };
+}
+
+const ISSUER_VELOCITY = {
+  Chase: "chase-5-24",
+  "American Express": "amex-1-per-5d",
+  Citi: "citi-velocity",
+  "Capital One": "c1-app-sensitive",
+  "Bank of America": "boa-2-3-4",
+  "Wells Fargo": "wf-6-months",
+  Discover: "none",
+  "US Bank": "none",
+  Robinhood: "none",
+  Barclays: "barclays-conservative",
+  Synchrony: "none",
+  Apple: "none",
+};
+
+const CURRENCY_TO_ECOSYSTEM = {
+  chase: ["chase-ur"], amex: ["amex-mr"], citi: ["citi-typ"], c1: ["c1-miles"],
+  wf: ["wf-rewards"], delta: ["delta", "amex-mr-co-brand"],
+  united: ["united", "chase-co-brand"], aa: ["aa", "citi-co-brand"],
+  alaska: ["alaska", "boa-co-brand"], southwest: ["southwest", "chase-co-brand"],
+  marriott: ["marriott"], hilton: ["hilton", "amex-mr-co-brand"], hyatt: ["hyatt", "chase-co-brand"],
+  ihg: ["ihg", "chase-co-brand"], jetblue: ["jetblue", "barclays-co-brand"],
+  bilt: ["bilt"], cash: ["cash"], robinhood: ["cash", "robinhood"],
+};
+
+function inferEcosystemTags(card) {
+  return CURRENCY_TO_ECOSYSTEM[card.pointCurrency] || ["other"];
+}
+
+function inferRecommendedFor(card) {
+  const out = [];
+  if (card.tags?.includes("student") || card.tags?.includes("builder")) out.push("starter");
+  if ((card.annualFee || 0) === 0) out.push("no-fee");
+  if (card.tags?.includes("travel") && !card.tags?.includes("premium")) out.push("travel-beginner");
+  if (card.tags?.includes("premium") || card.tags?.includes("luxury")) out.push("luxury");
+  if (card.tags?.includes("renter") || card.id === "bilt") out.push("renter");
+  if (card.tags?.includes("hotel")) out.push("hotel-loyalist");
+  if (card.tags?.includes("airline")) out.push("airline-loyalist");
+  if (card.tags?.includes("flexible")) out.push("ecosystem-builder");
+  if (["citi", "amex", "chase"].includes(card.pointCurrency)) out.push("asia", "europe");
+  return Array.from(new Set(out));
+}
+
+function inferAvoidIfHints(card) {
+  return card.avoidIf || [];
+}
+
+function inferPremiumGate(card) {
+  if (!card.tags?.includes("premium") && !card.tags?.includes("luxury")) return null;
+  return {
+    minTravelFreq: "moderate",        // monthly or more frequent
+    minHotelNights: card.tags?.includes("hotel") ? 8 : 0,
+    requiresLounge: card.tags?.includes("lounge"),
+    requiresCompanion: !!(card.companionCertificates?.length),
+    requiresAirportFit: card.tags?.includes("airline"),
+  };
+}
+
+const FALLBACK_GRADIENT_FROM_ART = (artId, ART) => (ART?.[artId]?.grad || null);
+
+/** Decorate a card with v3.1 fields without mutating existing ones. */
+export function enrichCard(card, ART) {
+  const id = card.id;
+  return {
+    /* existing schema preserved */
+    ...card,
+
+    /* new v3.1 fields with defaults — existing card.X always wins */
+    availabilityStatus:
+      card.availabilityStatus ||
+      APP_ONLY_AVAILABILITY[id] ||
+      (card.appOnly ? "productChangeOnly" : "openToNewApplicants"),
+    cardType: card.cardType || inferCardType(card),
+    approvalDifficulty: card.approvalDifficulty || inferApprovalDifficulty(card),
+    creditProfileFit: card.creditProfileFit || inferCreditProfileFit(card),
+    ecosystemTags: card.ecosystemTags || inferEcosystemTags(card),
+    recommendedFor: card.recommendedFor || inferRecommendedFor(card),
+    avoidIf: inferAvoidIfHints(card),
+    image: {
+      ...DEFAULT_IMAGE,
+      fallbackGradient: FALLBACK_GRADIENT_FROM_ART(card.art, ART),
+      ...(card.image || {}),
+    },
+    sub: { ...DEFAULT_SUB, ...(card.sub || {}) },
+    premiumGate: card.premiumGate || inferPremiumGate(card),
+    issuerVelocity: card.issuerVelocity || ISSUER_VELOCITY[card.issuer] || "none",
+  };
+}

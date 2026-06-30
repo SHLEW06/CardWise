@@ -58,6 +58,31 @@ const STEPS = [
     options: [{ id: "cash", label: "Simple cash back" }, { id: "either", label: "Whatever's worth more" }, { id: "points", label: "Transferable points" }] },
   { key: "credit", type: "single", title: "Roughly how many cards have you opened in the last 2 years?", sub: "This estimates your Chase 5/24 standing — it affects approvals.",
     options: [{ id: "0-1", label: "0-1" }, { id: "2-4", label: "2-4" }, { id: "5+", label: "5 or more" }, { id: "unsure", label: "Not sure" }] },
+  /* v3.1: approval realism inputs — optional but powerful for the timeline. */
+  { key: "creditScore", type: "single", title: "What's your credit score range?", sub: "We use this only to flag which cards are realistic vs aspirational.",
+    options: [
+      { id: "<670", label: "Below 670", sub: "Building or repairing" },
+      { id: "670-739", label: "670 - 739", sub: "Good" },
+      { id: "740-799", label: "740 - 799", sub: "Very good" },
+      { id: "800+", label: "800+", sub: "Excellent" },
+      { id: "unsure", label: "Not sure" },
+    ] },
+  { key: "income", type: "single", title: "Approximate annual income?", sub: "Issuers use stated income as a soft input. Pick the closest range.",
+    options: [
+      { id: "<25k", label: "Under $25k" },
+      { id: "25-50k", label: "$25-50k" },
+      { id: "50-100k", label: "$50-100k" },
+      { id: "100-200k", label: "$100-200k" },
+      { id: "200k+", label: "$200k+" },
+    ] },
+  { key: "currentIssuers", type: "multi", title: "Which issuers do you already have a card with?", sub: "We use this to factor in once-per-lifetime and velocity rules.",
+    options: [
+      { id: "Chase", label: "Chase" }, { id: "American Express", label: "Amex" },
+      { id: "Citi", label: "Citi" }, { id: "Capital One", label: "Capital One" },
+      { id: "Bank of America", label: "Bank of America" }, { id: "Wells Fargo", label: "Wells Fargo" },
+      { id: "Discover", label: "Discover" }, { id: "Barclays", label: "Barclays" },
+      { id: "US Bank", label: "US Bank" }, { id: "none", label: "None / not sure" },
+    ] },
   { key: "cardCount", type: "single", title: "How many cards do you want to manage?", sub: "More cards can mean more value — and more to track.",
     options: [{ id: "1-2", label: "1-2 cards" }, { id: "3-4", label: "3-4 cards" }, { id: "5+", label: "5 or more" }] },
   { key: "level", type: "single", title: "How deep do you want to go?", sub: "Sets the default detail — you can change it anytime.",
@@ -94,6 +119,21 @@ export default function Onboarding({ onDone }) {
       simplicity: a.prefs || "balanced",
       pointPref: a.pointPref || "either",
       credit: a.credit || "unsure",
+      /* v3.1 approval-realism object — engines read profile.credit when it's
+         a string (legacy 5/24 estimate) OR an object (the new richer profile). */
+      creditProfile: {
+        score: a.creditScore && a.creditScore !== "unsure" ? a.creditScore : "670-739",
+        income:
+          a.income === "<25k"     ? 18000 :
+          a.income === "25-50k"   ? 38000 :
+          a.income === "50-100k"  ? 75000 :
+          a.income === "100-200k" ? 150000 :
+          a.income === "200k+"    ? 250000 : 50000,
+        appsLast24:
+          a.credit === "5+" ? 5 : a.credit === "2-4" ? 3 : a.credit === "0-1" ? 1 : 1,
+        currentIssuers: (a.currentIssuers || []).filter((x) => x !== "none"),
+        student: a.level === "beginner" && (a.cardCount === "1-2"),
+      },
       cardCount: a.cardCount || "3-4",
       level: a.level || "beginner",
     };

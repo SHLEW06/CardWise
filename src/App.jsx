@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders } from "lucide-react";
+import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar } from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
 import Onboarding from "./components/Onboarding.jsx";
@@ -14,6 +14,7 @@ import WarningsPanel from "./components/WarningsPanel.jsx";
 import CardModal from "./components/CardModal.jsx";
 import SavedStrategies from "./components/SavedStrategies.jsx";
 import ValuationsEditor from "./components/ValuationsEditor.jsx";
+import CardTimeline from "./components/CardTimeline.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -28,6 +29,7 @@ import {
 
 const TABS = [
   { id: "strategy", label: "Strategy", icon: TrendingUp },
+  { id: "timeline", label: "Timeline", icon: Calendar },
   { id: "router", label: "Spend router", icon: Zap },
   { id: "explore", label: "Explore", icon: Search },
   { id: "keepers", label: "Keepers", icon: Wallet },
@@ -223,6 +225,7 @@ export default function App() {
   return (
     <Layout nav={nav} onLogoClick={restart}>
       {tab === "strategy" && <StrategyDashboard profile={safeProfile} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
+      {tab === "timeline" && <CardTimeline profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
       {tab === "router" && <SpendRouter profile={safeProfile} wallet={wallet} />}
       {tab === "explore" && <CardExplorer profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
       {tab === "keepers" && <KeeperAnalyzer profile={safeProfile} wallet={wallet} onOpenCard={openCard} onGoWallet={() => setTab("wallet")} />}
