@@ -44,16 +44,26 @@ export default function SpendRouter({ profile, wallet }) {
           <div className="cw-router-result">
             <div className="cw-router-card">
               <div className="cw-router-win-tag"><Zap size={12} style={{ verticalAlign: "-1px" }} /> Use this</div>
-              <CardArt id={result.winner.id} size={0.8} />
+              <CardArt id={result.winner.id} size="md" variant="tile" selected />
               <div className="cw-router-name">{result.winner.card.name}</div>
               <div className="cw-router-er">{result.winner.pct}% effective</div>
               <div className="cw-router-dollars">≈ {fmtMoney(result.winner.dollars)} back on {fmtMoney(result.amount)} · {result.winner.currency}</div>
             </div>
             <div>
               <div className="cw-router-rows">
-                {result.rows.map((r, i) => (
-                  <div key={r.id} className={["cw-router-row", i === 0 && "cw-router-row-win"].filter(Boolean).join(" ")}>
-                    <div><div className="cw-router-row-name">{r.card.name}</div><div className="cw-router-row-cur">{r.currency} · {r.rate}x</div></div>
+                {result.rows.map((r) => (
+                  <div key={r.id} className={[
+                    "cw-router-row",
+                    r === result.winner && "cw-router-row-win",
+                    r.gated && "cw-router-row-gated",
+                  ].filter(Boolean).join(" ")}>
+                    <div>
+                      <div className="cw-router-row-name">{r.card.name}</div>
+                      <div className="cw-router-row-cur">
+                        {r.currency} · {r.rate}x
+                        {r.gated && r.gate && <span style={{ color: "var(--warn)" }}> · requires {r.gate.name}</span>}
+                      </div>
+                    </div>
                     <span className="cw-router-row-pct">{r.pct}%</span>
                     <span className="cw-router-row-cur">{fmtMoney(r.dollars)}</span>
                   </div>
@@ -66,6 +76,17 @@ export default function SpendRouter({ profile, wallet }) {
               {result.notes.map((n, i) => (
                 <div className="cw-router-note" key={i}><Info size={15} /><span>{n}</span></div>
               ))}
+              {result.conditional && result.conditional.length > 0 && (
+                <div className="cw-router-conditional">
+                  <div className="cw-router-conditional-head">Conditional alternative</div>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
+                    <CardArt id={result.conditional[0].id} size="sm" variant="ghost" gated showBadges />
+                    <div className="cw-router-row-cur" style={{ flex: 1 }}>
+                      {result.conditional[0].card.name} would earn {result.conditional[0].pct}% — only if you keep the {result.conditional[0].gate?.name} membership.
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

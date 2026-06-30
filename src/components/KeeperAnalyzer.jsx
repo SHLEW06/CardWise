@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { Wallet, ArrowRight } from "lucide-react";
+import CardArt from "./CardArt.jsx";
 import { analyzeWallet } from "../engine/keeperAnalyzer.js";
-import { buildSpend, fmtMoney } from "../engine/scoring.js";
+import { buildSpend, fmtMoney, membershipGate } from "../engine/scoring.js";
 
 /* For each owned card: keep, downgrade, or cancel — judged on the value the
    user actually captures, with the break-even chips that justify the verdict. */
@@ -32,8 +33,20 @@ export default function KeeperAnalyzer({ profile, wallet, onOpenCard, onGoWallet
       <div className="cw-keeper-grid">
         {rows.map((r) => {
           const kvClass = r.keeperValue >= 40 ? "cw-kv-good" : r.keeperValue >= -40 ? "cw-kv-warn" : "cw-kv-bad";
+          const gate = membershipGate(r.card, profile);
+          const gatedUI = !!(gate && profile?.memberships != null && !gate.satisfied);
           return (
             <div className="cw-keeper-row" key={r.cardId}>
+              <div className="cw-keeper-art">
+                <CardArt
+                  id={r.cardId}
+                  size="sm"
+                  variant="tile"
+                  selected
+                  gated={gatedUI}
+                  onClick={() => onOpenCard(r.cardId)}
+                />
+              </div>
               <button onClick={() => onOpenCard(r.cardId)} style={{ textAlign: "left" }}>
                 <div className="cw-keeper-cardname">{r.card.name}</div>
                 <div className="cw-keeper-issuer">{r.card.issuer} · {r.card.annualFee === 0 ? "No fee" : fmtMoney(r.card.annualFee) + "/yr"}</div>

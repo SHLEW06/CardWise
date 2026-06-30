@@ -20,7 +20,7 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
     <div className="cw-modal" onClick={onClose}>
       <div className="cw-modal-inner" onClick={(e) => e.stopPropagation()}>
         <button className="cw-modal-x" onClick={onClose}><X size={20} /></button>
-        <div className="cw-modal-card"><CardArt id={card.id} size={1.02} /></div>
+        <div className="cw-modal-card"><CardArt id={card.id} size="lg" variant="modal" /></div>
         <div>
           <h3 className="cw-modal-name">{card.name}</h3>
           <div className="cw-modal-issuer">{card.issuer} · {card.network} · {card.annualFee === 0 ? "No annual fee" : fmtMoney(card.annualFee) + "/yr"}{card.requiresSubscription ? ` + ${fmtMoney(card.requiresSubscription.annual)} ${card.requiresSubscription.name}` : ""}</div>

@@ -1,87 +1,235 @@
 import React, { useRef, useState } from "react";
+import { Lock, ShieldAlert, AlertTriangle, RefreshCw } from "lucide-react";
 import { BY_ID, ART } from "../data/cards.js";
 import { fmtMoney } from "../engine/scoring.js";
+import { resolveCardImage, ecosystemLabel } from "./cardArtResolver.js";
 
 /* The signature element: a brand-accurate glass card that tilts toward the
-   cursor and catches a slow sheen.
+   cursor, catches a slow sheen, and adapts to size / variant / state.
 
-   v3.1 image system (priority order):
+   v3.2 image system (priority order):
      1) card.image.localImage    — manually placed in /src/assets/cards/ or
                                    /public/cards/, supplied at card-data time.
      2) card.image.imageUrl      — external/official URL (only if the data
                                    owner verified the URL is hotlink-stable).
      3) ART[id].img              — legacy hook (kept for backwards compat).
-     4) ART[id].grad or          — CSS fallback gradient.
+     4) ART[id].grad or          — CSS fallback gradient (premium placeholder).
         card.image.fallbackGradient.
 
    We never auto-scrape issuer images. Cards without imageNeedsVerification=false
    fall back to gradient so the UI never accidentally ships unverified art.
+
+   Prop API (v3.2):
+
+     <CardArt
+       card={card}                       OR  id={id}                    // either accepted
+       size="sm | md | lg | hero"        OR  size={0.8}                 // numbers stay back-compat
+       variant="tile | stack | modal | wallet | ghost"
+       selected={false}                  // applies a glow ring
+       gated={false}                     // dimmed + lock badge (membership-required)
+       disabled={false}                  // muted, no hover, no click
+       showBadges={true}                 // membership / product-change / downgrade
+       showIssuer={true}
+       showNetwork={true}
+       role="Everyday spend"             // small caption under card
+       index={0}                         // staggers the float + sheen on stacks
+       floating={false}                  // legacy alias for variant="stack" float
+       onClick={fn}
+     />
 */
-export default function CardArt({ id, role, index = 0, size = 1, floating, onClick, selected }) {
-  const card = BY_ID[id];
-  const a = ART[id] || { grad: "linear-gradient(135deg,#222,#444)", glow: "rgba(150,150,160,.4)", ink: "#fff", tag: "" };
+
+const SIZE_PX = { sm: 200, md: 260, lg: 320, hero: 380 };
+
+function resolveSize(size) {
+  if (typeof size === "string" && SIZE_PX[size]) return SIZE_PX[size] / 300; // 300 is the natural CSS unit
+  if (typeof size === "number" && Number.isFinite(size)) return size;
+  return SIZE_PX.md / 300;
+}
+
+export default function CardArt({
+  /* either prop is accepted; `id` is the legacy spelling. */
+  card: cardProp,
+  id,
+  size = "md",
+  variant = "tile",
+  selected = false,
+  gated = false,
+  disabled = false,
+  showBadges = true,
+  showIssuer = true,
+  showNetwork = true,
+  /* legacy props */
+  role,
+  index = 0,
+  floating,
+  onClick,
+}) {
+  const cardId = cardProp?.id ?? id;
+  const card = cardProp || (cardId ? BY_ID[cardId] : null);
+  const a = ART[cardId] || { grad: "linear-gradient(135deg,#222,#444)", glow: "rgba(150,150,160,.4)", ink: "#fff", tag: "" };
   const ref = useRef(null);
   const [tilt, setTilt] = useState({ rx: 6, ry: -13 });
   const [imgFailed, setImgFailed] = useState(false);
 
   if (!card) return null;
 
-  const img = card.image || {};
-  /* Pick the actual image source, in priority order. Verification gate: only
-     show external images when the data explicitly marks them verified. */
-  const resolvedImage =
-    img.localImage ||
-    (img.imageUrl && img.imageNeedsVerification === false ? img.imageUrl : null) ||
-    a.img ||
-    null;
-  const gradient = img.fallbackGradient || a.grad;
+  const scale = resolveSize(size);
+  const isModal = variant === "modal";
+  const isStack = variant === "stack" || floating;
+  const isGhost = variant === "ghost";
+  const isClickable = !!onClick && !disabled;
+
+  /* Resolution order: localImage → verified external → legacy ART img → fallback gradient. */
+  const { resolvedImage, gradient } = resolveCardImage(card, a);
+  const tag = ecosystemLabel(card, a);
+
+  const availability = card.availabilityStatus;
+  const isProductChange = availability === "productChangeOnly";
+  const isDowngradeOnly = availability === "downgradeOnly";
+  const isInviteOnly = availability === "inviteOnly";
+  const isDiscontinued = availability === "discontinuedDoNotRecommend";
+  const requiresMembership = !!card.requiresSubscription;
 
   const onMove = (e) => {
+    if (disabled || isModal) return;
     const el = ref.current; if (!el) return;
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
     setTilt({ rx: 6 - py * 16, ry: -13 + px * 22 });
   };
+  const onLeave = () => setTilt({ rx: 6, ry: -13 });
+
+  /* Keyboard activation for the wrapping button. */
+  const handleKey = (e) => {
+    if (!isClickable) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick(e);
+    }
+  };
+
+  const wrapClasses = [
+    "cw-cc-wrap",
+    `cw-cc-${variant}`,
+    isStack && "cw-float",
+    isClickable && "cw-clickable",
+    disabled && "cw-cc-disabled",
+    gated && "cw-cc-gated",
+  ].filter(Boolean).join(" ");
+
+  const cardClasses = [
+    "cw-cc",
+    selected && "cw-cc-sel",
+    disabled && "cw-cc-card-disabled",
+    isModal && "cw-cc-modal",
+    isGhost && "cw-cc-ghost",
+  ].filter(Boolean).join(" ");
+
+  /* Alt text describes the card; the image is a face replica, not a logo. */
+  const altText = resolvedImage
+    ? `${card.issuer} ${card.name} card face`
+    : `${card.issuer} ${card.name} — placeholder art (real image not loaded)`;
 
   return (
     <div
-      className={["cw-cc-wrap", floating && "cw-float", onClick && "cw-clickable"].filter(Boolean).join(" ")}
-      style={{ "--scale": size, "--fdelay": index * 0.9 + "s" }}
-      onClick={onClick}
+      className={wrapClasses}
+      style={{ "--scale": scale, "--fdelay": index * 0.9 + "s" }}
+      onClick={isClickable ? onClick : undefined}
+      onKeyDown={handleKey}
+      tabIndex={isClickable ? 0 : undefined}
+      role={isClickable ? "button" : undefined}
+      aria-label={isClickable ? `Open ${card.name}` : undefined}
+      aria-disabled={disabled || undefined}
     >
       <div
         ref={ref}
-        className={["cw-cc", selected && "cw-cc-sel"].filter(Boolean).join(" ")}
+        className={cardClasses}
         onMouseMove={onMove}
-        onMouseLeave={() => setTilt({ rx: 6, ry: -13 })}
+        onMouseLeave={onLeave}
         style={{
           background: gradient, color: a.ink, "--glow": a.glow,
-          transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+          transform: isModal ? "none" : `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
         }}
       >
         {resolvedImage && !imgFailed && (
           <img
             src={resolvedImage}
-            alt={card.name}
+            alt={altText}
             onError={() => setImgFailed(true)}
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}
-        <div className="cw-cc-sheen" style={{ animationDelay: index * 1.3 + "s" }} />
-        <div className="cw-cc-grain" />
-        <div className="cw-cc-row">
-          <span className="cw-cc-issuer">{card.issuer}</span>
-          <span className="cw-cc-net">{card.network}</span>
-        </div>
-        <div className="cw-cc-chiprow"><span className="cw-cc-chip" /><span className="cw-cc-wifi">)))</span></div>
+        <div className="cw-cc-sheen" style={{ animationDelay: index * 1.3 + "s" }} aria-hidden="true" />
+        <div className="cw-cc-grain" aria-hidden="true" />
+        <div className="cw-cc-glow-ring" aria-hidden="true" />
+
+        {showIssuer && (
+          <div className="cw-cc-row">
+            <span className="cw-cc-issuer">{card.issuer}</span>
+            {showNetwork && <span className="cw-cc-net">{card.network}</span>}
+          </div>
+        )}
+
+        {!isGhost && (
+          <div className="cw-cc-chiprow">
+            <span className="cw-cc-chip" aria-hidden="true" />
+            <span className="cw-cc-wifi" aria-hidden="true">)))</span>
+          </div>
+        )}
+
         <div className="cw-cc-row cw-cc-bottom">
           <div>
             <div className="cw-cc-name">{card.name}</div>
-            <div className="cw-cc-prog">{a.tag}</div>
+            {tag && <div className="cw-cc-prog">{tag}</div>}
           </div>
-          <span className="cw-cc-meta">{card.annualFee === 0 ? "No fee" : fmtMoney(card.annualFee) + "/yr"}</span>
+          <span className="cw-cc-meta">
+            {card.annualFee === 0 ? "No fee" : fmtMoney(card.annualFee) + "/yr"}
+          </span>
         </div>
+
+        {/* Corner badges — kept inside the card face so they layer over art. */}
+        {showBadges && !isGhost && (
+          <div className="cw-cc-badges" aria-hidden="false">
+            {gated || requiresMembership ? (
+              <span className="cw-cc-badge cw-cc-badge-gated"
+                title={card.requiresSubscription
+                  ? `Requires ${card.requiresSubscription.name}`
+                  : "Membership required"}>
+                <Lock size={12} aria-hidden="true" />
+                <span className="cw-cc-badge-lab">
+                  {card.requiresSubscription
+                    ? `${card.requiresSubscription.name} req.`
+                    : "Membership req."}
+                </span>
+              </span>
+            ) : null}
+            {isProductChange && (
+              <span className="cw-cc-badge cw-cc-badge-change" title="Product-change only">
+                <RefreshCw size={12} aria-hidden="true" />
+                <span className="cw-cc-badge-lab">Product-change only</span>
+              </span>
+            )}
+            {isDowngradeOnly && (
+              <span className="cw-cc-badge cw-cc-badge-change" title="Downgrade only">
+                <RefreshCw size={12} aria-hidden="true" />
+                <span className="cw-cc-badge-lab">Downgrade only</span>
+              </span>
+            )}
+            {isInviteOnly && (
+              <span className="cw-cc-badge cw-cc-badge-change" title="Invite only">
+                <ShieldAlert size={12} aria-hidden="true" />
+                <span className="cw-cc-badge-lab">Invite only</span>
+              </span>
+            )}
+            {isDiscontinued && (
+              <span className="cw-cc-badge cw-cc-badge-bad" title="Discontinued">
+                <AlertTriangle size={12} aria-hidden="true" />
+                <span className="cw-cc-badge-lab">Discontinued</span>
+              </span>
+            )}
+          </div>
+        )}
       </div>
       {role && <div className="cw-cc-role">{role}</div>}
     </div>

@@ -173,7 +173,16 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
         </div>
         <div className="cw-lineup">
           {built.cards.map((c, i) => (
-            <CardArt key={c.id} id={c.id} role={c.role} index={i} size={0.82} onClick={() => onOpenCard(c.id)} />
+            <CardArt
+              key={c.id}
+              id={c.id}
+              role={c.role}
+              index={i}
+              size="md"
+              variant="tile"
+              selected
+              onClick={() => onOpenCard(c.id)}
+            />
           ))}
         </div>
         <div className="cw-lineup-hint">Tap any card for the full break-even math and perks.</div>

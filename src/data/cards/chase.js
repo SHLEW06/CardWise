@@ -26,6 +26,8 @@ export const ART = {
   "united-gateway":  { grad: "linear-gradient(135deg,#08284a,#0e487a 60%,#2270b0)", glow: "rgba(40,120,200,.42)", ink: "#fff", tag: "United Miles" },
   "sw-premier":      { grad: "linear-gradient(135deg,#6e2210,#b03a18 55%,#dc5828)", glow: "rgba(205,85,40,.46)", ink: "#fff", tag: "Southwest RR" },
   "chase-freedom-student": { grad: "linear-gradient(135deg,#06335a,#0c63a0 60%,#1c8ad0)", glow: "rgba(40,150,210,.45)", ink: "#fff", tag: "Chase UR" },
+  /* Conservative stubs added in Prompt 4 — verify before relying on rewards math. */
+  "slate-edge":             { grad: "linear-gradient(135deg,#1c2030,#2a3046 55%,#454d68)", glow: "rgba(130,140,165,.4)", ink: "#fff", tag: "Credit tool" },
 };
 
 export const CARDS = [
@@ -394,5 +396,26 @@ export const CARDS = [
     why: "An easy Chase entry for students; the $20/year Good Standing Reward plus credit-line bumps make it a low-risk start.",
     recommendedFor: ["starter", "no-fee"],
     cardType: "student",
+  },
+
+  /* ─── Conservative stub (Prompt 4) — balance-transfer / credit tool ────── */
+  {
+    id: "slate-edge", name: "Chase Slate Edge", issuer: "Chase", network: "VISA",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash",
+    earnRates: { General: 0 }, portalMultipliers: {},
+    credits: [], benefits: ["No rewards card — primarily a balance-transfer / credit-building tool", "Possible automatic APR reductions for on-time payments"],
+    transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
+    checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
+    directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0.03,
+    downgradeOptions: [], productChangePaths: [],
+    bestFor: ["Carrying / paying down a balance with a low intro APR", "Establishing Chase relationship without a rewards card"],
+    avoidIf: ["You want any meaningful rewards earning"],
+    overlapTags: ["credit-tool"], tags: ["credit-tool", "balance-transfer"],
+    beginner: 6, complexity: 2, art: "slate-edge", sourceDate: SD, needsVerification: true,
+    availabilityStatus: "openToNewApplicants",
+    notes: "Treated as a credit tool, not a rewards card. Verify current intro APR + terms before applying.",
+    why: "A balance-transfer / credit-building tool, not a rewards card — only consider if you specifically need a low intro APR.",
+    recommendedFor: ["no-fee"],
+    cardType: "consumer",
   },
 ];

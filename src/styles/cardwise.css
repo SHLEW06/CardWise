@@ -128,6 +128,9 @@
 .cw-router-row-pct { font-family:var(--fmono); font-weight:700; font-size:14px; }
 .cw-router-floor { display:flex; gap:18px; margin-top:14px; color:var(--ink-3); font-size:12px; }
 .cw-router-floor b { color:var(--ink-2); font-family:var(--fmono); }
+.cw-router-row-gated { opacity:.7; border-style:dashed; }
+.cw-router-conditional { margin-top:18px; padding:12px 14px; border-radius:12px; background:rgba(243,231,201,.06); border:1px solid rgba(243,231,201,.18); }
+.cw-router-conditional-head { font-family:var(--fmono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
 
 /* ------------------------------- explorer --------------------------------- */
 .cw-filter-chips { margin-bottom:22px; display:flex; flex-direction:column; gap:12px; }
@@ -144,7 +147,8 @@
 
 /* ----------------------------- keeper analyzer ---------------------------- */
 .cw-keeper-grid { display:flex; flex-direction:column; gap:14px; }
-.cw-keeper-row { display:grid; grid-template-columns:230px 1fr auto; gap:18px; align-items:center; padding:16px 18px; border-radius:16px; background:var(--surface); border:1px solid var(--line); }
+.cw-keeper-row { display:grid; grid-template-columns:180px 230px 1fr auto; gap:18px; align-items:center; padding:16px 18px; border-radius:16px; background:var(--surface); border:1px solid var(--line); }
+.cw-keeper-art { display:flex; justify-content:center; }
 .cw-keeper-cardname { font-family:var(--fdisplay); font-weight:600; font-size:15px; }
 .cw-keeper-issuer { font-size:12px; color:var(--ink-3); margin-top:2px; }
 .cw-keeper-reason { color:var(--ink-2); font-size:13px; line-height:1.5; }
@@ -205,6 +209,7 @@
 .cw-owned { display:flex; flex-wrap:wrap; gap:24px; margin:8px 0 18px; justify-content:center; }
 .cw-owned-item { display:flex; flex-direction:column; align-items:center; }
 .cw-owned-meta { display:flex; align-items:center; gap:12px; margin-top:12px; }
+.cw-owned-warn { margin-top:6px; max-width:240px; color:var(--warn); font-size:12px; text-align:center; line-height:1.4; }
 .cw-remove { color:var(--ink-3); }
 .cw-remove:hover { color:var(--warn); }
 .cw-pick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; margin-top:16px; }

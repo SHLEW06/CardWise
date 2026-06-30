@@ -10,6 +10,9 @@ export const ART = {
   "savor-one":              { grad: "linear-gradient(135deg,#2a0a30,#551050 52%,#8a1a78)", glow: "rgba(160,50,160,.45)",  ink: "#fff",     tag: "Cap One Miles" },
   "savor":           { grad: "linear-gradient(135deg,#3a0a40,#6b1264 52%,#a32294)", glow: "rgba(180,60,180,.48)", ink: "#fff", tag: "Cap One Miles" },
   "quicksilver":     { grad: "linear-gradient(135deg,#222632,#373c4a 55%,#5a6178)", glow: "rgba(140,150,175,.4)", ink: "#fff", tag: "Cash back" },
+  /* Conservative stubs added in Prompt 4 — beginner / credit-building only. */
+  "c1-platinum":      { grad: "linear-gradient(135deg,#1a1d24,#2a2f3a 55%,#4a5160)", glow: "rgba(140,150,175,.4)", ink: "#fff", tag: "Credit builder" },
+  "c1-secured":       { grad: "linear-gradient(135deg,#1c2230,#2d3548 55%,#4f5a72)", glow: "rgba(140,150,175,.4)", ink: "#fff", tag: "Credit builder" },
 };
 
 export const CARDS = [
@@ -112,5 +115,43 @@ export const CARDS = [
     availabilityStatus: "openToNewApplicants",
     why: "Beginner-friendly flat 1.5% with no fee and no FX — a quiet foundation card and a stepping stone to Cap One transfers.",
     recommendedFor: ["starter", "no-fee", "ecosystem-builder"],
+  },
+
+  /* ─── Conservative stubs (Prompt 4) — credit-building only, no rewards ── */
+  {
+    id: "c1-platinum", name: "Capital One Platinum", issuer: "Capital One", network: "MASTERCARD",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash",
+    earnRates: { General: 0 }, portalMultipliers: {},
+    credits: [], benefits: ["No rewards — focused on rebuilding/establishing credit", "Automatic credit-line review after on-time payments"],
+    transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
+    checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
+    directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0,
+    downgradeOptions: [], productChangePaths: ["Eventually graduate to Quicksilver / Savor One"],
+    bestFor: ["Fair-credit applicants who want a no-fee Cap One foothold"],
+    avoidIf: ["You want any rewards earning — Quicksilver / Savor One are the entry-level rewards options"],
+    overlapTags: ["credit-tool"], tags: ["credit-tool", "builder"],
+    beginner: 9, complexity: 1, art: "c1-platinum", sourceDate: SD, needsVerification: true,
+    availabilityStatus: "openToNewApplicants",
+    why: "Credit-building card with no rewards — only useful as a stepping stone to a real rewards card.",
+    recommendedFor: ["starter", "no-fee"],
+    cardType: "consumer",
+  },
+  {
+    id: "c1-secured", name: "Capital One Quicksilver Secured", issuer: "Capital One", network: "MASTERCARD",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash",
+    earnRates: { General: 1.5 }, portalMultipliers: {},
+    credits: [], benefits: ["1.5% on all purchases", "Refundable security deposit", "Path to upgrade to unsecured Quicksilver"],
+    transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
+    checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
+    directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0,
+    downgradeOptions: [], productChangePaths: ["Upgrade to Quicksilver (unsecured) after qualifying"],
+    bestFor: ["Rebuilding credit while earning a flat 1.5% cash back", "Beginners without a credit history"],
+    avoidIf: ["You can qualify for the unsecured Quicksilver", "You don't want to put down a security deposit"],
+    overlapTags: ["credit-tool", "flat-1.5pct"], tags: ["cashback", "builder", "credit-tool"],
+    beginner: 9, complexity: 2, art: "c1-secured", sourceDate: SD, needsVerification: true,
+    availabilityStatus: "openToNewApplicants",
+    why: "A secured card that actually earns 1.5% back — strong for rebuilders who'd rather not give up rewards while they qualify.",
+    recommendedFor: ["starter", "no-fee"],
+    cardType: "secured",
   },
 ];

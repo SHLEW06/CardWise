@@ -21,6 +21,8 @@ export const ART = {
   "delta-blue":      { grad: "linear-gradient(135deg,#0a1a36,#152e5a 55%,#2a4f96)", glow: "rgba(50,90,180,.40)", ink: "#fff", tag: "Delta SkyMiles" },
   "marriott-bevy":   { grad: "linear-gradient(135deg,#1a0a22,#3a1844 52%,#6a2876)", glow: "rgba(160,70,200,.45)", ink: "#fff", tag: "Marriott Bonvoy" },
   "marriott-brilliant": { grad: "linear-gradient(135deg,#1a1006,#3a2818 48%,#caa14e)", glow: "rgba(205,160,80,.5)", ink: "#fff", tag: "Marriott Bonvoy" },
+  /* Conservative stub added in Prompt 4 — a no-fee MR earner. */
+  "amex-everyday":   { grad: "linear-gradient(135deg,#0e2a5a,#163d8a 55%,#2860c0)", glow: "rgba(50,120,210,.42)", ink: "#fff", tag: "Amex MR" },
 };
 
 export const CARDS = [
@@ -316,5 +318,26 @@ export const CARDS = [
     beginner: 3, complexity: 8, art: "marriott-brilliant", sourceDate: SD, needsVerification: true,
     availabilityStatus: "openToNewApplicants",
     why: "Open to new applicants, unlike Ritz — Platinum status, 85k free night, and a dining credit that offsets a real chunk of the fee.",
+  },
+
+  /* ─── Conservative stub (Prompt 4) — no-fee MR entry ─────────────────── */
+  {
+    id: "amex-everyday", name: "Amex EveryDay", issuer: "American Express", network: "AMEX",
+    annualFee: 0, currency: "Amex MR", pointCurrency: "amex",
+    earnRates: { Groceries: 2, General: 1 }, portalMultipliers: {},
+    credits: [], benefits: ["2x at U.S. supermarkets (to $6k/yr)", "20% bonus points after 20+ transactions/cycle (verify)", "Transferable Amex MR with no annual fee"],
+    transferAccess: ["amex"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
+    checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
+    directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0.027,
+    downgradeOptions: [], productChangePaths: ["Upgrade to Amex EveryDay Preferred for 3x groceries"],
+    bestFor: ["A no-fee on-ramp into the Amex MR ecosystem"],
+    avoidIf: ["You'd actually use Amex Gold / EDP for the higher multipliers"],
+    overlapTags: ["mr-earner", "grocery-card", "no-fee"], tags: ["food", "grocery", "flexible"],
+    beginner: 8, complexity: 2, art: "amex-everyday", sourceDate: SD, needsVerification: true,
+    availabilityStatus: "openToNewApplicants",
+    notes: "Conservative seed entry. Verify current earn rates + 20-transaction bonus before relying on them.",
+    why: "A no-fee path into Amex MR — useful primarily as a downgrade landing spot from Gold / EDP.",
+    recommendedFor: ["no-fee", "ecosystem-builder"],
+    cardType: "consumer",
   },
 ];

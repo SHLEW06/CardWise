@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Info } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CARDS } from "../data/cards.js";
-import { buildSpend } from "../engine/scoring.js";
+import { buildSpend, membershipGate } from "../engine/scoring.js";
 
 const FILTERS = [
   { id: "all", label: "All", test: () => true },
@@ -15,6 +15,7 @@ const FILTERS = [
   { id: "lounge", label: "Lounge access", test: (c) => c.tags.includes("lounge") },
   { id: "student", label: "Student / starter", test: (c) => c.tags.includes("student") || c.tags.includes("builder") },
   { id: "beginner", label: "Beginner-friendly", test: (c) => (c.beginner || 0) >= 8 },
+  { id: "membership", label: "Membership required", test: (c) => !!c.requiresSubscription },
 ];
 
 export default function CardExplorer({ profile, onOpenCard, wallet }) {
@@ -22,6 +23,7 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
   const spend = useMemo(() => buildSpend(profile || {}), [profile]);
   const active = FILTERS.find((f) => f.id === filter) || FILTERS[0];
   const list = useMemo(() => CARDS.filter(active.test), [active]);
+  const owned = new Set(wallet || []);
 
   return (
     <div className="cw-rise">
@@ -38,19 +40,35 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
       </div>
 
       <div className="cw-explore-grid">
-        {list.map((c, i) => (
-          <button key={c.id} className="cw-explore-card" onClick={() => onOpenCard(c.id)}>
-            <CardArt id={c.id} size={0.74} index={i % 5} />
-            <div className="cw-explore-meta">
-              <div className="cw-explore-name">{c.name}</div>
-              <div className="cw-modal-pills">
-                <span className="cw-pill cw-pill-muted">{c.annualFee === 0 ? "No fee" : "$" + c.annualFee}</span>
-                {(wallet || []).includes(c.id) && <span className="cw-pill cw-pill-good">Owned</span>}
+        {list.map((c, i) => {
+          const gate = membershipGate(c, profile || {});
+          const gatedUI = !!(gate && profile?.memberships != null && !gate.satisfied);
+          const productChange = c.availabilityStatus === "productChangeOnly";
+          const downgradeOnly = c.availabilityStatus === "downgradeOnly";
+          return (
+            <button key={c.id} className="cw-explore-card" onClick={() => onOpenCard(c.id)}>
+              <CardArt
+                id={c.id}
+                size="sm"
+                variant="tile"
+                index={i % 5}
+                gated={gatedUI}
+                showBadges={true}
+              />
+              <div className="cw-explore-meta">
+                <div className="cw-explore-name">{c.name}</div>
+                <div className="cw-modal-pills">
+                  <span className="cw-pill cw-pill-muted">{c.annualFee === 0 ? "No fee" : "$" + c.annualFee}</span>
+                  {owned.has(c.id) && <span className="cw-pill cw-pill-good">Owned</span>}
+                  {gatedUI && <span className="cw-pill cw-pill-warn">{gate.name} required</span>}
+                  {productChange && <span className="cw-pill cw-pill-warn">Product-change only</span>}
+                  {downgradeOnly && <span className="cw-pill cw-pill-warn">Downgrade only</span>}
+                </div>
+                <div className="cw-explore-blurb">{(c.bestFor && c.bestFor[0]) || c.why}</div>
               </div>
-              <div className="cw-explore-blurb">{(c.bestFor && c.bestFor[0]) || c.why}</div>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       <div className="cw-curation">

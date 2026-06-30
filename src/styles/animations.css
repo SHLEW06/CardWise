@@ -54,3 +54,15 @@
   0%,100% { opacity: 1; }
   50%     { opacity: 0; }
 }
+
+/* selected-card glow ring pulse — subtle, premium */
+@keyframes cwGlowPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(243,231,201,.0), inset 0 0 0 2px rgba(255,255,255,.5); }
+  50%     { box-shadow: 0 0 0 6px rgba(243,231,201,.18), inset 0 0 0 2px rgba(255,255,255,.65); }
+}
+
+/* gated-card lock badge soft pulse */
+@keyframes cwLockBreathe {
+  0%,100% { opacity: .92; }
+  50%     { opacity: .68; }
+}

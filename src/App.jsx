@@ -243,7 +243,7 @@ export default function App() {
       {tab === "airport" && <AirportFit profile={safeProfile} />}
       {tab === "redeem" && <RedemptionExplorer profile={safeProfile} />}
       {tab === "warnings" && <WarningsPanel profile={safeProfile} wallet={wallet} />}
-      {tab === "wallet" && <WalletBuilder wallet={wallet} onToggle={toggleWallet} onOpenCard={openCard} />}
+      {tab === "wallet" && <WalletBuilder wallet={wallet} onToggle={toggleWallet} onOpenCard={openCard} profile={safeProfile} />}
       {tab === "saved" && <SavedStrategies strategies={strategies} onLoad={handleLoadStrategy} onDelete={handleDeleteStrategy} />}
       {tab === "valuations" && <ValuationsEditor overrides={valOverrides} onChange={handleValChange} onReset={handleValReset} />}
 

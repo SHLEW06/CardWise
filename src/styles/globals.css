@@ -100,7 +100,72 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
 .cw-cc-role { margin-top:12px; text-align:center; font-family:var(--fmono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
 .cw-clickable { cursor:pointer; }
 .cw-clickable:hover .cw-cc { box-shadow:0 36px 70px -18px var(--glow), inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.12); }
+.cw-clickable:focus-visible { outline:none; }
+.cw-clickable:focus-visible .cw-cc { box-shadow:0 0 0 3px var(--accent), 0 30px 60px -22px var(--glow), inset 0 1px 0 rgba(255,255,255,.22); }
 .cw-float { animation:cwFloat 7s ease-in-out infinite; animation-delay:var(--fdelay); }
+
+/* --------- card-art variants, badges, states (v3.2) ---------------------- */
+/* selected: subtle gold ring pulse on top of the existing glow */
+.cw-cc-sel { animation:cwGlowPulse 3.2s ease-in-out infinite; }
+
+/* glow ring — a soft accent layer the .cw-cc-sel animation can leverage */
+.cw-cc-glow-ring { position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.04); }
+
+/* gated state: dim the card and surface the lock badge.
+   We rely on more than color alone — the badge text + icon carry the meaning. */
+.cw-cc-gated .cw-cc { filter:grayscale(.45) brightness(.78); }
+.cw-cc-gated:hover .cw-cc { filter:grayscale(.25) brightness(.88); }
+
+/* disabled state: heavier dim, no pointer */
+.cw-cc-disabled { pointer-events:none; }
+.cw-cc-disabled .cw-cc { filter:grayscale(.7) brightness(.6); opacity:.7; }
+
+/* modal variant: no hover-tilt; keep glow */
+.cw-cc-modal { transform:none !important; transition:none; }
+
+/* ghost variant: stripped chrome, useful for tight rows / SpendRouter floors */
+.cw-cc-ghost .cw-cc { box-shadow:0 12px 30px -16px var(--glow); }
+.cw-cc-ghost .cw-cc-grain { opacity:.3; }
+
+/* stack variant: cards meant to overlap (timeline / hero). Offset each by index. */
+.cw-cc-stack { margin-left:calc(-40px * var(--scale)); }
+.cw-cc-stack:first-child { margin-left:0; }
+
+/* wallet variant: tighter spacing under name for owned-card grids */
+.cw-cc-wallet .cw-cc-role { margin-top:8px; }
+
+/* badges — one shared style, plus a hue per kind */
+.cw-cc-badges {
+  position:absolute; top:10px; right:10px; z-index:3;
+  display:flex; flex-direction:column; align-items:flex-end; gap:6px;
+  pointer-events:none;
+}
+.cw-cc-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 8px; border-radius:99px;
+  background:rgba(8,8,12,.55); backdrop-filter:blur(6px);
+  font-family:var(--fmono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:#fff; border:1px solid rgba(255,255,255,.14);
+  pointer-events:auto;
+}
+.cw-cc-badge svg { flex-shrink:0; }
+.cw-cc-badge-gated { background:rgba(243,231,201,.18); color:var(--accent); border-color:rgba(243,231,201,.32); animation:cwLockBreathe 4s ease-in-out infinite; }
+.cw-cc-badge-change { background:rgba(50,110,230,.20); color:#bdd1ff; border-color:rgba(50,110,230,.40); }
+.cw-cc-badge-bad { background:rgba(240,138,110,.18); color:var(--bad); border-color:rgba(240,138,110,.32); }
+.cw-cc-badge-lab { line-height:1; }
+
+/* compact size doesn't have enough room for badge text — show icon only */
+.cw-cc-wrap[style*="--scale: 0.6"] .cw-cc-badge-lab,
+.cw-cc-wrap[style*="--scale: 0.62"] .cw-cc-badge-lab,
+.cw-cc-wrap[style*="--scale: 0.66"] .cw-cc-badge-lab,
+.cw-cc-wrap[style*="--scale: 0.7"] .cw-cc-badge-lab,
+.cw-cc-tile .cw-cc-badge-lab { display:inline; }
+
+@media (max-width:560px) {
+  /* On mobile every variant collapses badge labels to icon-only for breathing room. */
+  .cw-cc-badge-lab { display:none; }
+  .cw-cc-badge { padding:5px; }
+}
 /* @keyframes cwFloat — moved to styles/animations.css */
 
 /* --------------------------------- pills ---------------------------------- */
@@ -129,10 +194,11 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
   .cw-main { padding:8px 16px 32px; } .cw-header { padding:16px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .cw-aurora, .cw-float, .cw-cc-sheen, .cw-rise, .cw-spin { animation:none !important; }
+  .cw-aurora, .cw-float, .cw-cc-sheen, .cw-rise, .cw-spin,
+  .cw-cc-sel, .cw-cc-badge-gated { animation:none !important; }
   .cw-narrator-loading { animation:none !important; opacity:.7; }
   .cw-narrator-cursor { animation:none !important; opacity:1; }
-  .cw-cc { transition:none; }
+  .cw-cc { transition:none; transform:none !important; }
   .cw-nav-item, .cw-opt, .cw-explore-card, .cw-pick, .cw-chip, .cw-btn { transition:none !important; }
   .cw-bar-fill, .cw-fit-fill, .cw-ring-fg { transition:none !important; }
 }
