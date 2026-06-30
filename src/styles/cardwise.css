@@ -76,6 +76,9 @@
 .cw-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px; }
 .cw-lineup { display:flex; flex-wrap:wrap; gap:18px; margin-top:18px; justify-content:center; }
 .cw-lineup-hint { text-align:center; color:var(--ink-3); font-size:12px; margin-top:16px; }
+.cw-lineup-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.cw-lineup-future { margin-top:22px; }
+.cw-pill-sm { font-size:10px; padding:3px 8px; }
 .cw-eco-banner { display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:14px; background:linear-gradient(135deg,rgba(95,214,160,.1),rgba(50,110,230,.06)); border:1px solid rgba(95,214,160,.2); margin-bottom:18px; }
 .cw-eco-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:11px; background:rgba(255,255,255,.06); color:var(--accent); flex-shrink:0; }
 .cw-eco-name { font-family:var(--fdisplay); font-weight:600; font-size:16px; }
@@ -131,6 +134,19 @@
 .cw-router-row-gated { opacity:.7; border-style:dashed; }
 .cw-router-conditional { margin-top:18px; padding:12px 14px; border-radius:12px; background:rgba(243,231,201,.06); border:1px solid rgba(243,231,201,.18); }
 .cw-router-conditional-head { font-family:var(--fmono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+
+/* ----------------------------- approval block (modal) -------------------- */
+.cw-approval-block { margin-top:18px; padding:16px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid var(--line); }
+.cw-approval-head { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.cw-approval-list { list-style:disc; padding-left:18px; margin:14px 0 6px; color:var(--ink-2); font-size:13.5px; line-height:1.55; }
+.cw-approval-blocker { color:var(--bad); }
+.cw-approval-warn    { color:var(--warn); }
+.cw-approval-soft    { color:var(--ink-2); }
+.cw-approval-reason  { color:var(--ink-2); }
+.cw-approval-issuer  { margin-top:10px; padding:8px 12px; border-radius:10px; background:rgba(50,110,230,.10); color:#cfddff; font-size:12.5px; line-height:1.5; }
+.cw-approval-action  { margin-top:10px; font-size:13px; color:var(--ink-2); }
+.cw-approval-action b { color:var(--accent); font-family:var(--fmono); text-transform:lowercase; letter-spacing:.04em; }
+.cw-approval-disclaimer { color:var(--ink-3); font-style:italic; }
 
 /* ------------------------------- explorer --------------------------------- */
 .cw-filter-chips { margin-bottom:22px; display:flex; flex-direction:column; gap:12px; }

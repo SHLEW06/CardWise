@@ -14,6 +14,11 @@ import { analyzeWallet } from "./keeperAnalyzer.js";
 import { buildLineup } from "./lineupBuilder.js";
 import { scoreCard, buildSpend, effectiveFee, membershipGate } from "./scoring.js";
 import { approvalRealism } from "./approvalRealism.js";
+import {
+  estimateApprovalFit,
+  TIMING_BUCKETS,
+  APPROVAL_LABELS,
+} from "./approval.js";
 
 const MONTHS_BETWEEN_APPS = 3;
 
@@ -57,53 +62,59 @@ export function buildTimeline(profile, held = [], opts = {}) {
   const idealIds = ideal.cards.map((c) => c.id);
   const missingFromIdeal = idealIds.filter((id) => !held.includes(id));
 
-  /* === 3) Score every candidate card and split by realism =================== */
+  /* === 3) Score every candidate card and bucket by approval timing ========== */
+  /* The candidate pool stays loose so we can still surface productChange /
+     downgrade landing spots in their dedicated buckets — the approval engine
+     decides where each card lands, not the candidate filter. */
   const candidates = CARDS
     .filter((c) => !held.includes(c.id))
     .filter((c) => c.availabilityStatus !== "discontinuedDoNotRecommend")
-    /* product-change / downgrade / invite-only cards never get recommended as
-       "apply now" picks — they only show up on existing-card upgrade paths. */
-    .filter((c) => !["productChangeOnly", "downgradeOnly", "inviteOnly"].includes(c.availabilityStatus))
     .filter((c) => c.cardType !== "business")          // consumer recommendations only
     .filter((c) => !c.tags?.includes("business"))      // legacy tag-based guard
-    /* membership-gated cards: hard-exclude when the user has stated they do
-       not keep the membership. When `memberships` is undefined we leave the
-       card in the pool so back-compat tests (no survey memberships) still pass. */
-    .filter((c) => {
-      const g = membershipGate(c, profile);
-      if (!g) return true;
-      if (profile.memberships == null) return true;
-      return g.satisfied;
-    })
     .map((c) => {
+      /* Legacy `realism` (0-100 score + flat label) stays around for any
+         caller still reading it; new `approval` carries the richer shape. */
       const realism = approvalRealism(c.id, profile);
+      const approval = estimateApprovalFit(c, profile);
       const s = scoreCard(c, profile, spend, held);
       const idealBoost = missingFromIdeal.includes(c.id) ? 200 : 0;
-      return { id: c.id, card: c, fitScore: s + idealBoost, realism };
-    })
-    .sort((a, b) => b.fitScore - a.fitScore);
+      return { id: c.id, card: c, fitScore: s + idealBoost, realism, approval };
+    });
 
-  /* === 4) Pick next / later / avoid ========================================= */
-  const realistic = candidates.filter((x) => x.realism.score >= 60);
-  const borderline = candidates.filter((x) => x.realism.score >= 40 && x.realism.score < 60);
-  const aspirational = candidates.filter((x) => x.realism.score < 40);
+  /* Bucket by approval-engine timing. Each bucket is sorted by fitScore so
+     the strongest candidate is first in line. */
+  const sortByFit = (a, b) => b.fitScore - a.fitScore;
+  const applyNow         = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.NOW)            .sort(sortByFit);
+  const wait3to6         = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.SHORT)          .sort(sortByFit);
+  const wait6to12        = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.MEDIUM)         .sort(sortByFit);
+  const wait12plus       = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.LONG)           .sort(sortByFit);
+  const productChangePath = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.PRODUCT_CHANGE).sort(sortByFit);
+  const downgradePath     = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.DOWNGRADE)     .sort(sortByFit);
+  const avoidForNow       = candidates.filter((x) => x.approval.timing === TIMING_BUCKETS.AVOID)         .sort(sortByFit);
 
-  const nextCard = realistic[0] || borderline[0] || null;
-  const laterCards = aspirational
-    .filter((x) => x.fitScore > -100)
-    .slice(0, 3)
-    .map((x, i) => ({
-      ...x,
-      etaLabel: i === 0 ? "After your 5/24 status clears" :
-        i === 1 ? "After 6-12 months of clean credit history" :
-        "Long-term goal — once income & history support it",
-    }));
+  /* nextCard is the strongest apply-now candidate. If none, surface the
+     strongest "wait" candidate so the UI never goes blank — but mark it as
+     wait-tier via approval.timing. */
+  const nextCard = applyNow[0] || wait3to6[0] || null;
+  /* `laterCards` keeps its legacy shape (3 entries with `etaLabel`) for any
+     UI still reading it. New surfaces should prefer the bucketed lists. */
+  const laterPool = [...wait3to6.slice(applyNow[0] ? 0 : 1), ...wait6to12, ...wait12plus].slice(0, 3);
+  const laterCards = laterPool.map((x, i) => ({
+    ...x,
+    etaLabel: x.approval.timing === TIMING_BUCKETS.SHORT  ? "3-6 months away" :
+              x.approval.timing === TIMING_BUCKETS.MEDIUM ? "6-12 months away" :
+                                                            "12+ months out",
+  }));
 
-  /* avoid: high-fee cards the user wouldn't extract value from */
-  const avoidNow = candidates
-    .filter((x) => x.fitScore < 0 && (x.card.annualFee || 0) >= 95)
-    .slice(0, 4)
-    .map((x) => ({ ...x, reason: avoidReason(x.card, profile) }));
+  /* Avoid bucket: cards that are explicitly marked avoid + any high-fee
+     candidate that doesn't add value for this user. */
+  const avoidNow = [
+    ...avoidForNow,
+    ...candidates.filter((x) => x.fitScore < 0 && (x.card.annualFee || 0) >= 95),
+  ]
+    .filter((x, i, arr) => arr.findIndex((y) => y.id === x.id) === i)
+    .slice(0, 5)
+    .map((x) => ({ ...x, reason: x.approval.blockers[0] || x.approval.softConstraints[0] || avoidReason(x.card, profile) }));
 
   /* === 5) Build a forward schedule ========================================== */
   const schedule = [];
@@ -167,7 +178,21 @@ export function buildTimeline(profile, held = [], opts = {}) {
     });
   }
 
-  return { keep, downgrade, cancel, reconsider, nextCard, laterCards, avoidNow, watchOuts, schedule };
+  return {
+    keep, downgrade, cancel, reconsider,
+    nextCard, laterCards, avoidNow, watchOuts, schedule,
+    /* v3.2 explicit timing buckets — new surfaces should prefer these to the
+       flat nextCard / laterCards split. */
+    buckets: {
+      applyNow,
+      wait3to6,
+      wait6to12,
+      wait12plus,
+      productChangePath,
+      downgradePath,
+      avoidForNow,
+    },
+  };
 }
 
 function monthsBetween(a, b) {

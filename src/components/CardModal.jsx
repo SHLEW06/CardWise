@@ -1,9 +1,26 @@
 import React from "react";
-import { X, Check, AlertTriangle, ShieldCheck, Plus } from "lucide-react";
+import { X, Check, AlertTriangle, ShieldCheck, Plus, Clock } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CATS, CAT_LABEL, fmtMoney } from "../engine/scoring.js";
 import { breakEven } from "../engine/annualFee.js";
 import { effCpp, currencyLabel, anchorLabel } from "../engine/transferValue.js";
+import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
+
+function approvalPillClass(label) {
+  switch (label) {
+    case APPROVAL_LABELS.VERY_REALISTIC:
+    case APPROVAL_LABELS.REALISTIC:
+      return "cw-pill-good";
+    case APPROVAL_LABELS.POSSIBLE:
+    case APPROVAL_LABELS.STRETCH:
+      return "cw-pill-warn";
+    case APPROVAL_LABELS.NOT_RECOMMENDED_YET:
+    case APPROVAL_LABELS.DISCONTINUED:
+      return "cw-pill-bad";
+    default:
+      return "cw-pill-muted";
+  }
+}
 
 /* One detail surface reused by the explorer + dashboard. Leads with the honest
    break-even math (realized value vs fee) so a card never looks better than it
@@ -13,6 +30,7 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
   const be = breakEven(card, spend, profile, held);
   const cpp = effCpp(card.pointCurrency, profile, held);
   const anchor = anchorLabel(card.pointCurrency, profile, held);
+  const approval = profile ? estimateApprovalFit(card, profile) : null;
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
@@ -84,6 +102,43 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
             <div className="cw-modal-caveat">
               <AlertTriangle size={16} />
               <span>Skip it if: {card.avoidIf.join("; ")}.</span>
+            </div>
+          )}
+
+          {approval && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Approval realism</div>
+              <div className="cw-approval-head">
+                <span className={"cw-pill " + approvalPillClass(approval.label)}>
+                  {approval.label}
+                </span>
+                <span className="cw-pill cw-pill-muted">
+                  Confidence: {approval.confidence}
+                </span>
+                <span className="cw-pill cw-pill-muted">
+                  <Clock size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />
+                  Timing: {approval.timing}
+                </span>
+                <span className="cw-pill cw-pill-muted">
+                  Difficulty: {approval.difficulty.label}
+                </span>
+              </div>
+              {(approval.reasons.length > 0 || approval.warnings.length > 0
+                || approval.blockers.length > 0 || approval.softConstraints.length > 0) && (
+                <ul className="cw-approval-list">
+                  {approval.blockers.map((b, i) => <li key={"b" + i} className="cw-approval-blocker">{b}</li>)}
+                  {approval.warnings.map((w, i) => <li key={"w" + i} className="cw-approval-warn">{w}</li>)}
+                  {approval.softConstraints.map((s, i) => <li key={"s" + i} className="cw-approval-soft">{s}</li>)}
+                  {approval.reasons.map((r, i) => <li key={"r" + i} className="cw-approval-reason">{r}</li>)}
+                </ul>
+              )}
+              {approval.issuerRuleNotes.length > 0 && (
+                <div className="cw-approval-issuer">{approval.issuerRuleNotes[0]}</div>
+              )}
+              <div className="cw-approval-action">
+                Recommended action: <b>{approval.recommendedAction}</b>
+                <span className="cw-approval-disclaimer"> — advisory, not a guarantee.</span>
+              </div>
             </div>
           )}
 

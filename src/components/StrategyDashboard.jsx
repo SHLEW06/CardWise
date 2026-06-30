@@ -7,13 +7,41 @@ import { BY_ID } from "../data/cards.js";
 import { effCpp, anchorLabel } from "../engine/transferValue.js";
 import { PROGRAMS, isBank } from "../data/programs.js";
 import { isNarratorConfigured, streamNarrative } from "../firebase/narrator.js";
+import { APPROVAL_LABELS } from "../engine/approval.js";
+
+function labelTone(label) {
+  switch (label) {
+    case APPROVAL_LABELS.VERY_REALISTIC:
+    case APPROVAL_LABELS.REALISTIC:
+      return "cw-pill-good";
+    case APPROVAL_LABELS.POSSIBLE:
+    case APPROVAL_LABELS.STRETCH:
+      return "cw-pill-warn";
+    case APPROVAL_LABELS.NOT_RECOMMENDED_YET:
+    case APPROVAL_LABELS.DISCONTINUED:
+      return "cw-pill-bad";
+    default:
+      return "cw-pill-muted";
+  }
+}
 
 const BIAS_ICON = { airline: Plane, flexible: ArrowLeftRight, cash: Coins, hotel: Building2, premium: Sparkles };
 
 export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy }) {
   const spend = useMemo(() => buildSpend(profile), [profile]);
-  const built = useMemo(() => buildLineup(profile, spend), [profile, spend]);
+  /* Ask the lineup builder for the approval overlay too — it returns both
+     mathematicalBest and realisticBest so we can show the gap. */
+  const built = useMemo(
+    () => buildLineup(profile, spend, { useApprovalRealism: true }),
+    [profile, spend]
+  );
   const ids = built.cards.map((c) => c.id);
+
+  /* `built.approval` is the new overlay; falls back to the math lineup when
+     the option is off for some reason. */
+  const realistic = built.approval?.realisticBest || [];
+  const futurePath = built.approval?.futurePath || [];
+  const avoidNow = built.approval?.avoidNow || [];
   const score = useMemo(() => strategyScore(ids, profile, spend, ids), [ids, profile, spend]);
   const cats = useMemo(() => bestByCategory(ids, spend, profile, ids).slice(0, 6), [ids, spend, profile]);
 
@@ -172,19 +200,70 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
           <span className="cw-pill cw-pill-muted">{fmtMoney(built.feeUsed)} in fees{built.budget < 9999 ? ` / ${fmtMoney(built.budget)} budget` : ""}</span>
         </div>
         <div className="cw-lineup">
-          {built.cards.map((c, i) => (
-            <CardArt
-              key={c.id}
-              id={c.id}
-              role={c.role}
-              index={i}
-              size="md"
-              variant="tile"
-              selected
-              onClick={() => onOpenCard(c.id)}
-            />
-          ))}
+          {built.cards.map((c, i) => {
+            const approvalCard = realistic.find((r) => r.id === c.id);
+            const label = approvalCard?.approval?.label;
+            const tone = labelTone(label);
+            return (
+              <div key={c.id} className="cw-lineup-item">
+                <CardArt
+                  id={c.id}
+                  role={c.role}
+                  index={i}
+                  size="md"
+                  variant="tile"
+                  selected
+                  onClick={() => onOpenCard(c.id)}
+                />
+                {label && (
+                  <span className={"cw-pill cw-pill-sm " + tone} title={label}>
+                    {label}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
+        {futurePath.length > 0 && (
+          <div className="cw-lineup-future">
+            <div className="cw-modal-section">Later, not now</div>
+            <p className="cw-arch-line" style={{ margin: "4px 0 12px" }}>
+              These are mathematically strong picks that aren't realistic for you to apply for today.
+              The lineup above swaps in a card you can actually get.
+            </p>
+            <div className="cw-lineup">
+              {futurePath.map((c, i) => (
+                <CardArt
+                  key={c.id}
+                  id={c.id}
+                  role={c.approval.timing}
+                  index={i}
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onOpenCard(c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        {avoidNow.length > 0 && (
+          <div className="cw-lineup-future">
+            <div className="cw-modal-section">Avoid for now</div>
+            <div className="cw-lineup">
+              {avoidNow.map((c, i) => (
+                <CardArt
+                  key={c.id}
+                  id={c.id}
+                  index={i}
+                  size="sm"
+                  variant="ghost"
+                  disabled
+                  onClick={() => onOpenCard(c.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <div className="cw-lineup-hint">Tap any card for the full break-even math and perks.</div>
       </div>
 

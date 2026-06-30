@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CARDS } from "../data/cards.js";
 import { buildSpend, membershipGate } from "../engine/scoring.js";
+import { estimateApprovalFit, classifyApprovalDifficulty, APPROVAL_LABELS } from "../engine/approval.js";
 
 const FILTERS = [
   { id: "all", label: "All", test: () => true },
@@ -16,7 +17,27 @@ const FILTERS = [
   { id: "student", label: "Student / starter", test: (c) => c.tags.includes("student") || c.tags.includes("builder") },
   { id: "beginner", label: "Beginner-friendly", test: (c) => (c.beginner || 0) >= 8 },
   { id: "membership", label: "Membership required", test: (c) => !!c.requiresSubscription },
+  { id: "easyApproval", label: "Easy approval", test: (c) => classifyApprovalDifficulty(c).bucket === "easy" },
+  { id: "veryHardApproval", label: "Very hard approval", test: (c) => classifyApprovalDifficulty(c).bucket === "very-hard" },
 ];
+
+/* Map an approval label to the existing pill palette so we don't add new
+   colors. Labels carry their own text so meaning isn't color-only. */
+function pillToneForLabel(label) {
+  switch (label) {
+    case APPROVAL_LABELS.VERY_REALISTIC:
+    case APPROVAL_LABELS.REALISTIC:
+      return "cw-pill-good";
+    case APPROVAL_LABELS.POSSIBLE:
+    case APPROVAL_LABELS.STRETCH:
+      return "cw-pill-warn";
+    case APPROVAL_LABELS.NOT_RECOMMENDED_YET:
+    case APPROVAL_LABELS.DISCONTINUED:
+      return "cw-pill-bad";
+    default:
+      return "cw-pill-muted";
+  }
+}
 
 export default function CardExplorer({ profile, onOpenCard, wallet }) {
   const [filter, setFilter] = useState("all");
@@ -43,8 +64,8 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
         {list.map((c, i) => {
           const gate = membershipGate(c, profile || {});
           const gatedUI = !!(gate && profile?.memberships != null && !gate.satisfied);
-          const productChange = c.availabilityStatus === "productChangeOnly";
-          const downgradeOnly = c.availabilityStatus === "downgradeOnly";
+          const approval = profile ? estimateApprovalFit(c, profile) : null;
+          const difficulty = classifyApprovalDifficulty(c);
           return (
             <button key={c.id} className="cw-explore-card" onClick={() => onOpenCard(c.id)}>
               <CardArt
@@ -60,9 +81,17 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
                 <div className="cw-modal-pills">
                   <span className="cw-pill cw-pill-muted">{c.annualFee === 0 ? "No fee" : "$" + c.annualFee}</span>
                   {owned.has(c.id) && <span className="cw-pill cw-pill-good">Owned</span>}
-                  {gatedUI && <span className="cw-pill cw-pill-warn">{gate.name} required</span>}
-                  {productChange && <span className="cw-pill cw-pill-warn">Product-change only</span>}
-                  {downgradeOnly && <span className="cw-pill cw-pill-warn">Downgrade only</span>}
+                  {approval && (
+                    <span
+                      className={"cw-pill " + pillToneForLabel(approval.label)}
+                      title={approval.warnings[0] || approval.blockers[0] || approval.reasons[0] || approval.label}
+                    >
+                      {approval.label}
+                    </span>
+                  )}
+                  <span className="cw-pill cw-pill-muted" title={`Approval difficulty: ${difficulty.label}`}>
+                    {difficulty.label}
+                  </span>
                 </div>
                 <div className="cw-explore-blurb">{(c.bestFor && c.bestFor[0]) || c.why}</div>
               </div>

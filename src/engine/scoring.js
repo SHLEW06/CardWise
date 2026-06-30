@@ -8,6 +8,7 @@
 
 import { BY_ID } from "../data/cards.js";
 import { effCpp } from "./transferValue.js";
+import { applyApprovalPenalty as _applyApprovalPenalty } from "./approval.js";
 
 export const CATS = ["Dining", "Groceries", "Gas", "Flights", "Hotels", "Transit", "Online", "Rent", "General"];
 export const CAT_LABEL = {
@@ -226,6 +227,28 @@ export function bestByCategory(ids, spend, profile, held = []) {
     if (best) out.push({ cat, ...best });
   }
   return out.sort((a, b) => (spend[b.cat] || 0) - (spend[a.cat] || 0));
+}
+
+/**
+ * Approval-adjusted card score. Returns a plain object so callers can show
+ * the math score AND the approval-adjusted score side by side, instead of
+ * collapsing them. Pass `approvalFit` directly when you've already computed
+ * it (avoids re-running the estimator inside hot loops).
+ *
+ * @returns {{
+ *   math: number, adjusted: number, fit: object|null,
+ *   label: string|null, applyNowEligible: boolean
+ * }}
+ */
+export function scoreCardWithApproval(card, profile, spend, held = [], approvalFit = null) {
+  const math = scoreCard(card, profile, spend, held);
+  if (!approvalFit) return { math, adjusted: math, fit: null, label: null, applyNowEligible: true };
+  const adjusted = _applyApprovalPenalty(math, approvalFit);
+  return {
+    math, adjusted,
+    fit: approvalFit, label: approvalFit.label,
+    applyNowEligible: !!approvalFit.applyNowEligible,
+  };
 }
 
 /* overall 0-100 strategy score with component breakdown */

@@ -14,6 +14,12 @@ import { AIRPORTS } from "../data/airports.js";
 import { scoreCard, netValue, effectiveFee, buildSpend, membershipGate } from "./scoring.js";
 import { airportFit } from "./airportFit.js";
 import { matchArchetypes } from "./archetypeMatcher.js";
+import {
+  estimateApprovalFit,
+  isApplyNowEligible,
+  APPROVAL_LABELS,
+  TIMING_BUCKETS,
+} from "./approval.js";
 
 /* Legacy archetype picker: the if-ladder used by v3.0 / v3.1 tests. We keep
    it for backwards compatibility and as the deterministic tie-breaker when
@@ -144,6 +150,78 @@ export function buildLineup(profile, spend, options = {}) {
     pick((c) => c.tags.includes("flat"), "Everyday spend");
   }
 
+  /* ──────────────────────────────────────────────────────────────────────
+     Approval-realism overlay (opt-in via options.useApprovalRealism).
+
+     When the option is set, in addition to the legacy `cards` field we also
+     return:
+
+       mathematicalBest  — the existing roles-based lineup, untouched
+       realisticBest     — same roles but filtered to apply-now-eligible cards
+       futurePath        — high-value cards held back to "later" by approval
+       avoidNow          — cards the engine recommends *not* applying to today
+
+     We never replace `cards` so v3.1 tests stay pinned. Surfaces that want
+     the new behavior read the realisticBest array directly.
+     ────────────────────────────────────────────────────────────────────── */
+  let approvalOverlay = null;
+  if (options.useApprovalRealism) {
+    /* memoize per-card fit so we don't recompute per role pass. */
+    const fits = new Map();
+    const fitFor = (id) => {
+      let f = fits.get(id);
+      if (!f) { f = estimateApprovalFit(BY_ID[id], profile); fits.set(id, f); }
+      return f;
+    };
+
+    const realisticBest = [];
+    const futurePath = [];
+    const avoidNow = [];
+
+    for (const c of chosen) {
+      const f = fitFor(c.id);
+      const card = BY_ID[c.id];
+      if (f.applyNowEligible) {
+        realisticBest.push({ ...c, approval: f });
+      } else if (f.timing === TIMING_BUCKETS.AVOID
+                 || f.label === APPROVAL_LABELS.DISCONTINUED) {
+        avoidNow.push({ ...c, approval: f, reason: f.blockers[0] || f.warnings[0] });
+      } else {
+        futurePath.push({ ...c, approval: f });
+      }
+      /* If a high-math card is excluded but its replacement would help the
+         "later" view, do nothing here — the futurePath surface is the
+         canonical place for that. */
+      void card;
+    }
+
+    /* For roles that lost their realistic candidate, try to fill them by
+       picking the next apply-now-eligible card from the pool. */
+    const heldIds = new Set(realisticBest.map((c) => c.id));
+    for (const c of chosen) {
+      const f = fitFor(c.id);
+      if (f.applyNowEligible) continue;
+      /* find a replacement within the same role */
+      const replacement = pool
+        .filter((p) => !heldIds.has(p.id) && p.id !== c.id)
+        .filter((p) => isApplyNowEligible(p, profile))
+        .map((p) => ({ p, s: scoreCard(p, profile, spend, [...heldIds]) }))
+        .sort((a, b) => b.s - a.s)[0];
+      if (replacement) {
+        const repFit = fitFor(replacement.p.id);
+        realisticBest.push({ id: replacement.p.id, role: c.role, approval: repFit });
+        heldIds.add(replacement.p.id);
+      }
+    }
+
+    approvalOverlay = {
+      mathematicalBest: chosen,
+      realisticBest,
+      futurePath,
+      avoidNow,
+    };
+  }
+
   return {
     cards: chosen,
     archetype: arch,
@@ -151,5 +229,7 @@ export function buildLineup(profile, spend, options = {}) {
     fit,
     feeUsed,
     budget,
+    /* approval overlay is null unless explicitly requested */
+    approval: approvalOverlay,
   };
 }

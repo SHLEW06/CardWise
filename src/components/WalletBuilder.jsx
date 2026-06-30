@@ -3,6 +3,23 @@ import { Wallet, X, Plus } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CARDS, BY_ID } from "../data/cards.js";
 import { membershipGate } from "../engine/scoring.js";
+import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
+
+function pickerLabelTone(label) {
+  switch (label) {
+    case APPROVAL_LABELS.VERY_REALISTIC:
+    case APPROVAL_LABELS.REALISTIC:
+      return "cw-pill-good";
+    case APPROVAL_LABELS.POSSIBLE:
+    case APPROVAL_LABELS.STRETCH:
+      return "cw-pill-warn";
+    case APPROVAL_LABELS.NOT_RECOMMENDED_YET:
+    case APPROVAL_LABELS.DISCONTINUED:
+      return "cw-pill-bad";
+    default:
+      return "cw-pill-muted";
+  }
+}
 
 /* Pick the cards you already own. Feeds the keeper analysis, the spend router,
    and the "you already have this" logic everywhere else. */
@@ -63,6 +80,7 @@ export default function WalletBuilder({ wallet, onToggle, onOpenCard, profile })
         <div className="cw-pick-grid">
           {available.map((c, i) => {
             const { gatedUI } = gateFor(c);
+            const approval = profile ? estimateApprovalFit(c, profile) : null;
             return (
               <div className="cw-pick" key={c.id}>
                 <CardArt
@@ -74,6 +92,14 @@ export default function WalletBuilder({ wallet, onToggle, onOpenCard, profile })
                   onClick={() => onOpenCard(c.id)}
                 />
                 <div className="cw-pick-name">{c.name}</div>
+                {approval && (
+                  <span
+                    className={"cw-pill cw-pill-sm " + pickerLabelTone(approval.label)}
+                    title={approval.warnings[0] || approval.blockers[0] || approval.reasons[0] || approval.label}
+                  >
+                    {approval.label}
+                  </span>
+                )}
                 <button className="cw-btn cw-btn-ghost cw-chip-sm" onClick={() => onToggle(c.id)}><Plus size={14} /> Add</button>
               </div>
             );
