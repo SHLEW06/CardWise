@@ -12,7 +12,7 @@
 import { BY_ID, CARDS } from "../data/cards.js";
 import { analyzeWallet } from "./keeperAnalyzer.js";
 import { buildLineup } from "./lineupBuilder.js";
-import { scoreCard, buildSpend, effectiveFee } from "./scoring.js";
+import { scoreCard, buildSpend, effectiveFee, membershipGate } from "./scoring.js";
 import { approvalRealism } from "./approvalRealism.js";
 
 const MONTHS_BETWEEN_APPS = 3;
@@ -61,7 +61,20 @@ export function buildTimeline(profile, held = [], opts = {}) {
   const candidates = CARDS
     .filter((c) => !held.includes(c.id))
     .filter((c) => c.availabilityStatus !== "discontinuedDoNotRecommend")
-    .filter((c) => !c.tags?.includes("business"))      // consumer mode only in v3.1
+    /* product-change / downgrade / invite-only cards never get recommended as
+       "apply now" picks — they only show up on existing-card upgrade paths. */
+    .filter((c) => !["productChangeOnly", "downgradeOnly", "inviteOnly"].includes(c.availabilityStatus))
+    .filter((c) => c.cardType !== "business")          // consumer recommendations only
+    .filter((c) => !c.tags?.includes("business"))      // legacy tag-based guard
+    /* membership-gated cards: hard-exclude when the user has stated they do
+       not keep the membership. When `memberships` is undefined we leave the
+       card in the pool so back-compat tests (no survey memberships) still pass. */
+    .filter((c) => {
+      const g = membershipGate(c, profile);
+      if (!g) return true;
+      if (profile.memberships == null) return true;
+      return g.satisfied;
+    })
     .map((c) => {
       const realism = approvalRealism(c.id, profile);
       const s = scoreCard(c, profile, spend, held);

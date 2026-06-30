@@ -11,7 +11,7 @@
    ========================================================================== */
 
 import { BY_ID } from "../data/cards.js";
-import { effectiveFee } from "./scoring.js";
+import { effectiveFee, membershipGate } from "./scoring.js";
 import { breakEven } from "./annualFee.js";
 import { detectOverlaps } from "./overlapDetector.js";
 
@@ -58,6 +58,16 @@ export function analyzeKeeper(cardId, profile, spend, held = []) {
 
   // overlay reasons
   if (overlaps.length) reasons.push(overlaps[0].msg);
+
+  /* membership-gated cards: if the user no longer wants the membership their
+     held card depends on, surface that and steer toward downgrade/cancel. */
+  const gate = membershipGate(card, profile);
+  if (gate && profile.memberships != null && !gate.satisfied) {
+    reasons.push(`This card requires ${gate.name} ($${gate.annual}/yr) — you said you don't keep it, so its rewards effectively cost you the membership.`);
+    if (verdict === "keep") {
+      verdict = card.downgradeOptions && card.downgradeOptions.length ? "downgrade" : "reconsider";
+    }
+  }
   if (card.tags.includes("hotel") && ["none", "rare"].includes(profile.hotelUsage) && fee > 0) {
     verdict = card.downgradeOptions && card.downgradeOptions.length ? "downgrade" : "cancel";
   }

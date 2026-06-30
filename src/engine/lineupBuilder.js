@@ -11,8 +11,9 @@
 import { CARDS, BY_ID } from "../data/cards.js";
 import { ARCHETYPES } from "../data/userArchetypes.js";
 import { AIRPORTS } from "../data/airports.js";
-import { scoreCard, netValue, effectiveFee, buildSpend } from "./scoring.js";
+import { scoreCard, netValue, effectiveFee, buildSpend, membershipGate } from "./scoring.js";
 import { airportFit } from "./airportFit.js";
+import { matchArchetypes } from "./archetypeMatcher.js";
 
 /* Legacy archetype picker: the if-ladder used by v3.0 / v3.1 tests. We keep
    it for backwards compatibility and as the deterministic tie-breaker when
@@ -42,21 +43,39 @@ export function pickArchetype(profile) {
 
 const cardLimit = (cc) => (cc === "1-2" ? 2 : cc === "3-4" ? 4 : 5);
 
-export function buildLineup(profile, spend) {
+export function buildLineup(profile, spend, options = {}) {
   spend = spend || buildSpend(profile);
   const budget = profile.feeBudget != null ? profile.feeBudget : 9999;
   const limit = cardLimit(profile.cardCount || "3-4");
   const fit = airportFit(profile);
+  /* By default keep the legacy archetype picker so v3.0/v3.1 tests stay
+     pinned. New surfaces can opt into the weighted matcher for a top-3
+     archetype list with reasons. */
   const arch = pickArchetype(profile);
+  const archetypeMatches = options.useWeightedArchetypes
+    ? matchArchetypes(profile, { top: 3 })
+    : null;
   const ap = profile.homeAirport && AIRPORTS[profile.homeAirport];
 
   // candidate pool: respect budget, drop app-only (Ritz) from auto-suggest,
-  // and exclude hotel cards entirely for non-hotel users.
+  // exclude business cards (consumer mode), exclude product-change/downgrade
+  // landing spots from "apply now", and exclude hotel cards entirely for
+  // non-hotel users.
   const pool = CARDS.filter((c) => {
     if (c.appOnly) return false;
+    if (c.cardType === "business") return false;
+    if (c.tags?.includes("business")) return false;
+    if (["productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"]
+        .includes(c.availabilityStatus)) return false;
     if (effectiveFee(c) > budget) return false;
     if (c.tags.includes("hotel") && ["none", "rare"].includes(profile.hotelUsage)) return false;
     if (c.tags.includes("premium") && profile.feeBudget != null && profile.feeBudget < 300) return false;
+    /* membership-gated cards: when the user explicitly declines the membership
+       in onboarding, the card is hard-excluded from the lineup. When the
+       memberships block is missing entirely, we leave it in the pool for
+       back-compat with profiles that pre-date the membership question. */
+    const g = membershipGate(c, profile);
+    if (g && profile.memberships != null && !g.satisfied) return false;
     return true;
   });
 
@@ -125,5 +144,12 @@ export function buildLineup(profile, spend) {
     pick((c) => c.tags.includes("flat"), "Everyday spend");
   }
 
-  return { cards: chosen, archetype: arch, fit, feeUsed, budget };
+  return {
+    cards: chosen,
+    archetype: arch,
+    archetypeMatches,
+    fit,
+    feeUsed,
+    budget,
+  };
 }
