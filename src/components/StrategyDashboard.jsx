@@ -236,14 +236,18 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
         </div>
       )}
 
-      {/* AI strategy narrator */}
+      {/* Local strategy narrator — deterministic, runs on-device.
+          TODO(prompt-3+): A future Cloud Function AI strategist may sit
+          alongside this. It must (a) never receive PII beyond the
+          structured engine context, (b) be feature-flagged off by default,
+          and (c) never *decide* the lineup — only explain it. */}
       {narratorAvailable && (
         <div className="cw-panel cw-narrator-panel" style={{ marginTop: 18 }}>
           <div className="cw-panel-title"><MessageSquare size={17} /> Why this strategy?</div>
           {!narrativeRequested ? (
             <div className="cw-narrator-cta">
               <p className="cw-arch-line" style={{ marginTop: 6 }}>
-                Get a plain-language explanation of why these cards were chosen for your profile.
+                Generate a plain-language explanation of why these cards were chosen for your profile.
               </p>
               <button className="cw-btn cw-btn-accent" onClick={requestNarrative} style={{ marginTop: 12 }}>
                 <Sparkles size={15} /> Explain my strategy
@@ -253,14 +257,14 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
             <div className="cw-narrator-body" style={{ marginTop: 10 }}>
               {narrative && <p className="cw-narrator-text">{narrative}</p>}
               {narrativeLoading && !narrative && (
-                <p className="cw-narrator-text cw-narrator-loading">Thinking about your strategy...</p>
+                <p className="cw-narrator-text cw-narrator-loading">Composing your strategy summary…</p>
               )}
               {narrativeLoading && narrative && (
                 <span className="cw-narrator-cursor" />
               )}
               {narrativeError && !narrative && (
                 <p className="cw-narrator-text" style={{ color: "var(--ink-3)" }}>
-                  Couldn't reach the AI narrator right now. Your strategy above is still fully computed — this is just the optional explainer.
+                  Couldn't build the explanation right now. The strategy above is still fully computed — this panel is only the optional summary.
                 </p>
               )}
             </div>

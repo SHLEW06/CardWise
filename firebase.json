@@ -3,7 +3,6 @@
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
-      { "source": "/api/narrate", "function": "narrateStrategy" },
       { "source": "**", "destination": "/index.html" }
     ],
     "headers": [

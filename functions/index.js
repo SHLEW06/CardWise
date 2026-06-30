@@ -4,6 +4,14 @@
    v3.1: CardWise no longer calls any external LLM. This function is preserved
    as a safe placeholder so a future maintainer can wire a server-side model
    without touching the client. It currently returns 503 immediately.
+
+   Hard rules (do not violate without a security review):
+     - No client API keys, ever. The client never holds an LLM key.
+     - The CardWise strategy ENGINE remains the source of truth. Any future
+       AI surface only EXPLAINS the engine's structured context — it does not
+       DECIDE the lineup, the realism score, or the timeline.
+     - The /api/narrate Hosting rewrite has been removed; this function is not
+       publicly addressable unless an operator re-adds a rewrite intentionally.
    ========================================================================== */
 
 import { onRequest } from "firebase-functions/v2/https";

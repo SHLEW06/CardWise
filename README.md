@@ -61,25 +61,56 @@ cardDataSnapshots/{snapshotId}
 
 ```
 src/
-  data/        seed data — cards, programs, transfer partners, valuations,
-               airports, route profiles, archetypes
+  data/        seed data — cards (79 cards, enriched on load), programs,
+               transfer partners, valuations, airports, route profiles,
+               archetypes, issuer rules, sample profiles
   engine/      pure logic — scoring, annual-fee break-even, card routing,
                lineup building, transfer valuation, airport/route fit,
-               keeper + overlap analysis
-  components/  React UI — Hero, Onboarding, StrategyDashboard, SpendRouter,
-               CardExplorer, KeeperAnalyzer, AirportFit, RedemptionExplorer,
-               WalletBuilder, WarningsPanel, CardArt, CardModal
-  firebase/    config + auth + firestore (with local fallback)
-  styles/      globals.css (tokens, shell, card art) + cardwise.css (screens)
+               keeper + overlap analysis, approval realism, timeline builder
+  components/  React UI — Hero, Onboarding, StrategyDashboard, TimelineView,
+               SpendRouter, CardExplorer, KeeperAnalyzer, AirportFit,
+               RedemptionExplorer, WalletBuilder, WarningsPanel, CardArt,
+               CardModal
+  firebase/    config + auth + firestore (with local fallback), and the
+               local deterministic narrator
+  styles/      animations.css (shared keyframes) + globals.css (tokens,
+               shell, card art) + cardwise.css (screen-specific)
 ```
 
-The **engine** is deliberately framework-free — every function takes a profile + data and returns a result, so it's easy to test, reuse on a server, or feed an AI strategist later.
+The **engine** is deliberately framework-free — every function takes a profile + data and returns a result, so it's easy to test, reuse on a server, or feed a future strategist later.
+
+## What runs locally vs in the cloud
+
+* **All strategy decisions run locally.** Scoring, the lineup builder, the
+  keeper analyzer, approval realism, the timeline builder — every recommendation
+  is computed deterministically in the browser. The client ships with **no AI
+  API keys** and never calls an external model.
+* The "Why this strategy?" panel uses a local heuristic narrator
+  (`src/firebase/narrator.js`). It composes plain-language explanations from
+  the engine's structured output; there is no LLM behind it.
+* The `functions/` directory contains a clearly-disabled placeholder that
+  returns 503. The `firebase.json` Hosting config has been cleaned so no
+  `/api/narrate` rewrite points at it. A future maintainer who wants a
+  server-side strategist can wire one without touching the client.
+* **Signup-bonus (SUB) scoring is off by default.** Each card has a `sub`
+  schema field, but `sub.scoringEnabled` is `false` for the whole catalog.
+  Ongoing-value math is the recommendation engine; SUB is on the roadmap.
+* **Business cards are excluded from candidate pools** in v3.1 (`!c.tags.includes("business")`)
+  so the consumer experience stays focused. The data is still present for a
+  future business-card mode.
+* **Card art** uses local/manual assets only. The system supports three
+  sources, in priority order: `card.image.localImage` (drop a file into
+  `public/cards/` or `src/assets/cards/`), `card.image.imageUrl` (only when
+  the data row also sets `imageNeedsVerification: false`), and a CSS
+  gradient fallback. Nothing is scraped from issuer websites.
 
 ---
 
 ## Data accuracy
 
-Card terms, earn rates, credits, and point valuations are **best-effort seed data as of June 2026** and change frequently. Every card carries `sourceDate` and `needsVerification` flags. Airport and route profiles are illustrative seeds; production should harden them with:
+Card terms, earn rates, credits, and point valuations are **best-effort seed data as of June 2026** and change frequently. **Every card carries `sourceDate` and `needsVerification: true`** until a human has personally verified that entry against the issuer's current public terms. Do not ship the catalog as authoritative without that verification pass.
+
+Airport and route profiles are illustrative seeds; production should harden them with:
 
 - **BTS DB1B** Origin & Destination Survey — carrier/route/fare share
 - **FAA enplanements** — airport size and rank

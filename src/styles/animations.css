@@ -1,0 +1,56 @@
+/* ============================================================================
+   animations.css — shared keyframes for CardWise UI motion.
+   ----------------------------------------------------------------------------
+   Pulled out of globals.css / cardwise.css so the animation vocabulary lives
+   in one place. Class definitions that USE these keyframes still live with
+   their owning component CSS — only the @keyframes blocks moved here.
+
+   prefers-reduced-motion handling stays in globals.css.
+   ========================================================================== */
+
+/* aurora background drift */
+@keyframes cwDrift {
+  0%   { transform: translate3d(-3%,-2%,0) scale(1.05); }
+  100% { transform: translate3d( 4%, 3%,0) scale(1.12); }
+}
+
+/* card sheen sweep */
+@keyframes cwSheen {
+  0%,18%   { transform: translateX(-120%); }
+  38%,100% { transform: translateX( 120%); }
+}
+
+/* hero card float */
+@keyframes cwFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-14px); }
+}
+
+/* generic rise-in */
+@keyframes cwRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* fade-in */
+@keyframes cwFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* loading spinner */
+@keyframes cwSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* narrator placeholder pulse */
+@keyframes cwPulse {
+  0%,100% { opacity: .5; }
+  50%     { opacity: 1; }
+}
+
+/* narrator cursor blink */
+@keyframes cwBlink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}

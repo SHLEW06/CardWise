@@ -259,8 +259,7 @@
 .cw-narrator-text { color:var(--ink-2); font-size:15px; line-height:1.65; white-space:pre-wrap; margin:0; }
 .cw-narrator-loading { color:var(--ink-3); animation:cwPulse 1.5s ease-in-out infinite; }
 .cw-narrator-cursor { display:inline-block; width:6px; height:17px; background:var(--accent); margin-left:2px; vertical-align:text-bottom; animation:cwBlink 0.8s step-end infinite; }
-@keyframes cwPulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
-@keyframes cwBlink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+/* @keyframes cwPulse / cwBlink — moved to styles/animations.css */
 
 /* ----------------------------- saved strategies ----------------------------- */
 .cw-saved-list { display:flex; flex-direction:column; gap:14px; }

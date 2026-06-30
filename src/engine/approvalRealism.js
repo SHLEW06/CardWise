@@ -20,6 +20,7 @@
    ========================================================================== */
 
 import { BY_ID } from "../data/cards.js";
+import { ISSUER_RULES, getIssuerRule } from "../data/issuerRules.js";
 
 const SCORE_BUCKETS = {
   "<670": 640, "670-739": 700, "740-799": 770, "800+": 810,
@@ -49,16 +50,10 @@ export function readCreditProfile(profile = {}) {
   };
 }
 
-const VEL_LIMITS = {
-  "chase-5-24":     { window: 24, limit: 5, label: "Chase 5/24" },
-  "amex-1-per-5d":  { window: 0, limit: 99, label: "Amex 1-in-5-day" }, // not a count rule, soft only
-  "citi-velocity":  { window: 8,  limit: 2, label: "Citi 1-in-8-day / 2-in-65-day" },
-  "c1-app-sensitive": { window: 6, limit: 1, label: "Capital One app sensitivity" },
-  "boa-2-3-4":      { window: 12, limit: 2, label: "BoA 2/3/4 rule" },
-  "barclays-conservative": { window: 6, limit: 1, label: "Barclays inquiry sensitivity" },
-  "wf-6-months":    { window: 6, limit: 1, label: "Wells Fargo 6-month rule" },
-  "none":           null,
-};
+/* Sourced from data/issuerRules.js so policy edits don't require an
+   engine change. Falls back to the empty rule map if the data file is
+   ever stubbed out. */
+const VEL_LIMITS = ISSUER_RULES;
 
 /**
  * @returns {{score:number, label:string, reasons:string[], warnings:string[]}}
@@ -89,7 +84,7 @@ export function approvalRealism(cardId, profile = {}) {
         right window. (e.g. Chase 5/24 looks at 24 months; Capital One's
         sensitivity is 6 months — using a 24-month count there would
         wrongly flag well-paced applicants.) */
-  const vel = VEL_LIMITS[card.issuerVelocity];
+  const vel = getIssuerRule(card.issuerVelocity);
   const sampleForVel =
     vel?.window <= 6 ? (credit.appsLast6 != null ? credit.appsLast6 : null) :
     vel?.window <= 12 ? (credit.appsLast12 != null ? credit.appsLast12 : null) :
