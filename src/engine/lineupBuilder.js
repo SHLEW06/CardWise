@@ -14,8 +14,10 @@ import { AIRPORTS } from "../data/airports.js";
 import { scoreCard, netValue, effectiveFee, buildSpend } from "./scoring.js";
 import { airportFit } from "./airportFit.js";
 
-/* choose the archetype that best matches the profile */
-export function pickArchetype(profile) {
+/* Legacy archetype picker: the if-ladder used by v3.0 / v3.1 tests. We keep
+   it for backwards compatibility and as the deterministic tie-breaker when
+   the new weighted matcher produces a low-confidence result. */
+function pickArchetypeLegacy(profile) {
   const ap = profile.homeAirport && AIRPORTS[profile.homeAirport];
   if (profile.goal === "credit" || profile.level === "beginner" && profile.feeBudget === 0 && profile.cardCount === "1-2") return ARCHETYPES["early-builder"];
   if (profile.goal === "cashback" || profile.pointPref === "cash" && profile.simplicity === "simple") return ARCHETYPES["cash-minimalist"];
@@ -28,6 +30,14 @@ export function pickArchetype(profile) {
   if (ap && ap.bestEcosystemBias === "flexible") return ARCHETYPES["nyc-flexible"];
   if (["none", "rare"].includes(profile.hotelUsage) && (profile.goal === "travel" || profile.goal === "luxury")) return ARCHETYPES["hotel-light-airline"];
   return ARCHETYPES["nyc-flexible"];
+}
+
+/* Public archetype picker. Stays legacy-only by default so that v3.0 / v3.1
+   tests remain a hard contract. New surfaces (timeline, dashboard) can call
+   `matchArchetypes()` from engine/archetypeMatcher.js for the full ranked
+   list with reasons. */
+export function pickArchetype(profile) {
+  return pickArchetypeLegacy(profile);
 }
 
 const cardLimit = (cc) => (cc === "1-2" ? 2 : cc === "3-4" ? 4 : 5);

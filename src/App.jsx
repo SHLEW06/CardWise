@@ -131,6 +131,17 @@ export default function App() {
     setScreen("app");
     setTab("strategy");
     saveProfile(p);
+    /* v3.2: if the deep survey collected current cards, fold their ids into
+       the simple wallet array (the rich per-card metadata stays on
+       profile.currentWallet for the timeline + keeper analyzers). */
+    const fromSurvey = (p.currentWallet || []).map((c) => c.id).filter(Boolean);
+    if (fromSurvey.length) {
+      setWallet((prev) => {
+        const merged = Array.from(new Set([...(prev || []), ...fromSurvey]));
+        saveWallet(merged);
+        return merged;
+      });
+    }
   };
 
   const toggleWallet = (id) => {

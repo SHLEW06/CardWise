@@ -71,6 +71,35 @@ export function effectiveFee(card) {
   return (card.annualFee || 0) + sub;
 }
 
+/**
+ * Membership gate report for a card given a normalized profile. Returns
+ * null when no gate applies; otherwise { name, annual, satisfied, warning }.
+ * UI surfaces use this to render an explicit "requires X membership" badge
+ * rather than burying the cost inside `effectiveFee`.
+ */
+export function membershipGate(card, profile = {}) {
+  const sub = card.requiresSubscription;
+  if (!sub) return null;
+  const m = profile.memberships || null;
+  const name = (sub.name || "").toLowerCase();
+  const satisfied = !!(m && (
+    (name.includes("robinhood")    && m.robinhoodGold) ||
+    (name.includes("amazon prime") && m.amazonPrime)   ||
+    (name.includes("costco")       && m.costco)        ||
+    (name.includes("walmart+")     && m.walmartPlus)
+  ));
+  return {
+    name: sub.name,
+    annual: sub.annual,
+    satisfied,
+    /* When we have no membership profile to consult, render the badge but
+       skip the "missing" warning. */
+    warning: m && !satisfied
+      ? `Requires ${sub.name} ($${sub.annual}/yr) — you said you don't keep this.`
+      : null,
+  };
+}
+
 export const netValue = (card, spend, profile, held = []) =>
   annualRewards(card, spend, profile, held) + realizedCredits(card) - effectiveFee(card);
 
@@ -134,6 +163,22 @@ export function scoreCard(card, profile, spend, held = []) {
       profile.simplicity === "simple" &&
       profile.goal === "cashback";
     if (!wantsRobinhood) s -= 120;
+  }
+
+  // v3.2: Membership-gated cards. If the user filled out the survey's
+  // memberships section, penalize cards that require a paid membership the
+  // user doesn't already have (or doesn't want to keep). When the survey
+  // hasn't been taken (profile.memberships undefined) we keep legacy
+  // behavior so existing tests stay green.
+  if (card.requiresSubscription && profile.memberships) {
+    const m = profile.memberships;
+    const subName = (card.requiresSubscription.name || "").toLowerCase();
+    const userHasIt =
+      (subName.includes("robinhood")    && m.robinhoodGold) ||
+      (subName.includes("amazon prime") && m.amazonPrime)   ||
+      (subName.includes("costco")       && m.costco)        ||
+      (subName.includes("walmart+")     && m.walmartPlus);
+    if (!userHasIt) s -= 300; // soft hard-block — drops well below any keeper
   }
 
   // v3.1: Simplicity preference. Users who said "keep it simple" get a strong

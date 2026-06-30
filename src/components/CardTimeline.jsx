@@ -12,7 +12,20 @@ import { buildTimeline } from "../engine/cardTimeline.js";
 import { fmtMoney, effectiveFee } from "../engine/scoring.js";
 
 export default function CardTimeline({ profile, wallet, onOpenCard }) {
-  const timeline = useMemo(() => buildTimeline(profile, wallet || []), [profile, wallet]);
+  /* v3.2: pull per-card open dates off profile.currentWallet so the
+     timeline engine can render anniversary windows accurately. */
+  const openDates = useMemo(() => {
+    const out = {};
+    for (const c of profile?.currentWallet || []) {
+      if (c.id && c.openDate) out[c.id] = c.openDate;
+    }
+    return out;
+  }, [profile]);
+
+  const timeline = useMemo(
+    () => buildTimeline(profile, wallet || [], { openDates }),
+    [profile, wallet, openDates],
+  );
 
   return (
     <div className="cw-timeline cw-rise">
