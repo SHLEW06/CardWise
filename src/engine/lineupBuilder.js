@@ -23,9 +23,28 @@ import {
 
 /* Legacy archetype picker: the if-ladder used by v3.0 / v3.1 tests. We keep
    it for backwards compatibility and as the deterministic tie-breaker when
-   the new weighted matcher produces a low-confidence result. */
+   the new weighted matcher produces a low-confidence result.
+
+   Personal-preset hook: `profile.personalPreset === "shunji"` short-circuits
+   everything so the Student Premium Travel Builder archetype loads no matter
+   what the airport / goal ladder would otherwise pick. The strong-signal
+   fallback (ATL hub + luxury/travel/hotels goal + Marriott brand preference
+   + max simplicity) also lands here — but only when ALL four conditions
+   hold, so the generic optimizer isn't hijacked by any single signal. */
 function pickArchetypeLegacy(profile) {
+  const shunji = ARCHETYPES["student-premium-travel-builder"];
+  if (profile.personalPreset === "shunji" && shunji) return shunji;
+
   const ap = profile.homeAirport && AIRPORTS[profile.homeAirport];
+  const hotelBrands = profile.hotelBrands || profile.hotels?.preferredBrands || [];
+  const wantsMarriott = hotelBrands.includes("marriott");
+  const isATL = profile.homeAirport === "ATL";
+  const wantsPremiumTravel = ["luxury", "travel", "hotels"].includes(profile.goal);
+  const maxValue = profile.simplicity === "max"
+    || profile.recommendationMode === "maxValueLowComplexity"
+    || profile.recommendationMode === "premiumComfort";
+  if (shunji && isATL && wantsPremiumTravel && wantsMarriott && maxValue) return shunji;
+
   if (profile.goal === "credit" || profile.level === "beginner" && profile.feeBudget === 0 && profile.cardCount === "1-2") return ARCHETYPES["early-builder"];
   if (profile.goal === "cashback" || profile.pointPref === "cash" && profile.simplicity === "simple") return ARCHETYPES["cash-minimalist"];
   if (profile.goal === "luxury" || (profile.lounge === "yes" && profile.feeBudget >= 700)) return ARCHETYPES["premium-lounge"];
@@ -65,14 +84,17 @@ export function buildLineup(profile, spend, options = {}) {
 
   // candidate pool: respect budget, drop app-only (Ritz) from auto-suggest,
   // exclude business cards (consumer mode), exclude product-change/downgrade
-  // landing spots from "apply now", and exclude hotel cards entirely for
-  // non-hotel users.
+  // landing spots from "apply now", exclude hotel cards entirely for
+  // non-hotel users, and exclude any archetype-declared futureCards from
+  // the apply-now pool — those live in the futureOnly overlay by design.
+  const futureCardIds = new Set(arch.futureCards || []);
   const pool = CARDS.filter((c) => {
     if (c.appOnly) return false;
     if (c.cardType === "business") return false;
     if (c.tags?.includes("business")) return false;
     if (["productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"]
         .includes(c.availabilityStatus)) return false;
+    if (futureCardIds.has(c.id)) return false;
     if (effectiveFee(c) > budget) return false;
     if (c.tags.includes("hotel") && ["none", "rare"].includes(profile.hotelUsage)) return false;
     if (c.tags.includes("premium") && profile.feeBudget != null && profile.feeBudget < 300) return false;
@@ -89,7 +111,24 @@ export function buildLineup(profile, spend, options = {}) {
   let feeUsed = 0;
   const ids = () => chosen.map((x) => x.id);
   const remain = () => budget - feeUsed;
-  const archBoost = (c) => (arch.coreCards.includes(c.id) ? 120 : 0) - (arch.avoid.some((t) => c.tags.includes(t)) ? 200 : 0);
+  /* archBoost accepts BOTH tag- and id-based avoids so personal presets like
+     `student-premium-travel-builder` can name specific cards ("delta-reserve",
+     "csr", …) alongside the tag-based avoids ("hotel", "premium") that the
+     legacy archetypes use. Personal presets get a stronger core boost so
+     the intended coreCards actually make it into a role-based lineup — a
+     generic archetype's +120 is a nudge, but a personal preset is a
+     declared preference and should win close scores. */
+  const isPersonalPreset = profile.personalPreset === arch.id
+    || arch.id === "student-premium-travel-builder";
+  const coreBoostAmount = isPersonalPreset ? 260 : 120;
+  const avoidPenaltyAmount = isPersonalPreset ? 320 : 200;
+  const archBoost = (c) => {
+    const coreBoost = arch.coreCards.includes(c.id) ? coreBoostAmount : 0;
+    const avoidHit = (arch.avoid || []).some((entry) =>
+      entry === c.id || (c.tags || []).includes(entry)
+    );
+    return coreBoost - (avoidHit ? avoidPenaltyAmount : 0);
+  };
 
   const pick = (filter, role, opts = {}) => {
     if (chosen.length >= limit) return;
@@ -256,6 +295,62 @@ export function buildLineup(profile, spend, options = {}) {
     };
   }
 
+  /* ──────────────────────────────────────────────────────────────────────
+     Archetype futureCards — cards that are intentionally NOT apply-now,
+     surfaced only when a prerequisite condition is satisfied. For the
+     student-premium-travel-builder preset:
+       ritz     → requires marriott-boundless in the current lineup
+                  (Ritz is product-change-only; you can only reach it via
+                  a Marriott Boundless product change after 12+ months)
+       delta-plat → requires delta-gold in the current lineup AND real
+                    Delta signal (bag frequency ≥ sometimes OR lounge ≥
+                    sometimes) so Companion Cert + credits offset the fee
+
+     Future cards NEVER count against cardLimit and NEVER appear in the
+     main `cards` array. They surface in `futureOnly` for the dashboard's
+     "future path" view. Generic archetypes (which don't declare
+     `futureCards`) get an empty `futureOnly` and behave identically. */
+  const futureOnly = [];
+  const chosenIds = new Set(chosen.map((c) => c.id));
+  for (const fid of arch.futureCards || []) {
+    const card = BY_ID[fid];
+    if (!card) continue;
+    let prereqOk = false;
+    let reason = "";
+    if (fid === "ritz") {
+      /* Ritz needs the Marriott Boundless parent — either currently in the
+         lineup or already held by the user. */
+      const held = (profile.currentWallet || []).map((w) => w?.id).filter(Boolean);
+      if (chosenIds.has("marriott-boundless") || held.includes("marriott-boundless")) {
+        prereqOk = true;
+        reason = "Reached via product change from Marriott Boundless after 12+ months — not a new application.";
+      }
+    } else if (fid === "delta-plat") {
+      /* Delta Platinum only makes sense when the Companion Cert would pay
+         off — i.e. real Delta usage. */
+      const hasDeltaGoldNow = chosenIds.has("delta-gold")
+        || (profile.currentWallet || []).some((w) => w?.id === "delta-gold");
+      const realDeltaSignal = ["sometimes", "often"].includes(profile.checkedBags)
+        || ["sometimes", "yes"].includes(profile.lounge)
+        || (profile.spendAmounts?.Flights || 0) >= 150;
+      if (hasDeltaGoldNow && realDeltaSignal) {
+        prereqOk = true;
+        reason = "Only worth it once the Companion Certificate + Delta credits offset the fee — upgrade from Delta Gold when your Delta usage justifies it.";
+      }
+    } else {
+      /* Generic future card — no prerequisite, always surface. */
+      prereqOk = true;
+      reason = "Longer-term consideration on this preset's path.";
+    }
+    if (prereqOk) {
+      futureOnly.push({
+        id: fid, cardName: card.name,
+        availability: card.availabilityStatus,
+        reason,
+      });
+    }
+  }
+
   return {
     cards: chosen,
     archetype: arch,
@@ -265,5 +360,8 @@ export function buildLineup(profile, spend, options = {}) {
     budget,
     /* approval overlay is null unless explicitly requested */
     approval: approvalOverlay,
+    /* futureOnly is always an array (possibly empty) so callers don't have
+       to null-check. Cards here NEVER count against cardLimit. */
+    futureOnly,
   };
 }

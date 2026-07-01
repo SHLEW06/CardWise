@@ -121,8 +121,23 @@ const PAIR_RULES = [
     reason: "Ritz-Carlton and Sapphire Reserve both give a $300 travel credit and Priority Pass. Holding both doubles the lounge/credit fee — keep one." },
   { a: "ritz", b: "venture-x", base: 200,
     reason: "Ritz-Carlton and Venture X overlap on travel credits and lounge access. Two premium fees for one set of perks." },
-  { a: "ritz", b: "amex-plat", base: 250,
-    reason: "Ritz-Carlton and Amex Platinum overlap heavily on lounges, credits, and hotel status. Rarely worth both fees." },
+  /* Reduced from 250 → medium band (was severe/high). The two cards DO share
+     lounge access (Priority Pass on Ritz vs Centurion/Delta on Plat) and
+     $300 travel credits, but they cover materially different ecosystems:
+       Ritz  → Marriott + Chase Sapphire Lounge + Priority Pass +
+               Platinum status
+       Plat  → Centurion Lounges + Delta Sky Club + 5x flights/hotels +
+               Fine Hotels & Resorts + a heavier credit stack
+     For a user leaning into both Marriott (via Ritz) AND flexible Amex MR
+     travel (via Plat) the overlap is real but not fee-doubling.
+     Base is 95 so `severityFromPenalty` (>= 100 → high) classifies this as
+     medium under the default scaling factor. The spec proposed 110 but
+     that lands one tick into "high" per the existing severity table; 95
+     captures the semantic intent (medium) that the spec asked for.
+     Keeps Delta Reserve + Plat unchanged (Sky Club is genuinely
+     duplicated there). */
+  { a: "ritz", b: "amex-plat", base: 95,
+    reason: "Ritz-Carlton and Amex Platinum have overlapping lounge + travel-credit stacks, but they cover different ecosystems — Ritz leans Marriott/Chase, Plat leans Centurion/Delta. Keep both only if you actually use both ecosystems." },
   { a: "csr", b: "amex-plat", base: 220,
     reason: "Sapphire Reserve and Amex Platinum both deliver lounges + premium credits. Most people only need one premium travel card." },
   { a: "csr", b: "venture-x", base: 180,

@@ -68,6 +68,48 @@ export const ARCHETYPES = {
     coreCards: ["freedom-rise", "wf-autograph", "active-cash", "robinhood-gold"],
     avoid: ["premium", "luxury"], airports: [], ecosystem: "No-fee builders + simple cash back",
   },
+
+  /* Personal preset. Only surfaced when `profile.personalPreset === "shunji"`
+     or the strong-signal fallback in lineupBuilder.pickArchetypeLegacy fires
+     (ATL + luxury/travel/hotels + Marriott brand pref + max-value simplicity).
+     Do NOT add airports here — leaving the array empty prevents accidental
+     auto-selection through the airport bias branch. */
+  "student-premium-travel-builder": {
+    id: "student-premium-travel-builder",
+    title: "Student Premium Travel Builder",
+    line: "A long-term wallet plan: build UR/MR earn power now with Gold + Bilt + Freedom Flex + Marriott Boundless, add Amex Platinum when travel intensity supports it, and route into Ritz via product change instead of a new application.",
+    /* Core = cards to hold now (or add over the next 12–18 months). */
+    coreCards: [
+      "amex-gold",
+      "robinhood-gold",
+      "bilt",
+      "freedom-flex",
+      "marriott-boundless",
+      "amex-plat",
+      "delta-gold",
+    ],
+    /* Future = never surfaced as apply-now; shown only in the futurePath
+       overlay and only when a prerequisite card is present or recommended.
+       Ritz requires Marriott Boundless as the product-change parent;
+       delta-plat requires demonstrated Delta usage. */
+    futureCards: ["ritz", "delta-plat"],
+    /* Avoid = deprioritized in scoring. Kept narrow so the generic optimizer
+       still sees them; this preset just prefers alternatives. */
+    /* Card ids as they appear in the catalog. The prompt spec labeled the
+       last one "costco-card"; the real catalog id is "costco-citi" (Costco
+       Anywhere Visa). We use the real id so the avoid list actually matches
+       cards in scoring. */
+    avoid: [
+      "delta-reserve",
+      "bcp",
+      "csr",
+      "venture-x",
+      "marriott-brilliant",
+      "costco-citi",
+    ],
+    airports: [],
+    ecosystem: "Amex MR + Chase UR + Bilt + Marriott Bonvoy",
+  },
 };
 
 export const archetypeList = () => Object.values(ARCHETYPES);

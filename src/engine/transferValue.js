@@ -65,10 +65,25 @@ export function defaultAnchor(program, profile = {}) {
   return best;
 }
 
-/* effective cents-per-point for any currency, given the profile + held cards. */
+/* effective cents-per-point for any currency, given the profile + held cards.
+
+   Bank-currency direct override (Shunji preset):
+     A user can cap a bank currency directly by putting an entry in
+     `profile.valOverrides` under the BANK key (e.g. `valOverrides.amex =
+     1.35`). When set, that value short-circuits the partner-anchor path so
+     conservative users can floor their MR/UR/etc. valuations without
+     having to also touch every downstream partner CPP. This is a personal
+     ceiling: the returned value is still clamped to the program's
+     cashFloor so it can never go BELOW cash. Downstream scoring is
+     unchanged — effCpp still returns a single number. */
 export function effCpp(program, profile = {}, held = []) {
   if (program === "cash" || program === "robinhood") return 1.0;
   if (isBank(program)) {
+    const bankOverride = profile.valOverrides?.[program];
+    if (bankOverride != null) {
+      /* Never let a bank override drop below cash floor. */
+      return Math.max(PROGRAMS[program].cashFloor, +Number(bankOverride).toFixed(3));
+    }
     if (profile.redemption === "cash") return PROGRAMS[program].cashFloor;
     const anchor = (profile.anchors && profile.anchors[program]) || defaultAnchor(program, profile);
     if (!anchor) return PROGRAMS[program].cashFloor;

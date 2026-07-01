@@ -591,6 +591,14 @@ export function normalizeUserProfile(raw = {}) {
     derived: { likelyArchetypes: [], warnings: [], hotelIntensity: "light", travelIntensity: "light" },
   };
 
+  /* Passthrough fields the engine consults but that don't belong to any
+     survey subprofile. Kept as opt-in so a legacy raw object without them
+     produces the same normalized shape it used to. */
+  if (raw.personalPreset != null) profile.personalPreset = raw.personalPreset;
+  if (raw.valOverrides != null)   profile.valOverrides   = raw.valOverrides;
+  if (raw.anchors != null)        profile.anchors        = raw.anchors;
+  if (raw.redemption != null)     profile.redemption     = raw.redemption;
+
   profile.derived = deriveSignals(profile);
   return profile;
 }

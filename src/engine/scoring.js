@@ -166,12 +166,17 @@ export function scoreCard(card, profile, spend, held = []) {
 
   // v3.1: Robinhood Gold is NOT the default catch-all. Penalize unless the
   // user explicitly wants pure cash + simplicity, AND will use the brokerage.
+  // Additionally: the penalty is skipped when the user has EXPLICITLY marked
+  // memberships.robinhoodGold === true (they already keep the paid Gold
+  // membership, so RG's $60 cost is not incremental). This lets intentional
+  // travelers use RG as a 3% unbonused-spend floor without being penalized.
   if (card.id === "robinhood-gold") {
     const wantsRobinhood =
       profile.pointPref === "cash" &&
       profile.simplicity === "simple" &&
       profile.goal === "cashback";
-    if (!wantsRobinhood) s -= 120;
+    const alreadyHoldsRobinhoodGold = profile.memberships?.robinhoodGold === true;
+    if (!wantsRobinhood && !alreadyHoldsRobinhoodGold) s -= 120;
   }
 
   // v3.2: Membership-gated cards. If the user filled out the survey's
