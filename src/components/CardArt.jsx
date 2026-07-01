@@ -70,6 +70,7 @@ export default function CardArt({
   const ref = useRef(null);
   const [tilt, setTilt] = useState({ rx: 6, ry: -13 });
   const [imgFailed, setImgFailed] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   if (!card) return null;
 
@@ -90,15 +91,18 @@ export default function CardArt({
   const isDiscontinued = availability === "discontinuedDoNotRecommend";
   const requiresMembership = !!card.requiresSubscription;
 
+  /* Prompt-14: softened tilt magnitudes for a more premium, less gaudy feel.
+     The card still catches the cursor, but the swing is small enough that
+     stacked grids stay calm during hover-scan. */
   const onMove = (e) => {
     if (disabled || isModal) return;
     const el = ref.current; if (!el) return;
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
-    setTilt({ rx: 6 - py * 16, ry: -13 + px * 22 });
+    setTilt({ rx: 5 - py * 9, ry: -10 + px * 14 });
   };
-  const onLeave = () => setTilt({ rx: 6, ry: -13 });
+  const onLeave = () => setTilt({ rx: 5, ry: -10 });
 
   /* Keyboard activation for the wrapping button. */
   const handleKey = (e) => {
@@ -124,6 +128,11 @@ export default function CardArt({
     disabled && "cw-cc-card-disabled",
     isModal && "cw-cc-modal",
     isGhost && "cw-cc-ghost",
+    /* Prompt-14: when a real image is rendered, add a class so text overlays
+       receive a legibility shadow that isn't applied to gradient placeholders
+       (they don't need one). */
+    resolvedImage && !imgFailed && "cw-cc-has-img",
+    resolvedImage && !imgFailed && imgLoaded && "cw-cc-img-loaded",
   ].filter(Boolean).join(" ");
 
   /* Alt text describes the card; the image is a face replica, not a logo. */
@@ -154,10 +163,13 @@ export default function CardArt({
       >
         {resolvedImage && !imgFailed && (
           <img
+            className="cw-cc-img"
             src={resolvedImage}
             alt={altText}
+            loading="lazy"
+            decoding="async"
             onError={() => setImgFailed(true)}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            onLoad={() => setImgLoaded(true)}
           />
         )}
         <div className="cw-cc-sheen" style={{ animationDelay: index * 1.3 + "s" }} aria-hidden="true" />

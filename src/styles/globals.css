@@ -30,15 +30,31 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
 .cw-root a { color:inherit; }
 
 /* ---------------------------------- aurora -------------------------------- */
+/* Prompt-14: layered aurora — deep navy → teal accents → warm underglow.
+   Three broad soft gradients drift slowly for an ambient premium wash.
+   Never gaudy — mix-blend + heavy blur keeps it feeling like distant sky. */
 .cw-aurora {
   position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(50% 45% at 18% 12%, rgba(40,60,170,.30), transparent 70%),
-    radial-gradient(45% 40% at 85% 18%, rgba(20,120,120,.22), transparent 70%),
+    radial-gradient(50% 45% at 18% 12%, rgba(40,60,170,.32), transparent 70%),
+    radial-gradient(45% 40% at 85% 18%, rgba(20,120,120,.24), transparent 70%),
+    radial-gradient(40% 35% at 65% 55%, rgba(120,60,180,.10), transparent 72%),
     radial-gradient(60% 50% at 50% 100%, var(--lead), transparent 72%);
-  filter:blur(20px); animation:cwDrift 22s ease-in-out infinite alternate; transition:background 1.2s ease;
+  filter:blur(22px); animation:cwDrift 26s ease-in-out infinite alternate; transition:background 1.2s ease;
 }
 /* @keyframes cwDrift — moved to styles/animations.css */
+
+/* Subtle grain layer above the aurora — masks banding and adds a matte
+   film-grain feel that premium UIs favor. Very light (.02 opacity) so it
+   never competes with content. */
+.cw-aurora::after {
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.02;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.6) 0, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,.5) 0, transparent 1px),
+    radial-gradient(circle at 45% 85%, rgba(255,255,255,.55) 0, transparent 1px);
+  background-size: 3px 3px, 5px 5px, 7px 7px;
+}
 
 /* ---------------------------------- shell --------------------------------- */
 .cw-header { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 28px; max-width:1200px; margin:0 auto; flex-wrap:wrap; }
@@ -84,7 +100,29 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
   transition:transform .25s cubic-bezier(.2,.7,.2,1); will-change:transform; transform-style:preserve-3d;
 }
 .cw-cc-sel { box-shadow:0 30px 70px -18px var(--glow), inset 0 0 0 2px rgba(255,255,255,.5); }
-.cw-cc-sheen { position:absolute; inset:-40%; background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.55) 50%,transparent 62%); transform:translateX(-120%); animation:cwSheen 5.5s ease-in-out infinite; mix-blend-mode:overlay; pointer-events:none; }
+.cw-cc-sheen { position:absolute; inset:-40%; background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.42) 50%,transparent 62%); transform:translateX(-120%); animation:cwSheen 6.5s ease-in-out infinite; mix-blend-mode:overlay; pointer-events:none; }
+
+/* Prompt-14: card face image — fills the card, fades in on load, and stays
+   below the sheen/text layers. z-index 0 keeps text overlays readable. */
+.cw-cc-img {
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  border-radius:inherit;
+  opacity:0; transition:opacity .5s ease-out;
+  z-index:0;
+}
+.cw-cc-img-loaded .cw-cc-img { opacity:1; }
+
+/* Legibility overlay when an actual image is present — a soft dark scrim
+   at the top-left/bottom so issuer + card name remain readable over busy
+   art. Placed above the image but below the text (z-index 1). */
+.cw-cc-has-img::before {
+  content:""; position:absolute; inset:0; border-radius:inherit; z-index:1;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.42) 0%, transparent 30%, transparent 55%, rgba(0,0,0,.5) 100%);
+  pointer-events:none;
+}
+.cw-cc-has-img .cw-cc-row,
+.cw-cc-has-img .cw-cc-chiprow { text-shadow:0 1px 3px rgba(0,0,0,.55); }
 /* @keyframes cwSheen — moved to styles/animations.css */
 .cw-cc-grain { position:absolute; inset:0; opacity:.5; pointer-events:none; background:radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,.16), transparent 45%),radial-gradient(120% 120% at 100% 100%, rgba(0,0,0,.22), transparent 50%); }
 .cw-cc-row { display:flex; align-items:center; justify-content:space-between; position:relative; z-index:2; }
@@ -99,9 +137,10 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
 .cw-cc-meta { font-family:var(--fmono); font-size:calc(10px*var(--scale)); opacity:.8; letter-spacing:.04em; white-space:nowrap; }
 .cw-cc-role { margin-top:12px; text-align:center; font-family:var(--fmono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
 .cw-clickable { cursor:pointer; }
-.cw-clickable:hover .cw-cc { box-shadow:0 36px 70px -18px var(--glow), inset 0 1px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.12); }
+.cw-clickable:hover .cw-cc { box-shadow:0 34px 62px -18px var(--glow), inset 0 1px 0 rgba(255,255,255,.24), inset 0 0 0 1px rgba(255,255,255,.10); }
 .cw-clickable:focus-visible { outline:none; }
-.cw-clickable:focus-visible .cw-cc { box-shadow:0 0 0 3px var(--accent), 0 30px 60px -22px var(--glow), inset 0 1px 0 rgba(255,255,255,.22); }
+/* Focus ring is a soft accent halo, distinct from the selected-glow. */
+.cw-clickable:focus-visible .cw-cc { box-shadow:0 0 0 2px rgba(243,231,201,.9), 0 0 0 5px rgba(243,231,201,.18), 0 30px 60px -22px var(--glow), inset 0 1px 0 rgba(255,255,255,.20); }
 .cw-float { animation:cwFloat 7s ease-in-out infinite; animation-delay:var(--fdelay); }
 
 /* --------- card-art variants, badges, states (v3.2) ---------------------- */
@@ -176,7 +215,28 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
 .cw-pill-bad { background:rgba(240,138,110,.15); color:var(--bad); }
 
 /* -------------------------------- panels ---------------------------------- */
-.cw-panel { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:22px; backdrop-filter:blur(8px); }
+/* Prompt-14: glassmorphism panels with a soft aurora edge glow. The
+   ::before pseudo carries the aurora accent while the surface stays a
+   frosted glass. Backdrop blur remains modest so text stays crisp. */
+.cw-panel {
+  position:relative;
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:18px; padding:22px;
+  backdrop-filter:blur(10px) saturate(1.05);
+  -webkit-backdrop-filter:blur(10px) saturate(1.05);
+  box-shadow:
+    0 22px 40px -28px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,255,255,.05);
+  transition:box-shadow .3s ease;
+}
+.cw-panel::before {
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(120% 60% at 0% 0%, rgba(50,110,230,.06), transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(20,120,120,.05), transparent 60%);
+  z-index:0;
+}
+.cw-panel > * { position:relative; z-index:1; }
 .cw-panel-title { display:flex; align-items:center; gap:9px; font-family:var(--fdisplay); font-weight:600; font-size:15px; }
 .cw-panel-title svg { color:var(--accent); }
 .cw-panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
@@ -189,9 +249,22 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
 /* -------------------------------- responsive ------------------------------ */
 @media (max-width:900px) {
   .cw-grid-2 { grid-template-columns:1fr; }
+  .cw-panel { padding:18px; border-radius:16px; }
+  .cw-nav { width:100%; justify-content:flex-start; overflow-x:auto; padding:5px; margin-bottom:20px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .cw-nav::-webkit-scrollbar { display:none; }
+  .cw-nav-item { flex-shrink:0; font-size:13px; padding:8px 12px; }
 }
 @media (max-width:560px) {
   .cw-main { padding:8px 16px 32px; } .cw-header { padding:16px; }
+  .cw-panel { padding:16px; border-radius:14px; }
+  /* Tighten card art on the smallest screens so a tile grid never
+     overflows the viewport width. */
+  .cw-cc-wrap { width:min(100%, calc(300px*var(--scale))); }
+  /* Explorer grid drops to a single column below the phone breakpoint. */
+  .cw-explore-tile-grid { grid-template-columns:1fr; }
+  .cw-explore-controls { flex-direction:column; align-items:stretch; }
+  .cw-h1 { font-size:clamp(28px,7vw,44px); }
+  .cw-h2 { font-size:clamp(20px,5vw,28px); }
 }
 @media (prefers-reduced-motion:reduce) {
   .cw-aurora, .cw-float, .cw-cc-sheen, .cw-rise, .cw-spin,
@@ -199,8 +272,11 @@ body { background:var(--bg); color:var(--ink); font-family:var(--fbody); }
   .cw-narrator-loading { animation:none !important; opacity:.7; }
   .cw-narrator-cursor { animation:none !important; opacity:1; }
   .cw-cc { transition:none; transform:none !important; }
+  .cw-cc-img { transition:none !important; opacity:1 !important; }
   .cw-nav-item, .cw-opt, .cw-explore-card, .cw-pick, .cw-chip, .cw-btn { transition:none !important; }
   .cw-bar-fill, .cw-fit-fill, .cw-ring-fg { transition:none !important; }
+  .cw-tile { transition:none !important; }
+  .cw-panel { transition:none !important; }
 }
 
 /* ---------------------------------- auth --------------------------------- */
