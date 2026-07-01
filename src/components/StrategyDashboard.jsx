@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, TrendingUp, Layers, ArrowLeftRight, Info, Plane, Coins, Building2, MessageSquare, Save } from "lucide-react";
+import { Sparkles, TrendingUp, Layers, ArrowLeftRight, Info, Plane, Coins, Building2, MessageSquare, Save, Clock, ShieldAlert } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { buildLineup } from "../engine/lineupBuilder.js";
 import { strategyScore, bestByCategory, buildSpend, CAT_LABEL, fmtMoney, annualRewards, realizedCredits, effectiveFee } from "../engine/scoring.js";
@@ -10,7 +10,12 @@ import { isNarratorConfigured, streamNarrative } from "../firebase/narrator.js";
 import { APPROVAL_LABELS } from "../engine/approval.js";
 import { analyzeWalletKeepers } from "../engine/keeperAnalyzer.js";
 import { summarizeWalletOverlap } from "../engine/overlapDetector.js";
-import { recommendBestNextCard, recommendCardsToAvoid } from "../engine/walletOptimizer.js";
+import { optimizeWallet } from "../engine/walletOptimizer.js";
+import { calculateCurrentWalletValue, calculateMarginalCardValue } from "../engine/marginalValue.js";
+import { deriveMainValueDrivers, deriveBestAlternative } from "../engine/marginalDrivers.js";
+import MarginalRecommendation, { MarginalEmptyState } from "./dashboard/MarginalRecommendation.jsx";
+import IdealWalletPanel from "./dashboard/IdealWalletPanel.jsx";
+import WalletMovesPanel from "./dashboard/WalletMovesPanel.jsx";
 
 function labelTone(label) {
   switch (label) {
@@ -58,16 +63,46 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
     [profile, wallet]
   );
 
-  /* Prompt-10.5C decision-engine snapshot. Guarded with try/catch so a
-     partial profile never crashes the dashboard. */
-  const optimizerBestNext = useMemo(() => {
-    try { return recommendBestNextCard(profile, wallet || []); }
+  /* Prompt-10.5F: pull the whole wallet-optimizer snapshot in one call so
+     bestNext / laterCards / avoid / walletMoves / idealWallet all share the
+     same computation. Guarded with try/catch so an incomplete profile never
+     crashes the dashboard — every downstream panel treats a missing field as
+     an empty state, not a crash. */
+  const optimizerSnapshot = useMemo(() => {
+    try { return optimizeWallet(profile, wallet || []); }
     catch { return null; }
   }, [profile, wallet]);
-  const optimizerAvoid = useMemo(() => {
-    try { return recommendCardsToAvoid(profile, wallet || []); }
-    catch { return []; }
+  const optimizerBestNext = optimizerSnapshot?.bestNext || null;
+  const optimizerLaterCards = optimizerSnapshot?.laterCards || [];
+  const optimizerAvoid = optimizerSnapshot?.avoid || [];
+  const optimizerWalletMoves = optimizerSnapshot?.walletMoves || [];
+  const optimizerIdeal = optimizerSnapshot?.idealWallet || null;
+  const optimizerConfidence = optimizerSnapshot?.confidence || null;
+
+  /* Current wallet value: if the user actually has a wallet, run the wallet-
+     value engine; otherwise fall back to the recommended lineup. Both use
+     the same math so the number is comparable across the two states. */
+  const currentWalletValue = useMemo(() => {
+    try {
+      if (wallet && wallet.length) return calculateCurrentWalletValue(profile, wallet);
+      return null;
+    } catch { return null; }
   }, [profile, wallet]);
+
+  /* Enrich the best-next result with the derived drivers + best-alternative
+     shape so <MarginalRecommendation> can render without re-running the
+     engine. */
+  const bestNextEnriched = useMemo(() => {
+    if (!optimizerBestNext?.cardId) return null;
+    try {
+      const mv = calculateMarginalCardValue(optimizerBestNext.cardId, profile, wallet || []);
+      const card = BY_ID[optimizerBestNext.cardId];
+      return {
+        drivers: mv ? deriveMainValueDrivers(mv, card) : [],
+        bestAlternative: mv ? deriveBestAlternative(mv) : null,
+      };
+    } catch { return null; }
+  }, [optimizerBestNext, profile, wallet]);
   const score = useMemo(() => strategyScore(ids, profile, spend, ids), [ids, profile, spend]);
   const cats = useMemo(() => bestByCategory(ids, spend, profile, ids).slice(0, 6), [ids, spend, profile]);
 
@@ -230,39 +265,168 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
         </div>
       )}
 
-      {optimizerBestNext && (
-        <div className="cw-panel" style={{ marginBottom: 18 }}>
-          <div className="cw-panel-title">
-            <Sparkles size={17} /> Best next card
-            <span className="cw-pill cw-pill-muted" style={{ marginLeft: 10 }}>
-              {optimizerBestNext.label}
-            </span>
+      {/* v3.3 wallet-value strip — realistic estimate + max potential + confidence. */}
+      {(currentWalletValue || optimizerIdeal) && (
+        <div className="cw-mv-value-strip">
+          {currentWalletValue && (
+            <div className="cw-mv-value-cell">
+              <div className="cw-mv-value-num">{fmtMoney(currentWalletValue.netValue)}</div>
+              <div className="cw-mv-value-lab">Current wallet est. value / yr</div>
+            </div>
+          )}
+          <div className="cw-mv-value-cell">
+            <div className="cw-mv-value-num">{fmtMoney(annualValue)}</div>
+            <div className="cw-mv-value-lab">Realistic w/ recommended lineup</div>
           </div>
-          <p className="cw-arch-line" style={{ marginTop: 6 }}>
-            {optimizerBestNext.cardName} — {optimizerBestNext.explanation}
-          </p>
-          {optimizerBestNext.whatWouldChangeDecision.length > 0 && (
-            <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
-              {optimizerBestNext.whatWouldChangeDecision.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
+          {optimizerIdeal && (
+            <div className="cw-mv-value-cell">
+              <div className="cw-mv-value-num cw-mv-value-max">
+                {fmtMoney(optimizerIdeal.estimatedAnnualNetValue)}
+              </div>
+              <div className="cw-mv-value-lab">Possible max (ideal wallet)</div>
+            </div>
+          )}
+          {optimizerConfidence && (
+            <div className="cw-mv-value-conf">
+              Confidence: <b>{optimizerConfidence}</b>
+            </div>
           )}
         </div>
       )}
 
-      {optimizerAvoid && optimizerAvoid.length > 0 && (
+      {/* Best next card — full marginal recommendation. */}
+      {optimizerBestNext ? (
         <div className="cw-panel" style={{ marginBottom: 18 }}>
-          <div className="cw-panel-title"><Info size={17} /> Cards to avoid</div>
-          <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
-            {optimizerAvoid.slice(0, 4).map((a, i) => (
-              <li key={i}>
-                <b>{a.label}:</b> {a.cardName} — {a.reason}
-              </li>
-            ))}
-          </ul>
+          <div className="cw-panel-head">
+            <div className="cw-panel-title">
+              <Sparkles size={17} /> Best next card
+            </div>
+            {optimizerBestNext.confidence && (
+              <span className="cw-pill cw-pill-muted">
+                Confidence: {optimizerBestNext.confidence}
+              </span>
+            )}
+          </div>
+          <div className="cw-mv-section">
+            <MarginalRecommendation
+              variant="primary"
+              cardId={optimizerBestNext.cardId}
+              cardName={optimizerBestNext.cardName}
+              label={optimizerBestNext.label}
+              marginalValue={optimizerBestNext.marginalValue}
+              explanation={optimizerBestNext.explanation}
+              drivers={bestNextEnriched?.drivers}
+              bestAlternative={bestNextEnriched?.bestAlternative || {
+                cardId: optimizerBestNext.baselineAlternative?.cardId,
+                cardName: optimizerBestNext.baselineAlternative?.cardName,
+                kind: optimizerBestNext.baselineAlternative?.kind || "baseline",
+              }}
+              warnings={optimizerBestNext.warnings}
+              whatWouldChangeDecision={optimizerBestNext.whatWouldChangeDecision}
+              onOpenCard={onOpenCard}
+            />
+            {optimizerBestNext.runnersUp?.length > 0 && (
+              <details className="cw-mv-why">
+                <summary>
+                  <Layers size={13} /> Runners-up ({optimizerBestNext.runnersUp.length})
+                </summary>
+                <div className="cw-mv-why-body">
+                  <ul>
+                    {optimizerBestNext.runnersUp.map((r) => (
+                      <li key={r.cardId}>
+                        <b>{r.cardName}</b> · {r.label} · marginal {r.marginalValue >= 0 ? "+" : ""}{fmtMoney(r.marginalValue)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </details>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title"><Sparkles size={17} /> Best next card</div>
+          <MarginalEmptyState message="Fill in a bit more of the survey (spend + travel + credit profile) to unlock a personalized next-card recommendation." />
         </div>
       )}
+
+      {/* Good-later cards — currently blocked by 5/24, credit history, etc. */}
+      {optimizerLaterCards.length > 0 && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title">
+            <Clock size={17} /> Best later cards
+            <span className="cw-pill cw-pill-muted" style={{ marginLeft: 10 }}>
+              {optimizerLaterCards.length}
+            </span>
+          </div>
+          <p className="cw-arch-line" style={{ marginTop: 6 }}>
+            Strong picks the marginal-value engine likes, but that aren't
+            realistic apply-now targets today. Revisit as your profile matures.
+          </p>
+          <div className="cw-mv-section">
+            {optimizerLaterCards.slice(0, 3).map((l) => (
+              <MarginalRecommendation
+                key={l.cardId}
+                variant="compact"
+                cardId={l.cardId}
+                cardName={l.cardName}
+                label={l.label}
+                marginalValue={l.marginalValue}
+                explanation={l.why}
+                extraHeader={l.approvalLabel ? (
+                  <span className="cw-pill cw-pill-sm cw-pill-warn" style={{ marginLeft: 8 }}>
+                    {l.approvalLabel}
+                  </span>
+                ) : null}
+                profile={profile}
+                wallet={wallet}
+                onOpenCard={onOpenCard}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cards to avoid — dominated / not-worth-fee / broken picks. */}
+      {optimizerAvoid && optimizerAvoid.length > 0 && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title">
+            <ShieldAlert size={17} /> Cards to avoid
+            <span className="cw-pill cw-pill-muted" style={{ marginLeft: 10 }}>
+              {optimizerAvoid.length}
+            </span>
+          </div>
+          <div className="cw-mv-section">
+            {optimizerAvoid.slice(0, 4).map((a) => (
+              <MarginalRecommendation
+                key={a.cardId}
+                variant="compact"
+                cardId={a.cardId}
+                cardName={a.cardName}
+                label={a.label}
+                marginalValue={a.marginalValue}
+                explanation={a.reason}
+                bestAlternative={a.dominatedBy ? {
+                  cardId: a.dominatedBy.cardId,
+                  cardName: a.dominatedBy.cardName,
+                  kind: "dominates",
+                  marginalValue: a.dominatedBy.marginalValue,
+                } : null}
+                warnings={a.annualFee ? [`Annual fee ${fmtMoney(a.annualFee)} — the math doesn't clear for your profile.`] : []}
+                profile={profile}
+                wallet={wallet}
+                onOpenCard={onOpenCard}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Your current wallet — keep / downgrade / cancel moves. */}
+      <WalletMovesPanel rows={optimizerWalletMoves} onOpenCard={onOpenCard} />
+
+      {/* Ideal wallet at the user's complexity preference. */}
+      <IdealWalletPanel ideal={optimizerIdeal} onOpenCard={onOpenCard} />
 
       {overlapSummary && overlapSummary.overlaps.length > 0 && (
         <div className="cw-panel" style={{ marginBottom: 18 }}>
