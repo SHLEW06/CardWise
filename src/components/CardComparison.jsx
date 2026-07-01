@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { X, Info, Check, AlertTriangle, ArrowLeftRight } from "lucide-react";
+import { X, Info, ArrowLeftRight } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { BY_ID } from "../data/cards.js";
 import { fmtMoney } from "../engine/scoring.js";
 import { calculateMarginalCardValue } from "../engine/marginalValue.js";
 import { calculateValueBreakdown } from "../engine/valueBreakdown.js";
-import { calculateKeeperValue, KEEPER_DECISIONS } from "../engine/keeperAnalyzer.js";
+import { calculateKeeperValue } from "../engine/keeperAnalyzer.js";
 import { classifyRecommendation, DECISION_LABELS } from "../engine/decisionRules.js";
 import { estimateApprovalFit, classifyApprovalDifficulty } from "../engine/approval.js";
 import { PROGRAMS, LOYALTY, isBank } from "../data/programs.js";

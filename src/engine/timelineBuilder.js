@@ -22,11 +22,9 @@
 import { CARDS, BY_ID } from "../data/cards.js";
 import { buildTimeline as _coreBuildTimeline } from "./cardTimeline.js";
 import {
-  estimateApprovalFit,
   APPROVAL_LABELS,
-  TIMING_BUCKETS,
 } from "./approval.js";
-import { evaluateIssuerRules, SEVERITY } from "./issuerRuleEvaluator.js";
+import { evaluateIssuerRules } from "./issuerRuleEvaluator.js";
 
 /* ---------------- legacy export, unchanged shape ----------------------- */
 export { buildTimeline } from "./cardTimeline.js";

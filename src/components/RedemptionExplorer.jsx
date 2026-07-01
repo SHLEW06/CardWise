@@ -4,7 +4,7 @@ import {
   Calculator, AlertTriangle, ShieldAlert, Users,
 } from "lucide-react";
 import { SWEET_SPOTS } from "../data/transferPartners.js";
-import { VAL, VAL_META } from "../data/valuations.js";
+import { VAL } from "../data/valuations.js";
 import { buildLineup } from "../engine/lineupBuilder.js";
 import { BY_ID } from "../data/cards.js";
 import { effCpp, anchorLabel } from "../engine/transferValue.js";

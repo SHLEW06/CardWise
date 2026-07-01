@@ -46,7 +46,7 @@
        walletOptimizer.js).
    ========================================================================== */
 
-import { BY_ID, CARDS } from "../data/cards.js";
+import { CARDS } from "../data/cards.js";
 import { calculateMarginalCardValue, calculateCurrentWalletValue } from "./marginalValue.js";
 import { classifyRecommendation, classifyConfidence, DECISION_LABELS } from "./decisionRules.js";
 import { estimateApprovalFit, isApplyNowEligible } from "./approval.js";

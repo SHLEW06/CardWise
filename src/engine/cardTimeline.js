@@ -12,12 +12,11 @@
 import { BY_ID, CARDS } from "../data/cards.js";
 import { analyzeWallet } from "./keeperAnalyzer.js";
 import { buildLineup } from "./lineupBuilder.js";
-import { scoreCard, buildSpend, effectiveFee, membershipGate } from "./scoring.js";
+import { scoreCard, buildSpend, effectiveFee } from "./scoring.js";
 import { approvalRealism } from "./approvalRealism.js";
 import {
   estimateApprovalFit,
   TIMING_BUCKETS,
-  APPROVAL_LABELS,
 } from "./approval.js";
 
 const MONTHS_BETWEEN_APPS = 3;

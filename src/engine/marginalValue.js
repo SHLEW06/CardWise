@@ -28,8 +28,7 @@
 
 import { BY_ID, CARDS } from "../data/cards.js";
 import {
-  CATS, rateFor, effReturn, buildSpend, effectiveFee, membershipGate,
-  annualRewards, realizedCredits,
+  CATS, rateFor, effReturn, buildSpend, membershipGate,
 } from "./scoring.js";
 import { effCpp } from "./transferValue.js";
 import {

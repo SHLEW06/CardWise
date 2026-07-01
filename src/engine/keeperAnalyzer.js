@@ -27,7 +27,6 @@ import {
 } from "./scoring.js";
 import {
   breakEven,
-  calculateEffectiveAnnualFee,
   estimateCertificateValue,
   estimateLoungeValue,
   estimateCheckedBagValue,

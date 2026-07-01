@@ -44,7 +44,7 @@
 
 import { BY_ID } from "../data/cards.js";
 import {
-  F, effectiveFee, annualRewards, buildSpend, realizedCredits,
+  effectiveFee, annualRewards, buildSpend,
 } from "./scoring.js";
 import {
   estimateCreditUtilization,

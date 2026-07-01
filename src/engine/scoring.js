@@ -11,7 +11,6 @@ import { effCpp } from "./transferValue.js";
 import {
   applyApprovalPenalty as _applyApprovalPenalty,
   estimateApprovalFit as _estimateApprovalFit,
-  isApplyNowEligible as _isApplyNowEligible,
 } from "./approval.js";
 import { CERT_EV } from "../data/valuations.js";
 import { evaluateIssuerRules } from "./issuerRuleEvaluator.js";
