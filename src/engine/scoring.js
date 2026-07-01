@@ -15,6 +15,7 @@ import {
 } from "./approval.js";
 import { CERT_EV } from "../data/valuations.js";
 import { evaluateIssuerRules } from "./issuerRuleEvaluator.js";
+import { calculateOverlapPenalty as _calculateOverlapPenaltyFn } from "./overlapDetector.js";
 
 export const CATS = ["Dining", "Groceries", "Gas", "Flights", "Hotels", "Transit", "Online", "Rent", "General"];
 export const CAT_LABEL = {
@@ -478,7 +479,9 @@ export function calculateEcosystemSynergy(card, profile = {}, held = []) {
 
 /* ---------------- 5) Cost score ------------------------------------------- */
 
-/** Annual fee + membership + overlap penalty. All negative or zero. */
+/** Annual fee + membership + overlap penalty. All negative or zero.
+   The overlap penalty now comes from `calculateOverlapPenalty()` in
+   overlapDetector.js so scoring, keeper, and dashboard are consistent. */
 export function calculateCostScore(card, profile = {}, currentWallet = []) {
   const annualFee = -(card.annualFee || 0);
   let membership = 0;
@@ -493,18 +496,16 @@ export function calculateCostScore(card, profile = {}, currentWallet = []) {
     );
     if (!has) membership = -300;
   }
-  /* Overlap penalty: a same-strong-category card already held loses ground. */
+  /* Overlap penalty: sum of every overlap that touches this card given the
+     wallet. Capped inside calculateOverlapPenalty at PER_CARD_PENALTY_CAP so
+     one card can never sink below reason from stacked rules. */
   let overlap = 0;
-  const strong = topCategory(card);
-  const heldIds = Array.isArray(currentWallet)
-    ? currentWallet.map((x) => typeof x === "string" ? x : x?.id).filter(Boolean)
-    : [];
-  for (const id of heldIds) {
-    const w = BY_ID[id];
-    if (w && w.id !== card.id && topCategory(w) === strong && rateFor(w, strong) >= rateFor(card, strong)) {
-      overlap -= 150;
-    }
-  }
+  try {
+    /* lazy-require to dodge the circular init edge — overlapDetector imports
+       from scoring for helpers. `require` isn't ESM, so we do a scoped import
+       via top-of-file — see the top-level import block. */
+    overlap = -_calculateOverlapPenaltyFn(card, currentWallet, profile);
+  } catch { overlap = 0; }
   return {
     total: annualFee + membership + overlap,
     annualFee, membership, overlap,

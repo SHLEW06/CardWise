@@ -40,7 +40,7 @@ import {
   estimateBreakageRisk,
   calculateAnnualFeeBreakEven,
 } from "./annualFee.js";
-import { detectOverlaps } from "./overlapDetector.js";
+import { detectOverlaps, explainOverlaps, calculateOverlapPenalty } from "./overlapDetector.js";
 import {
   identifyDowngradePaths,
   identifyProductChangePaths,
@@ -88,7 +88,7 @@ export function analyzeKeeper(cardId, profile, spend, held = []) {
     }
   }
 
-  // overlay reasons
+  // overlay reasons — legacy shim uses the flat detectOverlaps records.
   if (overlaps.length) reasons.push(overlaps[0].msg);
 
   /* membership-gated cards: if the user no longer wants the membership their
@@ -195,9 +195,14 @@ export function calculateKeeperValue(card, profile = {}, currentWallet = [], opt
   const annualFee = -(card.annualFee || 0);
   const membership = estimateMembershipCost(card, profile);
   const membershipCost = -membership.effectiveCost;
-  const overlaps = detectOverlaps([...heldIds, ...(isHeld ? [] : [card.id])], profile, spend)
+  /* v3.3: use the structured overlap detector so we can surface warnings
+     alongside the numeric penalty. Legacy `detectOverlaps` still returns the
+     wallet-wide flat list for anywhere that reads the old shape. */
+  const overlapRecords = explainOverlaps(card, heldIds, profile);
+  const overlapPenalty = -calculateOverlapPenalty(card, heldIds, profile);
+  const legacyOverlaps = detectOverlaps([...heldIds, ...(isHeld ? [] : [card.id])], profile, spend)
     .filter((o) => o.ids.includes(card.id));
-  const overlapPenalty = -overlaps.reduce((t, o) => t + (o.penalty || 0), 0);
+  void legacyOverlaps;
   const portal = estimatePortalPenalty(card, profile);
   const portalPenalty = -portal.amount;
   const redemption = estimateRedemptionDifficultyPenalty(card, profile);
@@ -246,6 +251,12 @@ export function calculateKeeperValue(card, profile = {}, currentWallet = [], opt
   }
   if (breakage.severity !== "none") {
     warnings.push(`Breakage risk: ${breakage.severity} — ${breakage.reasons[0]}`);
+  }
+  /* v3.3: surface the top overlap warnings so keeper explanations tell the
+     user why the wallet math went where it did. */
+  for (const r of overlapRecords.slice(0, 3)) {
+    if (r.severity === "severe" || r.severity === "high") warnings.push(r.explanation);
+    else reasons.push(r.explanation);
   }
   for (const r of portal.reasons) reasons.push(r);
   for (const r of redemption.reasons) reasons.push(r);

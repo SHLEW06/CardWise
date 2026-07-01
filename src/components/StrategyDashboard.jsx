@@ -9,6 +9,7 @@ import { PROGRAMS, isBank } from "../data/programs.js";
 import { isNarratorConfigured, streamNarrative } from "../firebase/narrator.js";
 import { APPROVAL_LABELS } from "../engine/approval.js";
 import { analyzeWalletKeepers } from "../engine/keeperAnalyzer.js";
+import { summarizeWalletOverlap } from "../engine/overlapDetector.js";
 
 function labelTone(label) {
   switch (label) {
@@ -47,6 +48,12 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
   /* Prompt-8 keeper alerts — only when wallet has cards. */
   const keeperAlerts = useMemo(
     () => (wallet && wallet.length ? analyzeWalletKeepers(profile, wallet).alerts : []),
+    [profile, wallet]
+  );
+
+  /* Prompt-9 overlap summary. */
+  const overlapSummary = useMemo(
+    () => (wallet && wallet.length ? summarizeWalletOverlap(wallet, profile) : null),
     [profile, wallet]
   );
   const score = useMemo(() => strategyScore(ids, profile, spend, ids), [ids, profile, spend]);
@@ -206,6 +213,27 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
           <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
             {keeperAlerts.map((a, i) => (
               <li key={i}><b>{a.severity}:</b> {a.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {overlapSummary && overlapSummary.overlaps.length > 0 && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title">
+            <Info size={17} /> Wallet overlap
+            <span className="cw-pill cw-pill-muted" style={{ marginLeft: 10 }}>
+              ~${overlapSummary.totalPenalty}/yr
+            </span>
+          </div>
+          <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
+            {overlapSummary.overlaps.slice(0, 5).map((o, i) => (
+              <li key={i}>
+                <b>{o.severity}:</b> {o.explanation}
+                {o.recommendation && (
+                  <div style={{ color: "var(--ink-3)", marginTop: 3 }}>{o.recommendation}</div>
+                )}
+              </li>
             ))}
           </ul>
         </div>

@@ -8,6 +8,7 @@ import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
 import { evaluateIssuerRules } from "../engine/issuerRuleEvaluator.js";
 import { calculateKeeperValue } from "../engine/keeperAnalyzer.js";
 import { calculateEffectiveAnnualFee, calculateAnnualFeeBreakEven } from "../engine/annualFee.js";
+import { explainOverlaps } from "../engine/overlapDetector.js";
 
 function RuleGroup({ title, rules, cls }) {
   return (
@@ -59,6 +60,9 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
     : null;
   const effFee = calculateEffectiveAnnualFee(card, profile || {});
   const afBreakEven = profile ? calculateAnnualFeeBreakEven(card, profile) : null;
+  const overlapRecords = profile
+    ? explainOverlaps(card, profile.currentWallet || held || [], profile)
+    : [];
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
@@ -254,6 +258,25 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
                   {keeper.warnings.slice(0, 3).map((w, i) => <div key={i}>{w}</div>)}
                 </div>
               )}
+            </div>
+          )}
+
+          {overlapRecords.length > 0 && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Overlap with your wallet</div>
+              <ul className="cw-approval-list">
+                {overlapRecords.slice(0, 4).map((o, i) => (
+                  <li key={i} className={o.severity === "severe" || o.severity === "high" ? "cw-approval-blocker" : "cw-approval-soft"}>
+                    <b>{o.severity}:</b> {o.explanation}
+                    {o.recommendation && (
+                      <div style={{ color: "var(--ink-3)", marginTop: 3 }}>{o.recommendation}</div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <div className="cw-approval-disclaimer" style={{ marginTop: 8 }}>
+                Overlap penalties are estimates — one card is capped at $350/yr worth of overlap so a single stack doesn't tank its score.
+              </div>
             </div>
           )}
 

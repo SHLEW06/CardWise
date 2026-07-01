@@ -4,6 +4,7 @@ import CardArt from "./CardArt.jsx";
 import { CARDS, BY_ID } from "../data/cards.js";
 import { membershipGate } from "../engine/scoring.js";
 import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
+import { explainOverlaps } from "../engine/overlapDetector.js";
 
 function pickerLabelTone(label) {
   switch (label) {
@@ -81,6 +82,9 @@ export default function WalletBuilder({ wallet, onToggle, onOpenCard, profile })
           {available.map((c, i) => {
             const { gatedUI } = gateFor(c);
             const approval = profile ? estimateApprovalFit(c, profile) : null;
+            const overlapForAdd = profile
+              ? explainOverlaps(c, owned, profile).filter((o) => ["high", "severe"].includes(o.severity))
+              : [];
             return (
               <div className="cw-pick" key={c.id}>
                 <CardArt
@@ -98,6 +102,14 @@ export default function WalletBuilder({ wallet, onToggle, onOpenCard, profile })
                     title={approval.warnings[0] || approval.blockers[0] || approval.reasons[0] || approval.label}
                   >
                     {approval.label}
+                  </span>
+                )}
+                {overlapForAdd.length > 0 && (
+                  <span
+                    className="cw-pill cw-pill-sm cw-pill-warn"
+                    title={overlapForAdd[0].explanation}
+                  >
+                    Overlaps with your wallet
                   </span>
                 )}
                 <button className="cw-btn cw-btn-ghost cw-chip-sm" onClick={() => onToggle(c.id)}><Plus size={14} /> Add</button>
