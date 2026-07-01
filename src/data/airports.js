@@ -1,15 +1,22 @@
 /* ============================================================================
    airports.js — airport profiles that anchor recommendations to a real hub.
    ----------------------------------------------------------------------------
-   Cards are never recommended in isolation. The engine reads a user's home and
-   secondary airports and biases the whole strategy toward the ecosystem that
-   actually serves them.
+   IMPORTANT: this is seed/demo data. Hub-strength values are hand-curated
+   snapshots of the mid-2026 market and are NOT live BTS data. The engine
+   (airportFit + fitAdjustments) bounds the influence of these numbers so a
+   stale hub score can never override the raw category / benefit math.
+
+   Cards are never recommended in isolation. The engine reads a user's home
+   and secondary airports and biases the whole strategy toward the ecosystem
+   that actually serves them — but only when real travel signals back it up.
 
    Scores are 0-1. `bestEcosystemBias` is a quick tag the UI can lead with.
-   Future data sources to harden this (see README):
-     • BTS DB1B Origin & Destination Survey  — route/carrier/fare share
+   Every row carries `dataConfidence`, `sourceDate`, `needsRefresh`.
+
+   A production build should replace / augment this table with:
+     • BTS DB1B Origin & Destination Survey  — carrier + fare share
      • FAA enplanement data                  — airport size / rank
-     • OpenFlights                           — seed/demo routes only (can be stale)
+     • OpenFlights                           — nonstop-carrier graph (may be stale)
      • OAG / Cirium                          — commercial-grade schedules
    ========================================================================== */
 

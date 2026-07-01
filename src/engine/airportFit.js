@@ -136,8 +136,14 @@ export function calculateAirportEcosystemBias(userProfile = {}) {
 }
 
 /** Per-airline 0-100 fit score across the user's home + secondary + future
-   airports and their common routes. Formula: hub*0.35 + route*0.30 +
-   bag*0.15 + lounge*0.10 + partner*0.10. */
+   airports and their common routes.
+   Formula: hub*0.35 + route*0.30 + bag*0.15 + lounge*0.10 + partner*0.10.
+
+   Prompt-12 gating: even a fortress-hub match is dampened when the user
+   shows no real travel signal — an ATL user who never flies doesn't get a
+   strong Delta score just because Delta owns the airport. The dampener
+   floors the score to 30 (advisory only) so the caller can still surface
+   the fact that Delta is the local hub. */
 export function calculateAirlineFitScore(userProfile = {}, airline) {
   if (!airline) return 0;
   const airports = getRelevantAirports(userProfile);
@@ -160,8 +166,29 @@ export function calculateAirlineFitScore(userProfile = {}, airline) {
     weightedSum += score * a.weight;
     weightTotal += a.weight;
   }
-  const raw = weightTotal > 0 ? weightedSum / weightTotal : 0;
+  let raw = weightTotal > 0 ? weightedSum / weightTotal : 0;
+
+  /* Real-travel gate: without a behavioral signal, dampen the boost to a
+     ceiling of 0.30 so ATL/Delta doesn't overpower the math for a user
+     who doesn't fly. The airport still shows up as "your local hub" in
+     the UI, but the score reflects real behavior. */
+  if (!_travelsMeaningfully(userProfile)) {
+    raw = Math.min(raw, 0.30);
+  }
   return Math.round(Math.max(0, Math.min(1, raw)) * 100);
+}
+
+/** Does the user show real travel activity? Used to gate the airline-fit
+   score so a fortress hub doesn't overpower the math for a non-flyer. */
+function _travelsMeaningfully(profile) {
+  const flightsMonthly = profile?.spendAmounts?.Flights || 0;
+  if (flightsMonthly >= 80) return true;
+  if (["sometimes", "often"].includes(profile?.checkedBags)) return true;
+  if (["sometimes", "yes"].includes(profile?.lounge)) return true;
+  const travelIntensity = profile?.derived?.travelIntensity;
+  if (travelIntensity === "moderate" || travelIntensity === "heavy") return true;
+  const goal = profile?.goal || profile?.basics?.goal;
+  return ["travel", "luxury", "hotels", "flights"].includes(goal);
 }
 
 function _routeAirlineMatch(origin, airline, profile) {
@@ -179,7 +206,10 @@ function _routeAirlineMatch(origin, airline, profile) {
   return count > 0 ? Math.max(0, Math.min(1, hits / count)) : 0.4;
 }
 
-/** Deterministic prose summary of airport fit for the UI. */
+/** Deterministic prose summary of airport fit for the UI.
+   Prompt-12: the explanation now folds in the travel-signal gate so a
+   fortress hub without corresponding flights doesn't read as a slam-dunk
+   ecosystem match. */
 export function explainAirportFit(userProfile = {}) {
   const airports = getRelevantAirports(userProfile);
   const bias = calculateAirportEcosystemBias(userProfile);
@@ -191,7 +221,13 @@ export function explainAirportFit(userProfile = {}) {
   const home = airports.find((a) => a.role === "home");
   const homeAp = home && getAirportProfile(home.code);
   if (homeAp) {
-    out.push(`${homeAp.city} (${homeAp.code}) leans ${bias.ecosystem}${bias.hubStrength >= 0.5 ? " strongly" : ""}.`);
+    if (!_travelsMeaningfully(userProfile) && bias.hubStrength >= 0.5) {
+      out.push(
+        `${homeAp.city} (${homeAp.code}) is a strong ${bias.ecosystem.toUpperCase()} hub, but your profile shows light flight activity — the airline boost is capped until real trips show up.`
+      );
+    } else {
+      out.push(`${homeAp.city} (${homeAp.code}) leans ${bias.ecosystem}${bias.hubStrength >= 0.5 ? " strongly" : ""}.`);
+    }
     if (homeAp.weakEcosystems.length) {
       out.push(`Weak here: ${homeAp.weakEcosystems.join(", ")}.`);
     }
@@ -205,6 +241,11 @@ export function explainAirportFit(userProfile = {}) {
   if (future) {
     const f = getAirportProfile(future.code);
     if (f) out.push(`Future move to ${f.city} would shift the strategy toward ${f.bestEcosystemBias}.`);
+  }
+  /* Airport data disclaimer — always surface confidence for advisory clarity. */
+  const conf = getAirportConfidence(userProfile);
+  if (conf !== "high") {
+    out.push(`Airport data confidence: ${conf}. Treat these scores as advisory, not definitive.`);
   }
   return out;
 }
@@ -268,12 +309,37 @@ export function getAirportConfidence(userProfile = {}) {
   return avg >= 0.85 ? "high" : avg >= 0.5 ? "moderate" : "low";
 }
 
+/** Hotel fit score.
+   Prompt-12: score depends on real hotel behavior — nights, brand preference,
+   cert utility, and direct-booking preference. If the user's hotelUsage is
+   "none", the score floors at 0 no matter how many other flags are set,
+   because a hotel co-brand card's value math needs actual stays.
+   Weights (0-1):
+     usage   0.55 — number of nights matters most
+     brand   0.20 — brand preference feeds cert / status value
+     certs   0.15 — willingness to use free-night certs
+     direct  0.10 — direct-booking (not portal) preference
+   International travel bumps the ceiling but isn't required. */
 export function hotelScore(profile) {
-  const usage = { none: 0, rare: 0.2, sometimes: 0.6, often: 1 }[profile.hotelUsage] ?? 0.3;
-  const valuesCerts = profile.values && profile.values.includes("freeNights") ? 0.25 : 0;
-  const hasBrand = profile.hotelBrands && profile.hotelBrands.length ? 0.2 : 0;
-  const intl = profile.travelSplit === "intl" ? 0.1 : 0;
-  return pct(usage * 0.6 + valuesCerts + hasBrand + intl);
+  const usage = { none: 0, rare: 0.15, sometimes: 0.6, often: 1 }[profile.hotelUsage] ?? 0.25;
+  if (usage === 0) return 0;
+  const brands = profile.hotelBrands || profile.hotels?.preferredBrands || [];
+  const hasBrand = brands.length ? 1 : 0;
+  const bu = profile.benefitUsage || {};
+  const certFlag = bu.freeNightCerts === true ? 1
+                 : bu.freeNightCerts === false ? 0
+                 : (profile.values && profile.values.includes("freeNights") ? 0.7 : 0.35);
+  const portal = profile.travel?.portalWillingness
+    || profile.preferences?.portalWillingness
+    || profile.portalWillingness;
+  const directPref = !portal ? 0.5
+                   : (portal === "no" || portal === "prefer-direct") ? 1
+                   : portal === "ok" ? 0.55
+                   : 0.35;
+  const intl = profile.travelSplit === "intl" ? 0.08 : 0;
+
+  const raw = usage * 0.55 + hasBrand * 0.20 + certFlag * 0.15 + directPref * 0.10 + intl;
+  return pct(raw);
 }
 
 export function premiumScore(profile, ap) {

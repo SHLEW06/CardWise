@@ -1,13 +1,23 @@
 /* ============================================================================
-   routeProfiles.js — seed route profiles (demo data).
+   routeProfiles.js — seed route profiles (DEMO / SEED DATA ONLY).
    ----------------------------------------------------------------------------
-   A small, illustrative set of origin→destination profiles so routeFit.js has
-   something to reason over. In production, replace/augment with BTS DB1B
-   (carrier + fare share) and OAG/Cirium (schedules). OpenFlights can seed the
-   nonstop-carrier graph but may be stale.
+   IMPORTANT: these are hand-curated snapshots, not live route data. Do not
+   treat any single record as a booking guarantee. Every entry carries
+   `dataConfidence`, `sourceDate`, and `needsRefresh` so the engine can
+   surface an honest confidence label.
+
+   A production build should replace / augment this table with:
+     • BTS DB1B Origin & Destination Survey — carrier + fare share
+     • FAA enplanement data                 — airport size / rank
+     • OAG or Cirium                        — commercial-grade schedules
+     • OpenFlights                          — nonstop-carrier graph (may be stale)
+
+   The engine (routeFit.js) reads these values but bounds their influence via
+   FIT_CAPS in fitAdjustments.js — stale route data can NUDGE a recommendation
+   but never override the raw category / benefit math.
 
    Values are 0-1: how much an airline co-brand card, a transferable currency,
-   or plain cash-back helps on this route.
+   or plain cash back helps on this route.
    ========================================================================== */
 
 const SD = "2026-06";

@@ -46,6 +46,7 @@ import {
   estimateBreakageRisk,
 } from "./annualFee.js";
 import { calculateOverlapPenalty } from "./overlapDetector.js";
+import { computeFitAdjustment } from "./fitAdjustments.js";
 
 /* ----------------------------- helpers ----------------------------------- */
 
@@ -224,13 +225,22 @@ export function calculateMarginalCardValue(card, userProfile = {}, currentWallet
   const redemption           = estimateRedemptionDifficultyPenalty(cardObj, userProfile);
   const breakage             = estimateBreakageRisk(cardObj, userProfile);
 
+  /* Prompt-12: airport / route / behavior fit is folded in as a small,
+     BOUNDED $/yr adjustment. Positive when the user's hub + travel
+     signals reinforce the card's ecosystem; negative when the card's
+     hub or brand mismatches the user's actual behavior. Amount is
+     hard-capped by FIT_CAPS in fitAdjustments.js so airport data
+     cannot override the raw category / benefit math. */
+  const fit = computeFitAdjustment(cardObj, userProfile);
+
   const adjustments = {
     overlap: overlapPenalty,
     portal:  portal.amount,
     redemption: redemption.amount,
     breakage:  breakage.amount,
+    fit: fit.amount,
   };
-  const totalAdjustment = -(overlapPenalty + portal.amount + redemption.amount + breakage.amount);
+  const totalAdjustment = -(overlapPenalty + portal.amount + redemption.amount + breakage.amount) + fit.amount;
   const marginalValue = Math.round(rawMarginal + totalAdjustment);
 
   /* Baseline alternative: what's the simplest card the user could hold
@@ -258,6 +268,12 @@ export function calculateMarginalCardValue(card, userProfile = {}, currentWallet
     warnings.push(`Breakage risk: ${breakage.severity}.`);
   if (portal.reasons.length) warnings.push(portal.reasons[0]);
   if (redemption.reasons.length) warnings.push(redemption.reasons[0]);
+  /* Prompt-12: surface the top fit reason so the UI can render "this
+     airline card doesn't line up with your hub" or "your route mix
+     favors flexible points" without recomputing the fit engine. */
+  if (fit.amount < -40 && fit.reasons.length) {
+    warnings.push(fit.reasons[0].text);
+  }
 
   /* Confidence: high when wallet has data + no severe adjustments. */
   const confidence = _deriveConfidence(userProfile, cur, breakage);
@@ -281,6 +297,7 @@ export function calculateMarginalCardValue(card, userProfile = {}, currentWallet
     explanation,
     /* Diagnostic fields the UI can drill into. */
     adjustments,
+    fitAdjustment: fit,
     diagnostic: {
       currentBreakdown: {
         categoryRewards: cur.categoryRewards,
