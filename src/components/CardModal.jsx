@@ -6,6 +6,8 @@ import { breakEven } from "../engine/annualFee.js";
 import { effCpp, currencyLabel, anchorLabel } from "../engine/transferValue.js";
 import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
 import { evaluateIssuerRules } from "../engine/issuerRuleEvaluator.js";
+import { calculateKeeperValue } from "../engine/keeperAnalyzer.js";
+import { calculateEffectiveAnnualFee, calculateAnnualFeeBreakEven } from "../engine/annualFee.js";
 
 function RuleGroup({ title, rules, cls }) {
   return (
@@ -52,6 +54,11 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
   const breakdown = profile
     ? generateCardScoreBreakdown(card, profile, profile.currentWallet || held || [])
     : null;
+  const keeper = profile
+    ? calculateKeeperValue(card, profile, profile.currentWallet || held || [])
+    : null;
+  const effFee = calculateEffectiveAnnualFee(card, profile || {});
+  const afBreakEven = profile ? calculateAnnualFeeBreakEven(card, profile) : null;
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
@@ -205,6 +212,46 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
               {breakdown.assumptions.length > 0 && (
                 <div className="cw-approval-disclaimer" style={{ marginTop: 10 }}>
                   {breakdown.assumptions.join(" ")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {keeper && (owned || effFee.effective > 0) && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Keeper math</div>
+              <div className="cw-score-summary">
+                <div>
+                  <div className="cw-score-num" style={{ color: keeper.netValue >= 0 ? "var(--good)" : "var(--bad)" }}>
+                    {fmtMoney(keeper.netValue)}
+                  </div>
+                  <div className="cw-score-lab">Keeper net value / yr</div>
+                </div>
+                <div>
+                  <div className="cw-score-num-alt">{keeper.decision}</div>
+                  <div className="cw-score-lab">Recommendation</div>
+                </div>
+              </div>
+              <div className="cw-score-note" style={{ marginTop: 8 }}>
+                Effective annual fee: {fmtMoney(effFee.effective)}
+                {effFee.membership > 0 ? ` (incl. ${fmtMoney(effFee.membership)} membership)` : ""}.
+              </div>
+              {afBreakEven?.primaryGap && (
+                <div className="cw-score-note">{afBreakEven.primaryGap}</div>
+              )}
+              {keeper.downgradeOptions?.length > 0 && (
+                <div className="cw-score-note">
+                  Best downgrade: <b>{keeper.downgradeOptions[0].name}</b>.
+                </div>
+              )}
+              {keeper.productChangeOptions?.length > 0 && (
+                <div className="cw-score-note">
+                  Best product-change target: <b>{keeper.productChangeOptions[0].name}</b>.
+                </div>
+              )}
+              {keeper.warnings.length > 0 && (
+                <div className="cw-keeper-warnings" style={{ marginTop: 8 }}>
+                  {keeper.warnings.slice(0, 3).map((w, i) => <div key={i}>{w}</div>)}
                 </div>
               )}
             </div>

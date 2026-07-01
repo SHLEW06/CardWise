@@ -8,6 +8,7 @@ import { effCpp, anchorLabel } from "../engine/transferValue.js";
 import { PROGRAMS, isBank } from "../data/programs.js";
 import { isNarratorConfigured, streamNarrative } from "../firebase/narrator.js";
 import { APPROVAL_LABELS } from "../engine/approval.js";
+import { analyzeWalletKeepers } from "../engine/keeperAnalyzer.js";
 
 function labelTone(label) {
   switch (label) {
@@ -27,7 +28,7 @@ function labelTone(label) {
 
 const BIAS_ICON = { airline: Plane, flexible: ArrowLeftRight, cash: Coins, hotel: Building2, premium: Sparkles };
 
-export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy }) {
+export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveStrategy }) {
   const spend = useMemo(() => buildSpend(profile), [profile]);
   /* Ask the lineup builder for the approval overlay too — it returns both
      mathematicalBest and realisticBest so we can show the gap. */
@@ -42,6 +43,12 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
   const realistic = built.approval?.realisticBest || [];
   const futurePath = built.approval?.futurePath || [];
   const avoidNow = built.approval?.avoidNow || [];
+
+  /* Prompt-8 keeper alerts — only when wallet has cards. */
+  const keeperAlerts = useMemo(
+    () => (wallet && wallet.length ? analyzeWalletKeepers(profile, wallet).alerts : []),
+    [profile, wallet]
+  );
   const score = useMemo(() => strategyScore(ids, profile, spend, ids), [ids, profile, spend]);
   const cats = useMemo(() => bestByCategory(ids, spend, profile, ids).slice(0, 6), [ids, spend, profile]);
 
@@ -191,6 +198,17 @@ export default function StrategyDashboard({ profile, onOpenCard, onSaveStrategy 
         >
           <Save size={15} /> Save this strategy
         </button>
+      )}
+
+      {keeperAlerts.length > 0 && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title"><Info size={17} /> Keeper alerts</div>
+          <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
+            {keeperAlerts.map((a, i) => (
+              <li key={i}><b>{a.severity}:</b> {a.message}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* recommended lineup */}

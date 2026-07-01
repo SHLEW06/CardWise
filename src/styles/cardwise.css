@@ -177,6 +177,18 @@
 .cw-fi-neg { color:var(--ink-2); }
 .cw-fi-neg .cw-fi-val { color:var(--bad); font-family:var(--fmono); font-weight:600; }
 
+/* ----------------------------- v3.3 keeper rows ------------------------- */
+.cw-keeper-row-v3 { display:grid; grid-template-columns:190px 1fr; gap:20px; align-items:flex-start; padding:16px 18px; border-radius:16px; background:var(--surface); border:1px solid var(--line); }
+.cw-keeper-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:10px; }
+.cw-keeper-body { min-width:0; }
+.cw-keeper-nums { display:flex; gap:26px; align-items:baseline; margin-top:2px; }
+.cw-keeper-warnings { margin-top:10px; color:var(--warn); font-size:12.5px; line-height:1.5; }
+.cw-keeper-warnings div { margin-bottom:3px; }
+
+@media (max-width:900px) {
+  .cw-keeper-row-v3 { grid-template-columns:1fr; }
+}
+
 /* ------------------------------- explorer --------------------------------- */
 .cw-filter-chips { margin-bottom:22px; display:flex; flex-direction:column; gap:12px; }
 .cw-filter-group { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }

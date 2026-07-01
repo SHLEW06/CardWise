@@ -235,7 +235,7 @@ export default function App() {
 
   return (
     <Layout nav={nav} onLogoClick={restart}>
-      {tab === "strategy" && <StrategyDashboard profile={safeProfile} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
+      {tab === "strategy" && <StrategyDashboard profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
       {tab === "timeline" && <CardTimeline profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
       {tab === "router" && <SpendRouter profile={safeProfile} wallet={wallet} />}
       {tab === "explore" && <CardExplorer profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
