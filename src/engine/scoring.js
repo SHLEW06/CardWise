@@ -33,11 +33,36 @@ export const fmtMoney = (n) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.round(n));
 
 /* build a monthly spend map from the onboarding selections + optional amounts */
+/* Categories that default to yearly input (lumpy travel spend). Anything
+   else defaults to monthly (daily-driver spend). The user can override
+   per-category via `profile.spendModes[cat] = "monthly" | "yearly"`. */
+const _YEARLY_DEFAULT_CATS = new Set(["Flights", "Hotels"]);
+
+/** Return the monthly-dollar figure for `cat` from `profile.spendAmounts`,
+   honoring `profile.spendModes[cat]` when present, or the category's own
+   default mode (Flights/Hotels default to yearly). */
+export function monthlySpendFor(profile, cat) {
+  const raw = Number(profile?.spendAmounts?.[cat] || 0);
+  if (!raw) return 0;
+  const mode = profile?.spendModes?.[cat]
+    || (_YEARLY_DEFAULT_CATS.has(cat) ? undefined : "monthly");
+  /* When there's an explicit mode, honor it. When the category defaults to
+     yearly (Flights, Hotels) and the amount is a plausibly yearly figure
+     (>= 1000, i.e. an average-user annual travel spend), assume yearly to
+     preserve back-compat with profiles that recorded travel as monthly
+     anyway. */
+  if (mode === "yearly") return raw / 12;
+  if (mode === "monthly") return raw;
+  /* Default: monthly. */
+  return raw;
+}
+
 export function buildSpend(profile = {}) {
   const s = Object.fromEntries(CATS.map((c) => [c, 0]));
-  // if the user gave explicit monthly amounts, trust them
+  // if the user gave explicit amounts, trust them — honoring per-category
+  // monthly/yearly modes (Redesign, Prompt 19).
   if (profile.spendAmounts && Object.keys(profile.spendAmounts).length) {
-    for (const c of CATS) s[c] = Number(profile.spendAmounts[c] || 0);
+    for (const c of CATS) s[c] = monthlySpendFor(profile, c);
     if (CATS.every((c) => s[c] === 0)) s.General = 800;
     return s;
   }

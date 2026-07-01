@@ -28,11 +28,15 @@ const ROLE_SECTIONS = [
   { role: "productChangeTarget", icon: RefreshCw,       title: "Product-change targets" },
 ];
 
-function AlternativeRow({ alt, onOpenCard }) {
+/* AlternativeRow — one card option inside a role's alternatives list.
+   Redesign (Prompt 19): action affordances added (Use this instead /
+   Exclude / Compare). All three call optional props so callers who
+   haven't wired them yet render a read-only row without extra buttons. */
+function AlternativeRow({ alt, onOpenCard, onUseInstead, onExclude, onCompare, isTop = false }) {
   const card = BY_ID[alt.cardId];
   if (!card) return null;
   return (
-    <div className="cw-role-alt">
+    <div className={"cw-role-alt" + (isTop ? " cw-role-alt-primary" : "")}>
       <CardArt
         id={alt.cardId}
         size={0.55}
@@ -54,12 +58,31 @@ function AlternativeRow({ alt, onOpenCard }) {
             </span>
           )}
         </div>
+        {(onUseInstead || onExclude || onCompare) && (
+          <div className="cw-role-alt-actions">
+            {!isTop && onUseInstead && (
+              <button className="cw-btn cw-btn-ghost cw-btn-sm" onClick={() => onUseInstead(alt.cardId)}>
+                Use this instead
+              </button>
+            )}
+            {onCompare && (
+              <button className="cw-btn cw-btn-ghost cw-btn-sm" onClick={() => onCompare(alt.cardId)}>
+                Compare
+              </button>
+            )}
+            {onExclude && (
+              <button className="cw-btn cw-btn-ghost cw-btn-sm" onClick={() => onExclude(alt.cardId)}>
+                Exclude
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function RoleSection({ section, rec, onOpenCard }) {
+function RoleSection({ section, rec, onOpenCard, onUseInstead, onExclude, onCompare }) {
   if (!rec) return null;
   const Icon = section.icon || Sparkles;
   const top = rec.topRecommendation;
@@ -156,7 +179,14 @@ function RoleSection({ section, rec, onOpenCard }) {
           </summary>
           <div className="cw-mv-why-body">
             {rec.alternatives.map((alt) => (
-              <AlternativeRow key={alt.cardId} alt={alt} onOpenCard={onOpenCard} />
+              <AlternativeRow
+                key={alt.cardId}
+                alt={alt}
+                onOpenCard={onOpenCard}
+                onUseInstead={onUseInstead}
+                onExclude={onExclude}
+                onCompare={onCompare}
+              />
             ))}
           </div>
         </details>
@@ -188,13 +218,22 @@ function RoleSection({ section, rec, onOpenCard }) {
 }
 
 /**
- * RoleAlternativesPanel — render top-N options per role.
+ * RoleAlternativesPanel — render top-N options per role, with per-alternative
+ * action affordances so users can swap by role without leaving the dashboard.
  *
  * Props:
  *   byRole — Record<roleId, RoleRecommendation> (from optimizeWallet.byRole)
- *   onOpenCard — callback to open the modal for a card id
+ *   onOpenCard    — callback to open the modal for a card id
+ *   onUseInstead  — swap the current top rec for an alternative (optional)
+ *   onExclude     — mark an alternative as excluded from future suggestions
+ *   onCompare     — add an alternative to the compare drawer
+ *
+ * The three action callbacks are optional — when omitted the panel renders
+ * as a read-only "swap by role" surface (compatible with older callers).
  */
-export default function RoleAlternativesPanel({ byRole, onOpenCard }) {
+export default function RoleAlternativesPanel({
+  byRole, onOpenCard, onUseInstead, onExclude, onCompare,
+}) {
   if (!byRole) return null;
 
   /* Render only sections that have *something* meaningful to say — either a
@@ -217,7 +256,7 @@ export default function RoleAlternativesPanel({ byRole, onOpenCard }) {
     <div className="cw-panel cw-role-panel" style={{ marginTop: 18 }}>
       <div className="cw-panel-head">
         <div className="cw-panel-title">
-          <Layers size={17} /> Alternatives by role
+          <Layers size={17} /> Swap cards by role
         </div>
         <span className="cw-pill cw-pill-muted">
           {active.length} role{active.length === 1 ? "" : "s"}
@@ -235,6 +274,9 @@ export default function RoleAlternativesPanel({ byRole, onOpenCard }) {
             section={section}
             rec={rec}
             onOpenCard={onOpenCard}
+            onUseInstead={onUseInstead}
+            onExclude={onExclude}
+            onCompare={onCompare}
           />
         ))}
       </div>

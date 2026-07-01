@@ -501,8 +501,10 @@
 .cw-mv-slot-kept { background:linear-gradient(135deg,rgba(95,214,160,.06),rgba(95,214,160,.01)); }
 .cw-mv-slot-body { display:flex; flex-direction:column; gap:2px; flex:1; }
 .cw-mv-slot-name { font-size:14px; font-weight:500; }
+.cw-mv-slot-badges { display:flex; gap:5px; flex-wrap:wrap; margin:3px 0 2px; }
 .cw-mv-slot-role { font-size:11px; color:var(--ink-3); }
 .cw-mv-slot-margin { font-family:var(--fmono); font-size:11px; color:var(--good); }
+.cw-role-alt-actions { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 
 /* --- explorer / tile / comparison (Prompt 13) ---------------------------- */
 .cw-explore-controls { display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }

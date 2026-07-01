@@ -311,7 +311,10 @@ export function buildIdealWallet(userProfile = {}, currentWallet = [], allCards 
   const slots = [];   // parallel array with role labels
   for (const id of preserved) {
     const c = BY_ID[id];
-    slots.push({ id, role: _defaultRoleFor(c), source: "kept", marginalValue: null });
+    slots.push({
+      id, role: _defaultRoleFor(c), roleId: _roleIdFor(c),
+      source: "kept", marginalValue: null,
+    });
   }
 
   /* --- 3) Fill the target size --------------------------------------- */
@@ -325,7 +328,8 @@ export function buildIdealWallet(userProfile = {}, currentWallet = [], allCards 
     if (roleTaken && s.mv.marginalValue < 80) continue;    // don't duplicate a role for marginal cards
     chosen.push(s.card.id);
     slots.push({
-      id: s.card.id, role, source: "added",
+      id: s.card.id, role, roleId: _roleIdFor(s.card),
+      source: "added",
       marginalValue: s.mv.marginalValue,
       label: classifyRecommendation(s.mv, { card: s.card, profile: userProfile }),
     });
@@ -368,6 +372,27 @@ function _defaultRoleFor(card) {
     if (rate > r) { r = rate; best = cat; }
   }
   return r >= 2 ? best : "Wallet slot";
+}
+
+/** Redesign (Prompt 19) — formal role id for an ideal-wallet slot. Maps
+   coarse card categories to the ROLE_IDS catalog exported by lineupBuilder
+   so IdealWalletPanel can render the same badges as the lineup surface. */
+function _roleIdFor(card) {
+  if (!card) return null;
+  if (card.tags?.includes("hotel")) return "hotel_keeper";
+  if (card.tags?.includes("airline")) return "airline_utility";
+  if (card.availabilityStatus === "productChangeOnly") return "product_change_target";
+  if (card.availabilityStatus === "downgradeOnly") return "downgrade_path";
+  if (card.id === "bilt") return "rent";
+  const dining = rateFor(card, "Dining") || 0;
+  const groceries = rateFor(card, "Groceries") || 0;
+  const gas = rateFor(card, "Gas") || 0;
+  if (dining >= 3 || groceries >= 3) return "spending_food";
+  if (gas >= 3) return "spending_gas";
+  if (card.tags?.includes("flexible") && card.tags?.includes("travel")) return "spending_travel";
+  if (card.tags?.includes("flat") || card.tags?.includes("cashback")) return "spending_catch_all";
+  if (card.tags?.includes("premium") || card.tags?.includes("lounge")) return "premium_lounge";
+  return "spending_catch_all";
 }
 
 /* ============================================================================

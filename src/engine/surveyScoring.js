@@ -599,6 +599,36 @@ export function normalizeUserProfile(raw = {}) {
   if (raw.anchors != null)        profile.anchors        = raw.anchors;
   if (raw.redemption != null)     profile.redemption     = raw.redemption;
 
+  /* Redesign (Prompt 19) — airline preference fields that let the user
+     lock a single ecosystem OR explicitly opt into multi-airline behavior.
+     `preferredAirline: "infer"` (default) lets the airport bias pick a hub
+     carrier; any other value hard-locks the ecosystem. */
+  if (raw.preferredAirline != null) profile.preferredAirline = raw.preferredAirline;
+  if (raw.secondaryAirlines != null) profile.secondaryAirlines = raw.secondaryAirlines;
+  if (raw.multiAirline != null)     profile.multiAirline     = !!raw.multiAirline;
+
+  /* Redesign (Prompt 19) — hotel strategy fields. `wantsHotelKeeper` opts
+     the user into keeper-card recommendations even when hotel usage is
+     rare (they still want the free-night cert / status). `hotelStrategy`
+     lets the engine tune what a "hotel card" means for this user:
+       "none"       — no hotel card at all (opt-out)
+       "keeper"     — hold for cert/status; don't spend on it
+       "status"     — hold specifically for elite status
+       "earn"       — earn hotel points on daily spend
+       "free-night" — hold for the annual free-night certificate
+       "not-sure"   — surface options; engine treats as light-keeper-friendly */
+  if (raw.wantsHotelKeeper != null) profile.wantsHotelKeeper = !!raw.wantsHotelKeeper;
+  if (raw.hotelStrategy != null)    profile.hotelStrategy    = raw.hotelStrategy;
+
+  /* Redesign (Prompt 19) — per-category monthly/yearly spend modes.
+     `spendModes` (aliased from `categorySpendModes`) is a per-CATEGORY
+     override so the user can enter, say, Flights as $1,200/yr and Dining
+     as $400/mo. Any category with no explicit mode uses the default in
+     buildSpend (monthly for daily categories, yearly for lumpy travel). */
+  if (raw.spendModes != null || raw.categorySpendModes != null) {
+    profile.spendModes = raw.spendModes || raw.categorySpendModes;
+  }
+
   profile.derived = deriveSignals(profile);
   return profile;
 }

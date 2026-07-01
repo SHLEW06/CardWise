@@ -10,6 +10,34 @@
 
 import { CARDS, BY_ID } from "../data/cards.js";
 import { ARCHETYPES } from "../data/userArchetypes.js";
+
+/* Formal role catalog (Prompt 19 Redesign). Every slot in a lineup or ideal
+   wallet carries one of these role ids so the UI can render a consistent
+   role badge and the engine can reason over slot semantics without
+   pattern-matching English strings.
+
+   `label`   → shown as the role heading in the UI.
+   `badge`   → short tag used on card tiles.
+   `spend`   → yes | no | niche — should the user actually put spend on
+               this card, or is it a hold-only keeper?
+   `intent`  → freeform short description for tooltips. */
+export const ROLE_IDS = {
+  spending_food:          { label: "Dining & groceries",         badge: "Spending",         spend: "yes",   intent: "Route dining and groceries here for the bonus multiplier." },
+  spending_catch_all:     { label: "Everyday catch-all",         badge: "Spending",         spend: "yes",   intent: "Unbonused spend goes here for the flat return." },
+  spending_gas:           { label: "Gas",                        badge: "Spending",         spend: "yes",   intent: "Route gas / fuel spend here." },
+  spending_travel:        { label: "Travel & transfer points",   badge: "Spending",         spend: "yes",   intent: "Earn transferable points on travel; primary anchor for award redemptions." },
+  rent:                   { label: "Rent",                       badge: "Spending",         spend: "yes",   intent: "Rent goes here — the only card that pays on rent without a processor fee." },
+  airline_utility:        { label: "Airline utility",            badge: "Utility",          spend: "niche", intent: "Hold for checked bag, boarding, and any elite qualifying benefits. Don't put daily spend on it." },
+  hotel_keeper:           { label: "Hotel keeper",               badge: "Keeper",           spend: "no",    intent: "Hold for the annual free-night certificate + status. Don't run daily spend through it." },
+  premium_lounge:         { label: "Premium lounge & credits",   badge: "Premium",          spend: "niche", intent: "Keep only if you use the lounge network and clear the credit stack." },
+  product_change_target:  { label: "Future product-change",      badge: "Later",            spend: "no",    intent: "Reached later by product-changing another card in the same family — not applied for directly." },
+  downgrade_path:          { label: "Downgrade landing",         badge: "Later",            spend: "no",    intent: "A no-fee landing spot for when a premium card no longer clears its fee." },
+  avoid_overlap:          { label: "Avoid — overlap",            badge: "Avoid",            spend: "no",    intent: "Adds little because a card you already hold covers the same benefit." },
+};
+
+/** Return the metadata for a role id, or null when unknown. Called by the
+   dashboard to render a role's badge + intent tooltip. */
+export function getRoleMeta(id) { return ROLE_IDS[id] || null; }
 import { AIRPORTS } from "../data/airports.js";
 import { scoreCard, netValue, effectiveFee, buildSpend, membershipGate } from "./scoring.js";
 import { airportFit } from "./airportFit.js";
@@ -82,11 +110,31 @@ export function buildLineup(profile, spend, options = {}) {
     : null;
   const ap = profile.homeAirport && AIRPORTS[profile.homeAirport];
 
+  /* --- Redesign (Prompt 19) hotel-keeper signal ------------------------
+     A user can want a hotel keeper card even with "rare" hotel usage — the
+     value comes from the annual free-night cert + status, not from routing
+     spend through the card. This flag is true whenever ANY of the following
+     hold:
+        * wantsHotelKeeper explicitly set true
+        * hotelStrategy is "keeper" / "free-night" / "not-sure"
+        * hotelBrands has selections
+        * goal === "hotels"
+     Blocks the blunt "hotelUsage=rare → exclude hotel cards" behavior. */
+  const wantsHotelKeeperSignal =
+    profile.wantsHotelKeeper === true
+    || ["keeper", "free-night", "not-sure", "status"].includes(profile.hotelStrategy)
+    || (profile.hotelBrands || []).length > 0
+    || profile.goal === "hotels";
+
+  /* Explicit opt-out for hotel cards. When set to "none", we honor the
+     user's declared preference regardless of other signals. */
+  const hotelStrategyNone = profile.hotelStrategy === "none";
+
   // candidate pool: respect budget, drop app-only (Ritz) from auto-suggest,
   // exclude business cards (consumer mode), exclude product-change/downgrade
-  // landing spots from "apply now", exclude hotel cards entirely for
-  // non-hotel users, and exclude any archetype-declared futureCards from
-  // the apply-now pool — those live in the futureOnly overlay by design.
+  // landing spots from "apply now", and exclude any archetype-declared
+  // futureCards from the apply-now pool — those live in the futureOnly
+  // overlay by design.
   const futureCardIds = new Set(arch.futureCards || []);
   const pool = CARDS.filter((c) => {
     if (c.appOnly) return false;
@@ -96,7 +144,16 @@ export function buildLineup(profile, spend, options = {}) {
         .includes(c.availabilityStatus)) return false;
     if (futureCardIds.has(c.id)) return false;
     if (effectiveFee(c) > budget) return false;
-    if (c.tags.includes("hotel") && ["none", "rare"].includes(profile.hotelUsage)) return false;
+    /* Hotel exclusion (Redesign, Prompt 19): only exclude a hotel card when
+       BOTH the user shows no hotel usage AND has none of the "I want a
+       keeper" signals AND hasn't picked any brand AND hasn't set a
+       hotel strategy that implies keeping a hotel card. The old behavior
+       (exclude on any rare-usage user) blocked legitimate keeper users
+       who wanted a free-night cert card as a hold-but-don't-spend piece. */
+    if (c.tags.includes("hotel")) {
+      if (hotelStrategyNone) return false;
+      if (["none", "rare"].includes(profile.hotelUsage) && !wantsHotelKeeperSignal) return false;
+    }
     if (c.tags.includes("premium") && profile.feeBudget != null && profile.feeBudget < 300) return false;
     /* membership-gated cards: when the user explicitly declines the membership
        in onboarding, the card is hard-excluded from the lineup. When the
@@ -141,7 +198,12 @@ export function buildLineup(profile, spend, options = {}) {
     const w = cands[0];
     if (!w) return;
     if (opts.minNet != null && netValue(w.c, spend, profile, ids()) < opts.minNet) return;
-    chosen.push({ id: w.c.id, role });
+    /* Attach the formal role id when the caller passed one. Legacy calls
+       still pass a plain English label; we keep that as `role` for back-
+       compat but also set `roleId` when provided via opts.roleId. */
+    const slot = { id: w.c.id, role };
+    if (opts.roleId) slot.roleId = opts.roleId;
+    chosen.push(slot);
     feeUsed += effectiveFee(w.c);
   };
 
@@ -151,42 +213,95 @@ export function buildLineup(profile, spend, options = {}) {
   // 1) everyday floor — prefer a CHEAP/no-fee flat catch-all so the floor
   //    doesn't eat the budget a premium travel card should use. Premium cards
   //    like Venture X also carry "flat", but they belong in the travel role.
-  pick((c) => c.tags.includes("flat") && effectiveFee(c) <= 100, "Everyday spend");
-  if (chosen.length === 0) pick((c) => c.tags.includes("flat"), "Everyday spend");
+  pick((c) => c.tags.includes("flat") && effectiveFee(c) <= 100, "Everyday spend", { roleId: "spending_catch_all" });
+  if (chosen.length === 0) pick((c) => c.tags.includes("flat"), "Everyday spend", { roleId: "spending_catch_all" });
   // 2) food, if they spend there
   if ((spend.Dining + spend.Groceries) > 200) {
-    pick((c) => (c.earnRates.Dining >= 3 || c.earnRates.Groceries >= 3) && !c.tags.includes("flat"), "Dining & groceries");
+    pick((c) => (c.earnRates.Dining >= 3 || c.earnRates.Groceries >= 3) && !c.tags.includes("flat"), "Dining & groceries", { roleId: "spending_food" });
   }
-  // 3) flexible/travel transfer key
-  if (wantsTravel) pick((c) => c.tags.includes("travel") && c.tags.includes("flexible") && !c.tags.includes("airline"), "Travel & transfer points");
+  // 3) flexible/travel transfer key. Redesign (Prompt 19): airline co-brands
+  //    do NOT satisfy the generic travel/flexible role. Only transferable
+  //    flexible currencies (Chase UR, Amex MR, Cap One, Citi TYP, Bilt,
+  //    WF Rewards) belong here — a United Quest is airline utility, not
+  //    a generic travel anchor.
+  if (wantsTravel) pick((c) => c.tags.includes("travel") && c.tags.includes("flexible") && !c.tags.includes("airline"), "Travel & transfer points", { roleId: "spending_travel" });
   // 4) rent
-  if (spend.Rent > 800 && !ids().includes("bilt")) pick((c) => c.id === "bilt", "Rent & dining");
-  // 5) home-airport airline (only if the hub actually supports it)
-  if (limit >= 3 && ap && fit.airlineFitScore >= 55) {
-    const prog = Object.entries(ap.hubAirlines || {}).sort((a, b) => b[1] - a[1])[0];
-    if (prog) pick((c) => c.tags.includes("airline") && c.pointCurrency === prog[0], "Home-airport airline", { minNet: -160 });
-  }
-  // 6) hotel night — only for real hotel users; honor a stated brand first
-  if (limit >= 4 && ["sometimes", "often"].includes(profile.hotelUsage)) {
+  if (spend.Rent > 800 && !ids().includes("bilt")) pick((c) => c.id === "bilt", "Rent & dining", { roleId: "rent" });
+  /* --- Redesign (Prompt 19) — airline ecosystem lock -----------------
+     A single airline ecosystem by default. The chosen ecosystem is:
+       1) profile.preferredAirline when it is a concrete carrier key,
+       2) otherwise the home airport's dominant hub carrier (only when
+          preferredAirline is "infer" / undefined / null).
+     `multiAirline: true` OR profile.preferredAirline === "none" removes
+     the lock. `secondaryAirlines` adds extra carriers to the whitelist
+     without granting free multi-ecosystem behavior. */
+  const preferredAirline =
+    profile.preferredAirline && profile.preferredAirline !== "infer"
+      ? profile.preferredAirline
+      : null;
+  const inferredHubProg = ap ? Object.entries(ap.hubAirlines || {}).sort((a, b) => b[1] - a[1])[0]?.[0] : null;
+  const chosenEcosystem = preferredAirline || inferredHubProg;
+  const allowedAirlines = new Set();
+  if (chosenEcosystem && chosenEcosystem !== "none") allowedAirlines.add(chosenEcosystem);
+  for (const a of profile.secondaryAirlines || []) allowedAirlines.add(a);
+  const airlineLockActive = !profile.multiAirline
+    && profile.preferredAirline !== "none"
+    && profile.preferredAirline !== "cheapest";
+
+  /* Redesign (Prompt 19) — protected hotel keeper slot.
+     When the user has a keeper signal, the hotel role runs BEFORE the
+     airline role so the free-night-cert card doesn't get crowded out of
+     a small (limit=3 or 4) wallet by the airline pick. Legacy behavior
+     (airline before hotel) is preserved when no keeper signal fires. */
+  const runHotelKeeper = () => {
+    if (limit < 3) return;
+    if (!(["sometimes", "often"].includes(profile.hotelUsage) || wantsHotelKeeperSignal)) return;
     const brands = profile.hotelBrands || [];
+    const keeperMinNet = wantsHotelKeeperSignal ? -250 : -180;
     if (brands.length) {
       const before = chosen.length;
-      pick((c) => c.tags.includes("hotel") && brands.includes(c.pointCurrency), "Hotel nights", { minNet: -180 });
-      if (chosen.length === before) pick((c) => c.tags.includes("hotel"), "Hotel nights", { minNet: -120 });
+      pick((c) => c.tags.includes("hotel") && brands.includes(c.pointCurrency), "Hotel keeper", { minNet: keeperMinNet, roleId: "hotel_keeper" });
+      if (chosen.length === before) pick((c) => c.tags.includes("hotel"), "Hotel keeper", { minNet: keeperMinNet, roleId: "hotel_keeper" });
     } else {
-      pick((c) => c.tags.includes("hotel"), "Hotel nights", { minNet: -120 });
+      pick((c) => c.tags.includes("hotel"), "Hotel keeper", { minNet: keeperMinNet, roleId: "hotel_keeper" });
     }
+  };
+  const runHomeAirline = () => {
+    if (limit < 3 || !ap || fit.airlineFitScore < 55) return;
+    pick((c) => {
+      if (!c.tags.includes("airline")) return false;
+      if (airlineLockActive) return allowedAirlines.has(c.pointCurrency);
+      return true;
+    }, "Home-airport airline", { minNet: -160, roleId: "airline_utility" });
+  };
+  /* Hotel-first ordering when a keeper signal is present: protects the
+     keeper slot from being consumed by an airline pick in a 3–4 card
+     wallet. Otherwise fall back to the legacy airline-then-hotel order. */
+  if (wantsHotelKeeperSignal) {
+    runHotelKeeper();
+    runHomeAirline();
+  } else {
+    runHomeAirline();
+    runHotelKeeper();
   }
   // 7) fill remaining slots up to the user's desired count, but only with cards
   //    that actually add non-negative value — never pad just to hit a number.
+  //    Redesign (Prompt 19): the ecosystem lock also applies here, so a
+  //    non-Delta airline card can't sneak into an ATL Delta wallet just
+  //    because it had a good raw score. We DO allow flexible/transferable
+  //    travel cards here — the guard is per-ecosystem, not blanket.
   while (chosen.length < limit) {
     const before = chosen.length;
-    pick(() => true, "Strengthens your wallet", { minNet: 0 });
+    pick((c) => {
+      if (!airlineLockActive) return true;
+      if (!c.tags.includes("airline")) return true;
+      return allowedAirlines.has(c.pointCurrency);
+    }, "Strengthens your wallet", { minNet: 0, roleId: "spending_catch_all" });
     if (chosen.length === before) break;
   }
   // ensure there's a floor
   if (!chosen.some((x) => BY_ID[x.id].tags.includes("flat")) && chosen.length < limit) {
-    pick((c) => c.tags.includes("flat"), "Everyday spend");
+    pick((c) => c.tags.includes("flat"), "Everyday spend", { roleId: "spending_catch_all" });
   }
 
   /* ──────────────────────────────────────────────────────────────────────
@@ -312,18 +427,34 @@ export function buildLineup(profile, spend, options = {}) {
      `futureCards`) get an empty `futureOnly` and behave identically. */
   const futureOnly = [];
   const chosenIds = new Set(chosen.map((c) => c.id));
-  for (const fid of arch.futureCards || []) {
+  /* futureCandidates = the archetype's declared futureCards PLUS "ritz"
+     unconditionally. Ritz is always evaluated (it's product-change-only, so
+     it never leaks into apply-now) and surfaces whenever the user has a
+     Marriott keeper intent OR already holds Boundless — regardless of
+     archetype. This gives generic hotel-keeper users the same long-term
+     view the Shunji preset gets. Dedup so we don't double-surface. */
+  const futureCandidates = Array.from(new Set([...(arch.futureCards || []), "ritz"]));
+  for (const fid of futureCandidates) {
     const card = BY_ID[fid];
     if (!card) continue;
     let prereqOk = false;
     let reason = "";
     if (fid === "ritz") {
       /* Ritz needs the Marriott Boundless parent — either currently in the
-         lineup or already held by the user. */
+         lineup or already held by the user. Redesign (Prompt 19): a hotel
+         keeper user with an explicit Marriott brand preference also gets
+         Ritz surfaced as a future product-change target, so they see the
+         long-term path even when Boundless hasn't been picked yet. */
       const held = (profile.currentWallet || []).map((w) => w?.id).filter(Boolean);
-      if (chosenIds.has("marriott-boundless") || held.includes("marriott-boundless")) {
+      const hasBoundless = chosenIds.has("marriott-boundless") || held.includes("marriott-boundless");
+      const marriottKeeperIntent = wantsHotelKeeperSignal
+        && (profile.hotelBrands || []).includes("marriott");
+      if (hasBoundless) {
         prereqOk = true;
         reason = "Reached via product change from Marriott Boundless after 12+ months — not a new application.";
+      } else if (marriottKeeperIntent) {
+        prereqOk = true;
+        reason = "Future product-change target once you hold Marriott Boundless for 12+ months — Ritz is never applied for directly.";
       }
     } else if (fid === "delta-plat") {
       /* Delta Platinum only makes sense when the Companion Cert would pay

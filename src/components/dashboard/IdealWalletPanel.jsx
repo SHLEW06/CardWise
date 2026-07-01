@@ -3,6 +3,25 @@ import { Wallet2, Info } from "lucide-react";
 import CardArt from "../CardArt.jsx";
 import { BY_ID } from "../../data/cards.js";
 import { fmtMoney } from "../../engine/scoring.js";
+import { getRoleMeta } from "../../engine/lineupBuilder.js";
+
+/* Role-badge tone: spend-yes cards read as "route spend here"; keeper cards
+   as "hold but don't spend"; later/future as advisory. Consistent across
+   dashboard surfaces. */
+const BADGE_TONE = {
+  Spending: "cw-pill-good",
+  Keeper:   "cw-pill-warn",
+  Utility:  "cw-pill-muted",
+  Premium:  "cw-pill-warn",
+  Later:    "cw-pill-muted",
+  Avoid:    "cw-pill-bad",
+};
+
+const SPEND_LABEL = {
+  yes:   "Spend on this",
+  no:    "Keep — don't spend",
+  niche: "Use only for niche perks",
+};
 
 /* Render the ideal wallet the walletOptimizer built for this complexity
    preference. Slots show whether each card is "kept" from the user's current
@@ -34,6 +53,15 @@ export default function IdealWalletPanel({ ideal, onOpenCard }) {
         {ideal.slots.map((slot, i) => {
           const card = BY_ID[slot.id];
           if (!card) return null;
+          /* Redesign (Prompt 19): role badge + spend intent tooltip. When
+             the walletOptimizer or lineupBuilder tagged a slot with a
+             formal roleId, we render that badge; otherwise fall back to
+             the free-text role string so legacy slots still show up. */
+          const meta = slot.roleId ? getRoleMeta(slot.roleId) : null;
+          const badgeText = meta?.badge || (slot.source === "kept" ? "Kept" : "Added");
+          const badgeTone = meta ? (BADGE_TONE[meta.badge] || "cw-pill-muted")
+                                 : (slot.source === "kept" ? "cw-pill-good" : "cw-pill-muted");
+          const spendLabel = meta ? SPEND_LABEL[meta.spend] : null;
           return (
             <div key={slot.id + i} className={`cw-mv-slot cw-mv-slot-${slot.source}`}>
               <CardArt
@@ -45,8 +73,21 @@ export default function IdealWalletPanel({ ideal, onOpenCard }) {
               />
               <div className="cw-mv-slot-body">
                 <div className="cw-mv-slot-name">{card.name}</div>
+                <div className="cw-mv-slot-badges">
+                  <span className={"cw-pill cw-pill-sm " + badgeTone} title={meta?.intent || ""}>
+                    {badgeText}
+                  </span>
+                  {slot.source === "kept" && (
+                    <span className="cw-pill cw-pill-sm cw-pill-muted">Kept</span>
+                  )}
+                  {spendLabel && (
+                    <span className="cw-pill cw-pill-sm cw-pill-muted" title={meta.intent}>
+                      {spendLabel}
+                    </span>
+                  )}
+                </div>
                 <div className="cw-mv-slot-role">
-                  {slot.source === "kept" ? "Kept" : "Added"} · {slot.role || "Wallet slot"}
+                  {meta?.label || slot.role || "Wallet slot"}
                 </div>
                 {slot.marginalValue != null && (
                   <div className="cw-mv-slot-margin">
