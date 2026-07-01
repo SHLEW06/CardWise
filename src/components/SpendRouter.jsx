@@ -1,27 +1,38 @@
 import React, { useState, useMemo } from "react";
 import { Info, Zap } from "lucide-react";
 import CardArt from "./CardArt.jsx";
-import { PURCHASE_CATEGORIES, routePurchase } from "../engine/cardRouter.js";
+import {
+  PURCHASE_CATEGORIES, routePurchase, recommendCardForPurchase,
+} from "../engine/cardRouter.js";
 import { buildLineup } from "../engine/lineupBuilder.js";
 import { fmtMoney } from "../engine/scoring.js";
 
-/* "I'm about to buy X — which card?" Ranks the user's lineup for a category and
-   always shows the Robinhood 3% / cash 2% floors so a speculative points win
-   never goes unchallenged. */
+/* "I'm about to buy X — which card?" Uses the wallet-level marginal engine to
+   surface a recommended card, alternatives, a baseline floor, and the
+   incremental value over that baseline. */
 export default function SpendRouter({ profile, wallet }) {
   const lineup = useMemo(() => buildLineup(profile).cards.map((c) => c.id), [profile]);
   const ids = (wallet && wallet.length ? wallet : lineup);
   const [cat, setCat] = useState("Dining");
   const [amount, setAmount] = useState(100);
 
-  const result = useMemo(() => routePurchase(ids, cat, Number(amount) || 0, profile, ids), [ids, cat, amount, profile]);
+  /* Legacy routePurchase is still used for the ranked rows panel — the
+     wallet-level recommender drives the winner card + baseline callout. */
+  const legacy = useMemo(
+    () => routePurchase(ids, cat, Number(amount) || 0, profile, ids),
+    [ids, cat, amount, profile],
+  );
+  const recommendation = useMemo(
+    () => recommendCardForPurchase(cat, Number(amount) || 0, profile, ids),
+    [cat, amount, profile, ids],
+  );
 
   return (
     <div className="cw-rise">
       <div className="cw-eyebrow">Spend router</div>
       <h2 className="cw-h2" style={{ marginBottom: 6 }}>Which card should I use?</h2>
       <p className="cw-arch-line" style={{ marginBottom: 22 }}>
-        Pick a category and amount. We rank {wallet && wallet.length ? "your wallet" : "your recommended lineup"} by the value you'd actually get.
+        Pick a category and amount. We rank {wallet && wallet.length ? "your wallet" : "your recommended lineup"} by dollar value against a plain 2% floor.
       </p>
 
       <div className="cw-panel">
@@ -40,21 +51,29 @@ export default function SpendRouter({ profile, wallet }) {
           </div>
         </div>
 
-        {result.winner && (
+        {legacy.winner && recommendation?.recommendedCard && (
           <div className="cw-router-result">
             <div className="cw-router-card">
               <div className="cw-router-win-tag"><Zap size={12} style={{ verticalAlign: "-1px" }} /> Use this</div>
-              <CardArt id={result.winner.id} size="md" variant="tile" selected />
-              <div className="cw-router-name">{result.winner.card.name}</div>
-              <div className="cw-router-er">{result.winner.pct}% effective</div>
-              <div className="cw-router-dollars">≈ {fmtMoney(result.winner.dollars)} back on {fmtMoney(result.amount)} · {result.winner.currency}</div>
+              <CardArt id={recommendation.recommendedCard.cardId} size="md" variant="tile" selected />
+              <div className="cw-router-name">{recommendation.recommendedCard.cardName}</div>
+              <div className="cw-router-er">{recommendation.recommendedCard.rate}x on {cat}</div>
+              <div className="cw-router-dollars">
+                ≈ {fmtMoney(recommendation.estimatedValue)} back on {fmtMoney(recommendation.amount)} · {recommendation.recommendedCard.currency}
+              </div>
+              <div className="cw-router-dollars" style={{ marginTop: 4, color: "var(--muted)" }}>
+                Baseline ({recommendation.baselineAlternative.cardName}): {fmtMoney(recommendation.baselineAlternative.estimatedValue)}
+              </div>
+              <div className="cw-router-dollars" style={{ marginTop: 2, fontWeight: 600 }}>
+                Incremental: {recommendation.incrementalValue >= 0 ? "+" : ""}{fmtMoney(recommendation.incrementalValue)}
+              </div>
             </div>
             <div>
               <div className="cw-router-rows">
-                {result.rows.map((r) => (
+                {legacy.rows.map((r) => (
                   <div key={r.id} className={[
                     "cw-router-row",
-                    r === result.winner && "cw-router-row-win",
+                    r === legacy.winner && "cw-router-row-win",
                     r.gated && "cw-router-row-gated",
                   ].filter(Boolean).join(" ")}>
                     <div>
@@ -70,19 +89,22 @@ export default function SpendRouter({ profile, wallet }) {
                 ))}
               </div>
               <div className="cw-router-floor">
-                <span>Benchmarks: <b>{result.floors.robinhood}%</b> Robinhood</span>
-                <span><b>{result.floors.cash}%</b> plain cash</span>
+                <span>Baseline: <b>2%</b> flat cashback</span>
+                {recommendation.baselineAlternative.robinhoodAvailable && (
+                  <span><b>3%</b> Robinhood (you hold Gold)</span>
+                )}
               </div>
-              {result.notes.map((n, i) => (
-                <div className="cw-router-note" key={i}><Info size={15} /><span>{n}</span></div>
+              <div className="cw-router-note"><Info size={15} /><span>{recommendation.explanation}</span></div>
+              {recommendation.warnings.map((w, i) => (
+                <div className="cw-router-note" key={`w${i}`}><Info size={15} /><span>{w}</span></div>
               ))}
-              {result.conditional && result.conditional.length > 0 && (
+              {legacy.conditional && legacy.conditional.length > 0 && (
                 <div className="cw-router-conditional">
                   <div className="cw-router-conditional-head">Conditional alternative</div>
                   <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 6 }}>
-                    <CardArt id={result.conditional[0].id} size="sm" variant="ghost" gated showBadges />
+                    <CardArt id={legacy.conditional[0].id} size="sm" variant="ghost" gated showBadges />
                     <div className="cw-router-row-cur" style={{ flex: 1 }}>
-                      {result.conditional[0].card.name} would earn {result.conditional[0].pct}% — only if you keep the {result.conditional[0].gate?.name} membership.
+                      {legacy.conditional[0].card.name} would earn {legacy.conditional[0].pct}% — only if you keep the {legacy.conditional[0].gate?.name} membership.
                     </div>
                   </div>
                 </div>
