@@ -34,6 +34,11 @@ import {
 import { estimateApprovalFit, isApplyNowEligible, TIMING_BUCKETS } from "./approval.js";
 import { calculateKeeperValue, KEEPER_DECISIONS } from "./keeperAnalyzer.js";
 import { effectiveFee, CATS, rateFor } from "./scoring.js";
+import { recommendCardsByRole, rankCardsForRole, ROLE_IDS } from "./roleRecommendations.js";
+
+/* Re-export role recommendations so downstream code that already imports from
+   walletOptimizer.js can pick them up without a separate module path. */
+export { recommendCardsByRole, rankCardsForRole, ROLE_IDS };
 
 /* ----------------------------- helpers ---------------------------------- */
 
@@ -369,6 +374,7 @@ export function optimizeWallet(userProfile = {}, currentWallet = [], allCards = 
   const avoid      = recommendCardsToAvoid(userProfile, heldIds, allCards);
   const wallet     = recommendDowngradeOrCancelMoves(userProfile, heldIds, allCards);
   const ideal      = buildIdealWallet(userProfile, heldIds, allCards);
+  const byRole     = recommendCardsByRole(userProfile, heldIds, allCards);
 
   return {
     bestNext,
@@ -376,6 +382,7 @@ export function optimizeWallet(userProfile = {}, currentWallet = [], allCards = 
     avoid,
     walletMoves: wallet,
     idealWallet: ideal,
+    byRole,
     estimatedAnnualValue: ideal.estimatedAnnualNetValue,
     confidence: bestNext?.confidence || ideal.confidence,
     assumptions: ideal.assumptions,

@@ -16,6 +16,7 @@ import { deriveMainValueDrivers, deriveBestAlternative } from "../engine/margina
 import MarginalRecommendation, { MarginalEmptyState } from "./dashboard/MarginalRecommendation.jsx";
 import IdealWalletPanel from "./dashboard/IdealWalletPanel.jsx";
 import WalletMovesPanel from "./dashboard/WalletMovesPanel.jsx";
+import RoleAlternativesPanel from "./dashboard/RoleAlternativesPanel.jsx";
 
 function labelTone(label) {
   switch (label) {
@@ -78,6 +79,7 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
   const optimizerWalletMoves = optimizerSnapshot?.walletMoves || [];
   const optimizerIdeal = optimizerSnapshot?.idealWallet || null;
   const optimizerConfidence = optimizerSnapshot?.confidence || null;
+  const optimizerByRole = optimizerSnapshot?.byRole || null;
 
   /* Current wallet value: if the user actually has a wallet, run the wallet-
      value engine; otherwise fall back to the recommended lineup. Both use
@@ -427,6 +429,12 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
 
       {/* Ideal wallet at the user's complexity preference. */}
       <IdealWalletPanel ideal={optimizerIdeal} onOpenCard={onOpenCard} />
+
+      {/* Alternatives by role — top options in each category so users can
+          compare. Hotel-light users see "no hotel card needed" as a valid
+          outcome instead of a forced pick. Alternatives are marked as
+          optional research so they don't blow past complexity preference. */}
+      <RoleAlternativesPanel byRole={optimizerByRole} onOpenCard={onOpenCard} />
 
       {overlapSummary && overlapSummary.overlaps.length > 0 && (
         <div className="cw-panel" style={{ marginBottom: 18 }}>
