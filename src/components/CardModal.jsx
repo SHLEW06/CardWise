@@ -1,10 +1,27 @@
 import React from "react";
 import { X, Check, AlertTriangle, ShieldCheck, Plus, Clock } from "lucide-react";
 import CardArt from "./CardArt.jsx";
-import { CATS, CAT_LABEL, fmtMoney } from "../engine/scoring.js";
+import { CATS, CAT_LABEL, fmtMoney, generateCardScoreBreakdown } from "../engine/scoring.js";
 import { breakEven } from "../engine/annualFee.js";
 import { effCpp, currencyLabel, anchorLabel } from "../engine/transferValue.js";
 import { estimateApprovalFit, APPROVAL_LABELS } from "../engine/approval.js";
+import { evaluateIssuerRules } from "../engine/issuerRuleEvaluator.js";
+
+function RuleGroup({ title, rules, cls }) {
+  return (
+    <div style={{ marginTop: 10 }}>
+      <div className="cw-rule-group-title">{title}</div>
+      <ul className="cw-approval-list">
+        {rules.map((r) => (
+          <li key={r.id} className={cls}>
+            {r.message}
+            {r.recommendation ? <div style={{ color: "var(--ink-3)", marginTop: 3 }}>{r.recommendation}</div> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function approvalPillClass(label) {
   switch (label) {
@@ -31,6 +48,10 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
   const cpp = effCpp(card.pointCurrency, profile, held);
   const anchor = anchorLabel(card.pointCurrency, profile, held);
   const approval = profile ? estimateApprovalFit(card, profile) : null;
+  const issuerRules = profile ? evaluateIssuerRules(card, profile) : null;
+  const breakdown = profile
+    ? generateCardScoreBreakdown(card, profile, profile.currentWallet || held || [])
+    : null;
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
@@ -138,6 +159,75 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
               <div className="cw-approval-action">
                 Recommended action: <b>{approval.recommendedAction}</b>
                 <span className="cw-approval-disclaimer"> — advisory, not a guarantee.</span>
+              </div>
+            </div>
+          )}
+
+          {breakdown && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Score breakdown</div>
+              <div className="cw-score-summary">
+                <div>
+                  <div className="cw-score-num">{fmtMoney(breakdown.mathematical.netAnnualValue)}</div>
+                  <div className="cw-score-lab">Mathematical net value / year</div>
+                </div>
+                <div>
+                  <div className="cw-score-num-alt">{breakdown.recommendation.approvalAdjustedScore}</div>
+                  <div className="cw-score-lab">Recommendation score
+                    {breakdown.recommendation.approvalLabel ? ` · ${breakdown.recommendation.approvalLabel}` : ""}
+                  </div>
+                </div>
+              </div>
+              {breakdown.mathematical.netAnnualValue > 100
+                && !breakdown.recommendation.applyNowEligible && (
+                <div className="cw-score-flag">
+                  Mathematically strong but not realistic to apply for right now — consider it a later card.
+                </div>
+              )}
+              {breakdown.incrementalValue && (
+                <div className="cw-score-note">
+                  Estimated {fmtMoney(breakdown.incrementalValue.value)} more per year vs {breakdown.incrementalValue.baseline.label}.
+                </div>
+              )}
+              {breakdown.featureImportance.length > 0 && (
+                <>
+                  <div className="cw-rule-group-title" style={{ marginTop: 10 }}>Top drivers</div>
+                  <ul className="cw-fi-list">
+                    {breakdown.featureImportance.slice(0, 6).map((f) => (
+                      <li key={f.key} className={f.direction === "positive" ? "cw-fi-pos" : "cw-fi-neg"}>
+                        <span>{f.label}</span>
+                        <span className="cw-fi-val">{f.contribution >= 0 ? "+" : ""}{fmtMoney(f.contribution)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {breakdown.assumptions.length > 0 && (
+                <div className="cw-approval-disclaimer" style={{ marginTop: 10 }}>
+                  {breakdown.assumptions.join(" ")}
+                </div>
+              )}
+            </div>
+          )}
+
+          {issuerRules && (issuerRules.blockers.length + issuerRules.warnings.length
+              + issuerRules.cautions.length + issuerRules.info.length) > 0 && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Issuer rules</div>
+              {issuerRules.blockers.length > 0 && (
+                <RuleGroup title="Blockers" rules={issuerRules.blockers} cls="cw-approval-blocker" />
+              )}
+              {issuerRules.warnings.length > 0 && (
+                <RuleGroup title="Warnings" rules={issuerRules.warnings} cls="cw-approval-warn" />
+              )}
+              {issuerRules.cautions.length > 0 && (
+                <RuleGroup title="Cautions" rules={issuerRules.cautions} cls="cw-approval-soft" />
+              )}
+              {issuerRules.info.length > 0 && (
+                <RuleGroup title="Notes" rules={issuerRules.info} cls="cw-approval-reason" />
+              )}
+              <div className="cw-approval-disclaimer" style={{ marginTop: 10 }}>
+                Issuer rules are advisory rules-of-thumb, not contractual guarantees — verify on the application page.
               </div>
             </div>
           )}

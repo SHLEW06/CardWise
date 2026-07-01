@@ -26,6 +26,7 @@ import {
   readCreditProfile,
 } from "./approvalRealism.js";
 import { getIssuerRule } from "../data/issuerRules.js";
+import { getProfileCompleteness } from "./surveyScoring.js";
 
 export {
   categorizeRealism,
@@ -438,9 +439,23 @@ export function estimateApprovalFit(card, profile = {}) {
     adjusted >= 25 ? APPROVAL_LABELS.STRETCH :
                      APPROVAL_LABELS.NOT_RECOMMENDED_YET;
 
-  const confidence =
+  let confidence =
     adjusted >= 75 || adjusted < 20 ? "high" :
     adjusted >= 50 ? "moderate" : "low";
+  /* Profile-completeness downgrade: if the survey is < 50% complete, every
+     approval estimate becomes lower-confidence than we'd otherwise report.
+     We do not lower the *score*, only the *confidence* — the user gets a
+     louder caution but the apply-now bucketing remains stable. */
+  try {
+    const completeness = getProfileCompleteness(profile);
+    if (completeness != null && completeness < 0.5 && confidence === "high") {
+      confidence = "moderate";
+      softConstraints.push("Approval estimate is lower-confidence because parts of your profile (income, account age, application velocity) are missing.");
+    } else if (completeness != null && completeness < 0.3 && confidence === "moderate") {
+      confidence = "low";
+      softConstraints.push("Approval estimate is low-confidence — please fill out more of your profile for a stronger read.");
+    }
+  } catch { /* getProfileCompleteness is defensive; ignore errors */ }
 
   const timing =
     label === APPROVAL_LABELS.VERY_REALISTIC || label === APPROVAL_LABELS.REALISTIC ? TIMING_BUCKETS.NOW :

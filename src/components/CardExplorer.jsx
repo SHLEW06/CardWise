@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Info } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CARDS } from "../data/cards.js";
-import { buildSpend, membershipGate } from "../engine/scoring.js";
+import { buildSpend, membershipGate, calculateFinalCardScore } from "../engine/scoring.js";
 import { estimateApprovalFit, classifyApprovalDifficulty, APPROVAL_LABELS } from "../engine/approval.js";
 
 const FILTERS = [
@@ -66,6 +66,9 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
           const gatedUI = !!(gate && profile?.memberships != null && !gate.satisfied);
           const approval = profile ? estimateApprovalFit(c, profile) : null;
           const difficulty = classifyApprovalDifficulty(c);
+          const scoring = profile
+            ? calculateFinalCardScore(c, profile, profile.currentWallet || wallet || [])
+            : null;
           return (
             <button key={c.id} className="cw-explore-card" onClick={() => onOpenCard(c.id)}>
               <CardArt
@@ -92,6 +95,12 @@ export default function CardExplorer({ profile, onOpenCard, wallet }) {
                   <span className="cw-pill cw-pill-muted" title={`Approval difficulty: ${difficulty.label}`}>
                     {difficulty.label}
                   </span>
+                  {scoring && (
+                    <span className="cw-pill cw-pill-muted"
+                      title={`Estimated net annual value: ${scoring.mathematicalNetValue}`}>
+                      Fit {scoring.recommendationScore >= 0 ? "+" : ""}{scoring.recommendationScore}
+                    </span>
+                  )}
                 </div>
                 <div className="cw-explore-blurb">{(c.bestFor && c.bestFor[0]) || c.why}</div>
               </div>

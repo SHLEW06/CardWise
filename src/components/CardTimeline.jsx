@@ -6,10 +6,30 @@
    ========================================================================== */
 
 import React, { useMemo } from "react";
-import { Calendar, Check, ArrowDown, X, ArrowRight, Clock, AlertTriangle, Info } from "lucide-react";
+import { Calendar, Check, ArrowDown, X, ArrowRight, Clock, AlertTriangle, Info, RefreshCw } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { buildTimeline } from "../engine/cardTimeline.js";
+import { buildCardTimeline } from "../engine/timelineBuilder.js";
 import { fmtMoney, effectiveFee } from "../engine/scoring.js";
+import { BY_ID } from "../data/cards.js";
+
+function BY_ID_NAME(id) { return BY_ID[id]?.name || id; }
+
+function WindowGroup({ label, cards, onOpenCard }) {
+  if (!cards.length) return null;
+  return (
+    <div className="cw-tl-window">
+      <div className="cw-tl-window-label">{label}</div>
+      <div className="cw-tl-window-cards">
+        {cards.slice(0, 4).map((x) => (
+          <div key={x.id} className="cw-tl-window-card" onClick={() => onOpenCard?.(x.id)}>
+            <CardArt id={x.id} size="sm" variant="ghost" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function CardTimeline({ profile, wallet, onOpenCard }) {
   /* v3.2: pull per-card open dates off profile.currentWallet so the
@@ -24,6 +44,16 @@ export default function CardTimeline({ profile, wallet, onOpenCard }) {
 
   const timeline = useMemo(
     () => buildTimeline(profile, wallet || [], { openDates }),
+    [profile, wallet, openDates],
+  );
+
+  /* v3.2 structured timeline alongside the legacy buckets. Renders the new
+     sections below the existing UI without removing anything that works. */
+  const structured = useMemo(
+    () => buildCardTimeline(profile, wallet || [], undefined, {
+      openDates,
+      currentWalletDetailed: profile?.currentWallet,
+    }),
     [profile, wallet, openDates],
   );
 
@@ -122,6 +152,68 @@ export default function CardTimeline({ profile, wallet, onOpenCard }) {
           )}
         </div>
       </div>
+
+      {/* v3.2: structured forward windows */}
+      {(structured.applicationWindows.in3to6Months.length
+        || structured.applicationWindows.in6to12Months.length
+        || structured.applicationWindows.in12to24Months.length) ? (
+        <div className="cw-panel" style={{ marginTop: 18 }}>
+          <div className="cw-panel-title"><Calendar size={17} /> Application windows</div>
+          <WindowGroup label="3–6 months" cards={structured.applicationWindows.in3to6Months} onOpenCard={onOpenCard} />
+          <WindowGroup label="6–12 months" cards={structured.applicationWindows.in6to12Months} onOpenCard={onOpenCard} />
+          <WindowGroup label="12–24 months" cards={structured.applicationWindows.in12to24Months} onOpenCard={onOpenCard} />
+        </div>
+      ) : null}
+
+      {/* v3.2: renewal + membership checkpoints */}
+      {(structured.renewalCheckpoints.length > 0 || structured.membershipCheckpoints.length > 0) && (
+        <div className="cw-panel" style={{ marginTop: 18 }}>
+          <div className="cw-panel-title"><Clock size={17} /> Renewal checkpoints</div>
+          <ul className="cw-tl-renewal">
+            {[...structured.renewalCheckpoints, ...structured.membershipCheckpoints].map((r, i) => (
+              <li key={i}>
+                <b>{r.whenLabel}</b> — {r.cardName}: {r.action}.{" "}
+                <span style={{ color: "var(--ink-3)" }}>{r.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* v3.2: product-change / downgrade opportunities */}
+      {(structured.productChangeOpportunities.length > 0 || structured.downgradeOpportunities.length > 0) && (
+        <div className="cw-panel" style={{ marginTop: 18 }}>
+          <div className="cw-panel-title"><RefreshCw size={17} /> Product-change & downgrade paths</div>
+          {structured.productChangeOpportunities.map((op) => (
+            <div key={"pc-" + op.heldCardId} className="cw-tl-pc">
+              <b>{op.targets.length} option{op.targets.length === 1 ? "" : "s"}</b> for product-changing your {BY_ID_NAME(op.heldCardId)}:
+              <ul>
+                {op.targets.slice(0, 3).map((t, i) => <li key={i}>{t.name}</li>)}
+              </ul>
+            </div>
+          ))}
+          {structured.downgradeOpportunities.map((op) => (
+            <div key={"dg-" + op.heldCardId} className="cw-tl-pc">
+              <b>Downgrade {BY_ID_NAME(op.heldCardId)} to:</b>
+              <ul>
+                {op.targets.slice(0, 3).map((t, i) => <li key={i}>{t.name}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* v3.2: issuer warnings */}
+      {structured.issuerWarnings.length > 0 && (
+        <div className="cw-panel" style={{ marginTop: 18 }}>
+          <div className="cw-panel-title"><AlertTriangle size={17} /> Issuer-rule notes</div>
+          <ul className="cw-tl-issuer">
+            {structured.issuerWarnings.slice(0, 6).map((w, i) => (
+              <li key={i}><b>{w.severity}:</b> {w.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Avoid */}
       {timeline.avoidNow.length > 0 && (

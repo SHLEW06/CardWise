@@ -154,6 +154,101 @@ function inferPremiumGate(card) {
 
 const FALLBACK_GRADIENT_FROM_ART = (artId, ART) => (ART?.[artId]?.grad || null);
 
+/* Conservative card-family inference. Used by the timeline + issuer-rule
+   evaluator to look up Chase Sapphire vs Chase United vs Marriott Bonvoy
+   without parsing card.name every time. Cards may set `cardFamily`
+   explicitly — that always wins over inference. */
+function inferCardFamily(card) {
+  if (card.cardFamily) return card.cardFamily;
+
+  /* category-shaped families first */
+  if (card.tags?.includes("balance-transfer")) return "credit-tool";
+  if (card.tags?.includes("credit-tool"))      return "credit-tool";
+  if (card.cardType === "secured")             return "credit-builder";
+  if (card.tags?.includes("builder") && card.cardType !== "student") return "credit-builder";
+  if (card.cardType === "student")             return "credit-builder";
+
+  const id = card.id || "";
+  const pc = card.pointCurrency;
+  const issuer = card.issuer || "";
+
+  /* Chase + Chase co-brands */
+  if (issuer === "Chase") {
+    if (/(csp|csr|sapphire)/i.test(id)) return "chase-sapphire";
+    if (/freedom/.test(id))             return "chase-freedom";
+    if (id.startsWith("ink"))           return "chase-ink-business";
+    if (pc === "united")                return "chase-united";
+    if (pc === "southwest")             return "chase-southwest";
+    if (pc === "marriott")              return "chase-marriott";
+    if (pc === "hyatt")                 return "chase-hyatt";
+    if (pc === "ihg")                   return "chase-ihg";
+    return "chase-freedom";
+  }
+  if (issuer === "Chase (Amazon)") return "store-amazon";
+
+  /* American Express */
+  if (issuer === "American Express") {
+    if (pc === "delta")    return "amex-delta";
+    if (pc === "hilton")   return "amex-hilton";
+    if (pc === "marriott") return "amex-marriott";
+    if (pc === "cash")     return "amex-cashback";
+    return "amex-membership-rewards";
+  }
+
+  /* Capital One */
+  if (issuer === "Capital One") {
+    if (pc === "c1") return "capital-one-miles";
+    return "capital-one-cash";
+  }
+
+  /* Citi + AAdvantage */
+  if (issuer === "Citi") {
+    if (pc === "aa") return "citi-aadvantage";
+    return "citi-thankyou";
+  }
+  if (issuer === "Citi (Costco)") return "store-costco";
+
+  /* Wells Fargo + Bilt */
+  if (issuer === "Wells Fargo") {
+    if (pc === "bilt") return "wells-fargo-bilt";
+    if (pc === "wf")   return "wells-fargo-autograph";
+    return "wells-fargo-cash";
+  }
+
+  /* Bank of America + Alaska */
+  if (issuer === "Bank of America") {
+    if (pc === "alaska") return "bankofamerica-alaska";
+    if (/travel/i.test(id) || /travel/i.test(card.name || "")) return "bankofamerica-travel";
+    return "bankofamerica-cash";
+  }
+
+  /* Discover */
+  if (issuer === "Discover") return "discover-cashback";
+
+  /* US Bank */
+  if (issuer === "US Bank") {
+    if (/altitude/i.test(id)) return "usbank-altitude";
+    return "usbank-cash";
+  }
+
+  /* Barclays */
+  if (issuer === "Barclays") {
+    if (pc === "jetblue") return "barclays-jetblue";
+    return "barclays-other";
+  }
+
+  /* Store / co-brand */
+  if (issuer === "Goldman Sachs (Apple)") return "store-apple";
+  if (issuer === "TD Bank (Target)")      return "store-target";
+  if (issuer === "Synchrony (PayPal)")    return "store-paypal";
+  if (issuer === "Synchrony (Venmo)")     return "store-venmo";
+
+  /* Niche */
+  if (issuer === "Robinhood") return "niche-robinhood";
+
+  return "other";
+}
+
 /** Decorate a card with v3.1 fields without mutating existing ones. */
 export function enrichCard(card, ART) {
   const id = card.id;
@@ -180,5 +275,6 @@ export function enrichCard(card, ART) {
     sub: { ...DEFAULT_SUB, ...(card.sub || {}) },
     premiumGate: card.premiumGate || inferPremiumGate(card),
     issuerVelocity: card.issuerVelocity || ISSUER_VELOCITY[card.issuer] || "none",
+    cardFamily: inferCardFamily(card),
   };
 }

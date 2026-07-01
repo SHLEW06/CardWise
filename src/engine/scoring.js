@@ -8,7 +8,13 @@
 
 import { BY_ID } from "../data/cards.js";
 import { effCpp } from "./transferValue.js";
-import { applyApprovalPenalty as _applyApprovalPenalty } from "./approval.js";
+import {
+  applyApprovalPenalty as _applyApprovalPenalty,
+  estimateApprovalFit as _estimateApprovalFit,
+  isApplyNowEligible as _isApplyNowEligible,
+} from "./approval.js";
+import { CERT_EV } from "../data/valuations.js";
+import { evaluateIssuerRules } from "./issuerRuleEvaluator.js";
 
 export const CATS = ["Dining", "Groceries", "Gas", "Flights", "Hotels", "Transit", "Online", "Rent", "General"];
 export const CAT_LABEL = {
@@ -251,7 +257,556 @@ export function scoreCardWithApproval(card, profile, spend, held = [], approvalF
   };
 }
 
-/* overall 0-100 strategy score with component breakdown */
+/* ============================================================================
+   v3.3 explainable scoring API (Prompt 7)
+   ----------------------------------------------------------------------------
+   The legacy `scoreCard`, `netValue`, `annualRewards`, `realizedCredits`,
+   `effectiveFee`, and `strategyScore` exports above stay numerically stable
+   so v3.0/v3.1/v3.2 tests pin them in place. Everything below is additive
+   — a parallel API that exposes each component value (in dollars) and the
+   feature-importance contributions needed for UI explanations.
+
+   Design rules:
+
+     1) Components are computed in dollar-equivalent units, NOT as opaque
+        score points. This lets the modal show real numbers ("$218 in
+        groceries · -$95 annual fee").
+     2) Mathematical value (gross/net) and recommendation score (after
+        approval realism) are kept separate. Never collapse them.
+     3) Pure functions: same inputs → same output. No mutation.
+   ========================================================================== */
+
+/* ---------------- benefit-component helpers (mirrors annualFee.js) -------- */
+/* annualFee.js publicly exports these; we duplicate the small math here so
+   scoring.js doesn't introduce a circular import. Keep the formulas in sync
+   with annualFee.js to avoid drift. */
+
+function _freeNightValue(card) {
+  return Math.round((card.freeNightCertificates || []).reduce(
+    (t, c) => t + c.pointCap * CERT_EV.freeNightPerPoint * (F[c.use] || 0.6), 0));
+}
+function _companionValue(card) {
+  return Math.round((card.companionCertificates || []).reduce(
+    (t, c) => t + (c.estValue || 0) * (F[c.use] || 0.6), 0));
+}
+function _checkedBagValue(card, profile = {}) {
+  const b = card.checkedBagBenefits;
+  if (!b) return 0;
+  const freq = { never: 0, rarely: 0.3, sometimes: 0.6, often: 1 }[profile.checkedBags] ?? 0.5;
+  return Math.round((b.estAnnual || 0) * freq);
+}
+function _loungeValue(card, profile = {}) {
+  const l = card.loungeAccess;
+  if (!l) return 0;
+  const interest = { no: 0, sometimes: 0.55, yes: 1 }[profile.lounge] ?? 0.5;
+  return Math.round((l.estAnnual || 0) * (F[l.use] || 0.6) * interest);
+}
+function _statusValue(card) {
+  const h = card.hotelStatus ? (card.hotelStatus.estValue || 0) : 0;
+  const a = card.airlineStatus ? (card.airlineStatus.estValue || 0) : 0;
+  return Math.round(h + a);
+}
+function _travelProtectionValue(card, profile = {}) {
+  /* Travel protections (primary CDW, trip delay, baggage) have modest expected
+     value scaled by how often the user actually travels. */
+  const count = (card.travelProtections || []).length;
+  if (!count) return 0;
+  const travel = profile.derived?.travelIntensity || profile.travelIntensity || "light";
+  const factor = travel === "heavy" ? 1 : travel === "moderate" ? 0.6 : 0.25;
+  return Math.round(Math.min(120, count * 18) * factor);
+}
+
+/* ---------------- 1) Spend score ------------------------------------------ */
+
+/**
+ * Annualized rewards value in dollars (uses effCpp + per-category earn). The
+ * `spend` argument may be omitted — we build it from the profile then.
+ *
+ * @returns {{
+ *   total: number,
+ *   byCategory: Record<string, { spend:number, rate:number, cpp:number, value:number }>,
+ *   currency: string,
+ *   cpp: number,
+ * }}
+ */
+export function calculateSpendScore(card, profile = {}, spend = null) {
+  const s = spend || buildSpend(profile);
+  const held = (profile.currentWallet || []).map((w) => w.id).filter(Boolean);
+  const cpp = effCpp(card.pointCurrency, profile, held);
+  const byCategory = {};
+  let total = 0;
+  for (const cat of CATS) {
+    const monthly = s[cat] || 0;
+    if (monthly <= 0) continue;
+    const rate = rateFor(card, cat);
+    const v = Math.round(monthly * 12 * rate * (cpp / 100));
+    byCategory[cat] = { spend: Math.round(monthly * 12), rate, cpp, value: v };
+    total += v;
+  }
+  return { total: Math.round(total), byCategory, currency: card.pointCurrency, cpp };
+}
+
+/* ---------------- 2) Benefit score ---------------------------------------- */
+
+/**
+ * Dollar value of the realized benefits a typical user would actually use.
+ * Each component is rounded individually so the breakdown matches the total.
+ */
+export function calculateBenefitScore(card, profile = {}) {
+  const credits      = realizedCredits(card);
+  const freeNight    = _freeNightValue(card);
+  const companion    = _companionValue(card);
+  const bags         = _checkedBagValue(card, profile);
+  const lounge       = _loungeValue(card, profile);
+  const status       = _statusValue(card);
+  const protections  = _travelProtectionValue(card, profile);
+
+  /* Hotel-light penalty on the free-night cert AND status — heavy hotel users
+     get full credit, light/none users get a steep discount. */
+  const hotelUsage = profile.hotelUsage || profile.hotels?.hotelUsageLabel || "none";
+  const hotelFactor = hotelUsage === "often"     ? 1
+                    : hotelUsage === "sometimes" ? 0.6
+                    : hotelUsage === "rare"      ? 0.25
+                    : 0;
+  const freeNightAdj = Math.round(freeNight * hotelFactor);
+  const statusAdj    = card.hotelStatus
+    ? Math.round((card.hotelStatus.estValue || 0) * hotelFactor + (card.airlineStatus?.estValue || 0))
+    : status;
+
+  const total = credits + freeNightAdj + companion + bags + lounge + statusAdj + protections;
+  return {
+    total: Math.round(total),
+    credits, freeNight: freeNightAdj, companion, bags, lounge, status: statusAdj, protections,
+  };
+}
+
+/* ---------------- 3) Fit adjustment --------------------------------------- */
+
+/**
+ * Dollar-equivalent adjustment driven by lifestyle signals. Positive when the
+ * card matches the user's goal/hotel/lounge/travel pattern; negative when
+ * the card is a poor fit. Mirrors the logic inside `scoreCard` but exposes
+ * each driver as its own contribution.
+ */
+export function calculateFitScore(card, profile = {}) {
+  const drivers = [];
+  let total = 0;
+  const goal = profile.basics?.goal || profile.goal;
+  const goalTravel = ["travel", "luxury", "hotels"].includes(goal)
+    || ["asia", "europe", "latam", "oceania", "hotels"].includes(profile.destination);
+  if (goalTravel && card.tags?.includes("travel")) {
+    total += 90; drivers.push({ key: "goalTravel", label: "Goal: travel", value: 90 });
+  }
+  if (goal === "luxury" && card.tags?.includes("premium")) {
+    total += 110; drivers.push({ key: "goalLuxury", label: "Goal: luxury", value: 110 });
+  }
+  if (goal === "hotels" && card.tags?.includes("hotel")) {
+    total += 150; drivers.push({ key: "goalHotels", label: "Goal: hotels", value: 150 });
+  }
+  if (goal === "cashback" && card.tags?.includes("cashback")) {
+    total += 90; drivers.push({ key: "goalCashback", label: "Goal: cash back", value: 90 });
+  }
+  if (goal === "credit" && (card.tags?.includes("student") || card.tags?.includes("builder"))) {
+    total += 170; drivers.push({ key: "goalCreditBuilder", label: "Goal: build credit", value: 170 });
+  }
+
+  /* hotel usage gating */
+  if (card.tags?.includes("hotel")) {
+    const u = profile.hotelUsage;
+    let v = 0;
+    if (u === "none") v = -220;
+    else if (u === "rare") v = -120;
+    else if (u === "often") v = 60;
+    total += v;
+    if (v !== 0) drivers.push({ key: "hotelUsage", label: `Hotel usage: ${u}`, value: v });
+    if (profile.hotelBrands?.includes(card.pointCurrency)) {
+      total += 90;
+      drivers.push({ key: "hotelBrandMatch", label: `Hotel brand match: ${card.pointCurrency}`, value: 90 });
+    }
+  }
+  /* lounge gating */
+  if (card.tags?.includes("lounge") && profile.lounge === "no") {
+    total -= 140;
+    drivers.push({ key: "loungeMismatch", label: "Lounges not valued", value: -140 });
+  }
+  /* beginner/level weighting */
+  const level = profile.basics?.level || profile.level || "some";
+  const begW = level === "beginner" ? 24 : level === "some" ? 13 : 5;
+  const begContrib = (card.beginner || 5) * begW;
+  total += begContrib;
+  drivers.push({ key: "beginnerFit", label: "Beginner-friendliness fit", value: begContrib });
+
+  /* premium-fee realism trim */
+  const fee = effectiveFee(card);
+  if (fee >= 395) {
+    if (profile.lounge !== "yes" && card.tags?.includes("lounge")) {
+      total -= 80; drivers.push({ key: "premiumLoungeFit", label: "Premium fee w/o lounge use", value: -80 });
+    }
+    if (profile.checkedBags === "never" && card.tags?.includes("airline")) {
+      total -= 60; drivers.push({ key: "premiumAirlineFit", label: "Premium airline w/o bags", value: -60 });
+    }
+    if (["none", "rare"].includes(profile.hotelUsage) && card.tags?.includes("hotel")) {
+      total -= 80; drivers.push({ key: "premiumHotelFit", label: "Premium hotel w/o nights", value: -80 });
+    }
+  }
+  return { total: Math.round(total), drivers };
+}
+
+/* ---------------- 4) Ecosystem synergy ------------------------------------ */
+
+/** Reward strategic same-ecosystem stacks only when they make sense. */
+export function calculateEcosystemSynergy(card, profile = {}, held = []) {
+  const eco = card.ecosystemTags || [];
+  if (!eco.length || !held.length) return { total: 0, drivers: [] };
+  const heldEco = new Set();
+  for (const id of held) {
+    const c = BY_ID[id];
+    if (!c) continue;
+    for (const t of c.ecosystemTags || []) heldEco.add(t);
+  }
+  let synergy = 0;
+  const drivers = [];
+  for (const t of eco) {
+    if (heldEco.has(t)) {
+      synergy += 20;
+      drivers.push({ key: `eco:${t}`, label: `Ecosystem match: ${t}`, value: 20 });
+    }
+  }
+  const total = Math.min(80, synergy);
+  return { total, drivers };
+}
+
+/* ---------------- 5) Cost score ------------------------------------------- */
+
+/** Annual fee + membership + overlap penalty. All negative or zero. */
+export function calculateCostScore(card, profile = {}, currentWallet = []) {
+  const annualFee = -(card.annualFee || 0);
+  let membership = 0;
+  if (card.requiresSubscription && profile.memberships != null) {
+    const m = profile.memberships;
+    const name = (card.requiresSubscription.name || "").toLowerCase();
+    const has = !!(
+      (name.includes("robinhood")    && m.robinhoodGold) ||
+      (name.includes("amazon prime") && m.amazonPrime)   ||
+      (name.includes("costco")       && m.costco)        ||
+      (name.includes("walmart+")     && m.walmartPlus)
+    );
+    if (!has) membership = -300;
+  }
+  /* Overlap penalty: a same-strong-category card already held loses ground. */
+  let overlap = 0;
+  const strong = topCategory(card);
+  const heldIds = Array.isArray(currentWallet)
+    ? currentWallet.map((x) => typeof x === "string" ? x : x?.id).filter(Boolean)
+    : [];
+  for (const id of heldIds) {
+    const w = BY_ID[id];
+    if (w && w.id !== card.id && topCategory(w) === strong && rateFor(w, strong) >= rateFor(card, strong)) {
+      overlap -= 150;
+    }
+  }
+  return {
+    total: annualFee + membership + overlap,
+    annualFee, membership, overlap,
+  };
+}
+
+/* ---------------- 6) Complexity score ------------------------------------- */
+
+export function calculateComplexityScore(card, profile = {}) {
+  const level = profile.basics?.level || profile.level || "some";
+  const simplicity = profile.preferences?.simplicity || profile.simplicity || "balanced";
+  const complexity = card.complexity || 5;
+  let total = -complexity * (level === "beginner" ? 13 : 5);
+  if (simplicity === "simple") total -= complexity * 4;
+  if (simplicity === "max")    total += complexity * 1;
+  return { total: Math.round(total), complexity };
+}
+
+/* ---------------- 7) Approval score adjustment ---------------------------- */
+
+/** Returns a dollar-equivalent adjustment (negative when the card isn't
+   apply-now eligible for this profile). Wraps `applyApprovalPenalty`. */
+export function calculateApprovalScore(card, profile = {}, fit = null) {
+  const f = fit || _estimateApprovalFit(card, profile);
+  /* Use a reference math value of 0 so the function returns just the delta. */
+  const adjustment = _applyApprovalPenalty(0, f);
+  return {
+    total: Math.round(adjustment),
+    label: f.label,
+    confidence: f.confidence,
+    applyNowEligible: !!f.applyNowEligible,
+    timing: f.timing,
+    recommendedAction: f.recommendedAction,
+  };
+}
+
+/* ---------------- 8) Issuer-rule penalty ---------------------------------- */
+
+export function calculateIssuerRulePenalty(card, profile = {}) {
+  let total = 0;
+  let notes = [];
+  try {
+    const ev = evaluateIssuerRules(card, profile);
+    total = ev.scoreImpact || 0;
+    notes = ev.notes.map((n) => ({ id: n.id, severity: n.severity, message: n.message }));
+  } catch { /* defensive — never throw inside scoring */ }
+  return { total, notes };
+}
+
+/* ---------------- 9) Final card score ------------------------------------- */
+
+/**
+ * The full deterministic recommendation score. Combines every component into
+ * a single number AND exposes the components via `generateCardScoreBreakdown`.
+ * Approval realism is folded in by default; pass options.includeApproval=false
+ * to see the pure math score.
+ */
+export function calculateFinalCardScore(card, profile = {}, currentWallet = [], options = {}) {
+  const includeApproval = options.includeApproval !== false;
+  const fit = options.approvalFit
+    || (includeApproval ? _estimateApprovalFit(card, profile) : null);
+
+  const heldIds = Array.isArray(currentWallet)
+    ? currentWallet.map((x) => typeof x === "string" ? x : x?.id).filter(Boolean)
+    : [];
+  const spend = buildSpend(profile);
+  const spendC      = calculateSpendScore(card, profile, spend);
+  const benefitC    = calculateBenefitScore(card, profile);
+  const fitC        = calculateFitScore(card, profile);
+  const ecoC        = calculateEcosystemSynergy(card, profile, heldIds);
+  const costC       = calculateCostScore(card, profile, heldIds);
+  const complexC    = calculateComplexityScore(card, profile);
+  const ruleC       = calculateIssuerRulePenalty(card, profile);
+  const approvalC   = includeApproval && fit ? calculateApprovalScore(card, profile, fit) : { total: 0, label: null, confidence: null, applyNowEligible: true, timing: null, recommendedAction: null };
+
+  /* Mathematical net value: spend + benefit − annual fee (gross math, no
+     approval, no fit adjustments). */
+  const grossValue = spendC.total + benefitC.total;
+  const mathematicalNetValue = grossValue - (card.annualFee || 0);
+
+  /* Recommendation score: includes fit/ecosystem/cost/complexity/issuer rules
+     /approval — this is what the lineup ranks. */
+  const recScore = Math.round(
+      spendC.total
+    + benefitC.total
+    + fitC.total
+    + ecoC.total
+    + costC.total
+    + complexC.total
+    + ruleC.total
+    + approvalC.total
+  );
+
+  return {
+    mathematicalNetValue,
+    grossValue,
+    recommendationScore: recScore,
+    components: {
+      spend: spendC,
+      benefit: benefitC,
+      fit: fitC,
+      ecosystem: ecoC,
+      cost: costC,
+      complexity: complexC,
+      issuerRules: ruleC,
+      approval: approvalC,
+    },
+  };
+}
+
+/* ---------------- 10) Score breakdown for UI ----------------------------- */
+
+export function generateCardScoreBreakdown(card, profile = {}, currentWallet = []) {
+  const final = calculateFinalCardScore(card, profile, currentWallet);
+  const featureImportance = getFeatureImportance(card, profile, currentWallet, final);
+  const fit = final.components.approval;
+  const warnings = [];
+  const reasons = [];
+  const assumptions = [];
+
+  /* Gather warnings / reasons from each component. */
+  const memb = membershipGate(card, profile);
+  if (memb && profile.memberships != null && !memb.satisfied) {
+    warnings.push(`Requires ${memb.name} ($${memb.annual}/yr) — you said you don't keep it.`);
+  }
+  if (card.availabilityStatus === "productChangeOnly") {
+    warnings.push("Product-change only — can't be applied for directly.");
+  }
+  if (card.availabilityStatus === "downgradeOnly") {
+    warnings.push("Downgrade-only — only reachable by canceling its parent card.");
+  }
+  for (const n of final.components.issuerRules.notes.slice(0, 3)) {
+    if (n.severity === "blocker" || n.severity === "warning") warnings.push(n.message);
+    else reasons.push(n.message);
+  }
+  if (final.components.fit.total > 0) {
+    reasons.push(`Lifestyle fit adds ${final.components.fit.total >= 100 ? "strong " : ""}value.`);
+  }
+  if (final.components.ecosystem.total > 0) {
+    reasons.push(`Ecosystem synergy with your current wallet.`);
+  }
+  assumptions.push(`Per-point value uses your travel destination + held-cards anchor (${final.components.spend.cpp.toFixed(2)}¢ for ${final.components.spend.currency || "cash"}).`);
+  assumptions.push("Credits, free-night certificates, lounge value, and travel protections are discounted by typical-user utilization, not advertised face value.");
+
+  return {
+    cardId: card.id,
+    cardName: card.name,
+    mathematical: {
+      grossValue: final.grossValue,
+      netAnnualValue: final.mathematicalNetValue,
+      score: final.mathematicalNetValue,
+      confidence: fit?.confidence || "moderate",
+    },
+    recommendation: {
+      approvalAdjustedScore: final.recommendationScore,
+      approvalLabel: fit?.label || null,
+      applyNowEligible: !!fit?.applyNowEligible,
+      timing: fit?.timing || null,
+      recommendedAction: fit?.recommendedAction || null,
+    },
+    components: {
+      spendValue: final.components.spend.total,
+      benefitValue: final.components.benefit.total,
+      creditsUsed: final.components.benefit.credits,
+      certificateValue: final.components.benefit.freeNight,
+      checkedBagValue: final.components.benefit.bags,
+      companionValue: final.components.benefit.companion,
+      loungeValue: final.components.benefit.lounge,
+      protectionValue: final.components.benefit.protections,
+      statusValue: final.components.benefit.status,
+      ecosystemSynergy: final.components.ecosystem.total,
+      fitAdjustment: final.components.fit.total,
+      annualFee: final.components.cost.annualFee,
+      overlapPenalty: final.components.cost.overlap,
+      complexityPenalty: final.components.complexity.total,
+      portalPenalty: 0,                    // reserved — portals priced into earn rates today
+      redemptionDifficultyPenalty: 0,      // reserved — captured via effCpp valuations
+      membershipPenalty: final.components.cost.membership,
+      issuerRulePenalty: final.components.issuerRules.total,
+    },
+    featureImportance,
+    bestAlternative: computeBestAlternative(card, profile, currentWallet),
+    incrementalValue: computeIncrementalValue(card, profile, currentWallet),
+    warnings, reasons, assumptions,
+  };
+}
+
+/* ---------------- 11) Feature importance --------------------------------- */
+
+export function getFeatureImportance(card, profile = {}, currentWallet = [], final = null) {
+  const f = final || calculateFinalCardScore(card, profile, currentWallet);
+  const contributions = [];
+
+  /* Per-category spend contributions */
+  for (const [cat, info] of Object.entries(f.components.spend.byCategory)) {
+    if (Math.abs(info.value) < 20) continue;
+    contributions.push({
+      key: `spend:${cat}`,
+      label: CAT_LABEL[cat] || cat,
+      contribution: info.value,
+      direction: info.value >= 0 ? "positive" : "negative",
+    });
+  }
+
+  /* Benefits */
+  const b = f.components.benefit;
+  if (b.credits      >= 20) contributions.push({ key: "credits",      label: "Credits you'd use",   contribution: b.credits });
+  if (b.freeNight    >= 20) contributions.push({ key: "freeNight",    label: "Free-night cert",     contribution: b.freeNight });
+  if (b.companion    >= 20) contributions.push({ key: "companion",    label: "Companion cert",      contribution: b.companion });
+  if (b.bags         >= 20) contributions.push({ key: "bags",         label: "Checked-bag savings", contribution: b.bags });
+  if (b.lounge       >= 20) contributions.push({ key: "lounge",       label: "Lounge access",       contribution: b.lounge });
+  if (b.status       >= 20) contributions.push({ key: "status",       label: "Status value",        contribution: b.status });
+  if (b.protections  >= 20) contributions.push({ key: "protections",  label: "Travel protections",  contribution: b.protections });
+
+  /* Fit drivers */
+  for (const d of f.components.fit.drivers) {
+    if (Math.abs(d.value) < 30) continue;
+    contributions.push({ key: `fit:${d.key}`, label: d.label, contribution: d.value });
+  }
+
+  /* Ecosystem synergy */
+  if (f.components.ecosystem.total !== 0) {
+    contributions.push({ key: "ecosystemSynergy", label: "Ecosystem synergy", contribution: f.components.ecosystem.total });
+  }
+
+  /* Annual fee */
+  if (f.components.cost.annualFee !== 0) {
+    contributions.push({ key: "annualFee", label: "Annual fee", contribution: f.components.cost.annualFee });
+  }
+  /* Membership */
+  if (f.components.cost.membership !== 0) {
+    contributions.push({ key: "membership", label: "Membership not satisfied", contribution: f.components.cost.membership });
+  }
+  /* Overlap */
+  if (f.components.cost.overlap !== 0) {
+    contributions.push({ key: "overlap", label: "Overlap with held cards", contribution: f.components.cost.overlap });
+  }
+  /* Complexity */
+  if (f.components.complexity.total !== 0) {
+    contributions.push({ key: "complexity", label: "Complexity for your level", contribution: f.components.complexity.total });
+  }
+  /* Approval */
+  if (f.components.approval.total !== 0) {
+    contributions.push({ key: "approvalRisk", label: `Approval: ${f.components.approval.label || "—"}`, contribution: f.components.approval.total });
+  }
+  /* Issuer rules */
+  if (f.components.issuerRules.total !== 0) {
+    contributions.push({ key: "issuerRules", label: "Issuer rule penalty", contribution: f.components.issuerRules.total });
+  }
+
+  /* Compute shares from absolute values, guarding against zero. */
+  const totalAbs = contributions.reduce((t, c) => t + Math.abs(c.contribution), 0);
+  for (const c of contributions) {
+    c.share = totalAbs > 0 ? +(Math.abs(c.contribution) / totalAbs).toFixed(2) : 0;
+    if (!c.direction) c.direction = c.contribution >= 0 ? "positive" : "negative";
+    c.contribution = Math.round(c.contribution);
+  }
+  contributions.sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+  return contributions;
+}
+
+/* ---------------- 12) Best alternative + incremental value --------------- */
+
+function computeBestAlternative(card, profile, currentWallet) {
+  const heldIds = Array.isArray(currentWallet)
+    ? currentWallet.map((x) => typeof x === "string" ? x : x?.id).filter(Boolean)
+    : [];
+  const spend = buildSpend(profile);
+  /* Best existing alternative = the held card with the highest weighted
+     return on this user's spend, ignoring the candidate itself. */
+  if (!heldIds.length) {
+    return { kind: "baseline", label: "Flat 2% cash baseline", value: Math.round(annualizedAt(2, spend)) };
+  }
+  let best = null;
+  for (const id of heldIds) {
+    const w = BY_ID[id];
+    if (!w || w.id === card.id) continue;
+    const r = annualRewards(w, spend, profile, heldIds);
+    if (!best || r > best.value) best = { kind: "wallet", id: w.id, label: w.name, value: Math.round(r) };
+  }
+  if (!best) {
+    return { kind: "baseline", label: "Flat 2% cash baseline", value: Math.round(annualizedAt(2, spend)) };
+  }
+  return best;
+}
+
+function computeIncrementalValue(card, profile, currentWallet) {
+  const heldIds = Array.isArray(currentWallet)
+    ? currentWallet.map((x) => typeof x === "string" ? x : x?.id).filter(Boolean)
+    : [];
+  const spend = buildSpend(profile);
+  const cardR = annualRewards(card, spend, profile, heldIds);
+  const alt = computeBestAlternative(card, profile, currentWallet);
+  return { value: Math.round(cardR - alt.value), baseline: alt };
+}
+
+function annualizedAt(pct, spend) {
+  let t = 0; for (const c of CATS) t += (spend[c] || 0) * 12 * (pct / 100);
+  return t;
+}
+
+/* overall 0-100 strategy score with component breakdown (legacy) */
 export function strategyScore(ids, profile, spend, held = []) {
   const cards = ids.map((id) => BY_ID[id]).filter(Boolean);
   if (cards.length === 0) return { total: 0, earnings: 0, feeEff: 0, travelFit: 0, simplicity: 0, beginner: 0, keeper: 0 };

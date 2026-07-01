@@ -196,21 +196,55 @@ export function buildLineup(profile, spend, options = {}) {
     }
 
     /* For roles that lost their realistic candidate, try to fill them by
-       picking the next apply-now-eligible card from the pool. */
+       picking the next apply-now-eligible card from the pool. When
+       `diversifyIssuers` is on, candidates that would duplicate the
+       already-held issuer or ecosystem are softly penalized in the
+       replacement scoring — but we never reject a strictly better card
+       just to spread issuers when the ecosystem stack is the point
+       (e.g. Chase trifecta on a Chase-leaning profile). */
+    const diversify = options.diversifyIssuers !== false; // default on with overlay
     const heldIds = new Set(realisticBest.map((c) => c.id));
+    /* track issuer/ecosystem counts for the diversification penalty. */
+    const issuerCounts = {};
+    const ecoCounts = {};
+    for (const id of heldIds) {
+      const card = BY_ID[id];
+      if (!card) continue;
+      issuerCounts[card.issuer] = (issuerCounts[card.issuer] || 0) + 1;
+      for (const t of card.ecosystemTags || []) {
+        ecoCounts[t] = (ecoCounts[t] || 0) + 1;
+      }
+    }
+
     for (const c of chosen) {
       const f = fitFor(c.id);
       if (f.applyNowEligible) continue;
       /* find a replacement within the same role */
-      const replacement = pool
+      const candidatesPool = pool
         .filter((p) => !heldIds.has(p.id) && p.id !== c.id)
         .filter((p) => isApplyNowEligible(p, profile))
-        .map((p) => ({ p, s: scoreCard(p, profile, spend, [...heldIds]) }))
-        .sort((a, b) => b.s - a.s)[0];
+        .map((p) => {
+          let s = scoreCard(p, profile, spend, [...heldIds]);
+          if (diversify) {
+            const issuerDup = issuerCounts[p.issuer] || 0;
+            const ecoDup = (p.ecosystemTags || []).reduce((acc, t) => acc + (ecoCounts[t] || 0), 0);
+            /* Soft penalty: −18 per duplicate issuer slot, capped at −40.
+               −6 per duplicate ecosystem tag, capped at −30. */
+            s -= Math.min(40, issuerDup * 18);
+            s -= Math.min(30, ecoDup * 6);
+          }
+          return { p, s };
+        })
+        .sort((a, b) => b.s - a.s);
+      const replacement = candidatesPool[0];
       if (replacement) {
         const repFit = fitFor(replacement.p.id);
         realisticBest.push({ id: replacement.p.id, role: c.role, approval: repFit });
         heldIds.add(replacement.p.id);
+        issuerCounts[replacement.p.issuer] = (issuerCounts[replacement.p.issuer] || 0) + 1;
+        for (const t of replacement.p.ecosystemTags || []) {
+          ecoCounts[t] = (ecoCounts[t] || 0) + 1;
+        }
       }
     }
 

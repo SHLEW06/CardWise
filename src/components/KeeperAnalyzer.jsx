@@ -3,12 +3,21 @@ import { Wallet, ArrowRight } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { analyzeWallet } from "../engine/keeperAnalyzer.js";
 import { buildSpend, fmtMoney, membershipGate } from "../engine/scoring.js";
+import {
+  identifyDowngradePaths,
+  identifyProductChangePaths,
+  identifyRenewalReviewDates,
+} from "../engine/timelineBuilder.js";
 
 /* For each owned card: keep, downgrade, or cancel — judged on the value the
    user actually captures, with the break-even chips that justify the verdict. */
 export default function KeeperAnalyzer({ profile, wallet, onOpenCard, onGoWallet }) {
   const spend = useMemo(() => buildSpend(profile), [profile]);
   const rows = useMemo(() => (wallet && wallet.length ? analyzeWallet(wallet, profile, spend) : []), [wallet, profile, spend]);
+  const renewalDates = useMemo(
+    () => identifyRenewalReviewDates(profile?.currentWallet || [], profile),
+    [profile]
+  );
 
   if (!wallet || wallet.length === 0) {
     return (
@@ -35,6 +44,9 @@ export default function KeeperAnalyzer({ profile, wallet, onOpenCard, onGoWallet
           const kvClass = r.keeperValue >= 40 ? "cw-kv-good" : r.keeperValue >= -40 ? "cw-kv-warn" : "cw-kv-bad";
           const gate = membershipGate(r.card, profile);
           const gatedUI = !!(gate && profile?.memberships != null && !gate.satisfied);
+          const downgrades = identifyDowngradePaths(r.card).slice(0, 2);
+          const productChanges = identifyProductChangePaths(r.card).slice(0, 2);
+          const renewal = renewalDates.find((rd) => rd.cardId === r.cardId);
           return (
             <div className="cw-keeper-row" key={r.cardId}>
               <div className="cw-keeper-art">
@@ -56,7 +68,24 @@ export default function KeeperAnalyzer({ profile, wallet, onOpenCard, onGoWallet
                   ))}
                 </div>
               </button>
-              <div className="cw-keeper-reason">{r.reasons[0]}{r.reasons[1] ? ` ${r.reasons[1]}` : ""}</div>
+              <div className="cw-keeper-reason">
+                {r.reasons[0]}{r.reasons[1] ? ` ${r.reasons[1]}` : ""}
+                {renewal && (
+                  <div className="cw-keeper-renewal">
+                    Renewal: {renewal.whenLabel} · {renewal.action}.
+                  </div>
+                )}
+                {(downgrades.length > 0 || productChanges.length > 0) && (
+                  <div className="cw-keeper-paths">
+                    {downgrades.length > 0 && (
+                      <div>Downgrade options: {downgrades.map((d) => d.name).join(", ")}</div>
+                    )}
+                    {productChanges.length > 0 && (
+                      <div>Product-change options: {productChanges.map((p) => p.name).join(", ")}</div>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="cw-keeper-verdict">
                 <span className={["cw-verdict", "cw-verdict-" + r.tone].join(" ")}>{r.label}</span>
                 <span className={["cw-keeper-kv", kvClass].join(" ")}>{r.keeperValue >= 0 ? "+" : ""}{fmtMoney(r.keeperValue)}</span>
