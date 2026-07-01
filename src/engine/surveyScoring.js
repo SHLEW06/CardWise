@@ -16,7 +16,12 @@
    No external calls. No randomness. Deterministic.
    ========================================================================== */
 
-export const PROFILE_VERSION = "3.2";
+export const PROFILE_VERSION = "3.3";
+
+/* TODO(future account linking): when real account aggregation lands, the
+   normalizer will merge raw survey answers with linked bank/card statement
+   data. That work stays out of this prompt — for now, all fields come from
+   the survey UI or a sample profile. */
 
 /* -------------------------- enums + lookup tables -------------------------- */
 
@@ -38,70 +43,87 @@ const FEE_BUDGET_MAP = {
   none: 0, low: 100, medium: 300, high: 700, premium: 9999,
 };
 
-/* The canonical spend categories the engine understands. */
+/* The canonical spend categories the engine understands (v3.3 expanded set).
+   Old category names (`online`, `international`) are still accepted at input
+   time — see `_LEGACY_ALIASES` below — but the normalized profile stores
+   them under the new canonical names. */
 export const SPEND_CATEGORIES = [
   "groceries", "dining", "gas", "evCharging",
-  "flights", "hotels", "rentalCars", "transit",
-  "drugstores", "streaming", "online",
+  "flights", "hotels", "rentalCars", "rideshare", "transit",
+  "drugstores", "streaming", "onlineShopping",
   "amazon", "target", "walmart", "costco",
   "apparel", "electronics", "tuition",
-  "rent", "insurance", "utilities",
-  "international", "unbonused",
+  "rent", "insurance", "utilities", "phoneInternet",
+  "internationalPurchases", "miscellaneous", "unbonused",
 ];
+
+/* v3.2 → v3.3 category renames. Callers can pass either name in `rawSpend`
+   and it will be routed to the new canonical bucket. */
+const _LEGACY_ALIASES = {
+  online: "onlineShopping",
+  international: "internationalPurchases",
+  random: "miscellaneous",
+};
 
 /* Mapping back to the legacy `spendSel` chip set used by `buildSpend`. */
 const CATEGORY_TO_LEGACY_SEL = {
-  groceries:   "groceries",
-  dining:      "dining",
-  gas:         "gas",
-  evCharging:  "gas",        // EV charging cards still slot into "gas" semantics
-  flights:     "travel",
-  hotels:      "travel",
-  rentalCars:  "travel",
-  transit:     "travel",
-  drugstores:  "random",
-  streaming:   "entertainment",
-  online:      "online",
-  amazon:      "online",
-  target:      "random",
-  walmart:     "random",
-  costco:      "random",
-  apparel:     "online",
-  electronics: "online",
-  tuition:     "random",
-  rent:        "rent",
-  insurance:   "random",
-  utilities:   "random",
-  international: "travel",
-  unbonused:   "random",
+  groceries:     "groceries",
+  dining:        "dining",
+  gas:           "gas",
+  evCharging:    "gas",        // EV charging cards still slot into "gas" semantics
+  flights:       "travel",
+  hotels:        "travel",
+  rentalCars:    "travel",
+  rideshare:     "travel",
+  transit:       "travel",
+  drugstores:    "random",
+  streaming:     "entertainment",
+  onlineShopping: "online",
+  amazon:        "online",
+  target:        "random",
+  walmart:       "random",
+  costco:        "random",
+  apparel:       "online",
+  electronics:   "online",
+  tuition:       "random",
+  rent:          "rent",
+  insurance:     "random",
+  utilities:     "random",
+  phoneInternet: "random",
+  internationalPurchases: "travel",
+  miscellaneous: "random",
+  unbonused:     "random",
 };
 
 /* Mapping into the engine's CATS buckets (scoring.buildSpend reads
    spendAmounts keyed by these). */
 const CATEGORY_TO_ENGINE_CAT = {
-  groceries:   "Groceries",
-  dining:      "Dining",
-  gas:         "Gas",
-  evCharging:  "Gas",
-  flights:     "Flights",
-  hotels:      "Hotels",
-  rentalCars:  "Hotels",
-  transit:     "Transit",
-  drugstores:  "Online",
-  streaming:   "Online",
-  online:      "Online",
-  amazon:      "Online",
-  target:      "Online",
-  walmart:     "Online",
-  costco:      "Online",
-  apparel:     "Online",
-  electronics: "Online",
-  tuition:     "General",
-  rent:        "Rent",
-  insurance:   "General",
-  utilities:   "General",
-  international: "Flights",
-  unbonused:   "General",
+  groceries:     "Groceries",
+  dining:        "Dining",
+  gas:           "Gas",
+  evCharging:    "Gas",
+  flights:       "Flights",
+  hotels:        "Hotels",
+  rentalCars:    "Hotels",
+  rideshare:     "Transit",
+  transit:       "Transit",
+  drugstores:    "Online",
+  streaming:     "Online",
+  onlineShopping: "Online",
+  amazon:        "Online",
+  target:        "Online",
+  walmart:       "Online",
+  costco:        "Online",
+  apparel:       "Online",
+  electronics:   "Online",
+  tuition:       "General",
+  rent:          "Rent",
+  insurance:     "General",
+  utilities:     "General",
+  phoneInternet: "General",
+  internationalPurchases: "Flights",
+  miscellaneous: "General",
+  unbonused:     "General",
 };
 
 /* ----------------------------- helpers ------------------------------------ */
@@ -166,6 +188,14 @@ export function deriveTravelProfile(raw = {}) {
     domesticTripsPerYear:     num(raw.domesticTripsPerYear, 0),
     internationalTripsPerYear: num(raw.internationalTripsPerYear, 0),
     weeksTravelPerYear: num(raw.weeksTravelPerYear, 0),
+    /* v3.3: explicit spend + visit fields. Default 0 when missing so
+       downstream engines never divide by NaN. */
+    flightSpend:        num(raw.flightSpend, 0),
+    hotelSpend:         num(raw.hotelSpend, 0),
+    hotelNights:        num(raw.hotelNights, num(raw.hotelNightsPerYear, 0)),
+    loungeVisits:       num(raw.loungeVisits, 0),
+    companionTravelLikelihood: raw.companionTravelLikelihood
+      || (raw.partnerTravel ? "high" : raw.companionCertUseful === "yes" ? "moderate" : "low"),
     cabinAspiration: raw.cabinAspiration || "economy",
     partyType: raw.partyType || "solo",
     partnerTravel: !!raw.partnerTravel,
@@ -178,6 +208,47 @@ export function deriveTravelProfile(raw = {}) {
     directBookingPreference: raw.directBookingPreference || "ok",
     travelSplit: raw.travelSplit || "domestic",
   };
+}
+
+/* v3.3 benefitUsage — how likely the user is to use each of the credits and
+   perks that annualFee.js discounts. Every field is tri-state: true means
+   "yes I use this naturally", false means "no", "unknown" means "don't
+   penalize me one way or the other". */
+export function deriveBenefitUsage(raw = {}) {
+  const b = raw.benefitUsage || {};
+  const tri = (v) => (v === true || v === false ? v : "unknown");
+  return {
+    uber:                tri(b.uber),
+    uberEats:            tri(b.uberEats),
+    resy:                tri(b.resy),
+    lululemon:           tri(b.lululemon),
+    saks:                tri(b.saks),
+    clear:               tri(b.clear),
+    tsaGlobalEntry:      tri(b.tsaGlobalEntry),
+    streaming:           tri(b.streaming),
+    walmartPlus:         tri(b.walmartPlus),
+    instacart:           tri(b.instacart),
+    equinox:             tri(b.equinox),
+    airlineIncidentals:  tri(b.airlineIncidentals),
+    hotelPortalCredits:  tri(b.hotelPortalCredits),
+    diningCredits:       tri(b.diningCredits),
+    rideshareCredits:    tri(b.rideshareCredits),
+  };
+}
+
+/* v3.3 complexityPreference — a single knob the recommender reads for
+   "how many cards can this user manage". Falls back to the legacy
+   `cardCount` string when the survey doesn't ask directly. */
+export function deriveComplexityPreference(raw = {}, basics = {}) {
+  const explicit = raw.complexityPreference;
+  if (explicit) return explicit;
+  const cc = basics.cardCount || raw.cardCount || "3-4";
+  if (cc === "1-2") return "oneCard";
+  if (cc === "3-4") return "twoToThreeCards";
+  if (cc === "5+")  return "fourToFiveCards";
+  if (cc === "5-6") return "fourToFiveCards";
+  if (cc === "6+" || cc === "advanced") return "advancedSixPlus";
+  return "twoToThreeCards";
 }
 
 export function deriveHotelProfile(raw = {}) {
@@ -271,8 +342,40 @@ export function normalizeSpendProfile(rawSpend = {}, period = "monthly") {
   let totalAnnual = 0;
   const safeRaw = rawSpend && typeof rawSpend === "object" ? rawSpend : {};
 
+  /* Pre-flatten:
+     - fold legacy alias keys (e.g. `online` → `onlineShopping`)
+     - accept engine-cat keys (e.g. `Groceries` → `groceries`) so pre-v3.3
+       sample profiles that pass `spendAmounts: { Groceries: 450 }` still
+       populate the canonical `spend.monthly` map correctly. */
+  const flat = { ...safeRaw };
+  for (const [oldKey, newKey] of Object.entries(_LEGACY_ALIASES)) {
+    if (flat[oldKey] != null) {
+      flat[newKey] = num(flat[newKey], 0) + num(flat[oldKey], 0);
+      delete flat[oldKey];
+    }
+  }
+  /* Engine-cat capitalized keys (Groceries, Dining, Gas, Flights, Hotels,
+     Transit, Online, Rent, General) → canonical category names. */
+  const _ENGINE_CAT_TO_CANONICAL = {
+    Groceries: "groceries",
+    Dining:    "dining",
+    Gas:       "gas",
+    Flights:   "flights",
+    Hotels:    "hotels",
+    Transit:   "transit",
+    Online:    "onlineShopping",
+    Rent:      "rent",
+    General:   "miscellaneous",
+  };
+  for (const [engineKey, canonical] of Object.entries(_ENGINE_CAT_TO_CANONICAL)) {
+    if (flat[engineKey] != null) {
+      flat[canonical] = num(flat[canonical], 0) + num(flat[engineKey], 0);
+      delete flat[engineKey];
+    }
+  }
+
   for (const cat of SPEND_CATEGORIES) {
-    const v = num(safeRaw[cat], 0);
+    const v = num(flat[cat], 0);
     const m = period === "yearly" ? v / 12 : v;
     monthly[cat] = m;
     annual[cat]  = m * 12;
@@ -420,6 +523,10 @@ export function normalizeUserProfile(raw = {}) {
   const annualFeeComfort  = deriveAnnualFeeComfort(raw.annualFeeComfort || raw);
   const recommendationMode = deriveRecommendationMode(raw);
   const currentWallet     = normalizeCurrentWallet(raw.currentWallet || raw.wallet || []);
+  const benefitUsage      = deriveBenefitUsage(raw);
+  const complexityPreference = deriveComplexityPreference(raw, {
+    cardCount: raw.basics?.cardCount ?? raw.cardCount,
+  });
   const spend             = normalizeSpendProfile(
     raw.spend?.monthly || raw.spend?.raw || raw.spendAmounts || raw.spend || {},
     raw.spend?.periodInput || raw.spendPeriod || "monthly"
@@ -479,6 +586,8 @@ export function normalizeUserProfile(raw = {}) {
     annualFeeComfort,
     memberships,
     recommendationMode,
+    benefitUsage,
+    complexityPreference,
     derived: { likelyArchetypes: [], warnings: [], hotelIntensity: "light", travelIntensity: "light" },
   };
 
@@ -538,7 +647,64 @@ export function getProfileCompleteness(profile) {
     profile.creditProfile?.scoreBucket && profile.creditProfile.scoreBucket !== "unsure",
     (profile.creditProfile?.currentIssuers?.length || 0) > 0,
     profile.recommendationMode?.mode,
+    /* v3.3 additional signals — do not weight so heavily that leaving them
+       blank tanks the score. */
+    profile.complexityPreference,
+    profile.benefitUsage && Object.values(profile.benefitUsage).some((v) => v === true),
   ];
   for (const c of checks) { total++; if (c) filled++; }
   return total === 0 ? 0 : Math.round((filled / total) * 100) / 100;
+}
+
+/** Prompt-10.5A alias — same semantics as `getProfileCompleteness`, exposed
+   under the name the new prompts expect. */
+export function calculateProfileCompleteness(profile) {
+  return getProfileCompleteness(profile);
+}
+
+/* ============================================================================
+   Prompt-10.5A helpers — expose spend numbers to any caller that wants them.
+   ========================================================================== */
+
+/** Annual $ for a single spend category. Accepts:
+ *   - a canonical v3.3 key ("groceries", "onlineShopping", ...)
+ *   - a legacy alias ("online", "international", "random")
+ *   - an engine CATS bucket ("Groceries", "Online", "General", ...)
+ *  Returns 0 for unknown categories so callers never see undefined. */
+export function getAnnualSpend(userProfile, category) {
+  if (!userProfile || !category) return 0;
+  const key = _LEGACY_ALIASES[category] || category;
+  const annual = userProfile.spend?.annual || {};
+  if (annual[key] != null) return Math.round(annual[key]);
+  /* Engine-cat lookup: sum every canonical category that maps to this bucket. */
+  const engineCat = userProfile.spend?.engineCat;
+  if (engineCat && engineCat[category] != null) {
+    return Math.round(engineCat[category] * 12);
+  }
+  return 0;
+}
+
+/** Total annual $ across every category. Falls back to summing the monthly
+   spend map when `spend.totalAnnual` is missing. */
+export function calculateTotalAnnualSpend(userProfile) {
+  if (!userProfile) return 0;
+  if (userProfile.spend?.totalAnnual != null) return Math.round(userProfile.spend.totalAnnual);
+  const monthly = userProfile.spend?.monthly || {};
+  return Math.round(Object.values(monthly).reduce((t, v) => t + num(v, 0), 0) * 12);
+}
+
+/** How much of the user's annual spend is UNBONUSED — i.e., "General" bucket
+   plus explicit unbonused/miscellaneous/tuition/insurance/utilities. Useful
+   for choosing between a flat catch-all card and category cards. */
+export function estimateUnbonusedSpend(userProfile) {
+  if (!userProfile) return 0;
+  const annual = userProfile.spend?.annual || {};
+  const buckets = ["unbonused", "miscellaneous", "tuition", "insurance", "utilities", "phoneInternet"];
+  let sum = 0;
+  for (const b of buckets) sum += num(annual[b], 0);
+  /* Also pick up the engine-cat "General" bucket for callers that pre-computed
+     an aggregated engine map without preserving canonical categories. */
+  const engineGeneral = userProfile.spend?.engineCat?.General;
+  if (engineGeneral != null && sum === 0) sum = engineGeneral * 12;
+  return Math.round(sum);
 }

@@ -54,7 +54,11 @@ const HOTEL_LIGHT = {
   ...STRONG_TRAVEL,
   hotels: { intensity: "light", preferredBrands: [], certManagementWillingness: "low" },
   hotelUsage: "none",
-  derived: { ...STRONG_TRAVEL.derived, hotelIntensity: "light" },
+  derived: { ...STRONG_TRAVEL.derived, hotelIntensity: "light", travelIntensity: "light" },
+  /* v3.3 normalizer now flows spendAmounts through the canonical map, so a
+     hotel-light user with no travel spend must express that explicitly. */
+  spend: undefined,
+  spendAmounts: { Dining: 300, Groceries: 300, General: 400 },
 };
 
 const BEGINNER_SIMPLE = {
