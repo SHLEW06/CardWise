@@ -143,6 +143,11 @@ function KeeperRow({ r, profile, onOpenCard }) {
             {r.warnings.map((w, i) => <div key={i}><AlertTriangle size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />{w}</div>)}
           </div>
         )}
+        {r.reasons?.length > 0 && (
+          <ul className="cw-keeper-reasons">
+            {r.reasons.slice(0, 4).map((rn, i) => (<li key={i}>{rn}</li>))}
+          </ul>
+        )}
         {r.assumptions.length > 0 && (
           <div className="cw-approval-disclaimer" style={{ marginTop: 8 }}>{r.assumptions.join(" ")}</div>
         )}
@@ -155,7 +160,9 @@ function decisionTone(decision) {
   switch (decision) {
     case KEEPER_DECISIONS.STRONG_KEEP:
     case KEEPER_DECISIONS.KEEP:
+    case KEEPER_DECISIONS.KEEP_FOR_SPECIFIC_USE:
       return "good";
+    case KEEPER_DECISIONS.KEEP_BUT_STOP_SPENDING:
     case KEEPER_DECISIONS.DOWNGRADE:
     case KEEPER_DECISIONS.RECONSIDER_LATER:
     case KEEPER_DECISIONS.HIGHER_USAGE_ONLY:

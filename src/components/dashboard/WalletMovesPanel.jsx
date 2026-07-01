@@ -74,7 +74,11 @@ export default function WalletMovesPanel({ rows, onOpenCard }) {
                     <div className="cw-mv-move-body">
                       <div className="cw-mv-move-name">{card.name}</div>
                       <div className="cw-mv-move-decision">
-                        {LABELS[row.recommendation] || row.recommendation}
+                        {/* Prompt-10.5J: show the specific keeper decision
+                           (Keep For Specific Use / Keep But Stop Spending /
+                           Downgrade At Renewal / Cancel At Renewal) rather
+                           than only the coarse recommendation bucket. */}
+                        {row.decision || LABELS[row.recommendation] || row.recommendation}
                         {row.target?.name && (
                           <span className="cw-mv-move-target"> → {row.target.name}</span>
                         )}

@@ -137,14 +137,37 @@ export { VERDICTS };
 export const KEEPER_DECISIONS = {
   STRONG_KEEP:               "Strong Keep",
   KEEP:                      "Keep",
-  DOWNGRADE:                 "Downgrade",
-  CANCEL:                    "Cancel",
+  KEEP_FOR_SPECIFIC_USE:     "Keep For Specific Use",
+  KEEP_BUT_STOP_SPENDING:    "Keep But Stop Spending",
+  DOWNGRADE:                 "Downgrade At Renewal",
+  CANCEL:                    "Cancel At Renewal",
   RECONSIDER_LATER:          "Reconsider Later",
   HIGHER_USAGE_ONLY:         "Good Only With Higher Usage",
   PRODUCT_CHANGE_CANDIDATE:  "Product Change Candidate",
   DOWNGRADE_PATH_ONLY:       "Downgrade Path Only",
   CREDIT_TOOL_ONLY:          "Credit Tool Only",
   NOT_NEEDED:                "Not Needed",
+};
+
+/* Explanation strings for the Prompt-10.5J preservation surface. These aren't
+   thresholds — they're the reasoning the UI shows next to a decision so
+   users understand why we recommend "keep for now" instead of "apply for
+   this again". Attaching them here keeps them in one place. */
+export const KEEPER_PRESERVATION_NOTES = {
+  NO_APPLY_BUT_KEEP:
+    "This card isn't worth a new application today, but since you already have it, keep it for the credit history it's built.",
+  NO_FEE_KEEP:
+    "Do not cancel this no-fee card unless there's a specific reason — the account age it contributes is quiet, ongoing value.",
+  UTILIZATION_ANCHOR:
+    "This card's credit line helps your utilization ratio — closing it would raise reported utilization and can dent your score.",
+  DOWNGRADE_BEFORE_CANCEL:
+    "Downgrade this card at renewal rather than closing it — you keep the account age without paying the fee.",
+  RENEWAL_REVIEW:
+    "Review this card in the month before its next annual fee posts. That's when the cancel/downgrade decision matters.",
+  SPECIFIC_USE_ONLY:
+    "Keep this card only for a specific benefit (cert, credit, or perk) — don't route everyday spend to it.",
+  STOP_SPENDING:
+    "Keep the account open for credit history, but stop putting new spend on it — a stronger card in your wallet earns more per dollar.",
 };
 
 /** Threshold defaults (dollars per year of keeper net value).
@@ -222,12 +245,30 @@ export function calculateKeeperValue(card, profile = {}, currentWallet = [], opt
 
   /* --- confidence + decision ----------------------------------------- */
   const confidence = deriveConfidence(profile, breakage, redemption);
+
+  /* Prompt-10.5J context: does the wallet already have a better card that
+     wins this card's dominant role? If so, a $0-fee card becomes Keep-But-
+     Stop-Spending rather than dropping toward Cancel. */
+  const isDominatedNoFee = (card.annualFee || 0) === 0
+    && !card.requiresSubscription
+    && _isDominatedInWallet(card, profile, heldIds);
+
+  const components = {
+    rewardsValue, creditsUsed, certificateValue, companionValue,
+    checkedBagValue, loungeValue, statusValue, protectionValue,
+  };
+
   const decision = classifyKeeperDecision({
     netValue,
     card, profile,
     confidence,
     hasDowngradePath: (card.downgradeOptionIds?.length || card.downgradeOptions?.length || 0) > 0,
     hasProductChangePath: (card.productChangePathIds?.length || card.productChangePaths?.length || 0) > 0,
+    components,
+    context: {
+      walletSize: heldIds.length,
+      isDominatedNoFee,
+    },
   });
 
   /* --- break-even + renewal + best paths ----------------------------- */
@@ -263,6 +304,32 @@ export function calculateKeeperValue(card, profile = {}, currentWallet = [], opt
   if (rewardsValue > 0) reasons.push(`Estimated ${fmt(rewardsValue)} in category rewards.`);
   if (certificateValue > 0) reasons.push(`Certificate you'd realistically use is worth about ${fmt(certificateValue)}.`);
   if (loungeValue > 0)   reasons.push(`Lounge value: ${fmt(loungeValue)}.`);
+
+  /* Preservation reasoning (Prompt-10.5J). Every decision that leans on a
+     preservation rule surfaces the corresponding note so the user
+     understands *why* we're not recommending a cancel. */
+  if (decision === KEEPER_DECISIONS.STRONG_KEEP && (card.annualFee || 0) === 0 && heldIds.length <= 2) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.NO_FEE_KEEP);
+    reasons.push(KEEPER_PRESERVATION_NOTES.UTILIZATION_ANCHOR);
+  }
+  if (decision === KEEPER_DECISIONS.KEEP_BUT_STOP_SPENDING) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.STOP_SPENDING);
+    reasons.push(KEEPER_PRESERVATION_NOTES.NO_FEE_KEEP);
+  }
+  if (decision === KEEPER_DECISIONS.KEEP_FOR_SPECIFIC_USE) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.SPECIFIC_USE_ONLY);
+  }
+  if (decision === KEEPER_DECISIONS.DOWNGRADE) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.DOWNGRADE_BEFORE_CANCEL);
+  }
+  if (decision === KEEPER_DECISIONS.RECONSIDER_LATER
+      && (card.annualFee || 0) > 0) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.NO_APPLY_BUT_KEEP);
+  }
+  if ((card.annualFee || 0) > 0) {
+    reasons.push(KEEPER_PRESERVATION_NOTES.RENEWAL_REVIEW);
+  }
+
   assumptions.push("Credits/certs are discounted by typical-user utilization, not advertised face value.");
   assumptions.push(`Effective annual fee: ${fmt(-annualFee + membership.effectiveCost)}.`);
 
@@ -346,6 +413,43 @@ function require_annualFee() {
 
 const F_MAP = { EASY: 1.0, MEDIUM: 0.6, HARD: 0.35 };
 
+/** Does another card in the wallet strictly win this card's dominant role?
+   Only used for no-fee cards: if yes, we surface Keep-But-Stop-Spending so
+   the account age is preserved but new spend routes elsewhere. */
+function _isDominatedInWallet(card, profile, heldIds) {
+  if (!card || !heldIds || heldIds.length === 0) return false;
+  const spend = buildSpend(profile);
+  /* Find the card's strongest category. */
+  let bestCat = null, bestRate = 0;
+  for (const cat of CATS) {
+    if (cat === "General" || cat === "Rent") continue;
+    const r = card.earnRates?.[cat] || 0;
+    const monthly = spend[cat] || 0;
+    if (r > bestRate && monthly > 0) { bestRate = r; bestCat = cat; }
+  }
+  if (!bestCat) {
+    /* Fall back to General earn rate — is any other card matching or better
+       on catch-all? */
+    const gen = card.earnRates?.General || 1;
+    for (const id of heldIds) {
+      if (id === card.id) continue;
+      const other = BY_ID[id];
+      if (!other) continue;
+      if ((other.earnRates?.General || 1) > gen) return true;
+    }
+    return false;
+  }
+  /* Any other card in the wallet with a strictly higher earn rate on
+     bestCat means this card is dominated for that role. */
+  for (const id of heldIds) {
+    if (id === card.id) continue;
+    const other = BY_ID[id];
+    if (!other) continue;
+    if ((other.earnRates?.[bestCat] || 0) > bestRate) return true;
+  }
+  return false;
+}
+
 function deriveConfidence(profile, breakage, redemption) {
   const gaps = [];
   if (!profile.creditProfile?.score) gaps.push("credit-score");
@@ -357,7 +461,20 @@ function deriveConfidence(profile, breakage, redemption) {
   return "high";
 }
 
-/** Classify decision label from net value + card context. */
+/** Classify decision label from net value + card context.
+ *
+ * Prompt-10.5J preservation rules layered on top of the numeric bands:
+ *
+ *   1) Do not casually recommend canceling old no-fee cards — they carry
+ *      credit-history value and closing them raises reported utilization.
+ *   2) Annual-fee cards below break-even prefer downgrade before cancel
+ *      whenever a downgrade / product-change path exists.
+ *   3) A card whose value comes almost entirely from a single specific benefit
+ *      (cert, credit, lounge) is "Keep For Specific Use" — the user shouldn't
+ *      put daily spend on it, but the account still earns its fee.
+ *   4) A no-fee card that's dominated by a better in-wallet option becomes
+ *      "Keep But Stop Spending" — worth the account age, not the routing.
+ */
 export function classifyKeeperDecision(input = {}) {
   const {
     netValue = 0,
@@ -366,6 +483,8 @@ export function classifyKeeperDecision(input = {}) {
     confidence = "moderate",
     hasDowngradePath = false,
     hasProductChangePath = false,
+    components = null,       // optional keeper components object
+    context = null,          // optional { walletSize, isDominatedNoFee, cardAgeMonths }
   } = input;
 
   /* Category-specific overrides take precedence. */
@@ -382,9 +501,38 @@ export function classifyKeeperDecision(input = {}) {
     if (level !== "beginner" && score >= 720) return KEEPER_DECISIONS.NOT_NEEDED;
   }
 
-  /* Numeric bands. */
+  const isNoFee = (card.annualFee || 0) === 0 && !card.requiresSubscription;
+  const walletSize = context?.walletSize ?? 3;
+  const isDominatedNoFee = !!context?.isDominatedNoFee;
+
+  /* --- Preservation rule 1: no-fee cards are preserved except in
+         narrow, explicit cases. Even a low-value no-fee card contributes
+         credit-history value; closing it can raise utilization. --------- */
+  if (isNoFee) {
+    /* No-fee card in a small wallet → always Strong Keep (credit age
+       matters most when the user has few tradelines). */
+    if (walletSize <= 2) return KEEPER_DECISIONS.STRONG_KEEP;
+    if (netValue >= KEEPER_THRESHOLDS.STRONG && confidence !== "low") {
+      return KEEPER_DECISIONS.STRONG_KEEP;
+    }
+    if (netValue >= KEEPER_THRESHOLDS.KEEP) return KEEPER_DECISIONS.KEEP;
+    /* Below the "Keep" band but still $0 fee: don't cancel; stop routing
+       new spend to it when a better in-wallet card is winning its role. */
+    if (isDominatedNoFee) return KEEPER_DECISIONS.KEEP_BUT_STOP_SPENDING;
+    return KEEPER_DECISIONS.KEEP;
+  }
+
+  /* --- Standard numeric bands for fee cards ------------------------- */
   if (netValue >= KEEPER_THRESHOLDS.STRONG && confidence !== "low") return KEEPER_DECISIONS.STRONG_KEEP;
-  if (netValue >= KEEPER_THRESHOLDS.KEEP) return KEEPER_DECISIONS.KEEP;
+  if (netValue >= KEEPER_THRESHOLDS.KEEP) {
+    /* If the majority of net value comes from a single specific benefit
+       (cert / lounge / companion), the card is a "specific-use keeper" —
+       user gets the perk but shouldn't daily-drive it. */
+    if (components && _specificUseShare(components) > 0.65) {
+      return KEEPER_DECISIONS.KEEP_FOR_SPECIFIC_USE;
+    }
+    return KEEPER_DECISIONS.KEEP;
+  }
   if (netValue >= KEEPER_THRESHOLDS.BREAKEVEN) {
     /* Border zone — profile completeness / usage gate decides. */
     if (confidence === "low") return KEEPER_DECISIONS.RECONSIDER_LATER;
@@ -392,12 +540,33 @@ export function classifyKeeperDecision(input = {}) {
     const hotelLite = ["none", "rare"].includes(profile.hotelUsage) && card.tags?.includes("hotel");
     const noLounge = profile.lounge === "no" && card.tags?.includes("lounge");
     if (hotelLite || noLounge) return KEEPER_DECISIONS.HIGHER_USAGE_ONLY;
+    /* A specific-use benefit here (a Marriott cert that clears the $95 fee
+       on its own for a hotel-sometimes user) is Keep-For-Specific-Use. */
+    if (components && _specificUseShare(components) > 0.55) {
+      return KEEPER_DECISIONS.KEEP_FOR_SPECIFIC_USE;
+    }
     return KEEPER_DECISIONS.RECONSIDER_LATER;
   }
-  /* Below break-even — prefer downgrade / PC if possible. */
+
+  /* --- Below break-even: preservation rule 2 — downgrade before cancel. */
   if (hasProductChangePath) return KEEPER_DECISIONS.PRODUCT_CHANGE_CANDIDATE;
   if (hasDowngradePath)     return KEEPER_DECISIONS.DOWNGRADE;
   return KEEPER_DECISIONS.CANCEL;
+}
+
+/** Share of a card's gross value that comes from single-use "specific" perks
+   (certificates, companion, lounge, status). Used to route a positive-net
+   card to Keep-For-Specific-Use instead of daily-driver Keep. */
+function _specificUseShare(components) {
+  const gross = Math.max(1,
+    (components.rewardsValue || 0) + (components.creditsUsed || 0) +
+    (components.certificateValue || 0) + (components.companionValue || 0) +
+    (components.checkedBagValue || 0) + (components.loungeValue || 0) +
+    (components.statusValue || 0) + (components.protectionValue || 0)
+  );
+  const specific = (components.certificateValue || 0) + (components.companionValue || 0)
+                 + (components.loungeValue || 0) + (components.statusValue || 0);
+  return specific / gross;
 }
 
 /** Deterministic narrator. */

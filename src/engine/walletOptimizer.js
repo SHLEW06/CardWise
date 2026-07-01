@@ -234,7 +234,9 @@ export function recommendDowngradeOrCancelMoves(userProfile = {}, currentWallet 
     let recommendation = "keep";
     let target = null;
     if (keeper.decision === KEEPER_DECISIONS.STRONG_KEEP
-        || keeper.decision === KEEPER_DECISIONS.KEEP) {
+        || keeper.decision === KEEPER_DECISIONS.KEEP
+        || keeper.decision === KEEPER_DECISIONS.KEEP_FOR_SPECIFIC_USE
+        || keeper.decision === KEEPER_DECISIONS.KEEP_BUT_STOP_SPENDING) {
       recommendation = "keep";
     } else if (keeper.decision === KEEPER_DECISIONS.DOWNGRADE
             || keeper.decision === KEEPER_DECISIONS.PRODUCT_CHANGE_CANDIDATE) {
@@ -245,9 +247,17 @@ export function recommendDowngradeOrCancelMoves(userProfile = {}, currentWallet 
             || keeper.decision === KEEPER_DECISIONS.RECONSIDER_LATER) {
       recommendation = "reconsider";
     } else if (keeper.decision === KEEPER_DECISIONS.CANCEL) {
-      /* Don't casually cancel a $0 keeper — preserve the account age. */
+      /* Prompt-10.5J preservation: never casually cancel a $0 keeper — the
+         account age matters. Prefer downgrade when a path exists, and only
+         cancel when the fee / value gap plus overlap clearly justify it. */
       if ((card.annualFee || 0) === 0 && !card.requiresSubscription) {
         recommendation = "keep";
+      } else if (keeper.downgradeOptions?.length > 0) {
+        recommendation = "downgrade";
+        target = keeper.downgradeOptions[0];
+      } else if (keeper.productChangeOptions?.length > 0) {
+        recommendation = "product-change";
+        target = keeper.productChangeOptions[0];
       } else {
         recommendation = "cancel";
       }
