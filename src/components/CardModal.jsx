@@ -11,6 +11,7 @@ import { calculateEffectiveAnnualFee, calculateAnnualFeeBreakEven } from "../eng
 import { explainOverlaps } from "../engine/overlapDetector.js";
 import { calculateAirlineFitScore, getAirportProfile } from "../engine/airportFit.js";
 import { calculateRouteAirlineFit } from "../engine/routeFit.js";
+import ValueBreakdown from "./dashboard/ValueBreakdown.jsx";
 
 function RuleGroup({ title, rules, cls }) {
   return (
@@ -119,6 +120,10 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
                 ))}
               </div>
             </>
+          )}
+
+          {profile && (
+            <ValueBreakdown cardId={card.id} profile={profile} wallet={held} compact />
           )}
 
           {earnRows.length > 0 && (
