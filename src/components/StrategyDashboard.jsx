@@ -10,6 +10,7 @@ import { isNarratorConfigured, streamNarrative } from "../firebase/narrator.js";
 import { APPROVAL_LABELS } from "../engine/approval.js";
 import { analyzeWalletKeepers } from "../engine/keeperAnalyzer.js";
 import { summarizeWalletOverlap } from "../engine/overlapDetector.js";
+import { recommendBestNextCard, recommendCardsToAvoid } from "../engine/walletOptimizer.js";
 
 function labelTone(label) {
   switch (label) {
@@ -56,6 +57,17 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
     () => (wallet && wallet.length ? summarizeWalletOverlap(wallet, profile) : null),
     [profile, wallet]
   );
+
+  /* Prompt-10.5C decision-engine snapshot. Guarded with try/catch so a
+     partial profile never crashes the dashboard. */
+  const optimizerBestNext = useMemo(() => {
+    try { return recommendBestNextCard(profile, wallet || []); }
+    catch { return null; }
+  }, [profile, wallet]);
+  const optimizerAvoid = useMemo(() => {
+    try { return recommendCardsToAvoid(profile, wallet || []); }
+    catch { return []; }
+  }, [profile, wallet]);
   const score = useMemo(() => strategyScore(ids, profile, spend, ids), [ids, profile, spend]);
   const cats = useMemo(() => bestByCategory(ids, spend, profile, ids).slice(0, 6), [ids, spend, profile]);
 
@@ -213,6 +225,40 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
           <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
             {keeperAlerts.map((a, i) => (
               <li key={i}><b>{a.severity}:</b> {a.message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {optimizerBestNext && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title">
+            <Sparkles size={17} /> Best next card
+            <span className="cw-pill cw-pill-muted" style={{ marginLeft: 10 }}>
+              {optimizerBestNext.label}
+            </span>
+          </div>
+          <p className="cw-arch-line" style={{ marginTop: 6 }}>
+            {optimizerBestNext.cardName} — {optimizerBestNext.explanation}
+          </p>
+          {optimizerBestNext.whatWouldChangeDecision.length > 0 && (
+            <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
+              {optimizerBestNext.whatWouldChangeDecision.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {optimizerAvoid && optimizerAvoid.length > 0 && (
+        <div className="cw-panel" style={{ marginBottom: 18 }}>
+          <div className="cw-panel-title"><Info size={17} /> Cards to avoid</div>
+          <ul className="cw-tl-issuer" style={{ marginTop: 8 }}>
+            {optimizerAvoid.slice(0, 4).map((a, i) => (
+              <li key={i}>
+                <b>{a.label}:</b> {a.cardName} — {a.reason}
+              </li>
             ))}
           </ul>
         </div>
