@@ -16,6 +16,8 @@ import {
 import { CERT_EV } from "../data/valuations.js";
 import { evaluateIssuerRules } from "./issuerRuleEvaluator.js";
 import { calculateOverlapPenalty as _calculateOverlapPenaltyFn } from "./overlapDetector.js";
+import { calculateAirlineFitScore as _calcAirlineFitScore } from "./airportFit.js";
+import { calculateRouteAirlineFit as _calcRouteAirlineFit } from "./routeFit.js";
 
 export const CATS = ["Dining", "Groceries", "Gas", "Flights", "Hotels", "Transit", "Online", "Rent", "General"];
 export const CAT_LABEL = {
@@ -449,6 +451,27 @@ export function calculateFitScore(card, profile = {}) {
     if (["none", "rare"].includes(profile.hotelUsage) && card.tags?.includes("hotel")) {
       total -= 80; drivers.push({ key: "premiumHotelFit", label: "Premium hotel w/o nights", value: -80 });
     }
+  }
+
+  /* v3.3 airport/route fit for airline co-brand cards.
+     - Strong home-airport + route fit (≥ 65 combined) boosts the card up to +80.
+     - Weak fit (< 30 combined) trims up to −60.
+     - Neutral zone leaves the score alone. */
+  if (card.tags?.includes("airline") && card.pointCurrency) {
+    try {
+      const airportFit = _calcAirlineFitScore(profile, card.pointCurrency);
+      const routeFit   = _calcRouteAirlineFit(profile, card.pointCurrency);
+      const combined = Math.max(airportFit, routeFit);
+      if (combined >= 65) {
+        const boost = Math.round(((combined - 65) / 35) * 80);
+        total += boost;
+        drivers.push({ key: "airlineFitStrong", label: `Strong ${String(card.pointCurrency).toUpperCase()} airport/route fit`, value: boost });
+      } else if (combined <= 30) {
+        const penalty = Math.round(((30 - combined) / 30) * 60);
+        total -= penalty;
+        drivers.push({ key: "airlineFitWeak", label: `Weak ${String(card.pointCurrency).toUpperCase()} airport/route fit`, value: -penalty });
+      }
+    } catch { /* airport/route data missing → skip silently */ }
   }
   return { total: Math.round(total), drivers };
 }

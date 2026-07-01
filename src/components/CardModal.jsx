@@ -9,6 +9,8 @@ import { evaluateIssuerRules } from "../engine/issuerRuleEvaluator.js";
 import { calculateKeeperValue } from "../engine/keeperAnalyzer.js";
 import { calculateEffectiveAnnualFee, calculateAnnualFeeBreakEven } from "../engine/annualFee.js";
 import { explainOverlaps } from "../engine/overlapDetector.js";
+import { calculateAirlineFitScore, getAirportProfile } from "../engine/airportFit.js";
+import { calculateRouteAirlineFit } from "../engine/routeFit.js";
 
 function RuleGroup({ title, rules, cls }) {
   return (
@@ -63,6 +65,22 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
   const overlapRecords = profile
     ? explainOverlaps(card, profile.currentWallet || held || [], profile)
     : [];
+
+  /* v3.3 compact airport/route fit line for airline/travel cards. */
+  const airportFitLine = profile && card.tags?.includes("airline") && card.pointCurrency
+    ? (() => {
+        const home = profile.homeAirport || profile.travel?.homeAirport;
+        const homeAp = home && getAirportProfile(home);
+        const airport = calculateAirlineFitScore(profile, card.pointCurrency);
+        const route = calculateRouteAirlineFit(profile, card.pointCurrency);
+        const combined = Math.max(airport, route);
+        const strong = combined >= 65, weak = combined <= 30;
+        const label = homeAp
+          ? `${strong ? "Strong" : weak ? "Weak" : "Neutral"} ${homeAp.code}/${String(card.pointCurrency).toUpperCase()} fit`
+          : `${strong ? "Strong" : weak ? "Weak" : "Neutral"} ${String(card.pointCurrency).toUpperCase()} fit`;
+        return { label, tone: strong ? "good" : weak ? "bad" : "muted", combined };
+      })()
+    : null;
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
@@ -258,6 +276,19 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
                   {keeper.warnings.slice(0, 3).map((w, i) => <div key={i}>{w}</div>)}
                 </div>
               )}
+            </div>
+          )}
+
+          {airportFitLine && (
+            <div className="cw-approval-block">
+              <div className="cw-modal-section">Airport &amp; route fit</div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 4 }}>
+                <span className={"cw-pill cw-pill-" + airportFitLine.tone}>{airportFitLine.label}</span>
+                <span className="cw-approval-disclaimer">Combined fit: {airportFitLine.combined}/100</span>
+              </div>
+              <div className="cw-approval-disclaimer" style={{ marginTop: 6 }}>
+                Route/airport data is seed/demo — use as an advisory signal, not as a booking guarantee.
+              </div>
             </div>
           )}
 

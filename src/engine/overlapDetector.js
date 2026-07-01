@@ -40,6 +40,8 @@
 import { BY_ID } from "../data/cards.js";
 import { AIRPORTS } from "../data/airports.js";
 import { topCategory, effectiveFee, rateFor, membershipGate } from "./scoring.js";
+import { calculateAirlineFitScore, getRelevantAirports } from "./airportFit.js";
+import { calculateRouteAirlineFit } from "./routeFit.js";
 
 /* ----------------------------- constants --------------------------------- */
 
@@ -458,10 +460,21 @@ export function detectAirlineMismatchRisk(card, currentWallet = [], profile = {}
   const ap = p.airport && AIRPORTS[p.airport];
   if (!ap) return null;
 
+  /* v3.3: consult airport-fit (which averages home/secondary/future airports)
+     AND route-fit (which averages the user's common routes) so a secondary
+     airport or route match can rescue an otherwise-mismatched airline card. */
+  const airportFitScore = calculateAirlineFitScore(profile, prog);       // 0-100
+  const routeFitScore   = calculateRouteAirlineFit(profile, prog);        // 0-100
+  const combinedFit     = Math.max(airportFitScore, routeFitScore) / 100; // 0-1
+
   const hubStrength = (ap.hubAirlines && ap.hubAirlines[prog]) || 0;
-  if (hubStrength >= 0.35) return null; // strong fit
+  /* Strong fit either at home airport OR from routes AND/OR secondary → no penalty. */
+  if (hubStrength >= 0.35 || combinedFit >= 0.55) return null;
 
   let penalty = 60 + Math.round((0.35 - hubStrength) * 200);
+  /* Route/secondary fit reduces penalty when at least modestly supportive. */
+  if (combinedFit >= 0.35) penalty *= 0.6;
+  else if (combinedFit >= 0.2) penalty *= 0.8;
   /* Multi-airline wallet: multiple different airlines in wallet + weak fit
      compounds the mismatch. */
   const held = normalizeHeld(currentWallet).map((id) => BY_ID[id]).filter(Boolean);
@@ -469,7 +482,9 @@ export function detectAirlineMismatchRisk(card, currentWallet = [], profile = {}
   if (differentAirlines.length >= 1) penalty += 30;
   penalty *= userScalingFactor(profile);
   penalty = Math.round(penalty);
+  if (penalty <= 0) return null;
 
+  const secondary = getRelevantAirports(profile).find((a) => a.role === "secondary");
   return {
     type: OVERLAP_TYPES.AIRLINE_MISMATCH,
     severity: severityFromPenalty(penalty),
@@ -477,10 +492,13 @@ export function detectAirlineMismatchRisk(card, currentWallet = [], profile = {}
     overlapScore: overlapScoreFromPenalty(penalty),
     cards: [card, ...differentAirlines],
     affectedCardIds: [card.id, ...differentAirlines.map((c) => c.id)],
-    explanation: `${card.name}'s value depends on ${String(prog).toUpperCase()}, but ${ap.city} (${ap.code}) is a weak hub for that airline.`,
+    explanation: `${card.name}'s value depends on ${String(prog).toUpperCase()}, but ${ap.city} (${ap.code}) is a weak hub for that airline${secondary ? ` and even factoring in ${secondary.code}` : ""}.`,
     recommendation: "Unless you frequently connect through this airline's network, the fee is hard to justify here.",
-    reasons: [`Hub strength for ${prog} at ${ap.code}: ${hubStrength}`],
-    assumptions: ["Uses airports.js hubAirlines strength; treat as advisory."],
+    reasons: [
+      `Hub strength for ${prog} at ${ap.code}: ${hubStrength}`,
+      `Combined airport+route fit for ${prog}: ${Math.round(combinedFit * 100)}/100`,
+    ],
+    assumptions: ["Uses airports.js + routeProfiles.js seed data; treat as advisory."],
     confidence: "moderate",
   };
 }
