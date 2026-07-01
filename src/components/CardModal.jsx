@@ -1,5 +1,5 @@
-import React from "react";
-import { X, Check, AlertTriangle, ShieldCheck, Plus, Clock } from "lucide-react";
+import React, { useMemo } from "react";
+import { X, Check, AlertTriangle, ShieldCheck, Plus, Clock, RefreshCw, ArrowDownToDot, Lock } from "lucide-react";
 import CardArt from "./CardArt.jsx";
 import { CATS, CAT_LABEL, fmtMoney, generateCardScoreBreakdown } from "../engine/scoring.js";
 import { breakEven } from "../engine/annualFee.js";
@@ -11,6 +11,7 @@ import { calculateEffectiveAnnualFee, calculateAnnualFeeBreakEven } from "../eng
 import { explainOverlaps } from "../engine/overlapDetector.js";
 import { calculateAirlineFitScore, getAirportProfile } from "../engine/airportFit.js";
 import { calculateRouteAirlineFit } from "../engine/routeFit.js";
+import { calculateMarginalCardValue } from "../engine/marginalValue.js";
 import ValueBreakdown from "./dashboard/ValueBreakdown.jsx";
 
 function RuleGroup({ title, rules, cls }) {
@@ -85,6 +86,20 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
 
   const earnRows = CATS.filter((c) => (card.earnRates[c] || 0) > 1).map((c) => ({ cat: c, rate: card.earnRates[c] }));
 
+  /* Prompt-13: pull marginal value so we can render the "best alternative"
+     line + a small marginal summary. Guarded so a partial profile can't
+     crash the modal. */
+  const marginal = useMemo(() => {
+    if (!profile) return null;
+    try { return calculateMarginalCardValue(card, profile, held || []); }
+    catch { return null; }
+  }, [card, profile, held]);
+
+  /* Prompt-13: product-change / downgrade-only cards must not look
+     apply-now. The banner + button-guard below make that explicit. */
+  const availability = card.availabilityStatus || "openToNewApplicants";
+  const gatedApplyNow = availability !== "openToNewApplicants";
+
   return (
     <div className="cw-modal" onClick={onClose}>
       <div className="cw-modal-inner" onClick={(e) => e.stopPropagation()}>
@@ -93,6 +108,19 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
         <div>
           <h3 className="cw-modal-name">{card.name}</h3>
           <div className="cw-modal-issuer">{card.issuer} · {card.network} · {card.annualFee === 0 ? "No annual fee" : fmtMoney(card.annualFee) + "/yr"}{card.requiresSubscription ? ` + ${fmtMoney(card.requiresSubscription.annual)} ${card.requiresSubscription.name}` : ""}</div>
+
+          {/* Prompt-13: availability guard banner. Never displayed for
+              openToNewApplicants; loud for product-change / downgrade /
+              invite-only / discontinued cards so users don't confuse them
+              with apply-now recommendations. */}
+          {gatedApplyNow && (
+            <div className={"cw-modal-availability cw-modal-availability-" + availability}>
+              {availability === "productChangeOnly" && <><RefreshCw size={14} /> Product change only — not open to new applications. Reached via product change from another card in the same family.</>}
+              {availability === "downgradeOnly" && <><ArrowDownToDot size={14} /> Downgrade landing spot — cannot be applied for directly.</>}
+              {availability === "inviteOnly" && <><Lock size={14} /> Invite only — not open to public applications.</>}
+              {availability === "discontinuedDoNotRecommend" && <><AlertTriangle size={14} /> Discontinued — no longer offered by the issuer.</>}
+            </div>
+          )}
           <div className="cw-modal-pills">
             <span className="cw-pill cw-pill-muted">{currencyLabel(card)}</span>
             {anchor && <span className="cw-pill cw-pill-good">≈ {cpp.toFixed(2)}¢ via {anchor}</span>}
@@ -124,6 +152,24 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
 
           {profile && (
             <ValueBreakdown cardId={card.id} profile={profile} wallet={held} compact />
+          )}
+
+          {/* Prompt-13: best alternative surfaced from marginal-value engine.
+              Shown when the user's current wallet or the flat-2% baseline
+              plausibly beats this card. */}
+          {marginal?.baselineAlternative?.cardName && (
+            <div className="cw-modal-alt">
+              <div className="cw-modal-section">Best alternative</div>
+              <p className="cw-arch-line" style={{ marginTop: 4 }}>
+                <b>{marginal.baselineAlternative.cardName}</b>
+                {marginal.baselineAlternative.kind === "wallet"
+                  ? " (from your current wallet — already a strong fit for the same role)"
+                  : marginal.baselineAlternative.kind === "synthetic"
+                    ? " (a flat 2% baseline every candidate has to clear)"
+                    : " (a simpler realistic alternative worth measuring against)"}
+                . Marginal value of {card.name}: <b>{marginal.marginalValue >= 0 ? "+" : ""}{fmtMoney(marginal.marginalValue)} / yr</b> vs. that baseline.
+              </p>
+            </div>
           )}
 
           {earnRows.length > 0 && (
@@ -343,8 +389,21 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
           )}
 
           {onToggleOwn && (
-            <button className={["cw-btn", owned ? "cw-btn-ghost" : "cw-btn-primary", "cw-modal-add"].join(" ")} onClick={() => onToggleOwn(card.id)}>
-              {owned ? <><Check size={16} /> In your wallet — remove</> : <><Plus size={16} /> Add to my wallet</>}
+            /* Prompt-13: product-change / downgrade / discontinued cards
+               get a downgraded label so the button never implies "apply now".
+               Users can still add held cards to their wallet (e.g. Ritz
+               via product change), but the copy makes clear it's not an
+               application flow. */
+            <button
+              className={["cw-btn", owned ? "cw-btn-ghost" : gatedApplyNow ? "cw-btn-ghost" : "cw-btn-primary", "cw-modal-add"].join(" ")}
+              onClick={() => onToggleOwn(card.id)}
+              title={gatedApplyNow && !owned ? "This card isn't open to new applications — only add if you already hold it via product change / downgrade." : undefined}
+            >
+              {owned
+                ? <><Check size={16} /> In your wallet — remove</>
+                : gatedApplyNow
+                  ? <><Plus size={16} /> I hold this card already</>
+                  : <><Plus size={16} /> Add to my wallet</>}
             </button>
           )}
         </div>

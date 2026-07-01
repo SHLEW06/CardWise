@@ -504,6 +504,70 @@
 .cw-mv-slot-role { font-size:11px; color:var(--ink-3); }
 .cw-mv-slot-margin { font-family:var(--fmono); font-size:11px; color:var(--good); }
 
+/* --- explorer / tile / comparison (Prompt 13) ---------------------------- */
+.cw-explore-controls { display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+.cw-explore-filters { display:flex; flex-direction:column; gap:14px; padding:14px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.015); margin-bottom:14px; }
+.cw-explore-filter-group { display:flex; flex-direction:column; gap:8px; }
+.cw-explore-filter-title { font-size:11.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; }
+.cw-explore-compare-bar { display:flex; align-items:center; gap:12px; padding:10px 14px; border:1px solid var(--accent); border-radius:11px; background:linear-gradient(135deg,rgba(160,200,255,.08),rgba(160,200,255,.01)); margin-bottom:14px; font-size:13px; }
+.cw-explore-compare-bar > span { flex:1; display:flex; align-items:center; gap:6px; color:var(--ink-2); }
+.cw-explore-comparison { margin-bottom:18px; }
+.cw-explore-count { font-size:12px; color:var(--ink-3); margin-bottom:10px; }
+.cw-explore-tile-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; }
+
+.cw-tile { display:flex; flex-direction:column; gap:6px; padding:12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.015); position:relative; }
+.cw-tile-selected { border-color:var(--accent); background:linear-gradient(135deg,rgba(160,200,255,.06),rgba(160,200,255,.01)); }
+.cw-tile-gated { border-style:dashed; }
+.cw-tile-body { display:flex; gap:12px; padding:0; background:transparent; border:none; color:inherit; text-align:left; cursor:pointer; width:100%; }
+.cw-tile-info { flex:1; display:flex; flex-direction:column; gap:5px; min-width:0; }
+.cw-tile-name { font-size:13.5px; font-weight:600; color:var(--ink-1); }
+.cw-tile-issuer { font-size:11.5px; color:var(--ink-3); }
+.cw-tile-pills { display:flex; flex-wrap:wrap; gap:5px; }
+.cw-tile-best { font-size:11.5px; color:var(--ink-2); display:flex; gap:5px; align-items:flex-start; }
+.cw-tile-best svg { flex-shrink:0; margin-top:3px; color:var(--good); }
+.cw-tile-avoid { font-size:11.5px; color:var(--warn); display:flex; gap:5px; align-items:flex-start; }
+.cw-tile-avoid svg { flex-shrink:0; margin-top:3px; }
+.cw-tile-metrics { display:flex; gap:8px; flex-wrap:wrap; margin-top:2px; }
+.cw-tile-metric { font-family:var(--fmono); font-size:11px; color:var(--ink-2); padding:2px 6px; border-radius:6px; background:rgba(255,255,255,.03); border:1px solid var(--line); display:inline-flex; align-items:center; gap:3px; }
+.cw-tile-metric-pos { color:var(--good); border-color:rgba(95,214,160,.35); }
+.cw-tile-metric-neg { color:var(--bad); border-color:rgba(220,90,90,.35); }
+.cw-tile-metric-warn { color:var(--warn); border-color:rgba(230,180,60,.35); }
+.cw-tile-compare { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-3); padding-top:8px; border-top:1px dashed var(--line); cursor:pointer; }
+.cw-tile-compare input { margin:0; }
+.cw-tile-empty { display:flex; align-items:center; gap:8px; padding:20px; border:1px dashed var(--line); border-radius:11px; color:var(--ink-3); font-size:13px; }
+
+.cw-cmp { display:flex; flex-direction:column; gap:12px; padding:14px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.015); }
+.cw-cmp-head { display:flex; justify-content:space-between; align-items:center; }
+.cw-cmp-title { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink-1); }
+.cw-cmp-scroll { overflow-x:auto; }
+.cw-cmp-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.cw-cmp-table th, .cw-cmp-table td { padding:8px 10px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); }
+.cw-cmp-row-label { color:var(--ink-3); font-size:11.5px; letter-spacing:.03em; text-transform:uppercase; min-width:140px; background:rgba(255,255,255,.015); }
+.cw-cmp-card-head { min-width:180px; background:rgba(255,255,255,.02); }
+.cw-cmp-card-head-inner { display:flex; flex-direction:column; gap:6px; align-items:flex-start; position:relative; padding-right:20px; }
+.cw-cmp-card-title { font-size:13px; font-weight:600; color:var(--ink-1); }
+.cw-cmp-card-sub { font-size:11px; color:var(--ink-3); }
+.cw-cmp-remove { position:absolute; top:0; right:0; border:none; background:transparent; color:var(--ink-3); cursor:pointer; padding:2px; }
+.cw-cmp-remove:hover { color:var(--ink-1); }
+.cw-cmp-cell { color:var(--ink-2); }
+.cw-cmp-val { display:flex; flex-direction:column; gap:2px; }
+.cw-cmp-val ul { margin:0; padding-left:14px; font-size:11.5px; }
+.cw-cmp-val-pos { color:var(--good); }
+.cw-cmp-val-neg { color:var(--bad); }
+.cw-cmp-val-muted { color:var(--ink-3); }
+.cw-cmp-hint { font-size:10.5px; color:var(--ink-3); font-style:italic; }
+.cw-cmp-empty { display:flex; align-items:center; gap:8px; padding:20px; border:1px dashed var(--line); border-radius:11px; color:var(--ink-3); font-size:13px; }
+.cw-cmp-note { display:flex; gap:8px; align-items:center; padding:10px; font-size:11.5px; color:var(--ink-3); }
+
+.cw-modal-availability { display:flex; align-items:center; gap:8px; padding:10px 12px; margin:12px 0; border-radius:10px; font-size:12.5px; }
+.cw-modal-availability-productChangeOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
+.cw-modal-availability-downgradeOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
+.cw-modal-availability-inviteOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
+.cw-modal-availability-discontinuedDoNotRecommend { background:rgba(220,90,90,.08); border:1px solid rgba(220,90,90,.4); color:var(--bad); }
+.cw-modal-alt { margin-top:14px; }
+
+.cw-btn-sm { padding:5px 10px !important; font-size:12px !important; }
+
 /* --- redemption calculator + currency detail (Prompt 11) ----------------- */
 .cw-val-name-block { display:flex; flex-direction:column; gap:2px; }
 .cw-val-range { font-family:var(--fmono); font-size:11px; color:var(--ink-3); }
