@@ -504,6 +504,50 @@
 .cw-mv-slot-role { font-size:11px; color:var(--ink-3); }
 .cw-mv-slot-margin { font-family:var(--fmono); font-size:11px; color:var(--good); }
 
+/* --- redemption calculator + currency detail (Prompt 11) ----------------- */
+.cw-val-name-block { display:flex; flex-direction:column; gap:2px; }
+.cw-val-range { font-family:var(--fmono); font-size:11px; color:var(--ink-3); }
+.cw-val-range-legend { color:var(--ink-3); font-family:inherit; font-style:italic; }
+.cw-val-row-reset { border:none; background:transparent; color:var(--ink-3); cursor:pointer; padding:2px 4px; margin-left:6px; }
+.cw-val-row-reset:hover { color:var(--ink-1); }
+.cw-val-warn { display:flex; align-items:center; gap:4px; grid-column:1 / -1; font-size:11px; color:var(--warn); margin-top:2px; }
+
+.cw-redeem-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.02); }
+.cw-redeem-field { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink-3); }
+.cw-redeem-field span { color:var(--ink-2); }
+.cw-redeem-field-toggle { flex-direction:row; align-items:center; gap:8px; grid-column:1 / -1; padding-top:4px; }
+.cw-redeem-field-toggle span { color:var(--ink-2); font-size:12.5px; }
+
+.cw-redeem-result { margin-top:14px; padding:14px; border:1px solid var(--accent); border-radius:12px; background:linear-gradient(135deg,rgba(160,200,255,.05),rgba(160,200,255,.01)); display:flex; flex-direction:column; gap:12px; }
+.cw-redeem-headline { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }
+.cw-redeem-headline-cell { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
+.cw-redeem-num { font-family:var(--fmono); font-size:22px; font-weight:600; color:var(--ink-1); }
+.cw-redeem-lab { font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; }
+.cw-redeem-meta { display:flex; gap:6px; flex-wrap:wrap; }
+.cw-redeem-warns { display:flex; flex-direction:column; gap:6px; margin:0; padding:0; list-style:none; }
+.cw-redeem-warns li { display:flex; gap:6px; align-items:flex-start; font-size:12.5px; color:var(--warn); }
+.cw-redeem-warns li svg { flex-shrink:0; margin-top:3px; }
+.cw-redeem-explain { font-size:12.5px; color:var(--ink-2); margin:0; line-height:1.5; }
+
+.cw-currency-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-top:14px; }
+.cw-currency-card { display:flex; flex-direction:column; gap:10px; padding:12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.015); }
+.cw-currency-head { display:flex; justify-content:space-between; gap:6px; }
+.cw-currency-name { font-size:13.5px; font-weight:600; color:var(--ink-1); }
+.cw-currency-cpp { font-family:var(--fmono); font-size:13px; color:var(--ink-2); text-align:right; }
+.cw-currency-cpp-range { font-size:11px; color:var(--ink-3); }
+.cw-currency-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.cw-currency-pip { display:flex; flex-direction:column; gap:3px; align-items:center; }
+.cw-currency-pip-label { font-size:10px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+.cw-currency-pip-bar { display:flex; gap:2px; }
+.cw-currency-pip-on { width:5px; height:8px; background:var(--ink-2); border-radius:1px; }
+.cw-currency-pip-off { width:5px; height:8px; background:rgba(255,255,255,.08); border-radius:1px; }
+.cw-currency-pip-good .cw-currency-pip-on { background:var(--good); }
+.cw-currency-pip-bad .cw-currency-pip-on { background:var(--bad); }
+.cw-currency-uses { display:flex; flex-direction:column; gap:4px; }
+.cw-currency-uses-label { font-size:10.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.05em; }
+.cw-currency-uses ul { margin:0; padding-left:16px; font-size:12px; color:var(--ink-2); line-height:1.5; }
+.cw-currency-verify { font-size:11px; color:var(--warn); padding-top:4px; }
+
 /* --- value breakdown (Prompt 10.5I) -------------------------------------- */
 .cw-vb { display:flex; flex-direction:column; gap:14px; padding:14px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.02); margin-top:14px; }
 .cw-vb-compact { padding:12px; gap:10px; }

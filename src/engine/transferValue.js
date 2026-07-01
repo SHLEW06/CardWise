@@ -8,13 +8,24 @@
    hasn't chosen one.
    ========================================================================== */
 
-import { VAL } from "../data/valuations.js";
+import { VAL, VAL_META, blendedCppFromMeta } from "../data/valuations.js";
 import { PROGRAMS, LOYALTY, isBank } from "../data/programs.js";
 import { DESTINATION_PARTNERS, DESTINATION_BIAS } from "../data/transferPartners.js";
 
-/* resolve a valuation, honoring per-user overrides in profile.valOverrides */
-const valOf = (key, profile = {}) =>
-  (profile.valOverrides && profile.valOverrides[key] != null) ? profile.valOverrides[key] : (VAL[key] || 0);
+/* resolve a valuation, honoring per-user overrides in profile.valOverrides.
+   Prompt-11: when a currency has full VAL_META metadata and the user hasn't
+   overridden the value manually, we blend conservative / expected /
+   aspirational CPP based on their stated skill level. Advanced users lean
+   toward the ceiling; beginners toward the floor. This never changes the
+   scoring shape — effCpp still returns a single number — it just uses a
+   more honest, skill-calibrated one. */
+const valOf = (key, profile = {}) => {
+  const override = profile.valOverrides?.[key];
+  if (override != null) return override;
+  const meta = VAL_META[key];
+  if (meta) return blendedCppFromMeta(meta, profile);
+  return VAL[key] || 0;
+};
 
 /* partner points received per 1 bank point. Chase→Hyatt is the famous special
    case: the Reserve keeps 1:1, the Preferred is 4:3 (25% worse). */
