@@ -4,6 +4,34 @@
    v3.1: All external AI calls removed. CardWise no longer ships any AI API
    keys or remote LLM dependency. The narrator is now a deterministic local
    heuristic that explains why the engine chose this lineup.
+
+   Prompt-16 hard rules — do not violate without a security review:
+
+     1. NEVER call a model API from the client.
+        No `fetch(...openai.com...)`, no `@google/generative-ai`, no
+        `@anthropic-ai/sdk`, no `langchain`, no `openai`. Do not add such
+        packages to package.json. If a future maintainer needs LLM output,
+        it MUST come from a Cloud Function that carries the key server-side.
+
+     2. NEVER ship API keys in the client bundle.
+        The web bundle is public. Any string that looks like a key is a
+        key — do not import.meta.env-read AI keys, do not hard-code them,
+        do not ship them via a .env* file that Vite will inline. The only
+        client-side "key" is the publishable Firebase web config, which
+        is public by design.
+
+     3. The ENGINE decides. AI (if ever added) only EXPLAINS.
+        Recommendations, decision labels, keeper verdicts, ideal wallet,
+        role recommendations, break-even math — all come from src/engine.
+        A future AI narrator's job is prose over the STRUCTURED context
+        the engine produces; it does not decide the lineup, the fit, the
+        realism score, or the timeline.
+
+     4. Structured context only — no raw PII.
+        If a Cloud Function narrator is ever wired, the payload it receives
+        must be the numeric summary the engine already produces (lineup ids,
+        scores, categories, transferOps, annualValue). No free-text PII, no
+        raw survey answers.
    ========================================================================== */
 
 export function isNarratorConfigured() {

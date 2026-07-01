@@ -589,10 +589,21 @@ export default function StrategyDashboard({ profile, wallet, onOpenCard, onSaveS
       )}
 
       {/* Local strategy narrator — deterministic, runs on-device.
-          TODO(prompt-3+): A future Cloud Function AI strategist may sit
-          alongside this. It must (a) never receive PII beyond the
-          structured engine context, (b) be feature-flagged off by default,
-          and (c) never *decide* the lineup — only explain it. */}
+
+          Prompt-16 AI-safety contract (do not violate without a security review):
+            • FUTURE AI STRATEGIST MUST BE CLOUD-FUNCTION ONLY.
+              Any LLM key stays server-side; the client never holds one.
+            • NO CLIENT API KEYS. If a maintainer adds an LLM package that
+              needs a key, they've already broken the contract.
+            • THE ENGINE PROVIDES THE STRUCTURED CONTEXT. This payload is
+              already the sanitized numeric summary (lineup ids, scores,
+              category routing, transfer anchors, annualValue) — never
+              free-text PII, never raw survey answers.
+            • AI EXPLAINS ONLY; THE ENGINE DECIDES. Recommendations, keeper
+              verdicts, marginal values, and the ideal wallet come from
+              src/engine and stay authoritative. Any AI output is prose
+              over what the engine already computed.
+      */}
       {narratorAvailable && (
         <div className="cw-panel cw-narrator-panel" style={{ marginTop: 18 }}>
           <div className="cw-panel-title"><MessageSquare size={17} /> Why this strategy?</div>

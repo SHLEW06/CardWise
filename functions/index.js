@@ -5,13 +5,33 @@
    as a safe placeholder so a future maintainer can wire a server-side model
    without touching the client. It currently returns 503 immediately.
 
-   Hard rules (do not violate without a security review):
-     - No client API keys, ever. The client never holds an LLM key.
-     - The CardWise strategy ENGINE remains the source of truth. Any future
-       AI surface only EXPLAINS the engine's structured context — it does not
-       DECIDE the lineup, the realism score, or the timeline.
-     - The /api/narrate Hosting rewrite has been removed; this function is not
-       publicly addressable unless an operator re-adds a rewrite intentionally.
+   Prompt-16 hard rules (do not violate without a security review):
+
+     • FUTURE AI STRATEGIST MUST BE CLOUD-FUNCTION ONLY.
+       Any LLM key belongs in this function's runtime env
+       (`firebase functions:config:set` or a Secret Manager binding).
+       Never expose the key to the client. Never inline it in the bundle
+       via a Vite env variable. Never commit `.env` files.
+
+     • NO CLIENT API KEYS.
+       The web bundle is public. If a maintainer needs to prove no key
+       leaked, they can `grep -R "sk-\\|AIza\\|ANTHROPIC" dist/` after
+       `npm run build` — the answer must be empty.
+
+     • ENGINE PROVIDES STRUCTURED CONTEXT.
+       The request payload MUST be the numeric / label summary the engine
+       already computes: lineup ids, scores, category routing, transfer
+       anchors, annualValue. No raw survey answers, no free-text PII.
+
+     • AI EXPLAINS ONLY; THE ENGINE DECIDES.
+       Recommendations, decision labels, keeper math, marginal values,
+       and the ideal wallet come from src/engine and stay authoritative.
+       The AI's job is prose over the engine's outputs — it does not vote
+       on which card to add, remove, or downgrade.
+
+     • The /api/narrate Hosting rewrite is intentionally NOT present in
+       firebase.json. This function is not publicly addressable unless an
+       operator re-adds the rewrite intentionally after security review.
    ========================================================================== */
 
 import { onRequest } from "firebase-functions/v2/https";
