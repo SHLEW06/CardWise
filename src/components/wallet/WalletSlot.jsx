@@ -23,6 +23,7 @@ export default function WalletSlot({
   onOpenCard,
   onRemove,
   onAddRecommended,
+  onOpenPicker,
 }) {
   const { slot, state, subtitle, held, recommended } = view;
   const Icon = ICONS[slot.icon] || Wallet;
@@ -65,6 +66,9 @@ export default function WalletSlot({
 
       {state === "filled" && (
         <div className="cw-ws-body cw-ws-body-filled">
+          <button className="cw-ws-add-space" onClick={() => onOpenPicker?.(slot.id)}>
+            <Plus size={14} /> Add another
+          </button>
           {held.map((c) => (
             <div key={c.id} className="cw-ws-card">
               <CardArt
@@ -98,28 +102,33 @@ export default function WalletSlot({
           </div>
           <div className="cw-ws-rec-info">
             <div className="cw-ws-rec-name">{recommended.cardName}</div>
-            <button
-              className="cw-btn cw-btn-accent cw-chip-sm"
-              onClick={() => onAddRecommended?.(recommended.cardId)}
-            >
-              <Plus size={13} /> Add
-            </button>
+            <div className="cw-ws-rec-actions">
+              <button
+                className="cw-btn cw-btn-accent cw-chip-sm"
+                onClick={() => onAddRecommended?.(recommended.cardId)}
+              >
+                <Plus size={13} /> Add
+              </button>
+              <button className="cw-link cw-ws-browse" onClick={() => onOpenPicker?.(slot.id)}>
+                Browse
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {state === "covered" && (
-        <div className="cw-ws-body cw-ws-body-covered">
+        <button className="cw-ws-body cw-ws-body-covered cw-ws-pickable" onClick={() => onOpenPicker?.(slot.id)}>
           <Sparkles size={16} aria-hidden="true" />
           <div className="cw-ws-covered-text">{subtitle}</div>
-        </div>
+        </button>
       )}
 
       {state === "empty" && (
-        <div className="cw-ws-body cw-ws-body-empty">
-          <span className="cw-ws-dashed">Drop a card here</span>
+        <button className="cw-ws-body cw-ws-body-empty cw-ws-pickable" onClick={() => onOpenPicker?.(slot.id)}>
+          <span className="cw-ws-dashed"><Plus size={13} /> Add a card</span>
           {subtitle && <div className="cw-ws-sub">{subtitle}</div>}
-        </div>
+        </button>
       )}
     </div>
   );

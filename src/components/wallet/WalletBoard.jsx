@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, DragOverlay } from "@dnd-kit/core";
-import { AlertTriangle, Sparkles, LayoutGrid, Info } from "lucide-react";
+import { AlertTriangle, Sparkles, LayoutGrid, Info, Plus } from "lucide-react";
 import { BY_ID } from "../../data/cards.js";
 import { calculateWalletValue } from "../../engine/marginalValue.js";
 import { buildIdealWallet } from "../../engine/walletOptimizer.js";
@@ -15,6 +15,7 @@ import CoveredByChips from "./CoveredByChips.jsx";
 import WalletValueBreakdown from "./WalletValueBreakdown.jsx";
 import CardShop from "./CardShop.jsx";
 import CardDetail from "./CardDetail.jsx";
+import WalletCardPicker from "./WalletCardPicker.jsx";
 import { buildSlotViews } from "./slotLayout.js";
 import CardArt from "../CardArt.jsx";
 
@@ -23,6 +24,7 @@ import CardArt from "../CardArt.jsx";
    Drag-and-drop wires slot drops → onAdd(cardId, slotId). */
 export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateProfile }) {
   const [openCard, setOpenCard] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [activeDragId, setActiveDragId] = useState(null);
 
   const walletIds = wallet || [];
@@ -128,6 +130,9 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
             <ValueBar current={currentNet} optimal={optimalNet} />
           </div>
           <div className="cw-board-right">
+            <button className="cw-btn cw-btn-primary cw-board-edit" onClick={() => setPickerOpen(true)}>
+              <Plus size={15} /> Edit cards
+            </button>
             <ScoreRing value={score} />
           </div>
         </header>
@@ -148,6 +153,7 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
               onOpenCard={setOpenCard}
               onRemove={onToggleWallet}
               onAddRecommended={addRecommended}
+              onOpenPicker={() => setPickerOpen(true)}
             />
           ))}
         </section>
@@ -184,6 +190,16 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
             onClose={() => setOpenCard(null)}
             onToggleOwn={(id) => onToggleWallet?.(id)}
             onAnswerCredit={answerCredit}
+          />
+        )}
+
+        {pickerOpen && (
+          <WalletCardPicker
+            profile={profile}
+            wallet={walletIds}
+            onClose={() => setPickerOpen(false)}
+            onOpenCard={(id) => setOpenCard(id)}
+            onToggleWallet={onToggleWallet}
           />
         )}
       </div>
