@@ -396,20 +396,143 @@
 .cw-crt-btn-on-yes { background:rgba(95,214,160,.15); color:var(--good); border-color:rgba(95,214,160,.32); }
 .cw-crt-btn-on-no  { background:rgba(240,138,110,.14); color:var(--bad);  border-color:rgba(240,138,110,.32); }
 
+/* ============================================================================
+   Discover home — hero pick + goal shelves.
+   The new default landing view. Hero uses recommendBestNextCard, shelves
+   use calculateMarginalCardValue per-tile. No value math in this stylesheet.
+   ========================================================================== */
+.cw-dh { display:flex; flex-direction:column; gap:28px; }
+
+/* ---- hero ----------------------------------------------------------- */
+.cw-dh-hero {
+  display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center;
+  padding:32px; border-radius:26px;
+  background:
+    radial-gradient(90% 120% at 0% 0%, rgba(243,231,201,.08), transparent 60%),
+    linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+  border:1px solid var(--line);
+  box-shadow:0 32px 80px -40px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(12px) saturate(1.08); -webkit-backdrop-filter:blur(12px) saturate(1.08);
+  position:relative; overflow:hidden;
+}
+.cw-dh-hero-quiet {
+  grid-template-columns:1fr;
+  background:linear-gradient(135deg, rgba(255,255,255,.035), rgba(255,255,255,.015));
+}
+.cw-dh-hero-art { display:flex; align-items:center; justify-content:center; }
+.cw-dh-hero-body { display:flex; flex-direction:column; gap:10px; min-width:0; }
+.cw-dh-hero-name {
+  font-family:var(--fdisplay); font-size:30px; font-weight:600;
+  letter-spacing:-.015em; margin:2px 0 0; line-height:1.15;
+}
+.cw-dh-hero-issuer {
+  font-family:var(--fmono); font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.cw-dh-hero-value {
+  display:flex; align-items:baseline; gap:10px; margin:6px 0 2px; flex-wrap:wrap;
+}
+.cw-dh-hero-mv {
+  font-family:var(--fdisplay); font-size:32px; font-weight:700;
+  color:var(--good); letter-spacing:-.01em;
+}
+.cw-dh-hero-mv-suffix { font-size:16px; font-weight:500; color:var(--ink-2); margin-left:2px; }
+.cw-dh-hero-mv-lab { font-size:12px; color:var(--ink-3); }
+.cw-dh-hero-why {
+  font-size:14px; line-height:1.55; color:var(--ink-2);
+  margin:4px 0 0; max-width:56ch;
+}
+.cw-dh-hero-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+
+.cw-dh-hero-runners {
+  display:flex; gap:6px; align-items:center; margin-top:16px; flex-wrap:wrap;
+  padding-top:14px; border-top:1px solid var(--line);
+}
+.cw-dh-hero-runners-lab {
+  font-family:var(--fmono); font-size:10px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin-right:2px;
+}
+.cw-dh-runner {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 10px; border-radius:999px;
+  border:1px solid var(--line); background:rgba(255,255,255,.02);
+  font-size:12px; color:var(--ink); cursor:pointer;
+  transition:background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.cw-dh-runner:hover { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.14); transform:translateY(-1px); }
+.cw-dh-runner-name { font-weight:500; }
+.cw-dh-runner-mv { font-family:var(--fmono); color:var(--good); font-size:11px; }
+
+/* ---- shelves stack --------------------------------------------------- */
+.cw-dh-shelves { display:flex; flex-direction:column; gap:22px; }
+
+.cw-gs { display:flex; flex-direction:column; gap:10px; }
+.cw-gs-head { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; padding:0 2px; }
+.cw-gs-titles { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.cw-gs-title {
+  font-family:var(--fdisplay); font-size:17px; font-weight:600;
+  letter-spacing:-.005em; margin:0;
+}
+.cw-gs-sub { font-size:12.5px; color:var(--ink-3); margin:0; }
+
+.cw-gs-empty {
+  padding:22px; text-align:center; border-radius:14px;
+  border:1px dashed var(--line); color:var(--ink-3); font-size:13px;
+  background:rgba(255,255,255,.015);
+}
+
+.cw-gs-row {
+  display:flex; gap:12px; overflow-x:auto; overflow-y:hidden;
+  padding:6px 4px 14px; scroll-snap-type:x mandatory;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.12) transparent;
+}
+.cw-gs-row::-webkit-scrollbar { height:6px; }
+.cw-gs-row::-webkit-scrollbar-thumb { background:rgba(255,255,255,.12); border-radius:3px; }
+
+.cw-gs-tile {
+  flex:0 0 220px; scroll-snap-align:start;
+  display:flex; flex-direction:column; gap:10px;
+  padding:12px; border-radius:16px;
+  border:1px solid var(--line); background:rgba(255,255,255,.025);
+  cursor:pointer; text-align:left;
+  transition:transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.cw-gs-tile:hover {
+  transform:translateY(-3px);
+  border-color:rgba(255,255,255,.16);
+  background:rgba(255,255,255,.05);
+  box-shadow:0 18px 40px -20px rgba(0,0,0,.55);
+}
+.cw-gs-art { display:flex; align-items:center; justify-content:center; }
+.cw-gs-meta { display:flex; flex-direction:column; gap:4px; }
+.cw-gs-name { font-size:13.5px; font-weight:600; line-height:1.25; color:var(--ink); }
+.cw-gs-line { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cw-gs-mv { font-family:var(--fmono); font-size:12px; }
+.cw-gs-mv-pos { color:var(--good); }
+.cw-gs-mv-neg { color:var(--ink-3); }
+.cw-gs-chev { color:var(--ink-3); }
+
 /* ---- responsive ----------------------------------------------------- */
 @media (max-width:900px) {
   .cw-board-head { grid-template-columns:1fr; }
   .cw-board-right { justify-content:flex-start; }
   .cw-cd-head { grid-template-columns:1fr; }
   .cw-cd-art { justify-content:flex-start; }
+  .cw-dh-hero { grid-template-columns:1fr; padding:24px; gap:20px; }
+  .cw-dh-hero-art { justify-content:flex-start; }
+  .cw-dh-hero-name { font-size:24px; }
+  .cw-dh-hero-mv { font-size:26px; }
 }
 @media (max-width:560px) {
   .cw-board-slots { grid-template-columns:1fr 1fr; }
   .cw-shop-grid { grid-template-columns:1fr 1fr; }
   .cw-cd { padding:16px 16px 22px; }
   .cw-vbar-cur { font-size:26px; }
+  .cw-dh-hero { padding:20px; }
+  .cw-gs-tile { flex:0 0 180px; }
 }
 @media (prefers-reduced-motion:reduce) {
   .cw-vbar-shimmer, .cw-vbar-fill, .cw-ring-fg { transition:none !important; animation:none !important; }
   .cw-cd, .cw-cd-scrim { animation:none !important; }
+  .cw-gs-tile, .cw-dh-runner { transition:none !important; }
 }

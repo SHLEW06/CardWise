@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar, LayoutGrid } from "lucide-react";
+import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar, LayoutGrid, Sparkles } from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
 import Onboarding from "./components/Onboarding.jsx";
@@ -16,6 +16,7 @@ import SavedStrategies from "./components/SavedStrategies.jsx";
 import ValuationsEditor from "./components/ValuationsEditor.jsx";
 import CardTimeline from "./components/CardTimeline.jsx";
 import WalletBoard from "./components/wallet/WalletBoard.jsx";
+import DiscoverHome from "./components/discover/DiscoverHome.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -29,7 +30,8 @@ import {
 } from "./firebase/firestore.js";
 
 const TABS = [
-  { id: "board",    label: "Wallet",       icon: LayoutGrid },
+  { id: "discover", label: "Discover",     icon: Sparkles },
+  { id: "board",    label: "My Wallet",    icon: LayoutGrid },
   { id: "strategy", label: "Strategy",     icon: TrendingUp },
   { id: "timeline", label: "Timeline",     icon: Calendar },
   { id: "router",   label: "Spend router", icon: Zap },
@@ -142,7 +144,7 @@ function withAnchors(profile) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero | onboarding | app
-  const [tab, setTab] = useState("board");
+  const [tab, setTab] = useState("discover");
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState([]);
   const [modalCard, setModalCard] = useState(null);
@@ -187,7 +189,7 @@ export default function App() {
     const withA = withAnchors({ ...p, valOverrides });
     setProfile(withA);
     setScreen("app");
-    setTab("board");
+    setTab("discover");
     saveProfile(p);
     /* v3.2: if the deep survey collected current cards, fold their ids into
        the simple wallet array (the rich per-card metadata stays on
@@ -212,7 +214,7 @@ export default function App() {
 
   const restart = () => {
     setScreen("hero");
-    setTab("board");
+    setTab("discover");
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -306,6 +308,7 @@ export default function App() {
 
   return (
     <Layout nav={nav} onLogoClick={restart}>
+      {tab === "discover" && <DiscoverHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSwitchTab={setTab} />}
       {tab === "board" && <WalletBoard profile={safeProfile} wallet={wallet} onToggleWallet={toggleWallet} onUpdateProfile={updateProfile} />}
       {tab === "strategy" && <StrategyDashboard profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
       {tab === "timeline" && <CardTimeline profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
