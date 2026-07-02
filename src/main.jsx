@@ -5,6 +5,7 @@ import "./styles/animations.css";
 import "./styles/globals.css";
 import "./styles/cardwise.css";
 import "./styles/wallet.css";
+import "./styles/simple.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

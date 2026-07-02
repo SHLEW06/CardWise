@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar, LayoutGrid, Sparkles } from "lucide-react";
+import {
+  TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search,
+  AlertTriangle, Archive, Sliders, Calendar, LayoutGrid, Sparkles,
+  Home, MoreHorizontal, X,
+} from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
 import Onboarding from "./components/Onboarding.jsx";
@@ -17,6 +21,8 @@ import ValuationsEditor from "./components/ValuationsEditor.jsx";
 import CardTimeline from "./components/CardTimeline.jsx";
 import WalletBoard from "./components/wallet/WalletBoard.jsx";
 import DiscoverHome from "./components/discover/DiscoverHome.jsx";
+import QuickStart from "./components/QuickStart.jsx";
+import SimpleHome from "./components/SimpleHome.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -29,13 +35,17 @@ import {
   saveValOverrides, loadValOverrides,
 } from "./firebase/firestore.js";
 
-const TABS = [
+const CORE_TABS = [
+  { id: "home",     label: "Home",         icon: Home },
+  { id: "board",    label: "Wallet",       icon: LayoutGrid },
+  { id: "explore",  label: "Explore",      icon: Search },
+];
+
+const ADVANCED_TABS = [
   { id: "discover", label: "Discover",     icon: Sparkles },
-  { id: "board",    label: "My Wallet",    icon: LayoutGrid },
   { id: "strategy", label: "Strategy",     icon: TrendingUp },
   { id: "timeline", label: "Timeline",     icon: Calendar },
   { id: "router",   label: "Spend router", icon: Zap },
-  { id: "explore",  label: "Explore",      icon: Search },
   { id: "keepers",  label: "Keepers",      icon: Wallet },
   { id: "airport",  label: "Airport fit",  icon: Plane },
   { id: "redeem",   label: "Redeem",       icon: ArrowLeftRight },
@@ -143,8 +153,15 @@ function withAnchors(profile) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("hero"); // hero | onboarding | app
-  const [tab, setTab] = useState("discover");
+  const [screen, setScreen] = useState("hero"); // hero | quickstart | onboarding | app
+  const [tab, setTab] = useState("home");
+  const [advanced, setAdvanced] = useState(() => {
+    try {
+      return localStorage.getItem("cw-advanced") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState([]);
   const [modalCard, setModalCard] = useState(null);
@@ -189,7 +206,7 @@ export default function App() {
     const withA = withAnchors({ ...p, valOverrides });
     setProfile(withA);
     setScreen("app");
-    setTab("discover");
+    setTab("home");
     saveProfile(p);
     /* v3.2: if the deep survey collected current cards, fold their ids into
        the simple wallet array (the rich per-card metadata stays on
@@ -214,7 +231,7 @@ export default function App() {
 
   const restart = () => {
     setScreen("hero");
-    setTab("discover");
+    setTab("home");
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -249,6 +266,7 @@ export default function App() {
       setProfile(loaded);
       saveProfile(strategy.profile);
     }
+    setAdvanced(true);
     setTab("strategy");
   }, [valOverrides]);
 
@@ -273,6 +291,18 @@ export default function App() {
   const held = wallet;
 
   const openCard = (id) => setModalCard(id);
+  const toggleAdvanced = () => {
+    setAdvanced((isAdvanced) => {
+      const next = !isAdvanced;
+      try {
+        localStorage.setItem("cw-advanced", next ? "1" : "0");
+      } catch {
+        /* best effort */
+      }
+      if (!next && ADVANCED_TABS.some((item) => item.id === tab)) setTab("home");
+      return next;
+    });
+  };
 
   // ----- render -----
   if (!ready) {
@@ -282,7 +312,15 @@ export default function App() {
   if (screen === "hero") {
     return (
       <Layout onLogoClick={restart}>
-        <Hero onStart={() => setScreen("onboarding")} onExplore={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("explore"); }} />
+        <Hero onStart={() => setScreen("quickstart")} onExplore={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("explore"); }} />
+      </Layout>
+    );
+  }
+
+  if (screen === "quickstart") {
+    return (
+      <Layout onLogoClick={restart}>
+        <QuickStart onDone={finishOnboarding} onDetailed={() => setScreen("onboarding")} />
       </Layout>
     );
   }
@@ -292,10 +330,11 @@ export default function App() {
   }
 
   const safeProfile = profile || withAnchors({ valOverrides });
+  const visibleTabs = advanced ? [...CORE_TABS, ...ADVANCED_TABS] : CORE_TABS;
 
   const nav = (
     <nav className="cw-nav">
-      {TABS.map((t) => {
+      {visibleTabs.map((t) => {
         const Icon = t.icon;
         return (
           <button key={t.id} className={["cw-nav-item", tab === t.id && "cw-nav-on"].filter(Boolean).join(" ")} onClick={() => setTab(t.id)}>
@@ -303,11 +342,15 @@ export default function App() {
           </button>
         );
       })}
+      <button className="cw-nav-item cw-nav-more" onClick={toggleAdvanced}>
+        {advanced ? <><X size={15} /> Simple view</> : <><MoreHorizontal size={15} /> More tools</>}
+      </button>
     </nav>
   );
 
   return (
     <Layout nav={nav} onLogoClick={restart}>
+      {tab === "home" && <SimpleHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onToggleWallet={toggleWallet} onGoTab={setTab} />}
       {tab === "discover" && <DiscoverHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSwitchTab={setTab} />}
       {tab === "board" && <WalletBoard profile={safeProfile} wallet={wallet} onToggleWallet={toggleWallet} onUpdateProfile={updateProfile} />}
       {tab === "strategy" && <StrategyDashboard profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}

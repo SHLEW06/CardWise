@@ -4,6 +4,9 @@ import react from "@vitejs/plugin-react";
 // Vite build → outputs to dist/, which Firebase Hosting serves (see firebase.json).
 export default defineConfig({
   plugins: [react()],
+  test: {
+    include: ["src/**/*.test.js"],
+  },
   build: {
     outDir: "dist",
     sourcemap: false,
