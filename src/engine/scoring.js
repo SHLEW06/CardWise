@@ -81,6 +81,17 @@ export function buildSpend(profile = {}) {
   return s;
 }
 
+/** Whether buildSpend fell back to synthetic defaults for this profile
+   (no spendAmounts). Callers can propagate this into confidence labels so
+   estimates aren't presented as tightly-measured dollars. Phase-1 fix. */
+export function spendIsEstimated(profile = {}) {
+  const sa = profile?.spendAmounts;
+  if (!sa || typeof sa !== "object") return true;
+  const values = Object.values(sa);
+  if (values.length === 0) return true;
+  return !values.some((v) => Number(v) > 0);
+}
+
 export const rateFor = (card, cat) =>
   card.earnRates[cat] != null ? card.earnRates[cat] : (card.earnRates.General != null ? card.earnRates.General : 1);
 

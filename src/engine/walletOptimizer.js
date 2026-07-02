@@ -35,6 +35,7 @@ import { estimateApprovalFit, isApplyNowEligible, TIMING_BUCKETS } from "./appro
 import { calculateKeeperValue, KEEPER_DECISIONS } from "./keeperAnalyzer.js";
 import { effectiveFee, CATS, rateFor } from "./scoring.js";
 import { recommendCardsByRole, rankCardsForRole, ROLE_IDS } from "./roleRecommendations.js";
+import { optimizeWalletLocalSearch } from "./walletSearch.js";
 
 /* Re-export role recommendations so downstream code that already imports from
    walletOptimizer.js can pick them up without a separate module path. */
@@ -335,26 +336,79 @@ export function buildIdealWallet(userProfile = {}, currentWallet = [], allCards 
     });
   }
 
-  /* --- 4) Compute annualized net value with the chosen wallet -------- */
-  const walletValue = calculateCurrentWalletValue(userProfile, chosen, allCards);
+  /* --- 4) Local-search polish -----------------------------------------
+     Greedy + role-dedup gives a good seed, but a single swap/drop/add
+     can still improve the wallet. Run local search over the seed until
+     no improving move remains. Kept cards stay locked so the polish
+     never drops a preserved keeper for a marginal gain. */
+  const feeBudget = typeof userProfile.feeBudget === "number"
+    ? Math.max(userProfile.feeBudget, 0)
+    : Infinity;
+  const searchPool = pool;
+  const search = optimizeWalletLocalSearch(userProfile, chosen, searchPool, {
+    targetSize,
+    feeBudget,
+    lockedIds: new Set(preserved),
+  });
+
+  /* If the polish improved the wallet, adopt the new id list and rebuild
+     the slots array from the new ids. Preserved slots keep their metadata;
+     added slots pick up their roleAdded from the marginal calc. */
+  let finalChosen = chosen;
+  if (search.gainedValue > 0) {
+    finalChosen = search.walletCardIds;
+    const newSlots = [];
+    for (const id of finalChosen) {
+      const c = BY_ID[id];
+      if (!c) continue;
+      if (preserved.includes(id)) {
+        newSlots.push({
+          id, role: _defaultRoleFor(c), roleId: _roleIdFor(c),
+          source: "kept", marginalValue: null,
+        });
+      } else {
+        const mv = calculateMarginalCardValue(c, userProfile, preserved, allCards);
+        const role = mv?.roleAdded?.category || _defaultRoleFor(c);
+        newSlots.push({
+          id, role, roleId: _roleIdFor(c),
+          source: "added",
+          marginalValue: mv?.marginalValue ?? null,
+          label: mv ? classifyRecommendation(mv, { card: c, profile: userProfile }) : null,
+        });
+      }
+    }
+    slots.length = 0;
+    slots.push(...newSlots);
+  }
+
+  /* --- 5) Compute annualized net value with the chosen wallet -------- */
+  const walletValue = calculateCurrentWalletValue(userProfile, finalChosen, allCards);
 
   const assumptions = [
     `Target wallet size: ${targetSize} card${targetSize === 1 ? "" : "s"} (from complexityPreference).`,
     "Kept cards are preserved when their keeper math still clears.",
     "New slots are filled by marginal value, capped so we never blow past the target size.",
   ];
+  if (search.iterations > 0) {
+    assumptions.push(`Local-search polish improved the wallet by $${Math.round(search.gainedValue)}/yr via ${search.iterations} move${search.iterations === 1 ? "" : "s"}.`);
+  }
   const warnings = [];
   if (targetSize === 1) warnings.push("Single-card wallets can only optimize one role — expect wider gaps in bonus categories.");
-  if (chosen.length < targetSize) warnings.push(`Only ${chosen.length} card${chosen.length === 1 ? "" : "s"} had positive marginal value under this profile — the rest of the target slots were left empty.`);
+  if (finalChosen.length < targetSize) warnings.push(`Only ${finalChosen.length} card${finalChosen.length === 1 ? "" : "s"} had positive marginal value under this profile — the rest of the target slots were left empty.`);
 
   return {
     targetSize,
-    walletCardIds: chosen,
+    walletCardIds: finalChosen,
     slots,
     estimatedAnnualNetValue: walletValue.netValue,
     confidence: userProfile.derived?.approvalReadiness || "moderate",
     assumptions,
     warnings,
+    localSearch: {
+      iterations: search.iterations,
+      gainedValue: Math.round(search.gainedValue),
+      moves: search.moves,
+    },
   };
 }
 

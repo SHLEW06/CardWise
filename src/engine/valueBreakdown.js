@@ -44,7 +44,7 @@
 
 import { BY_ID } from "../data/cards.js";
 import {
-  effectiveFee, annualRewards, buildSpend,
+  effectiveFee, annualRewards, buildSpend, CATS, rateFor,
 } from "./scoring.js";
 import {
   estimateCreditUtilization,
@@ -58,7 +58,9 @@ import {
   estimatePortalPenalty,
   estimateRedemptionDifficultyPenalty,
   estimateBreakageRisk,
+  getCreditRealismPrompts,
 } from "./annualFee.js";
+import { effCpp } from "./transferValue.js";
 import { calculateOverlapPenalty } from "./overlapDetector.js";
 import { estimateApprovalFit, TIMING_BUCKETS } from "./approval.js";
 import { CERT_EV } from "../data/valuations.js";
@@ -299,6 +301,79 @@ function _complexityPenalty(card, profile) {
 }
 
 /* ============================================================================
+   3.5) Per-category breakeven (Phase-3)
+   ==========================================================================
+   For every dedicated category the card wins at ≥3x, compute the annual
+   spend the user would need in that category for the card to clear its fee
+   compared to the user's real catch-all baseline. This turns "it's
+   subjective" into "you'd need $X/yr on dining for this to beat your
+   catch-all; you're at $Y."
+
+   Formula:
+     breakevenAnnualSpend_c
+       = ( fee(k) + sub(k) − B(k,u) )
+         / ( rate(k,c)·cpp(k) − bestCatchAllReturn_c )
+   ========================================================================== */
+
+function _bestCatchAllReturnPct(profile, heldIds) {
+  /* Pick the best "catch-all" rate the user can realistically expect —
+     Robinhood Gold's 3% when they keep Gold, otherwise 2%. Held cards
+     with a higher General rate win the comparison. */
+  let pct = 2.0;
+  if (profile?.memberships?.robinhoodGold) pct = 3.0;
+  for (const id of heldIds || []) {
+    const c = BY_ID[id];
+    if (!c) continue;
+    const rate = rateFor(c, "General");
+    if (!rate) continue;
+    const cpp = c.pointCurrency ? effCpp(c.pointCurrency, profile, heldIds) : 1.0;
+    const r = rate * cpp;
+    if (r > pct) pct = r;
+  }
+  return pct;
+}
+
+function _perCategoryBreakevens(card, profile, heldIds, realizedBenefits) {
+  const catchAllPct = _bestCatchAllReturnPct(profile, heldIds);
+  const fee = effectiveFee(card);
+  const remainingFee = Math.max(0, fee - realizedBenefits);
+  const cpp = card.pointCurrency ? effCpp(card.pointCurrency, profile, heldIds) : 1.0;
+
+  const spend = buildSpend(profile);
+  const results = [];
+  for (const cat of CATS) {
+    if (cat === "General") continue; // General IS the catch-all
+    const rate = rateFor(card, cat);
+    if (rate < 3) continue; // only dedicated bonus categories
+    const cardPct = rate * cpp;
+    const marginPct = cardPct - catchAllPct;
+    if (marginPct <= 0) {
+      results.push({
+        category: cat,
+        breakevenAnnualSpend: null,
+        userAnnualSpend: Math.round((spend[cat] || 0) * 12),
+        clearsFee: false,
+        note: "This card's rate on this category doesn't beat your catch-all.",
+      });
+      continue;
+    }
+    const breakevenAnnualSpend = remainingFee > 0
+      ? Math.ceil(remainingFee / (marginPct / 100))
+      : 0;
+    const userAnnualSpend = Math.round((spend[cat] || 0) * 12);
+    results.push({
+      category: cat,
+      breakevenAnnualSpend,
+      userAnnualSpend,
+      clearsFee: userAnnualSpend >= breakevenAnnualSpend,
+      cardReturnPct: +cardPct.toFixed(2),
+      catchAllReturnPct: +catchAllPct.toFixed(2),
+    });
+  }
+  return results;
+}
+
+/* ============================================================================
    4) The main entry point: calculateValueBreakdown
    ========================================================================== */
 
@@ -321,7 +396,7 @@ export function calculateValueBreakdown(card, userProfile = {}, currentWallet = 
 
   /* Credits — conservative (F-factored) vs optimistic (face-value). */
   const creditsUsedValue = _round(
-    (cardObj.credits || []).reduce((t, c) => t + estimateCreditUtilization(c, userProfile), 0)
+    (cardObj.credits || []).reduce((t, c) => t + estimateCreditUtilization(c, userProfile, cardObj), 0)
   );
   const creditsMaxValue = _round(
     (cardObj.credits || []).reduce((t, c) => t + (c.annual || 0), 0)
@@ -407,6 +482,15 @@ export function calculateValueBreakdown(card, userProfile = {}, currentWallet = 
   if (breakage.severity !== "none")
     assumptions.push(`Breakage risk: ${breakage.severity}. This is folded into realistic value only.`);
 
+  /* --- per-category breakeven (Phase-3) -------------------------------- */
+  const realizedBenefitsForBreakeven =
+    creditsUsedValue + hotelCert.estimated + companionCert.estimated +
+    checkedBagValue + loungeValueEst + statusValue + protectionValue;
+  const breakeven = _perCategoryBreakevens(cardObj, userProfile, heldIds, realizedBenefitsForBreakeven);
+
+  /* --- credit realism prompts (Phase-3) -------------------------------- */
+  const creditRealismPrompts = getCreditRealismPrompts(cardObj, userProfile);
+
   return {
     /* required top-level fields */
     rewardsValue,
@@ -425,6 +509,10 @@ export function calculateValueBreakdown(card, userProfile = {}, currentWallet = 
     realisticNetValue,
     possibleMaxValue,
     confidence: conf.level,
+
+    /* Phase-3 additions */
+    breakeven,
+    creditRealismPrompts,
 
     /* per-benefit paired shapes for the UI */
     hotelCertificate: hotelCert,
@@ -479,6 +567,7 @@ function _emptyBreakdown(reason) {
     membershipCost: 0, membershipName: null,
     assumptions: [], cardId: null, cardName: null,
     creditsMaxValue: 0, checkedBagMax: 0, loungeMax: 0, statusMax: 0,
+    breakeven: [], creditRealismPrompts: [],
   };
 }
 

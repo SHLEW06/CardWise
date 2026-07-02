@@ -65,6 +65,33 @@ export function defaultAnchor(program, profile = {}) {
   return best;
 }
 
+/* Phase-4: redemption behavior (bookingStyle) is not the same as skill.
+   A beginner may still take cash; a nerd may prefer transfers. We fold the
+   user-declared style into effCpp so the valuation matches what they'd
+   actually do:
+
+     cashback        → clamp bank currencies to cashFloor. Points never
+                        look magically better than cash.
+     portal          → blend toward portal multiplier value (≈1.25-1.5c on
+                        transferable currencies, from portalMultipliers).
+     transfer        → allow the partner-anchored value (today's default
+                        for "advanced" users).
+     brand-loyalist  → boost the matching hotel/airline program's own
+                        co-brand valuations (via portfolioBoost below).
+     mixed/not-sure  → today's skill-blended default.
+
+   Rules preserved: cashFloor still floors everything, valOverrides still
+   short-circuits, downstream scoring still gets one number. */
+const PORTAL_MULTIPLIER = { amex: 1.0, chase: 1.5, c1: 1.0, citi: 1.0, wf: 1.5, bilt: 1.25 };
+
+function _bookingStyle(profile) {
+  const raw = profile?.bookingStyle
+    || profile?.preferences?.bookingStyle
+    || null;
+  if (!raw) return "not-sure";
+  return String(raw).toLowerCase();
+}
+
 /* effective cents-per-point for any currency, given the profile + held cards.
 
    Bank-currency direct override (Shunji preset):
@@ -78,6 +105,8 @@ export function defaultAnchor(program, profile = {}) {
      unchanged — effCpp still returns a single number. */
 export function effCpp(program, profile = {}, held = []) {
   if (program === "cash" || program === "robinhood") return 1.0;
+  const style = _bookingStyle(profile);
+
   if (isBank(program)) {
     const bankOverride = profile.valOverrides?.[program];
     if (bankOverride != null) {
@@ -85,13 +114,41 @@ export function effCpp(program, profile = {}, held = []) {
       return Math.max(PROGRAMS[program].cashFloor, +Number(bankOverride).toFixed(3));
     }
     if (profile.redemption === "cash") return PROGRAMS[program].cashFloor;
+    /* Phase-4: cashback booking style → clamp to cash floor. */
+    if (style === "cashback") return PROGRAMS[program].cashFloor;
+
     const anchor = (profile.anchors && profile.anchors[program]) || defaultAnchor(program, profile);
     if (!anchor) return PROGRAMS[program].cashFloor;
-    const v = valOf(anchor, profile) * transferRatio(program, anchor, held) * boostFor(anchor, held);
-    return Math.max(PROGRAMS[program].cashFloor, +v.toFixed(3));
+    const partnerV = valOf(anchor, profile) * transferRatio(program, anchor, held) * boostFor(anchor, held);
+
+    if (style === "portal") {
+      /* Portal booking → mid-tier value from portal multiplier; never below
+         cash floor, never above partner ceiling. */
+      const portal = PORTAL_MULTIPLIER[program] || 1.0;
+      return Math.max(PROGRAMS[program].cashFloor, Math.min(partnerV, +portal.toFixed(3)));
+    }
+    /* transfer / brand-loyalist / mixed / not-sure → partner-anchored value
+       (the historical default). brand-loyalist gets an extra boost applied
+       through boostFor() when a co-brand is held. */
+    return Math.max(PROGRAMS[program].cashFloor, +partnerV.toFixed(3));
   }
-  // co-brand currency, valued directly (with any boost like TakeOff 15)
-  return +((valOf(program, profile) || 1.0) * boostFor(program, held)).toFixed(3);
+
+  /* co-brand currency, valued directly (with any boost like TakeOff 15) */
+  let v = (valOf(program, profile) || 1.0) * boostFor(program, held);
+  /* Phase-4: brand-loyalist users lean into their co-brand ecosystems. */
+  if (style === "brand-loyalist") {
+    const brands = [
+      ...(profile?.hotelBrands || profile?.hotels?.preferredBrands || []),
+      ...(profile?.memberships?.airlineLoyalty || []),
+      ...(profile?.memberships?.hotelLoyalty || []),
+    ];
+    if (brands.includes(program)) v *= 1.10;
+  }
+  /* cashback users don't chase co-brand ceilings — pull down toward 1c. */
+  if (style === "cashback") {
+    v = Math.max(1.0, Math.min(v, 1.1));
+  }
+  return +v.toFixed(3);
 }
 
 /* human label for a card's currency */

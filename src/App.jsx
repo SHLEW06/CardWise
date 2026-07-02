@@ -43,22 +43,68 @@ const TABS = [
 
 /* ── URL state ───────────────────────────────────────────────────────────── */
 /* Encode a shareable profile into the URL hash. Only serializes the fields
-   that the onboarding produces — never credentials or uid. */
+   that the onboarding produces — never credentials or uid.
+
+   Phase-1 note (cardwise-engine-optimization): the older PROFILE_URL_KEYS list
+   was a lossy subset — it dropped spendAmounts, memberships, currentWallet,
+   and other engine-critical fields. Reopening a saved link then rebuilt the
+   profile against synthetic defaults, so recommendations degraded on reload.
+   The new list is versioned (`v=2`) and includes every field the engine reads
+   directly. Legacy links (no `v`) still decode via profileFromHash. */
 const PROFILE_URL_KEYS = [
+  /* legacy flat fields (still emitted for share-link back-compat) */
   "homeAirport", "destination", "goal", "level", "hotelUsage", "hotelBrands",
   "lounge", "feeBudget", "cardCount", "spendSel", "simplicity", "pointPref",
   "checkedBags", "travelSplit", "values", "routes",
+  /* v2 additions — engine-critical fields the old encoder silently dropped */
+  "spendAmounts", "spendPeriod", "spendModes", "complexityPreference",
+  "memberships", "hotelNightsPerYear", "domesticTripsPerYear",
+  "internationalTripsPerYear", "weeksTravelPerYear", "loungeValuePerVisit",
+  "benefitUsage", "bookingStyle",
+  "preferredAirline", "secondaryAirlines", "multiAirline",
+  "wantsHotelKeeper", "hotelStrategy",
+  "valOverrides",
 ];
+
+const URL_PAYLOAD_VERSION = 2;
+
+/* Round spend amounts to nearest $25 so the encoded URL stays reasonably
+   short without meaningfully changing recommendations. */
+function _roundSpend(obj) {
+  if (!obj || typeof obj !== "object") return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === "number") out[k] = Math.round(v / 25) * 25;
+    else out[k] = v;
+  }
+  return out;
+}
+
+/* Emit only non-empty values so short profiles still fit in a URL. */
+function _shouldEmit(v) {
+  if (v == null || v === "") return false;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === "object") return Object.keys(v).length > 0;
+  return true;
+}
 
 function profileToHash(profile) {
   if (!profile) return "";
-  const slim = {};
+  const slim = { v: URL_PAYLOAD_VERSION };
   for (const k of PROFILE_URL_KEYS) {
-    if (profile[k] != null && profile[k] !== "" && !(Array.isArray(profile[k]) && profile[k].length === 0)) {
-      slim[k] = profile[k];
+    let val = profile[k];
+    if (k === "currentWallet" && Array.isArray(val)) {
+      val = val.map((c) => c?.id).filter(Boolean);
     }
+    if (k === "spendAmounts") val = _roundSpend(val);
+    if (_shouldEmit(val)) slim[k] = val;
   }
-  if (Object.keys(slim).length === 0) return "";
+  /* Include currentWallet ids explicitly (survey stores rich objects). */
+  const cw = Array.isArray(profile.currentWallet)
+    ? profile.currentWallet.map((c) => c?.id).filter(Boolean)
+    : null;
+  if (cw && cw.length) slim.currentWalletIds = cw;
+
   try {
     return "#p=" + btoa(JSON.stringify(slim));
   } catch { return ""; }
@@ -68,7 +114,17 @@ function profileFromHash() {
   const hash = window.location.hash;
   if (!hash.startsWith("#p=")) return null;
   try {
-    return JSON.parse(atob(hash.slice(3)));
+    const raw = JSON.parse(atob(hash.slice(3)));
+    /* Legacy payloads have no `v` tag. Flag them so the UI can show the
+       "sharpen your inputs" nudge, and rehydrate currentWallet from ids. */
+    if (raw.v == null) {
+      raw._legacyLink = true;
+    }
+    if (Array.isArray(raw.currentWalletIds)) {
+      raw.currentWallet = raw.currentWalletIds.map((id) => ({ id }));
+      delete raw.currentWalletIds;
+    }
+    return raw;
   } catch { return null; }
 }
 

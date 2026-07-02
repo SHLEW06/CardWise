@@ -105,12 +105,55 @@ function isMembershipHeld(card, profile) {
   );
 }
 
+/** Stable id for a credit. Prefers an explicit `credit.id` when present,
+   otherwise derives a slug from card-id + credit name so per-credit user
+   answers (profile.benefitUsage[id]) can be looked up consistently across
+   sessions. Phase-3 fix. */
+export function creditId(credit, card = null) {
+  if (!credit) return null;
+  if (credit.id) return credit.id;
+  const slug = (credit.name || "")
+    .toLowerCase()
+    .replace(/\$/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return card?.id ? `${card.id}:${slug}` : slug;
+}
+
 /** Utilization estimate for a single `credit` object (from card.credits).
    Applies the base F-factor, then extra haircuts for monthly / merchant-
-   specific credits. Returns dollars. */
-export function estimateCreditUtilization(credit, profile = {}) {
+   specific credits. Returns dollars.
+
+   Phase-3 fix: when the user has explicitly told us whether they'd use a
+   credit (via profile.benefitUsage[<creditId>] === true/false), that answer
+   short-circuits the heuristic — true → ~full face (still F-factored so
+   "yes" doesn't mean "100% capture"), false → 0. Anything else falls back
+   to the friction heuristic below. The card is optional; when provided, the
+   credit id resolves to `<cardId>:<slug>` for stability across sessions. */
+export function estimateCreditUtilization(credit, profile = {}, card = null) {
   if (!credit) return 0;
   const face = credit.annual || 0;
+
+  /* Explicit user answer — the whole point of Phase-3 realism. */
+  const bu = profile?.benefitUsage;
+  if (bu && face > 0) {
+    const id = creditId(credit, card);
+    const idAns = id != null ? bu[id] : undefined;
+    /* Also accept a bare slug (no card prefix) so legacy callers that never
+       had a card ref can still contribute answers. */
+    const slug = credit.id || (credit.name || "")
+      .toLowerCase().replace(/\$/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const slugAns = slug ? bu[slug] : undefined;
+    const answer = idAns != null ? idAns : slugAns;
+    if (answer === true) {
+      /* User says they'd use it — still take a small F-factor haircut to
+         reflect real-world capture, but not the merchant/monthly friction. */
+      return Math.round(face * Math.min(1, (F[credit.use] || 0.85) + 0.15));
+    }
+    if (answer === false) return 0;
+    /* "unknown" or missing → fall through to heuristic. */
+  }
+
   const base = F[credit.use] || 0.6;
   const name = (credit.name || "").toLowerCase();
   /* Monthly / merchant-specific credits are harder to fully use. Give them
@@ -126,6 +169,46 @@ export function estimateCreditUtilization(credit, profile = {}) {
   if (simplicity === "simple") friction *= 0.9;
   if (level === "beginner") friction *= 0.92;
   return Math.round(face * base * friction);
+}
+
+/** Return the "high-stakes" credits worth asking the user about for a card.
+   The engine surfaces this only for cards where the answer would meaningfully
+   change the decision — annualFee >= 395 OR the credit stack accounts for
+   >= 50% of the card's advertised recurring value. Each entry has:
+
+     { id, label, faceValue, use, defaultAssumedUsed }
+
+   `defaultAssumedUsed` mirrors what estimateCreditUtilization would assume
+   in the absence of an answer, so the UI can pre-check the toggles. Phase-3. */
+export function getCreditRealismPrompts(card, profile = {}) {
+  if (!card) return [];
+  const credits = card.credits || [];
+  if (!credits.length) return [];
+  const fee = (card.annualFee || 0) + (card.requiresSubscription?.annual || 0);
+  const totalCreditFace = credits.reduce((t, c) => t + (c.annual || 0), 0);
+  const marquee = fee >= 395 || totalCreditFace >= Math.max(200, fee * 0.5);
+  if (!marquee) return [];
+  return credits
+    .filter((c) => (c.annual || 0) >= 50) // skip trivial credits
+    .map((c) => {
+      const id = creditId(c, card);
+      const bu = profile?.benefitUsage || {};
+      const answer = bu[id] != null ? bu[id] : bu[c.id];
+      const defaultAssumedUsed = answer === true
+        ? true
+        : answer === false
+          ? false
+          : /* heuristic default: F factor above the "unusable" threshold */
+            (F[c.use] || 0.6) >= 0.55;
+      return {
+        id,
+        label: c.name,
+        faceValue: c.annual || 0,
+        use: c.use || "MEDIUM",
+        answer: answer === true ? true : answer === false ? false : "unknown",
+        defaultAssumedUsed,
+      };
+    });
 }
 
 /** Value of a single free-night certificate object. Applies hotel-usage

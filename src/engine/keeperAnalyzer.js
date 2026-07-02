@@ -38,6 +38,7 @@ import {
   estimateRedemptionDifficultyPenalty,
   estimateBreakageRisk,
   calculateAnnualFeeBreakEven,
+  estimateCreditUtilization as estimateCreditUtilizationReal,
 } from "./annualFee.js";
 import { detectOverlaps, explainOverlaps, calculateOverlapPenalty } from "./overlapDetector.js";
 import {
@@ -377,7 +378,7 @@ function realizedCreditsForProfile(card, profile) {
        consistent across the app. */
     /* eslint-disable-next-line global-require */
     const { estimateCreditUtilization } = require_annualFee();
-    return t + estimateCreditUtilization(credit, profile);
+    return t + estimateCreditUtilization(credit, profile, card);
   }, 0);
 }
 
@@ -388,24 +389,11 @@ function realizedCreditsForProfile(card, profile) {
 let _annualFeeMod = null;
 function require_annualFee() {
   if (_annualFeeMod) return _annualFeeMod;
-  /* Since we already static-imported these from annualFee.js above, expose
-     them via a small object. */
+  /* Phase-3: point at the real primitive so profile.benefitUsage answers
+     flow into keeper math the same way they flow into the rest of the app.
+     Prior shim silently forked the utilization logic. */
   _annualFeeMod = {
-    estimateCreditUtilization: (credit, profile) => {
-      const face = credit.annual || 0;
-      const base = F_MAP[credit.use] || 0.6;
-      const name = (credit.name || "").toLowerCase();
-      const level = profile.basics?.level || profile.level || "some";
-      const simplicity = profile.preferences?.simplicity || profile.simplicity || "balanced";
-      let friction = 1.0;
-      const monthly = /\$\d+\/mo|monthly/.test(name);
-      const merchant = /uber|resy|dunkin|walmart|equinox|soulcycle|clear|disney|hotel|streaming|dining/i.test(name);
-      if (monthly) friction *= 0.85;
-      if (merchant) friction *= 0.85;
-      if (simplicity === "simple") friction *= 0.9;
-      if (level === "beginner") friction *= 0.92;
-      return Math.round(face * base * friction);
-    },
+    estimateCreditUtilization: estimateCreditUtilizationReal,
   };
   return _annualFeeMod;
 }

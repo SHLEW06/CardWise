@@ -43,6 +43,7 @@ import {
   estimatePortalPenalty,
   estimateRedemptionDifficultyPenalty,
   estimateBreakageRisk,
+  getCreditRealismPrompts,
 } from "./annualFee.js";
 import { calculateOverlapPenalty } from "./overlapDetector.js";
 import { computeFitAdjustment } from "./fitAdjustments.js";
@@ -85,13 +86,38 @@ const _BASELINE_2PCT = Object.freeze({
   needsVerification: false, sourceDate: "2026-06",
 });
 
+/* Synthetic Robinhood Gold 3% baseline (net of $60/yr Gold sub). Used when
+   the user already keeps Robinhood Gold — every dedicated card's marginal
+   value has to beat this real 3% catch-all, not a mainstream 2% one. Phase-1. */
+const _BASELINE_RH_3PCT = Object.freeze({
+  id: "robinhood-gold", name: "Robinhood Gold 3%", issuer: "Robinhood", network: "VISA",
+  annualFee: 0, pointCurrency: "robinhood",
+  earnRates: Object.freeze({ General: 3 }),
+  portalMultipliers: {},
+  /* The $60/yr Gold sub is folded into requiresSubscription so _feeValue
+     picks it up via estimateMembershipCost when memberships.robinhoodGold
+     is true (net cost = 0 because the user already keeps Gold). When Gold
+     isn't held, the baseline still deducts $60 — so a dedicated card only
+     needs to beat "3% minus $60" in that edge case. */
+  requiresSubscription: { name: "Robinhood Gold", annual: 60 },
+  credits: [], benefits: [], transferAccess: [],
+  loungeAccess: null, hotelStatus: null, airlineStatus: null,
+  checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
+  travelProtections: [], foreignTransactionFee: 0,
+  tags: ["flat", "cashback", "baseline"],
+  overlapTags: [], ecosystemTags: ["cash"],
+  cardType: "consumer", cardFamily: "baseline",
+  availabilityStatus: "openToNewApplicants",
+  needsVerification: false, sourceDate: "2026-06",
+});
+
 /** Sum of realized benefits for a card given a profile — mirrors the keeper
    component list but stays a pure function so we can call it from the
    wallet-value routine. */
 function _benefitValue(card, profile) {
   if (!card) return 0;
   let v = 0;
-  for (const c of card.credits || []) v += estimateCreditUtilization(c, profile);
+  for (const c of card.credits || []) v += estimateCreditUtilization(c, profile, card);
   for (const cert of card.freeNightCertificates || []) v += estimateCertificateValue(cert, profile, card);
   v += estimateCompanionCertificateValue(card, profile);
   v += estimateCheckedBagValue(card, profile);
@@ -180,8 +206,14 @@ export function calculateWalletValue(userProfile = {}, walletCards = []) {
 export function calculateCurrentWalletValue(userProfile = {}, currentWallet = [], _allCards = CARDS) {
   const cards = _cardListToIds(currentWallet).map((id) => BY_ID[id]).filter(Boolean);
   /* Never let the "current wallet" be evaluated against nothing — a baseline
-     card is spliced in only when the wallet is completely empty. */
-  const usable = cards.length ? cards : [_BASELINE_2PCT];
+     card is spliced in only when the wallet is completely empty. Phase-1
+     fix: use Robinhood Gold's 3% (net of its $60 sub) whenever the user
+     already keeps Gold, so the "is a dedicated card worth it" comparison
+     is against the user's real catch-all, not a synthetic 2%. */
+  const baselineCard = _isRobinhoodEligibleBaseline(userProfile)
+    ? _BASELINE_RH_3PCT
+    : _BASELINE_2PCT;
+  const usable = cards.length ? cards : [baselineCard];
   const walletValue = calculateWalletValue(userProfile, usable);
   return {
     ...walletValue,
@@ -280,6 +312,11 @@ export function calculateMarginalCardValue(card, userProfile = {}, currentWallet
   /* Human-readable explanation. Deterministic. */
   const explanation = _explain(cardObj, cur, cand, marginalValue, roleAdded, baselineAlternative);
 
+  /* Phase-3: expose the credit-realism prompts for high-fee / coupon-book
+     cards so the UI can render explicit yes/no toggles. Only surfaces when
+     the card actually has marquee credits worth asking about. */
+  const creditRealismPrompts = getCreditRealismPrompts(cardObj, userProfile);
+
   return {
     cardId: cardObj.id,
     currentWalletValue: cur.netValue,
@@ -294,6 +331,7 @@ export function calculateMarginalCardValue(card, userProfile = {}, currentWallet
     warnings,
     confidence,
     explanation,
+    creditRealismPrompts,
     /* Diagnostic fields the UI can drill into. */
     adjustments,
     fitAdjustment: fit,
@@ -328,19 +366,41 @@ function _isRobinhoodEligibleBaseline(profile) {
 
 function _pickBaseline(card, profile, heldIds) {
   /* A candidate card is measured against the strongest simple alternative
-     the user could realistically hold. Preferences:
+     the user could realistically hold. Preferences (Phase-1 revised):
 
-       1) The user's actual best-in-wallet card if the wallet has one that's
-          in the SAME primary category — that's a genuine head-to-head.
-       2) A common flat-2% keeper (Active Cash or Citi Double Cash) since
-          those are always realistic.
-       3) The synthetic 2% floor when nothing else applies.
+       1) The user's best catch-all already IN THE WALLET (any flat / high-
+          general-rate card). That's the real bar a dedicated card must
+          clear — a 4x dining card only helps if it beats the flat card
+          you already put non-dining spend on.
+       2) A wallet-held head-to-head in the card's top category — a
+          genuine same-role comparison for dedicated cards.
+       3) Robinhood Gold's 3% whenever memberships.robinhoodGold is true.
+          When the user already keeps Gold, this is the honest catch-all
+          floor — dedicated cards now have to clear 3%, not 2%.
+       4) A mainstream flat-2% (Citi Double Cash / Active Cash) otherwise.
+       5) The synthetic 2% floor when nothing else applies.
 
-     We never pick Robinhood Gold (requires membership) or Venture X (never
-     the beginner baseline). Product-change-only cards are also excluded. */
-
-  /* Try to find a wallet-held head-to-head in the card's top category. */
+     We never pick Venture X as a baseline (not a simple keeper). Product-
+     change-only cards are also excluded. */
   const heldCards = heldIds.map((id) => BY_ID[id]).filter(Boolean);
+
+  /* (1) Best catch-all in wallet. */
+  let bestCatchAll = null;
+  for (const c of heldCards) {
+    if (c.id === card.id) continue;
+    if (c.availabilityStatus === "productChangeOnly" || c.availabilityStatus === "downgradeOnly") continue;
+    const generalRate = rateFor(c, "General");
+    const isFlat = c.tags?.includes("flat") || generalRate >= 1.5;
+    if (!isFlat) continue;
+    if (!bestCatchAll || generalRate > bestCatchAll.rate) {
+      bestCatchAll = { card: c, rate: generalRate };
+    }
+  }
+  if (bestCatchAll) {
+    return { kind: "wallet", cardId: bestCatchAll.card.id, cardName: bestCatchAll.card.name };
+  }
+
+  /* (2) Wallet head-to-head in the card's top category. */
   const cardCat = _topCatOfCard(card);
   if (cardCat) {
     let bestHead = null;
@@ -353,24 +413,23 @@ function _pickBaseline(card, profile, heldIds) {
     if (bestHead) return { kind: "wallet", cardId: bestHead.card.id, cardName: bestHead.card.name };
   }
 
-  /* Robinhood as a baseline: only when the user already has Gold. */
+  /* (3) Robinhood as a baseline: only when the user already has Gold. */
   if (_isRobinhoodEligibleBaseline(profile)) {
     const rh = BY_ID["robinhood-gold"];
     if (rh) return { kind: "card", cardId: "robinhood-gold", cardName: rh.name };
   }
 
-  /* Otherwise: use a mainstream flat-2%. Prefer Active Cash for cashback
-     users, Citi Double Cash for point-curious users. Never Venture X for
-     beginners. */
+  /* (4) Otherwise: use a mainstream flat-2%. Prefer Citi Double Cash for
+     point-curious users, Active Cash for cashback / beginner users. Never
+     Venture X for beginners. */
   if (!_isBeginner(profile)) {
-    /* Not beginner — still prefer 2% over Venture X (Venture X isn't a
-       simple baseline). */
     const dc = BY_ID["citi-double-cash"];
     if (dc) return { kind: "card", cardId: "citi-double-cash", cardName: dc.name };
   }
   const ac = BY_ID["active-cash"];
   if (ac) return { kind: "card", cardId: "active-cash", cardName: ac.name };
 
+  /* (5) Synthetic floor. */
   return { kind: "synthetic", cardId: null, cardName: "Flat 2% cash baseline" };
 }
 

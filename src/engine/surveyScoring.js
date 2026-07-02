@@ -213,27 +213,30 @@ export function deriveTravelProfile(raw = {}) {
 /* v3.3 benefitUsage — how likely the user is to use each of the credits and
    perks that annualFee.js discounts. Every field is tri-state: true means
    "yes I use this naturally", false means "no", "unknown" means "don't
-   penalize me one way or the other". */
+   penalize me one way or the other".
+
+   Phase-3 (cardwise-engine-optimization): arbitrary per-credit-id keys are
+   also preserved so the credit-realism prompts can persist explicit answers
+   like `benefitUsage["amex-plat:200-airline-fee-credit"] = true`. */
 export function deriveBenefitUsage(raw = {}) {
   const b = raw.benefitUsage || {};
   const tri = (v) => (v === true || v === false ? v : "unknown");
-  return {
-    uber:                tri(b.uber),
-    uberEats:            tri(b.uberEats),
-    resy:                tri(b.resy),
-    lululemon:           tri(b.lululemon),
-    saks:                tri(b.saks),
-    clear:               tri(b.clear),
-    tsaGlobalEntry:      tri(b.tsaGlobalEntry),
-    streaming:           tri(b.streaming),
-    walmartPlus:         tri(b.walmartPlus),
-    instacart:           tri(b.instacart),
-    equinox:             tri(b.equinox),
-    airlineIncidentals:  tri(b.airlineIncidentals),
-    hotelPortalCredits:  tri(b.hotelPortalCredits),
-    diningCredits:       tri(b.diningCredits),
-    rideshareCredits:    tri(b.rideshareCredits),
-  };
+  const FIXED = [
+    "uber", "uberEats", "resy", "lululemon", "saks", "clear",
+    "tsaGlobalEntry", "streaming", "walmartPlus", "instacart", "equinox",
+    "airlineIncidentals", "hotelPortalCredits", "diningCredits",
+    "rideshareCredits",
+  ];
+  const out = {};
+  for (const k of FIXED) out[k] = tri(b[k]);
+  /* Preserve any additional per-credit-id entries the caller supplied.
+     True/false stay tri-state; unknown values pass through as-is so we don't
+     mis-classify a survey response like "maybe". */
+  for (const [k, v] of Object.entries(b)) {
+    if (FIXED.includes(k)) continue;
+    out[k] = v === true || v === false ? v : "unknown";
+  }
+  return out;
 }
 
 /* v3.3 complexityPreference — a single knob the recommender reads for
@@ -619,6 +622,12 @@ export function normalizeUserProfile(raw = {}) {
        "not-sure"   — surface options; engine treats as light-keeper-friendly */
   if (raw.wantsHotelKeeper != null) profile.wantsHotelKeeper = !!raw.wantsHotelKeeper;
   if (raw.hotelStrategy != null)    profile.hotelStrategy    = raw.hotelStrategy;
+
+  /* Phase-4 (cardwise-engine-optimization): booking style. Captures redemption
+     BEHAVIOR (not skill), so effCpp values points the way the user actually
+     redeems them: cashback / portal / transfer / brand-loyalist / mixed /
+     not-sure. Absent = "not-sure" (today's default). */
+  if (raw.bookingStyle != null) profile.bookingStyle = String(raw.bookingStyle).toLowerCase();
 
   /* Redesign (Prompt 19) — per-category monthly/yearly spend modes.
      `spendModes` (aliased from `categorySpendModes`) is a per-CATEGORY
