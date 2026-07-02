@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import "./styles/animations.css";
 import "./styles/globals.css";
 import "./styles/cardwise.css";
+import "./styles/wallet.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

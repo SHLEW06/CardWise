@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar } from "lucide-react";
+import { TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search, AlertTriangle, Archive, Sliders, Calendar, LayoutGrid } from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
 import Onboarding from "./components/Onboarding.jsx";
@@ -15,6 +15,7 @@ import CardModal from "./components/CardModal.jsx";
 import SavedStrategies from "./components/SavedStrategies.jsx";
 import ValuationsEditor from "./components/ValuationsEditor.jsx";
 import CardTimeline from "./components/CardTimeline.jsx";
+import WalletBoard from "./components/wallet/WalletBoard.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -28,16 +29,17 @@ import {
 } from "./firebase/firestore.js";
 
 const TABS = [
-  { id: "strategy", label: "Strategy", icon: TrendingUp },
-  { id: "timeline", label: "Timeline", icon: Calendar },
-  { id: "router", label: "Spend router", icon: Zap },
-  { id: "explore", label: "Explore", icon: Search },
-  { id: "keepers", label: "Keepers", icon: Wallet },
-  { id: "airport", label: "Airport fit", icon: Plane },
-  { id: "redeem", label: "Redeem", icon: ArrowLeftRight },
-  { id: "warnings", label: "Watch-outs", icon: AlertTriangle },
-  { id: "wallet", label: "My wallet", icon: Compass },
-  { id: "saved", label: "Saved", icon: Archive },
+  { id: "board",    label: "Wallet",       icon: LayoutGrid },
+  { id: "strategy", label: "Strategy",     icon: TrendingUp },
+  { id: "timeline", label: "Timeline",     icon: Calendar },
+  { id: "router",   label: "Spend router", icon: Zap },
+  { id: "explore",  label: "Explore",      icon: Search },
+  { id: "keepers",  label: "Keepers",      icon: Wallet },
+  { id: "airport",  label: "Airport fit",  icon: Plane },
+  { id: "redeem",   label: "Redeem",       icon: ArrowLeftRight },
+  { id: "warnings", label: "Watch-outs",   icon: AlertTriangle },
+  { id: "wallet",   label: "Owned cards",  icon: Compass },
+  { id: "saved",    label: "Saved",        icon: Archive },
   { id: "valuations", label: "Valuations", icon: Sliders },
 ];
 
@@ -140,7 +142,7 @@ function withAnchors(profile) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero | onboarding | app
-  const [tab, setTab] = useState("strategy");
+  const [tab, setTab] = useState("board");
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState([]);
   const [modalCard, setModalCard] = useState(null);
@@ -185,7 +187,7 @@ export default function App() {
     const withA = withAnchors({ ...p, valOverrides });
     setProfile(withA);
     setScreen("app");
-    setTab("strategy");
+    setTab("board");
     saveProfile(p);
     /* v3.2: if the deep survey collected current cards, fold their ids into
        the simple wallet array (the rich per-card metadata stays on
@@ -210,7 +212,7 @@ export default function App() {
 
   const restart = () => {
     setScreen("hero");
-    setTab("strategy");
+    setTab("board");
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -252,6 +254,19 @@ export default function App() {
     deleteStrategy(id).then(() => loadStrategies().then(setStrategies));
   }, []);
 
+  /* Merge patch into the live profile. Used by the Wallet board's credit-
+     realism toggles so the engine picks up user answers without a full
+     onboarding round-trip. */
+  const updateProfile = useCallback((patch) => {
+    setProfile((p) => {
+      if (!p) return p;
+      const merged = { ...p, ...patch };
+      /* Keep saved copy in sync when we can — best-effort, non-blocking. */
+      try { saveProfile(merged); } catch { /* silent */ }
+      return merged;
+    });
+  }, []);
+
   const spend = useMemo(() => (profile ? buildSpend(profile) : {}), [profile]);
   const held = wallet;
 
@@ -291,6 +306,7 @@ export default function App() {
 
   return (
     <Layout nav={nav} onLogoClick={restart}>
+      {tab === "board" && <WalletBoard profile={safeProfile} wallet={wallet} onToggleWallet={toggleWallet} onUpdateProfile={updateProfile} />}
       {tab === "strategy" && <StrategyDashboard profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
       {tab === "timeline" && <CardTimeline profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
       {tab === "router" && <SpendRouter profile={safeProfile} wallet={wallet} />}
