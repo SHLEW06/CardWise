@@ -46,7 +46,7 @@
        walletOptimizer.js).
    ========================================================================== */
 
-import { CARDS } from "../data/cards.js";
+import { CARDS, BY_ID } from "../data/cards.js";
 import { calculateMarginalCardValue, calculateCurrentWalletValue } from "./marginalValue.js";
 import { classifyRecommendation, classifyConfidence, DECISION_LABELS } from "./decisionRules.js";
 import { estimateApprovalFit, isApplyNowEligible } from "./approval.js";
@@ -90,6 +90,8 @@ function _feeBudget(profile) {
   const b = profile?.feeBudget;
   return typeof b === "number" ? b : Infinity;
 }
+
+function _byId(id) { return BY_ID[id] || null; }
 
 /** Base pool that respects universal exclusions — held, business,
    membership-unsatisfied, and unavailable cards. Availability filters that a
@@ -405,6 +407,74 @@ const ROLE_DEFS = {
       "You don't hold the parent card the product change requires.",
     ],
   },
+
+  online: {
+    label: "Online & retail",
+    filter: (c) => c.roles?.includes("online"),
+    /* Membership-gated cards (Amazon Prime Visa needs Prime, Costco needs
+       membership) look "unprofitable" when MV subtracts the sub — but if
+       the user is already a member, the sub is sunk cost. Keep the top
+       card visible; the user can decide. */
+    acceptNegativeMv: true,
+    scoreBonus: (c) => {
+      /* Cards whose primary bonus IS online (Amazon 5x, Whole Foods 5x,
+         PayPal 3x, Target 5x) should outrank flat 2% cards for this role. */
+      const online = c.earnRates?.Online || 0;
+      const amazon = c.earnRates?.Amazon || 0;
+      const wholeFoods = c.earnRates?.WholeFoods || 0;
+      const paypal = c.earnRates?.PayPal || 0;
+      const target = c.earnRates?.Target || 0;
+      const bestOnlineRate = Math.max(online, amazon, wholeFoods, paypal, target);
+      return 200 + bestOnlineRate * 50;
+    },
+    isNeeded: (p, heldIds) => {
+      /* Held-based needed: any card whose roles include "online" already in
+         wallet flips this on. */
+      if (Array.isArray(heldIds)) {
+        for (const id of heldIds) {
+          const c = _byId(id);
+          if (c?.roles?.includes("online")) return true;
+        }
+      }
+      return _monthlySpend(p, "Online") * 12 >= 1200;
+    },
+    bestFor: [
+      "Households that route most retail purchases through Amazon / PayPal / Venmo.",
+      "Users who prefer a 5% online multiplier over a flat catch-all.",
+    ],
+    avoidIf: [
+      "Your online spend is modest — a flat 2% card usually captures more.",
+    ],
+  },
+
+  rotating: {
+    label: "Rotating 5% categories",
+    filter: (c) => c.roles?.includes("rotating"),
+    scoreBonus: (c) => 80 + (c.beginner || 5) * 5 - effectiveFee(c),
+    isNeeded: (p, heldIds) => {
+      /* Held first: if a rotating card is already in the wallet, the slot
+         is relevant regardless of preferences. */
+      if (Array.isArray(heldIds)) {
+        for (const id of heldIds) {
+          const c = _byId(id);
+          if (c?.roles?.includes("rotating")) return true;
+        }
+      }
+      const cp = p?.complexityPreference;
+      return cp === "fourToFiveCards" || cp === "advancedSixPlus";
+    },
+    /* Never required — activation upkeep. Explanation surfaces the
+       activation caveat rather than promising uncapped value. */
+    emptyMessage: () =>
+      "Rotating 5% categories only pay off if you activate every quarter and route the right spend — worth ~$300/yr on ~$1,500/quarter of eligible purchases.",
+    bestFor: [
+      "Advanced users who track quarterly activations.",
+      "Wallets big enough that the caps aren't already saturated by category cards.",
+    ],
+    avoidIf: [
+      "You won't remember to activate quarterly — the earn rate reverts to 1%.",
+    ],
+  },
 };
 
 export const ROLE_IDS = Object.keys(ROLE_DEFS);
@@ -428,7 +498,7 @@ export function rankCardsForRole(role, userProfile = {}, currentWallet = [], all
   if (!def) return _empty(role, "unknown-role", "Unknown role.");
 
   const heldIds = _idsOf(currentWallet);
-  const needed = !!def.isNeeded(userProfile);
+  const needed = !!def.isNeeded(userProfile, heldIds);
 
   /* When the role isn't needed for this user, we can still show alternatives
      as *optional research*, but the top slot is null and the explanation
@@ -505,7 +575,7 @@ export function rankCardsForRole(role, userProfile = {}, currentWallet = [], all
   if (!needed && def.emptyMessage) {
     explanation = def.emptyMessage(userProfile);
     topRecommendation = null;
-  } else if (top.marginalValue < 0 && !def.allowsAvailability?.size) {
+  } else if (top.marginalValue < 0 && !def.allowsAvailability?.size && !def.acceptNegativeMv) {
     explanation = `The best-fit ${def.label.toLowerCase()} card doesn't clear its fee for your profile — treat these as research picks, not applications.`;
     topRecommendation = null;
   } else {

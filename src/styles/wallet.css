@@ -561,6 +561,16 @@
 .cw-crt-btn:hover { color:var(--ink); }
 .cw-crt-btn-on-yes { background:rgba(95,214,160,.15); color:var(--good); border-color:rgba(95,214,160,.32); }
 .cw-crt-btn-on-no  { background:rgba(240,138,110,.14); color:var(--bad);  border-color:rgba(240,138,110,.32); }
+.cw-crt-btn-assumed {
+  border-style:dashed; opacity:.6;
+}
+.cw-crt-btn-assumed-yes { color:var(--good); border-color:rgba(95,214,160,.28); background:rgba(95,214,160,.05); }
+.cw-crt-btn-assumed-no  { color:var(--bad);  border-color:rgba(240,138,110,.28); background:rgba(240,138,110,.05); }
+.cw-crt-btn-assumed:hover { opacity:.9; }
+.cw-crt-assumed-note {
+  font-family:var(--fmono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); flex-basis:100%; text-align:right; margin-top:-2px;
+}
 
 /* ============================================================================
    Discover home — hero pick + goal shelves.
@@ -705,4 +715,130 @@
   .cw-vbar-shimmer, .cw-vbar-fill, .cw-ring-fg { transition:none !important; animation:none !important; }
   .cw-cd, .cw-cd-scrim { animation:none !important; }
   .cw-gs-tile, .cw-dh-runner { transition:none !important; }
+  .cw-ws-shake-wrap { animation:none !important; }
+}
+
+/* ---- slot interactivity + drawer + shake + toast --------------------- */
+.cw-ws-interactive { cursor:pointer; }
+.cw-ws-interactive:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.cw-ws-alsocovers {
+  margin-top:8px; font-size:11px; color:var(--ink-3);
+  font-family:var(--fmono); letter-spacing:.06em; text-transform:uppercase;
+}
+
+@keyframes cw-ws-reject {
+  0%   { transform:translateX(0); }
+  20%  { transform:translateX(-6px); }
+  40%  { transform:translateX(6px); }
+  60%  { transform:translateX(-4px); }
+  80%  { transform:translateX(4px); }
+  100% { transform:translateX(0); }
+}
+.cw-ws-shake-wrap { animation:cw-ws-reject 300ms ease; }
+
+.cw-drawer-backdrop {
+  position:fixed; inset:0; z-index:70;
+  background:rgba(0,0,0,.55);
+  display:flex; justify-content:flex-end;
+  animation:cw-drawer-fade 180ms ease;
+}
+@keyframes cw-drawer-fade { from { opacity:0; } to { opacity:1; } }
+
+.cw-drawer {
+  width:min(460px, 92vw); max-height:100vh; overflow-y:auto;
+  background:var(--surface, #101319); color:var(--ink);
+  border-left:1px solid var(--line);
+  display:flex; flex-direction:column;
+  box-shadow:0 20px 60px -20px rgba(0,0,0,.7);
+  animation:cw-drawer-slide 220ms cubic-bezier(.2,.7,.2,1);
+  outline:none;
+}
+@keyframes cw-drawer-slide {
+  from { transform:translateX(100%); }
+  to   { transform:translateX(0); }
+}
+.cw-drawer-head {
+  padding:18px 20px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  border-bottom:1px solid var(--line);
+}
+.cw-drawer-title { display:flex; flex-direction:column; gap:4px; }
+.cw-drawer-title-lab { font-family:var(--fdisplay); font-size:18px; font-weight:600; letter-spacing:-.01em; }
+.cw-drawer-title-sub { color:var(--ink-3); font-size:12.5px; }
+.cw-drawer-close {
+  background:none; border:none; color:var(--ink-3); cursor:pointer;
+  padding:6px; border-radius:8px;
+}
+.cw-drawer-close:hover { color:var(--ink); background:rgba(255,255,255,.06); }
+
+.cw-drawer-body { display:flex; flex-direction:column; gap:18px; padding:16px 20px 24px; }
+.cw-drawer-section { display:flex; flex-direction:column; gap:10px; }
+.cw-drawer-h3 {
+  font-family:var(--fmono); font-size:10.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0;
+}
+.cw-drawer-note {
+  display:flex; align-items:flex-start; gap:8px;
+  color:var(--ink-2); font-size:13px; line-height:1.5; margin:0;
+}
+.cw-drawer-not-needed { padding:12px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid var(--line); }
+
+.cw-drawer-row {
+  display:flex; align-items:center; gap:12px;
+  padding:10px; border-radius:12px;
+  background:rgba(255,255,255,.03); border:1px solid var(--line);
+}
+.cw-drawer-row-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.cw-drawer-row-name { font-weight:600; font-size:13.5px; }
+.cw-drawer-row-meta { color:var(--ink-3); font-size:12px; display:flex; align-items:center; gap:4px; }
+.cw-drawer-row-use { color:var(--ink-3); font-size:11.5px; font-style:italic; }
+.cw-drawer-row-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.cw-drawer-row-future { opacity:.9; }
+.cw-drawer-grayed { opacity:.55; }
+
+.cw-drawer-hero {
+  display:flex; gap:14px; align-items:center;
+  padding:14px; border-radius:14px;
+  background:linear-gradient(135deg, rgba(243,231,201,.06), rgba(95,214,160,.05));
+  border:1px solid rgba(243,231,201,.18);
+}
+.cw-drawer-hero-body { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; }
+.cw-drawer-hero-name { font-family:var(--fdisplay); font-weight:600; font-size:16px; }
+.cw-drawer-hero-meta { color:var(--ink-2); font-size:12.5px; }
+.cw-drawer-hero-fit { color:var(--ink-3); font-size:11.5px; }
+.cw-drawer-hero-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+.cw-drawer-hidden-note {
+  color:var(--ink-3); font-size:12px; text-align:center;
+  padding-top:6px; border-top:1px dashed rgba(255,255,255,.08);
+}
+
+.cw-toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  z-index:80; padding:12px 18px; border-radius:12px;
+  background:rgba(20,24,32,.95); color:var(--ink);
+  border:1px solid var(--line);
+  box-shadow:0 16px 40px -14px rgba(0,0,0,.7);
+  max-width:min(520px, 92vw); font-size:13px; line-height:1.4;
+  animation:cw-toast-in 220ms ease;
+}
+@keyframes cw-toast-in {
+  from { opacity:0; transform:translate(-50%, 10px); }
+  to   { opacity:1; transform:translate(-50%, 0); }
+}
+
+@media (max-width:900px) {
+  .cw-drawer-backdrop { align-items:flex-end; justify-content:center; }
+  .cw-drawer {
+    width:100%; max-height:88vh;
+    border-left:none; border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;
+    animation:cw-drawer-slide-up 220ms cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes cw-drawer-slide-up {
+    from { transform:translateY(100%); }
+    to   { transform:translateY(0); }
+  }
 }

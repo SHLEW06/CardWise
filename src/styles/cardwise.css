@@ -58,7 +58,13 @@
 .cw-chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
 .cw-chip { padding:10px 16px; border-radius:99px; background:var(--surface); border:1px solid var(--line); font-size:14px; font-weight:500; transition:.15s; }
 .cw-chip:hover { background:var(--surface-2); }
-.cw-chip-on { background:linear-gradient(135deg,rgba(243,231,201,.18),rgba(243,231,201,.06)); border-color:var(--accent); color:var(--ink); }
+.cw-chip-on {
+  background:linear-gradient(135deg,rgba(243,231,201,.28),rgba(243,231,201,.1));
+  border-color:var(--accent);
+  color:var(--ink);
+  box-shadow:0 0 0 1px rgba(243,231,201,.35) inset;
+  font-weight:600;
+}
 .cw-chip-sm { padding:7px 12px; font-size:13px; }
 .cw-slider-row { display:grid; grid-template-columns:130px 1fr 90px; align-items:center; gap:12px; padding:10px 0; }
 .cw-slider-lab { font-size:14px; color:var(--ink-2); }

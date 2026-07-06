@@ -33,9 +33,21 @@
                              requiresAirportFit }
      issuerVelocity        — "chase-5-24" | "amex-1-per-5d" | "citi-velocity"
                              | "c1-app-sensitive" | "boa-2-3-4" | "none"
+     primaryRole           — canonical slot role id (see engine role ids +
+                             "online"/"rotating"/"business"). SINGLE SOURCE
+                             OF TRUTH for card→slot classification — the
+                             UI and walletOptimizer consume this, not
+                             earnRates/tags heuristics.
+     roles                 — full set of role ids the card can fill; always
+                             includes primaryRole. Drives drawer eligibility,
+                             drop validation, and "also covers" badges.
+     spendUseText          — optional one-liner shown in slot/drawer.
      ----------------------
    Source: built-in defaults inferred from existing fields (fee, tags, issuer).
+   Card→role metadata lives in data/cardRoles.js.
    ========================================================================== */
+
+import { roleMetaFor } from "./cardRoles.js";
 
 const DEFAULT_IMAGE = {
   imageUrl: null,
@@ -252,6 +264,7 @@ function inferCardFamily(card) {
 /** Decorate a card with v3.1 fields without mutating existing ones. */
 export function enrichCard(card, ART) {
   const id = card.id;
+  const roleMeta = roleMetaFor(id);
   return {
     /* existing schema preserved */
     ...card,
@@ -276,5 +289,12 @@ export function enrichCard(card, ART) {
     premiumGate: card.premiumGate || inferPremiumGate(card),
     issuerVelocity: card.issuerVelocity || ISSUER_VELOCITY[card.issuer] || "none",
     cardFamily: inferCardFamily(card),
+
+    /* Slot-overhaul role metadata. Cards may set primaryRole/roles/spendUseText
+       explicitly; otherwise they come from data/cardRoles.js, the single
+       source of truth for card→slot classification. */
+    primaryRole: card.primaryRole || roleMeta?.primaryRole || null,
+    roles: card.roles || roleMeta?.roles || (roleMeta?.primaryRole ? [roleMeta.primaryRole] : []),
+    spendUseText: card.spendUseText || roleMeta?.spendUseText || null,
   };
 }

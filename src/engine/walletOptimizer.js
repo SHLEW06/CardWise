@@ -428,11 +428,40 @@ function _defaultRoleFor(card) {
   return r >= 2 ? best : "Wallet slot";
 }
 
-/** Redesign (Prompt 19) — formal role id for an ideal-wallet slot. Maps
-   coarse card categories to the ROLE_IDS catalog exported by lineupBuilder
-   so IdealWalletPanel can render the same badges as the lineup surface. */
+/* Map card.primaryRole (single source of truth) → the snake_case role id
+   the IdealWalletPanel expects via lineupBuilder.getRoleMeta. */
+const PRIMARY_ROLE_TO_LINEUP_ID = {
+  catchAll:           "spending_catch_all",
+  dining:             "spending_food",
+  groceries:          "spending_food",
+  gas:                "spending_gas",
+  travel:             "spending_travel",
+  airline:            "airline_utility",
+  hotelKeeper:        "hotel_keeper",
+  premiumIfJustified: "premium_lounge",
+  rent:               "rent",
+  online:             "spending_catch_all",
+  rotating:           "spending_catch_all",
+  studentBeginner:    "spending_catch_all",
+  business:           "spending_catch_all",
+  flights:            "spending_travel",
+  hotels:             "hotel_keeper",
+  lowFee:             "spending_catch_all",
+  downgradePath:      "downgrade_path",
+  productChangeTarget:"product_change_target",
+};
+
+/** Redesign (Prompt 19) — formal role id for an ideal-wallet slot. Reads
+   `card.primaryRole` (single source of truth) and maps to the ROLE_IDS
+   catalog exported by lineupBuilder so IdealWalletPanel renders the same
+   badges as the lineup surface. Falls back to the legacy heuristic only
+   for cards missing metadata. */
 function _roleIdFor(card) {
   if (!card) return null;
+  const pr = card.primaryRole;
+  if (pr && PRIMARY_ROLE_TO_LINEUP_ID[pr]) return PRIMARY_ROLE_TO_LINEUP_ID[pr];
+
+  /* Legacy fallback — only fires if a card is missing primaryRole. */
   if (card.tags?.includes("hotel")) return "hotel_keeper";
   if (card.tags?.includes("airline")) return "airline_utility";
   if (card.availabilityStatus === "productChangeOnly") return "product_change_target";

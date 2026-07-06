@@ -5,7 +5,10 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   test: {
-    include: ["src/**/*.test.js"],
+    include: ["src/**/*.test.js", "src/**/*.test.jsx"],
+    /* Default fast node environment; UI tests opt into jsdom via a
+       `// @vitest-environment jsdom` header on individual files, so the
+       existing pure-node engine tests stay quick. */
   },
   build: {
     outDir: "dist",

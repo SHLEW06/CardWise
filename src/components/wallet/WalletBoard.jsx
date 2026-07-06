@@ -16,7 +16,8 @@ import WalletValueBreakdown from "./WalletValueBreakdown.jsx";
 import CardShop from "./CardShop.jsx";
 import CardDetail from "./CardDetail.jsx";
 import WalletCardPicker from "./WalletCardPicker.jsx";
-import { buildSlotViews } from "./slotLayout.js";
+import SlotDrawer from "./SlotDrawer.jsx";
+import { buildSlotViews, canDropOnSlot } from "./slotLayout.js";
 import CardArt from "../CardArt.jsx";
 
 /* The hero landing view. Consumes engine outputs only — every dollar
@@ -26,6 +27,10 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
   const [openCard, setOpenCard] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [activeDragId, setActiveDragId] = useState(null);
+  const [openSlot, setOpenSlot] = useState(null);
+  const [openSlotFocusRef, setOpenSlotFocusRef] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [shakeSlotId, setShakeSlotId] = useState(null);
 
   const walletIds = wallet || [];
   const walletCards = useMemo(
@@ -74,6 +79,19 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
     useSensor(KeyboardSensor)
   );
 
+  /* Auto-dismiss toast. */
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+  /* Clear shake state after animation. */
+  useEffect(() => {
+    if (!shakeSlotId) return;
+    const t = setTimeout(() => setShakeSlotId(null), 320);
+    return () => clearTimeout(t);
+  }, [shakeSlotId]);
+
   const handleDragStart = (e) => setActiveDragId(e.active?.id || null);
   const handleDragEnd = (e) => {
     setActiveDragId(null);
@@ -82,7 +100,22 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
     if (!active || !over) return;
     const cardId = active.data?.current?.cardId;
     if (!cardId) return;
+    const card = BY_ID[cardId];
+    if (!card) return;
+
     if (over.id.startsWith("slot:")) {
+      const slotId = over.id.slice(5);
+      if (canDropOnSlot(card, slotId)) {
+        if (!walletIds.includes(cardId)) onToggleWallet?.(cardId);
+      } else {
+        /* Reject: shake the slot and toast a hint. */
+        setShakeSlotId(slotId);
+        const target = _preferredSlotForCard(card);
+        const targetLabel = target?.label || "another slot";
+        setToast(`${card.name} is a ${_roleTypeLabel(card.primaryRole)} card — try the ${targetLabel} slot, or tap a slot to see what fits.`);
+      }
+    } else {
+      /* Board-background drops: preserve legacy add-to-wallet behavior. */
       if (!walletIds.includes(cardId)) onToggleWallet?.(cardId);
     }
   };
@@ -102,6 +135,15 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
   const addRecommended = (id) => {
     if (walletIds.includes(id)) return;
     onToggleWallet?.(id);
+  };
+
+  const openSlotDrawer = (view, ref) => {
+    setOpenSlot(view);
+    setOpenSlotFocusRef(ref || null);
+  };
+  const closeSlotDrawer = () => {
+    setOpenSlot(null);
+    setOpenSlotFocusRef(null);
   };
 
   return (
@@ -147,14 +189,18 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
         {/* Slots — the drag-and-drop board */}
         <section className="cw-board-slots" aria-label="Wallet slots">
           {slotViews.map((view) => (
-            <WalletSlot
+            <div
               key={view.slot.id}
-              view={view}
-              onOpenCard={setOpenCard}
-              onRemove={onToggleWallet}
-              onAddRecommended={addRecommended}
-              onOpenPicker={() => setPickerOpen(true)}
-            />
+              className={shakeSlotId === view.slot.id ? "cw-ws-shake-wrap" : undefined}
+            >
+              <WalletSlot
+                view={view}
+                onOpenCard={setOpenCard}
+                onRemove={onToggleWallet}
+                onAddRecommended={addRecommended}
+                onOpenSlot={openSlotDrawer}
+              />
+            </div>
           ))}
         </section>
 
@@ -202,7 +248,66 @@ export default function WalletBoard({ profile, wallet, onToggleWallet, onUpdateP
             onToggleWallet={onToggleWallet}
           />
         )}
+
+        {openSlot && (
+          <SlotDrawer
+            view={openSlot}
+            profile={profile}
+            wallet={walletIds}
+            onClose={closeSlotDrawer}
+            onToggleWallet={(id) => { onToggleWallet?.(id); }}
+            onOpenCard={(id) => setOpenCard(id)}
+            returnFocusRef={openSlotFocusRef}
+          />
+        )}
+
+        {toast && (
+          <div className="cw-toast" role="status" aria-live="polite">
+            {toast}
+          </div>
+        )}
       </div>
     </DndContext>
   );
+}
+
+/* Given a card, pick the SLOT that best matches its primaryRole for the
+   toast copy. Purely presentational — the accept/reject decision lives in
+   `canDropOnSlot`. */
+function _preferredSlotForCard(card) {
+  const map = {
+    catchAll: { id: "catchAll", label: "Catch-all" },
+    dining: { id: "dining", label: "Dining" },
+    groceries: { id: "groceries", label: "Groceries" },
+    travel: { id: "travel", label: "Travel & transfers" },
+    airline: { id: "airline", label: "Airline" },
+    hotelKeeper: { id: "hotelKeeper", label: "Hotel keeper" },
+    premiumIfJustified: { id: "premium", label: "Premium & lounge" },
+    online: { id: "online", label: "Online & retail" },
+    rotating: { id: "rotating", label: "Rotating 5%" },
+    gas: { id: "gas", label: "Gas" },
+    rent: { id: "rent", label: "Rent" },
+    studentBeginner: { id: "starter", label: "Starter & credit-builder" },
+    business: { id: "business", label: "Business" },
+  };
+  return map[card?.primaryRole] || null;
+}
+
+function _roleTypeLabel(role) {
+  const map = {
+    catchAll: "catch-all",
+    dining: "dining",
+    groceries: "groceries",
+    travel: "travel",
+    airline: "airline",
+    hotelKeeper: "hotel keeper",
+    premiumIfJustified: "premium",
+    online: "online-retail",
+    rotating: "rotating-category",
+    gas: "gas",
+    rent: "rent",
+    studentBeginner: "starter",
+    business: "business",
+  };
+  return map[role] || "specialty";
 }
