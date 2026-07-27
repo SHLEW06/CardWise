@@ -14,6 +14,18 @@ category multipliers, per-user CPP, credits you'd actually use, checked bags,
 companion + free-night certificates, lounge access, status, transfer sweet
 spots, annual-fee break-even, and benefit overlap — **not** signup bonuses.
 
+![CardWise strategy engine landing page](docs/assets/cardwise-hero.jpg)
+
+## At a glance
+
+| Card catalog | Strategy engine | Automated tests | Runtime |
+|---:|---:|---:|---|
+| 83 cards | 26 pure-logic modules | 900 tests across 47 files | Local-first React app |
+
+The engine can recommend a best next card, identify cards to keep or
+downgrade, route a purchase across the current wallet, and explain how airport,
+route, fee, and redemption preferences changed the result.
+
 ---
 
 ## Quick start
@@ -28,7 +40,7 @@ Build for production:
 ```bash
 npm run build        # outputs to dist/
 npm run preview      # preview the production build locally
-npm run test         # run vitest — currently 741 tests / 37 files
+npm run test         # run vitest — currently 900 tests / 47 files
 ```
 
 The app runs **fully without any backend** — auth and persistence fall back to
@@ -94,7 +106,7 @@ src/
   styles/       animations.css (shared keyframes) + globals.css (tokens,
                 shell, card art, aurora, glass panels, mobile responsive)
                 + cardwise.css (screen-specific)
-  __tests__/    741 vitest tests across 37 files
+  __tests__/    900 vitest tests across 47 files
 ```
 
 The **engine is deliberately framework-free** — every function takes a
