@@ -132,7 +132,10 @@ Value of an offer for a purchase of `amount`:
 ## 4. Phased prompts (copy-paste one at a time)
 
 Each prompt is self-contained. Run them in order; each ends with
-`npm test && npm run build` green.
+`npm test && npm run build` green. Order (revised 2026-11-16): Wallet →
+**extension (offer sync)** → places → Plaid → transactions → catalog → prune.
+The extension moved up because it's the feature that makes the app useful
+day-to-day; Plaid only fills the wallet and transactions.
 
 ### ✅ Prompt 1 — Real card art pipeline *(done in this session)*
 > In CardWise, make card images work by file convention. Add
@@ -175,9 +178,42 @@ Each prompt is self-contained. Run them in order; each ends with
 > picker over the 83-card catalog with search; per-card "Upload photo"
 > that stores a PNG/WebP as a blob in IndexedDB (key = cardId) and
 > overrides manifest art; "Remove"; a "Connect bank (Plaid)" button that
-> is disabled with a tooltip until Prompt 6 ships. No sample cards anywhere.
+> is disabled with a tooltip until Prompt 7 ships. No sample cards anywhere.
 
-### Prompt 5 — Places (malls & outlets)
+### Prompt 5 — Offer sync browser extension (MV3) — *pulled forward: this is the MaxRewards feature*
+> Create `extension/` (Manifest V3, Chrome + Edge; Firefox later). Keep it
+> dependency-free (plain JS, no bundler) so it loads via "Load unpacked".
+>
+> **v1 = read + hand off.** Content scripts on
+> `https://global.americanexpress.com/offers/*` and Chase's Offers hub
+> (`https://secure.chase.com/web/auth/dashboard*` — detect the merchantOffers
+> view by DOM, not URL) scan each offer tile and build rows in the CardWise
+> offer model (`docs/UPGRADE_PLAN.md` §3): merchant, rawText (the terms
+> sentence), expires, channel, status (`added` if the tile shows it's already
+> on the card, else `available`), and the card the page is showing (map the
+> on-page card name/last-4 to a catalog `cardId` with a small table in
+> `extension/cardMap.js`; unknown → leave `cardId` null and let the app ask).
+> Selectors live in ONE file per issuer (`extension/sites/amex.js`,
+> `extension/sites/chase.js`) with a `scrape(document) → offers[]` export and
+> a fixture HTML + test under `extension/test/` so a bank redesign is a
+> one-file fix. Popup shows "N offers found on this page" and two buttons:
+> **Copy JSON** and **Download JSON** (the Offers screen already imports this
+> format via `parseOffersJson`). Add **Send to CardWise**: if a CardWise tab
+> is open (localhost:5173 or the deployed origin, listed in
+> `externally_connectable`), post the offers via `chrome.runtime` →
+> `window.postMessage({ type: "cardwise:offers", offers })`; in the app, add a
+> listener in `App.jsx` that merges with `mergeOffers()` and toasts "Imported
+> N offers". No backend, no credentials, nothing stored in the extension
+> except the last scan.
+>
+> **v2 (same prompt, after v1 works) = opt-in Add.** In the popup, checkboxes
+> per `available` offer and an "Add selected" button that clicks the issuer's
+> own Add button for each checked row, one at a time with a 1.5–3s random
+> delay, stops on the first error, and never runs without a click in the
+> popup. README states the issuer-ToS caveat. Add Citi/BofA/Capital One site
+> files only after Amex + Chase are stable.
+
+### Prompt 6 — Places (malls & outlets)
 > Add `scripts/build-places.mjs` that queries OpenStreetMap Overpass for a
 > list of malls/outlets (start: Lenox Square, Phipps Plaza, Perimeter Mall,
 > Sugarloaf Mills, North Georgia Premium Outlets, Tanger Outlets Atlanta,
@@ -190,7 +226,7 @@ Each prompt is self-contained. Run them in order; each ends with
 > Add a "Near me" button using the Geolocation API that ranks places by
 > distance.
 
-### Prompt 6 — Plaid (sandbox first)
+### Prompt 7 — Plaid (sandbox first)
 > Add `functions/` (Firebase Functions, Node 20) with `plaidCreateLinkToken`,
 > `plaidExchangePublicToken`, `plaidSyncAccounts`, `plaidSyncTransactions`
 > (using `/transactions/sync` with a stored cursor). Store access tokens
@@ -204,24 +240,12 @@ Each prompt is self-contained. Run them in order; each ends with
 > `user_good`/`pass_good` test creds; document the Dashboard steps in
 > `docs/PLAID_SETUP.md` (Blaze plan, env secrets via `firebase functions:secrets:set`).
 
-### Prompt 7 — Transactions → offer tracking
+### Prompt 8 — Transactions → offer tracking
 > Using synced transactions, (a) mark an `added` offer `used` when a
 > transaction on that card matches the offer's brandKey and ≥ minSpend
 > within the offer window; (b) in Go, show "Last time at <brand> you used
 > <card> — <better card> would have earned $X more"; (c) a Missed-value
 > card on the Wallet screen summarizing the last 90 days.
-
-### Prompt 8 — Offer sync browser extension (MV3)
-> Create `extension/` (Manifest V3). Content scripts for
-> `global.americanexpress.com/offers/*` and Chase's Offers page read each
-> offer tile (merchant, terms text, expiry, added state) into the offer
-> model and send it to the extension popup. Popup: "Send N offers to
-> CardWise" (POST to a `receiveOffers` callable function with the user's
-> Firebase ID token) and an opt-in "Add selected offers" that clicks the
-> issuer's own Add button for checked rows, one at a time with a delay,
-> and stops on any error. No credentials ever leave the bank tab. README
-> states the ToS caveat. Until this ships, Offers screen supports manual
-> add + JSON paste.
 
 ### Prompt 9 — Catalog coverage for Plaid matching
 > Audit `src/data/cards/*` against Plaid `official_name` strings for Chase,
