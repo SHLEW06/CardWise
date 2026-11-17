@@ -1,7 +1,7 @@
 {
   "name": "cardwise",
   "private": true,
-  "version": "3.0.0",
+  "version": "4.0.0-alpha.1",
   "type": "module",
   "description": "CardWise — a personalized credit-card value-maximizing strategy app. Anchors recommendations to your airport, routes, spend, and redemption goals, valuing points through real transfer partners.",
   "scripts": {
@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "deploy": "vite build && firebase deploy",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "predev": "node scripts/build-card-art-manifest.mjs",
+    "prebuild": "node scripts/build-card-art-manifest.mjs",
+    "art": "node scripts/build-card-art-manifest.mjs",
+    "art:missing": "node scripts/build-card-art-manifest.mjs --missing"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

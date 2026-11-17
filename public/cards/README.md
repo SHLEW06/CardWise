@@ -1,52 +1,50 @@
-# Card art — public assets
+# Card art — drop real card faces here
 
-Drop officially-licensed or self-produced card faces here. The CardArt
-component prefers `card.image.localImage` ahead of every other source, so
-files in this folder are the highest-priority art available.
+**One rule: name the file after the catalog card id.** That's it — no data
+edits needed.
 
-## Path convention
+```
+public/cards/amex-gold.png        → shows on the Amex Gold card everywhere
+public/cards/freedom-unlimited.png
+public/cards/csp.webp
+```
 
-Anything placed in `public/` is served by Vite at the same path:
+Then run `npm run art` (also runs automatically on `npm run dev` / `npm run
+build`). The script writes `src/data/cardArtManifest.js`; the schema layer
+reads it and sets `image.localImage` for every matching card.
 
-| File you drop here              | URL the app uses                   |
-|---------------------------------|------------------------------------|
-| `public/cards/csp.webp`         | `/cards/csp.webp`                  |
-| `public/cards/amex-gold.webp`   | `/cards/amex-gold.webp`            |
-| `public/cards/venture-x.webp`   | `/cards/venture-x.webp`            |
+## Which ids?
 
-In the matching card record under `src/data/cards/<issuer>.js`, point
-`image.localImage` at the URL form (e.g. `/cards/csp.webp`), set
-`image.imageSourceType` to `"local"`, and set
-`image.imageNeedsVerification` to `false` once you've confirmed the art
-is licensed to ship.
+```
+npm run art:missing
+```
 
-## Naming convention
+prints every card that still has no image, grouped by issuer, with the exact
+file name to use.
 
-Match the card `id` from the catalog. Lowercase + hyphens — examples:
+## Formats
 
-- `chase-sapphire-preferred.webp` — id `csp`
-- `amex-gold.webp` — id `amex-gold`
-- `capital-one-venture-x.webp` — id `venture-x`
-- `marriott-bonvoy-boundless.webp` — id `marriott-boundless`
+- `.webp` preferred (smallest), then `.png`, `.jpg`, `.svg`. If several
+  exist for one id, that preference order wins.
+- Crop to the credit-card ratio **1.586 : 1** (e.g. 1012 × 638 or 856 × 540).
+  The image is rendered `object-fit: cover`, so a slightly-off ratio is cropped,
+  not stretched.
+- Transparent corners are fine; CardArt clips to its own rounded rect.
 
-Prefer **WebP** (smaller files, alpha). PNG/JPG accepted. Crop to a clean
-1.586 : 1 ratio (the credit-card aspect) so it fits the card face exactly.
+## What happens when a real image loads
 
-## Hard rules
+The synthetic issuer / name / fee overlay, chip, and sheen are hidden — the
+printed card speaks for itself. If the file 404s or fails to decode, the
+premium gradient placeholder comes back automatically.
 
-1. **Never auto-scrape issuer images.** Only use art you've licensed,
-   produced, or have written permission to ship.
-2. **Never commit real issuer images** here without project-owner approval.
-   The fallback gradient is intentionally premium so the app ships fully
-   without any real card faces.
-3. **No hotlinking unreliable URLs.** External URLs go through
-   `card.image.imageUrl` and require `imageNeedsVerification: false`.
-4. **One file per card**, pre-cropped to 1.586 : 1.
+## Overrides
 
-## Fallback behavior
+A card record can still set `image.localImage` or `image.imageUrl` explicitly;
+an explicit value wins over the manifest. In-app per-card photo uploads
+(Wallet screen, stored in the browser) win over both.
 
-If a file referenced by `image.localImage` 404s, CardArt silently falls
-back to the premium gradient with the issuer label, card name, microchip
-motif, ecosystem badge, and slow shine — no broken-image icon ever ships.
+## Licensing
 
-For bundled imports (rare), see `src/assets/cards/README.md`.
+Issuer card art is the issuer's copyright. This folder is `.gitignore`d
+except for this README so personal copies of card art never get committed by
+accident. Remove the ignore rule only if you have the rights to ship them.

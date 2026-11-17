@@ -48,6 +48,17 @@
    ========================================================================== */
 
 import { roleMetaFor } from "./cardRoles.js";
+import { CARD_ART_MANIFEST } from "./cardArtManifest.js";
+
+/* v4: real card faces dropped into public/cards/<id>.(png|webp|jpg|svg) are
+   picked up by scripts/build-card-art-manifest.mjs and win over every other
+   image source. Explicit card.image.localImage still overrides the manifest. */
+function manifestImage(cardId, manifest = CARD_ART_MANIFEST) {
+  const url = manifest?.[cardId];
+  if (!url) return null;
+  return { localImage: url, imageSourceType: "local", imageSource: "public/cards", imageNeedsVerification: false };
+}
+export { manifestImage };
 
 const DEFAULT_IMAGE = {
   imageUrl: null,
@@ -283,6 +294,7 @@ export function enrichCard(card, ART) {
     image: {
       ...DEFAULT_IMAGE,
       fallbackGradient: FALLBACK_GRADIENT_FROM_ART(card.art, ART),
+      ...(manifestImage(card.id) || {}),
       ...(card.image || {}),
     },
     sub: { ...DEFAULT_SUB, ...(card.sub || {}) },
