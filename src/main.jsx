@@ -6,6 +6,7 @@ import "./styles/globals.css";
 import "./styles/cardwise.css";
 import "./styles/wallet.css";
 import "./styles/simple.css";
+import "./styles/go.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

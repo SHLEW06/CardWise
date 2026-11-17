@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search,
   AlertTriangle, Archive, Sliders, Calendar, LayoutGrid, Sparkles,
-  Home, MoreHorizontal, X,
+  Home, MoreHorizontal, X, Navigation, Tag,
 } from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
@@ -23,6 +23,8 @@ import WalletBoard from "./components/wallet/WalletBoard.jsx";
 import DiscoverHome from "./components/discover/DiscoverHome.jsx";
 import QuickStart from "./components/QuickStart.jsx";
 import SimpleHome from "./components/SimpleHome.jsx";
+import GoScreen from "./components/go/GoScreen.jsx";
+import OffersScreen from "./components/go/OffersScreen.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -34,14 +36,19 @@ import {
   saveStrategy, loadStrategies, deleteStrategy,
   saveValOverrides, loadValOverrides,
 } from "./firebase/firestore.js";
+import { loadOffers, saveOffers } from "./firebase/offers.js";
+import { setOfferStatus } from "./engine/offers/offerModel.js";
 
+/* v4: three things on the main nav. Everything else is a "More tools" item. */
 const CORE_TABS = [
-  { id: "home",     label: "Home",         icon: Home },
   { id: "board",    label: "Wallet",       icon: LayoutGrid },
-  { id: "explore",  label: "Explore",      icon: Search },
+  { id: "go",       label: "Go",           icon: Navigation },
+  { id: "offers",   label: "Offers",       icon: Tag },
 ];
 
 const ADVANCED_TABS = [
+  { id: "home",     label: "Overview",     icon: Home },
+  { id: "explore",  label: "Explore",      icon: Search },
   { id: "discover", label: "Discover",     icon: Sparkles },
   { id: "strategy", label: "Strategy",     icon: TrendingUp },
   { id: "timeline", label: "Timeline",     icon: Calendar },
@@ -154,7 +161,7 @@ function withAnchors(profile) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero | quickstart | onboarding | app
-  const [tab, setTab] = useState("home");
+  const [tab, setTab] = useState("go");
   const [advanced, setAdvanced] = useState(() => {
     try {
       return localStorage.getItem("cw-advanced") === "1";
@@ -168,13 +175,14 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [strategies, setStrategies] = useState([]);
   const [valOverrides, setValOverrides] = useState({});
+  const [offers, setOffers] = useState([]);
 
   // hydrate from storage + URL hash
   useEffect(() => {
     (async () => {
       await ensureUser();
-      const [p, w, strats, vo] = await Promise.all([
-        loadProfile(), loadWallet(), loadStrategies(), loadValOverrides(),
+      const [p, w, strats, vo, offs] = await Promise.all([
+        loadProfile(), loadWallet(), loadStrategies(), loadValOverrides(), loadOffers(),
       ]);
 
       // URL hash takes priority (shareable link)
@@ -188,6 +196,9 @@ export default function App() {
       }
       if (w && w.length) setWallet(w);
       if (strats) setStrategies(strats);
+      if (offs && offs.length) setOffers(offs);
+      /* Land on Go when there's a wallet to route against; otherwise Wallet. */
+      setTab(w && w.length ? "go" : "board");
       setReady(true);
     })();
   }, []);
@@ -206,7 +217,7 @@ export default function App() {
     const withA = withAnchors({ ...p, valOverrides });
     setProfile(withA);
     setScreen("app");
-    setTab("home");
+    setTab("board");
     saveProfile(p);
     /* v3.2: if the deep survey collected current cards, fold their ids into
        the simple wallet array (the rich per-card metadata stays on
@@ -229,9 +240,22 @@ export default function App() {
     });
   };
 
+  /* ── Offers ── */
+  const handleOffersChange = useCallback((next) => {
+    setOffers(next);
+    try { saveOffers(next); } catch { /* best effort */ }
+  }, []);
+  const markOfferAdded = useCallback((offerId) => {
+    setOffers((prev) => {
+      const next = prev.map((o) => (o.id === offerId ? setOfferStatus(o, "added") : o));
+      try { saveOffers(next); } catch { /* best effort */ }
+      return next;
+    });
+  }, []);
+
   const restart = () => {
     setScreen("hero");
-    setTab("home");
+    setTab("go");
     window.history.replaceState(null, "", window.location.pathname);
   };
 
@@ -299,7 +323,7 @@ export default function App() {
       } catch {
         /* best effort */
       }
-      if (!next && ADVANCED_TABS.some((item) => item.id === tab)) setTab("home");
+      if (!next && ADVANCED_TABS.some((item) => item.id === tab)) setTab("go");
       return next;
     });
   };
@@ -350,6 +374,8 @@ export default function App() {
 
   return (
     <Layout nav={nav} onLogoClick={restart}>
+      {tab === "go" && <GoScreen wallet={wallet} offers={offers} profile={safeProfile} onOpenCard={openCard} onMarkAdded={markOfferAdded} onGoTab={setTab} />}
+      {tab === "offers" && <OffersScreen wallet={wallet} offers={offers} onChange={handleOffersChange} />}
       {tab === "home" && <SimpleHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onToggleWallet={toggleWallet} onGoTab={setTab} />}
       {tab === "discover" && <DiscoverHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSwitchTab={setTab} />}
       {tab === "board" && <WalletBoard profile={safeProfile} wallet={wallet} onToggleWallet={toggleWallet} onUpdateProfile={updateProfile} />}

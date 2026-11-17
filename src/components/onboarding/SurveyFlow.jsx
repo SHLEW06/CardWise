@@ -27,7 +27,6 @@ import { CARDS } from "../../data/cards.js";
 import {
   normalizeUserProfile, SPEND_CATEGORIES, calculateProfileCompleteness,
 } from "../../engine/surveyScoring.js";
-import { SAMPLE_PROFILE_RAW } from "../../data/sampleProfiles.js";
 
 /* ---------------------- constants ---------------------------------------- */
 
@@ -90,10 +89,6 @@ const NON_INTRO_SECTIONS = SECTIONS.filter((s) => s.id !== "intro");
 
 const STEPS = [
   /* -- intro -- */
-  { section: "intro", type: "sampleLoader", key: "_sample",
-    title: "Want to see what CardWise builds first?",
-    sub: "Load a sample profile to skip the survey and explore. You can re-take it any time." },
-
   /* ========================== 1) CREDIT PROFILE ========================== */
   { section: "credit", type: "sectionIntro" },
   { section: "credit", type: "buttonGroup", key: "creditScore", optional: true,
@@ -638,32 +633,6 @@ export default function SurveyFlow({ onDone }) {
   /* ------------------------------------------------------------------------ */
   /*                           SAMPLE LOADER (INTRO)                           */
   /* ------------------------------------------------------------------------ */
-  if (spec.type === "sampleLoader") {
-    return (
-      <div className="cw-onb">
-        {renderProgress}
-        <div className="cw-onb-body cw-rise" key="intro">
-          <h2 className="cw-q">{spec.title}</h2>
-          <p className="cw-qsub">{spec.sub}</p>
-          <div className="cw-options" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
-            {Object.entries(SAMPLE_PROFILE_RAW).map(([id, raw]) => (
-              <button key={id} className="cw-opt" onClick={() => onDone(normalizeUserProfile(raw))}>
-                <Star size={18} className="cw-opt-icon" />
-                <span>{raw.label || id}</span>
-                <span className="cw-opt-sub">Click to load instantly.</span>
-              </button>
-            ))}
-          </div>
-          <div className="cw-onb-foot">
-            <span className="cw-foot-hint">Or take the survey — most questions are optional.</span>
-            <button className="cw-btn cw-btn-primary" onClick={() => next()}>
-              Take the survey <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   /* ------------------------------------------------------------------------ */
   /*                           SHARED QUESTION WRAP                            */
