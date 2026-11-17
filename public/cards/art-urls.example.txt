@@ -1,0 +1,5 @@
+# Copy to art-urls.txt, one "<card-id> <image-url>" per line, then: npm run art:fetch
+# Get ids from: npm run art:missing
+# freedom-rise     https://.../freedom-rise.png
+# delta-gold       https://.../delta-gold.png
+# robinhood-gold   https://.../robinhood-gold.png

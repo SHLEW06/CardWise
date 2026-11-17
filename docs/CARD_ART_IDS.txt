@@ -1,0 +1,105 @@
+
+Card art: 0/83 cards have a real image.
+
+Missing — name the file exactly <id>.png (or .webp/.jpg) in public/cards/:
+
+  American Express
+    bcp                          Blue Cash Preferred
+    amex-bce                     Blue Cash Everyday
+    amex-gold                    Amex Gold
+    amex-plat                    Amex Platinum
+    amex-green                   Amex Green
+    amex-biz-gold                Amex Business Gold
+    delta-gold                   Delta SkyMiles Gold
+    delta-plat                   Delta SkyMiles Platinum
+    delta-reserve                Delta SkyMiles Reserve
+    marriott-biz                 Marriott Bonvoy Business
+    hilton-honors                Hilton Honors Card
+    hilton-surpass               Hilton Surpass
+    hilton-aspire                Hilton Aspire
+    amex-edp                     Amex EveryDay Preferred
+    delta-blue                   Delta SkyMiles Blue
+    marriott-bevy                Marriott Bonvoy Bevy
+    marriott-brilliant           Marriott Bonvoy Brilliant
+    amex-everyday                Amex EveryDay
+  Bank of America
+    alaska-visa                  Alaska Airlines Visa Signature
+    boa-premium                  Bank of America Premium Rewards
+    boa-unlimited                Bank of America Unlimited Cash Rewards
+    boa-customized               BoA Customized Cash Rewards
+    boa-travel                   BoA Travel Rewards
+    boa-premium-elite            BoA Premium Rewards Elite
+  Barclays
+    jetblue-plus                 JetBlue Plus
+    jetblue                      JetBlue Card
+  Capital One
+    venture-x                    Capital One Venture X
+    venture                      Capital One Venture
+    venture-one                  VentureOne
+    savor-one                    SavorOne
+    savor                        Capital One Savor
+    quicksilver                  Capital One Quicksilver
+    c1-platinum                  Capital One Platinum
+    c1-secured                   Capital One Quicksilver Secured
+  Chase
+    freedom-rise                 Freedom Rise
+    freedom-unlimited            Freedom Unlimited
+    freedom-flex                 Freedom Flex
+    csp                          Sapphire Preferred
+    csr                          Sapphire Reserve
+    ink-preferred                Ink Business Preferred
+    ink-unlimited                Ink Business Unlimited
+    united-explorer              United Explorer
+    united-quest                 United Quest
+    united-club                  United Club Infinite
+    sw-priority                  Southwest Priority
+    sw-plus                      Southwest Plus
+    marriott-bold                Bonvoy Bold
+    marriott-boundless           Bonvoy Boundless
+    ritz                         Ritz-Carlton
+    hyatt                        World of Hyatt
+    hyatt-business               World of Hyatt Business
+    ihg-premier                  IHG One Rewards Premier
+    ihg-traveler                 IHG One Rewards Traveler
+    united-gateway               United Gateway
+    sw-premier                   Southwest Premier
+    chase-freedom-student        Chase Freedom Student
+    slate-edge                   Chase Slate Edge
+  Chase (Amazon)
+    amazon-prime                 Amazon Prime Visa
+  Citi
+    citi-double-cash             Double Cash
+    citi-custom-cash             Citi Custom Cash
+    citi-rewards-plus            Citi Rewards+
+    citi-strata                  Citi Strata Premier
+    citi-aa-platinum             AAdvantage Platinum Select
+    aa-mileup                    AAdvantage MileUp
+    aa-executive                 AAdvantage Executive
+  Citi (Costco)
+    costco-citi                  Costco Anywhere Visa
+  Discover
+    discover-it                  Discover it
+    discover-chrome              Discover it Chrome
+    discover-student             Discover it Student Cash Back
+  Goldman Sachs (Apple)
+    apple-card                   Apple Card
+  Robinhood
+    robinhood-gold               Robinhood Gold Card
+  Synchrony (PayPal)
+    paypal-cash                  PayPal Cashback Mastercard
+  Synchrony (Venmo)
+    venmo                        Venmo Credit Card
+  TD Bank (Target)
+    target-circle                Target Circle Card
+  US Bank
+    usb-altitude-reserve         US Bank Altitude Reserve
+    usb-altitude-go              US Bank Altitude Go
+    usb-altitude-connect         US Bank Altitude Connect
+    usb-cash-plus                US Bank Cash+ Visa Signature
+  Wells Fargo
+    active-cash                  Active Cash
+    wf-autograph                 Wells Fargo Autograph
+    wf-autograph-journey         Wells Fargo Autograph Journey
+    bilt                         Bilt Mastercard
+    wf-attune                    Wells Fargo Attune
+

@@ -14,7 +14,8 @@
     "predev": "node scripts/build-card-art-manifest.mjs",
     "prebuild": "node scripts/build-card-art-manifest.mjs",
     "art": "node scripts/build-card-art-manifest.mjs",
-    "art:missing": "node scripts/build-card-art-manifest.mjs --missing"
+    "art:missing": "node scripts/build-card-art-manifest.mjs --missing",
+    "art:fetch": "node scripts/fetch-card-art.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
