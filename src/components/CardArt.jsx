@@ -183,7 +183,7 @@ export default function CardArt({
           </div>
         )}
 
-        {!isGhost && (
+        {!isGhost && !(resolvedImage && imgLoaded && !imgFailed) && (
           <div className="cw-cc-chiprow">
             <span className="cw-cc-chip" aria-hidden="true" />
             <span className="cw-cc-wifi" aria-hidden="true">)))</span>

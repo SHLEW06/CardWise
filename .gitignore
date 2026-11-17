@@ -10,3 +10,7 @@ firebase-debug.log
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# real card faces are personal/copyrighted — keep them local
+public/cards/*
+!public/cards/README.md
