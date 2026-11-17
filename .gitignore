@@ -14,3 +14,5 @@ firebase-debug.log
 # real card faces are personal/copyrighted — keep them local
 public/cards/*
 !public/cards/README.md
+
+!public/cards/art-urls.example.txt
