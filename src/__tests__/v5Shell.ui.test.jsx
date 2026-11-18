@@ -16,28 +16,43 @@ import { loadV5Profile } from "../state/v5Profile.js";
 afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
-describe("shell — four places, nothing else (§1)", () => {
+describe("shell — five tabs + Profile avatar (v6 §17)", () => {
+  const TABS = ["Home", "Checkout", "Offers", "Wallet Lab", "Explore"];
   function Harness() {
     const [tab, setTab] = useState("home");
     return <AppShell current={tab} onNavigate={setTab} onLogo={() => {}}><p>page {tab}</p></AppShell>;
   }
-  it("has exactly Home · Checkout · Find a card · You", () => {
-    expect(DESTINATIONS.map((d) => d.label)).toEqual(["Home", "Checkout", "Find a card", "You"]);
+  it("has exactly Home · Checkout · Offers · Wallet Lab · Explore", () => {
+    expect(DESTINATIONS.map((d) => d.label)).toEqual(TABS);
     render(<Harness />);
     const navs = screen.getAllByRole("navigation", { name: "Main" });
-    for (const nav of navs) expect(within(nav).getAllByRole("button").map((b) => b.textContent)).toEqual(["Home", "Checkout", "Find a card", "You"]);
+    expect(navs).toHaveLength(2);   // top bar + phone bottom bar
+    for (const nav of navs) expect(within(nav).getAllByRole("button").map((b) => b.textContent)).toEqual(TABS);
   });
   it("marks the current page and navigates", () => {
     render(<Harness />);
     const top = screen.getAllByRole("navigation", { name: "Main" })[0];
     expect(within(top).getByRole("button", { name: "Home" })).toHaveAttribute("aria-current", "page");
-    fireEvent.click(within(top).getByRole("button", { name: "Find a card" }));
-    expect(screen.getByText("page find")).toBeInTheDocument();
-    expect(within(top).getByRole("button", { name: "Find a card" })).toHaveAttribute("aria-current", "page");
+    fireEvent.click(within(top).getByRole("button", { name: "Wallet Lab" }));
+    expect(screen.getByText("page lab")).toBeInTheDocument();
+    expect(within(top).getByRole("button", { name: "Wallet Lab" })).toHaveAttribute("aria-current", "page");
   });
-  it("old tabs are gone from navigation", () => {
+  it("'You' moved to an avatar button that opens Profile", () => {
     render(<Harness />);
-    for (const old of ["More tools", "Strategy", "Timeline", "Offers", "Valuations", "Discover", "Airport fit", "Saved"]) {
+    expect(screen.queryByRole("button", { name: "You" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Profile" }));
+    expect(screen.getByText("page profile")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Profile" })).toHaveAttribute("aria-current", "page");
+  });
+  it("each tab sits on its own backdrop", () => {
+    const { container } = render(<Harness />);
+    expect(container.querySelector(".backdrop").dataset.slot).toBe("home");
+    fireEvent.click(screen.getAllByRole("button", { name: "Checkout" })[0]);
+    expect(container.querySelector(".backdrop").dataset.slot).toBe("checkout");
+  });
+  it("old v4 tabs stay gone", () => {
+    render(<Harness />);
+    for (const old of ["More tools", "Strategy", "Timeline", "Valuations", "Discover", "Airport fit", "Saved"]) {
       expect(screen.queryByRole("button", { name: old })).toBeNull();
     }
   });

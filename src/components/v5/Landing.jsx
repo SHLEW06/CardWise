@@ -2,6 +2,8 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 import CardFace from "./CardFace.jsx";
 import { BY_ID } from "../../data/cards.js";
+import Backdrop from "../v6/Backdrop.jsx";
+import { useParallax } from "../v6/motion.jsx";
 
 /* Landing (docs/REDESIGN_SPEC.md §9.5, §9.8): one full-height night section —
    a ≤8-word headline, one sentence, one button, a fan of real card faces.
@@ -10,22 +12,24 @@ const FAN = ["csr", "amex-gold", "venture-x", "citi-strata-elite", "bilt-palladi
 
 export default function Landing({ onStart }) {
   const cards = FAN.map((id) => BY_ID[id]).filter(Boolean);
+  const drift = useParallax(24);
   return (
-    <div className="v5">
+    <div className="v5 shell">
+      <Backdrop slot="home" />
       <section className="on-night landing">
         <header className="landing-top">
           <span className="shell-wordmark">CardWise</span>
         </header>
         <div className="landing-body">
           <div className="landing-copy">
-            <h1 className="t-d1">Get paid more for what you already buy.</h1>
+            <h1 className="t-hero parallax" ref={drift}>Get paid more for <span className="fill-gold">what you already buy.</span></h1>
             <p className="t-lead">Tell us how you spend and travel. We'll pick the cards that pay you the most — benefits first.</p>
             <button className="btn btn-signal landing-cta" onClick={onStart}>Get started <ArrowRight size={18} aria-hidden="true" /></button>
           </div>
           <div className="landing-fan" aria-hidden="true">
             {cards.map((c, i) => (
               <div key={c.id} className="landing-fan-card" style={{ "--i": i - (cards.length - 1) / 2 }}>
-                <CardFace card={c} />
+                <CardFace card={c} tilt eager />
               </div>
             ))}
           </div>

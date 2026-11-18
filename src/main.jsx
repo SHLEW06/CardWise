@@ -13,6 +13,8 @@ import "./styles/v5/primitives.css";
 import "./styles/v5/shell.css";
 import "./styles/v5/screens.css";
 import "./styles/v5/survey.css";
+import "./styles/v6/backdrop.css";
+import "./styles/v6/screens.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

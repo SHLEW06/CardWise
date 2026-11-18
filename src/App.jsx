@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Compass } from "lucide-react";
-import Layout from "./components/Layout.jsx";
 import CardModal from "./components/CardModal.jsx";
 import GoScreen from "./components/go/GoScreen.jsx";
 import AppShell from "./components/v5/AppShell.jsx";
@@ -8,7 +6,11 @@ import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
-import { HomeScreen, FindScreen, YouScreen } from "./components/v5/screens.jsx";
+import { HomeScreen, FindScreen, PointValuesBlock } from "./components/v5/screens.jsx";
+import Profile from "./components/v6/Profile.jsx";
+import { OffersInterim, LabInterim } from "./components/v6/interim.jsx";
+import { useAuth } from "./firebase/useAuth.js";
+import { loadV5Profile, saveV5Profile } from "./state/v5Profile.js";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -119,33 +121,39 @@ function withAnchors(profile) {
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero (landing) | survey | app
   const [surveyAnswers, setSurveyAnswers] = useState(null);
-  const [tab, setTab] = useState("home");   // home | checkout | find | you (§1)
+  const [surveyStep, setSurveyStep] = useState(null);   // step id when editing one answer from Profile
+  const [tab, setTab] = useState("home");   // home | checkout | offers | lab | explore | profile (§17)
   const [profile, setProfile] = useState(null);
+  const [v5, setV5] = useState(null);
   const [wallet, setWallet] = useState([]);
   const [modalCard, setModalCard] = useState(null);
   const [ready, setReady] = useState(false);
   const [valOverrides, setValOverrides] = useState({});
   const [offers, setOffers] = useState([]);
+  const { user } = useAuth();
 
   // hydrate from storage + URL hash
   useEffect(() => {
     (async () => {
       await ensureUser();
-      const [p, w, vo, offs, v5] = await Promise.all([
+      const [p, w, vo, offs, rec] = await Promise.all([
         loadProfile(), loadWallet(), loadValOverrides(), loadOffers(), hydrateV5Record(),
       ]);
-      if (v5.answers) setSurveyAnswers(v5.answers);
+      if (rec.answers) setSurveyAnswers(rec.answers);
+      setV5(rec.profile);
 
       // URL hash takes priority (shareable link); a finished v5 survey next.
       const hashProfile = profileFromHash();
-      const sourceProfile = hashProfile || (v5.completedAt ? toLegacyProfile(v5.profile) : null) || p;
+      const sourceProfile = hashProfile || (rec.completedAt ? toLegacyProfile(rec.profile) : null) || p;
 
       if (vo && Object.keys(vo).length) setValOverrides(vo);
       if (sourceProfile) {
         setProfile(withAnchors({ ...sourceProfile, valOverrides: vo || {} }));
         setScreen("app");
       }
-      if (w && w.length) setWallet(w);
+      /* The v5 profile's cards ARE the wallet once the survey is done. */
+      if (rec.completedAt) setWallet(rec.profile.cardsHeld);
+      else if (w && w.length) setWallet(w);
       if (offs && offs.length) setOffers(offs);
       setTab("home");
       setReady(true);
@@ -162,31 +170,18 @@ export default function App() {
     }
   }, [profile, screen]);
 
-  const finishOnboarding = (p) => {
-    const withA = withAnchors({ ...p, valOverrides });
-    setProfile(withA);
-    setScreen("app");
-    setTab("home");
-    saveProfile(p);
-    /* v3.2: if the deep survey collected current cards, fold their ids into
-       the simple wallet array (the rich per-card metadata stays on
-       profile.currentWallet for the timeline + keeper analyzers). */
-    const fromSurvey = (p.currentWallet || []).map((c) => c.id).filter(Boolean);
-    if (fromSurvey.length) {
-      setWallet((prev) => {
-        const merged = Array.from(new Set([...(prev || []), ...fromSurvey]));
-        saveWallet(merged);
-        return merged;
-      });
-    }
-  };
+  /* One place that applies a changed v5 profile everywhere. */
+  const applyV5 = useCallback((next) => {
+    setV5(next);
+    setWallet(next.cardsHeld);
+    saveWallet(next.cardsHeld);
+    setProfile(withAnchors({ ...toLegacyProfile(next), valOverrides }));
+  }, [valOverrides]);
 
   const toggleWallet = (id) => {
-    setWallet((w) => {
-      const next = w.includes(id) ? w.filter((x) => x !== id) : [...w, id];
-      saveWallet(next);
-      return next;
-    });
+    const cur = loadV5Profile();
+    const cardsHeld = cur.cardsHeld.includes(id) ? cur.cardsHeld.filter((x) => x !== id) : [...cur.cardsHeld, id];
+    applyV5(saveV5Profile({ ...cur, cardsHeld }));
   };
 
   /* ── Offers (arrive by sync only, §15) ── */
@@ -205,16 +200,15 @@ export default function App() {
   };
 
   const spend = useMemo(() => (profile ? buildSpend(profile) : {}), [profile]);
-  const held = wallet;
-
   const openCard = (id) => setModalCard(id);
+
   // ----- render -----
   if (!ready) {
-    return <Layout><div className="cw-empty" style={{ paddingTop: 120 }}><Compass size={28} className="cw-spin" /><p>Loading CardWise…</p></div></Layout>;
+    return <div className="v5 boot" aria-busy="true"><span className="shell-wordmark">CardWise</span></div>;
   }
 
   if (screen === "hero") {
-    return <Landing onStart={() => setScreen("survey")} />;
+    return <Landing onStart={() => { setSurveyStep(null); setScreen("survey"); }} />;
   }
 
   if (screen === "survey") {
@@ -222,13 +216,16 @@ export default function App() {
       <div className="v5">
         <Survey
           initialAnswers={surveyAnswers}
-          onExit={() => setScreen(profile ? "app" : "hero")}
+          initialStepId={surveyStep}
+          editOnly={!!surveyStep}
+          onExit={() => { setScreen(profile ? "app" : "hero"); if (surveyStep) setTab("profile"); }}
           onDone={(v5Profile, answers) => {
             setSurveyAnswers(answers);
-            /* The survey's cards become the wallet; old screens get the bridged profile. */
-            setWallet(v5Profile.cardsHeld);
-            saveWallet(v5Profile.cardsHeld);
-            finishOnboarding(toLegacyProfile(v5Profile));
+            applyV5(v5Profile);
+            setScreen("app");
+            setTab(surveyStep ? "profile" : "home");
+            setSurveyStep(null);
+            saveProfile(toLegacyProfile(v5Profile));
           }}
         />
       </div>
@@ -236,12 +233,16 @@ export default function App() {
   }
 
   const safeProfile = profile || withAnchors({ valOverrides });
+  const heroCard = wallet.find((id) => BY_ID[id]?.image?.localImage) || "csr";
+  /* Home keeps its own card fan until milestone 9 puts the hero card on the backdrop. */
+  const backdrop = tab === "lab" ? { cards: wallet } : undefined;
+  void heroCard;
 
   return (
-    <AppShell current={tab} onNavigate={setTab} onLogo={restart}>
+    <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
       {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("survey")} />}
       {tab === "checkout" && (
-        /* Phase 7 rebuilds Checkout; until then the existing Go screen runs as a legacy island. */
+        /* Milestone 7 rebuilds Checkout; until then the Go screen runs as a legacy island. */
         <div className="legacy-frame">
           <div className="v5-legacy cw-root">
             <GoScreen wallet={wallet} offers={offers} profile={safeProfile} onOpenCard={openCard} onMarkAdded={markOfferAdded}
@@ -249,8 +250,17 @@ export default function App() {
           </div>
         </div>
       )}
-      {tab === "find" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
-      {tab === "you" && <YouScreen onRestart={() => setScreen("survey")} />}
+      {tab === "offers" && <OffersInterim offers={offers} wallet={wallet} />}
+      {tab === "lab" && <LabInterim profile={v5} onOpenCard={openCard} />}
+      {tab === "explore" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
+      {tab === "profile" && (
+        <Profile
+          onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
+          onRestart={() => { setSurveyStep(null); setScreen("survey"); }}
+          onProfileChange={applyV5}
+          slots={{ pointValues: <PointValuesBlock onChange={applyV5} /> }}
+        />
+      )}
 
       {modalCard && (
         <div className="v5-legacy">
@@ -258,7 +268,7 @@ export default function App() {
             card={BY_ID[modalCard]}
             profile={safeProfile}
             spend={spend}
-            held={held}
+            held={wallet}
             owned={wallet.includes(modalCard)}
             onClose={() => setModalCard(null)}
             onToggleOwn={toggleWallet}

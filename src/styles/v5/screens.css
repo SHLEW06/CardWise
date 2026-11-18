@@ -1,7 +1,7 @@
 /* v5 destination screens (phase 3 depth). */
 
 /* Home — dark cinematic hero (§9.8.2): story only, no data on dark. */
-.v5 .home-hero { overflow: hidden; }
+.v5 .home-hero { overflow: hidden; position: relative; }
 .v5 .home-hero-inner {
   max-width: var(--max); margin: 0 auto; padding: var(--section) var(--gutter);
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center;
@@ -23,7 +23,8 @@
 .v5 .face-tile { display: grid; gap: 6px; width: 100%; text-align: left; }
 .v5 .face-tile .v5-face { margin-bottom: 10px; }
 .v5 .face-tile:hover .v5-face:not(.is-selected) { transform: translateY(-2px); }
-.v5 .face-tile-name { font-weight:500; }
+.v5 .face-tile-name { font-weight: 500; }
+.v5 .home-hero-inner, .v5 .page { position: relative; }
 
 /* You */
 .v5 .you { display: grid; gap: 16px; max-width: 760px; }
@@ -33,9 +34,6 @@
 .v5 .choice-stack .choice { width: 100%; padding: 14px 20px; }
 .v5 .you-row { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 
-/* Legacy islands: old dark screens kept until their phase rebuilds them. */
-.v5 .legacy-frame { max-width: var(--max); margin: 0 auto; padding: 32px var(--gutter) var(--section); }
-.v5 .v5-legacy.cw-root { min-height: auto; border-radius: var(--r-panel); padding: 8px 0 40px; }
 
 @media (max-width: 860px) {
   .v5 .home-hero-inner { grid-template-columns: 1fr; min-height: 0; }
@@ -48,5 +46,6 @@
 @media (max-width: 520px) {
   .v5 .face-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
 }
-.v5 .you .spend-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ink); height: 28px; }
+.v5 .spend-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--hair); }
+.v5 .spend-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--gold); height: 28px; }
 .v5 .point-reset { grid-column: 1 / -1; justify-self: start; min-height: 32px; font-size: var(--fs-small); }

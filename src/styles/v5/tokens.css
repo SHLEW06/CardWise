@@ -1,73 +1,95 @@
 /* ============================================================================
-   v5 design tokens — docs/REDESIGN_SPEC.md §9 (light editorial, §9.1–9.4) with
-   the §9.8 Robinhood-style direction overriding where they differ.
-   Scoped to `.v5` so the old dark screens (`.v5-legacy` islands) keep their
-   own tokens until they are rebuilt; phase 8 removes the legacy layer.
+   v6 design tokens — docs/REDESIGN_SPEC.md §18 (dark, lit, photographic).
+   ----------------------------------------------------------------------------
+   Dark-first. The v5 class names stay (`.v5`, --paper, --ink …) so every
+   screen moved over at once; the VALUES are now night-first:
+     --paper    page background (night)
+     --surface  frosted black glass panel (sits over a <Backdrop>)
+     --ink      primary text (ivory)
+   Contrast, measured on #0B0A08 and on glass over it (#1E1B16):
+     --ink  #F5F3EE 17.9 / 15.5 · --ink-2 #B9B2A3 9.4 / 8.1 ·
+     --ink-3 #A39C8C 7.3 / 6.3 · gold #CFB97D 10.3 / 8.9 — all ≥ 4.5:1.
+   Gold is for values and accents only, never paragraphs.
    ========================================================================== */
 
 .v5 {
-  /* ── Light, for everything people read or compare (§9.1) ── */
-  --paper:   #F5F3EE;               /* page background, never pure white */
-  --paper-2: #ECE8E0;               /* alternating bands */
-  --surface: #FCFBFA;               /* panels */
-  --raised:  #FFFFFF;               /* sheets, menus, selected tiles */
-  --ink:     #0A0A0B;               /* primary text, primary buttons */
-  --ink-2:   #4A4A4F;
-  --ink-3:   #8A8A90;
-  --hair:    rgba(10, 10, 11, .08);
-  --hair-strong: rgba(10, 10, 11, .2);
-  --navy:    #0B1F4B;               /* links, focus ring */
-  --good:    #1F7A4D;
-  --warn:    #A8521A;
+  /* ── Night ── */
+  --night:   #0B0A08;
+  --night-2: #110E08;
+  --night-3: #1A160F;
+  --paper:   var(--night);                 /* page background */
+  --paper-2: #14110C;                      /* alternating band */
+  --surface: rgba(12, 11, 9, .55);         /* glass panel */
+  --surface-solid: #16130E;                /* glass fallback without backdrop-filter */
+  --raised:  rgba(26, 23, 18, .92);        /* menus, sheets, toasts */
+  --glass-blur: blur(24px) saturate(140%);
 
-  /* ── Dark cinematic sections (§9.8) — story / hero only; data never sits on dark ── */
-  --night:     #110E08;             /* warm near-black, never #000 */
-  --night-2:   #1C180D;
-  --night-ink: #F4F1EA;
+  /* ── Text ── */
+  --ink:     #F5F3EE;
+  --ink-2:   #B9B2A3;
+  --ink-3:   #A39C8C;
+  --hair:    rgba(255, 255, 255, .08);
+  --hair-strong: rgba(255, 255, 255, .2);
+  --navy:    #E8E2D2;                      /* links + focus ring (ivory on night) */
+  --good:    #8FD1A6;
+  --warn:    #E8AE78;
+
+  /* ── Editorial paper band (the odd one) ── */
+  --ivory:     #F5F3EE;
+  --ivory-ink: #0A0A0B;
+  --ivory-gold: #6E5F35;                   /* 5.7:1 on ivory */
+
+  /* ── Legacy names still read by older rules ── */
+  --night-ink: var(--ink);
   --stone:     #35322D;
   --sand:      #DAD3C0;
 
-  /* ── Premium value (§9.8.5): net-value numbers and "best card" marks ── */
-  --gold:      #CFB97D;             /* on dark */
-  --gold-deep: #94814C;             /* on light */
+  /* ── Value + accent ── */
+  --gold:      #CFB97D;
+  --gold-deep: #94814C;
+  --gold-fill: linear-gradient(180deg, #F3E8C6 0%, #CFB97D 55%, #A8915A 100%);
+  --ivory-fill: linear-gradient(180deg, #FFFFFF 0%, #F5F3EE 50%, #CFC6B0 100%);
 
-  /* ── ONE signal color, for the single primary call to action on a page.
-        Our own (§9.8: not Robinhood's neon, not the gold). ── */
-  --signal:     #FF5F2E;            /* persimmon */
+  /* One signal colour for the single primary action on a page. */
+  --signal:     #FF5F2E;
   --signal-ink: #110E08;
 
-  /* ── Type (§9.2 faces; §9.8 scale 72 / 58 / 44 / 32, −1px on display; 16px body) ── */
+  /* ── Type (§18): display serif 300–400, hero 72–112 desktop / 44–56 phone ── */
   --f-display: var(--font-display);
   --f-ui: var(--font-ui);
-  --fs-d1: clamp(2.75rem, 1.6rem + 3.6vw, 4.5rem);    /* 44 → 72 */
-  --fs-d2: clamp(2.25rem, 1.4rem + 2.8vw, 3.625rem);  /* 36 → 58 */
-  --fs-h1: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem);  /* 30 → 44 */
-  --fs-h2: clamp(1.5rem, 1.2rem + 1vw, 2rem);          /* 24 → 32 */
+  --fs-hero: clamp(2.75rem, 1.2rem + 6vw, 7rem);       /* 44 → 112 */
+  --fs-d1: clamp(2.75rem, 1.4rem + 4.4vw, 4.5rem);     /* 44 → 72 */
+  --fs-d2: clamp(2.25rem, 1.4rem + 2.8vw, 3.625rem);   /* 36 → 58 */
+  --fs-h1: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem);   /* 30 → 44 */
+  --fs-h2: clamp(1.5rem, 1.2rem + 1vw, 2rem);           /* 24 → 32 */
   --fs-h3: 1.25rem;
   --fs-body: 1rem;
   --fs-small: .875rem;
-  --fs-caption: .8125rem;                              /* 13px */
-  --ls-display: -1px;
+  --fs-caption: .8125rem;
+  --ls-display: -.02em;
 
-  /* ── Layout (§9.3): 8px grid, 1120 max, sections 96–144 desktop / 56 mobile ── */
+  /* ── Layout + corners (§18: 0–4px; pills only for primary buttons) ── */
   --u: 8px;
-  --max: 1120px;
+  --max: 1180px;
   --gutter: clamp(16px, 4vw, 40px);
   --section: clamp(56px, 4rem + 5vw, 144px);
-  --r-panel: 20px;
-  --r-control: 12px;
+  --r-panel: 4px;
+  --r-control: 4px;
+  --r-chip: 3px;
   --r-pill: 999px;
-  --shadow-card: 0 1px 1px rgba(0, 0, 0, .06), 0 14px 32px -12px rgba(0, 0, 0, .28);
+  --r-card: 4.5cqw;                        /* a real card's corner */
+  --shadow-card: 0 2px 2px rgba(0, 0, 0, .35), 0 24px 48px -16px rgba(0, 0, 0, .7);
 
-  /* ── Motion (§9.4) ── */
+  /* ── Motion (§18) ── */
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --ease-std: cubic-bezier(.4, 0, .2, 1);
   --t-1: 150ms;
   --t-2: 240ms;
   --t-3: 400ms;
-  --t-4: 600ms;
+  --t-4: 700ms;
+  --stagger: 60ms;
 
-  color-scheme: light;
+  color-scheme: dark;
   min-height: 100vh;
   background: var(--paper);
   color: var(--ink);
@@ -78,14 +100,20 @@
   -webkit-font-smoothing: antialiased;
 }
 
+html, body { background: #0B0A08; }
+
 .v5 *, .v5 *::before, .v5 *::after { box-sizing: border-box; }
 .v5 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-.v5 a { color: var(--navy); }
-.v5 :focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 4px; }
-.v5 .on-night :focus-visible { outline-color: var(--night-ink); }
+.v5 a { color: var(--navy); text-underline-offset: 3px; }
+.v5 :focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 2px; }
+.v5 input, .v5 select, .v5 textarea { color: var(--ink); }
+.v5 ::selection { background: rgba(207, 185, 125, .35); }
 
-/* Dark cinematic section */
-.v5 .on-night { background: var(--night); color: var(--night-ink); }
+/* Night section (kept for older markup; everything is night now). */
+.v5 .on-night { background: transparent; color: var(--ink); }
+
+/* Editorial paper band — the only light surface. */
+.v5 .on-paper { background: var(--ivory); color: var(--ivory-ink); --ink: var(--ivory-ink); --ink-2: #4A4A4F; --ink-3: #5E5E63; --hair: rgba(10, 10, 11, .1); --gold-deep: var(--ivory-gold); --gold: var(--ivory-gold); }
 
 @media (prefers-reduced-motion: reduce) {
   .v5 *, .v5 *::before, .v5 *::after {

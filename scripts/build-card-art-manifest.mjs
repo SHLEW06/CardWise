@@ -21,6 +21,23 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const CARDS_DIR = resolve(ROOT, "public/cards");
+const BACKGROUNDS_DIR = resolve(ROOT, "public/backgrounds");
+/* v6 §18 Backdrop slots; a photo public/backgrounds/<slot>.avif|webp wins over
+   the procedural scene. */
+export const BACKDROP_SLOTS = ["home", "checkout", "offers", "lab", "explore", "survey", "card"];
+const BG_RANK = { ".avif": 0, ".webp": 1, ".jpg": 2 };
+
+export function scanBackgrounds(dir = BACKGROUNDS_DIR) {
+  if (!existsSync(dir)) return {};
+  const out = {};
+  for (const file of readdirSync(dir)) {
+    const ext = extname(file).toLowerCase();
+    const slot = basename(file, extname(file)).toLowerCase();
+    if (!(ext in BG_RANK) || !BACKDROP_SLOTS.includes(slot)) continue;
+    if (!out[slot] || BG_RANK[ext] < BG_RANK[extname(out[slot])]) out[slot] = `/backgrounds/${file}`;
+  }
+  return out;
+}
 const OUT_FILE = resolve(ROOT, "src/data/cardArtManifest.js");
 
 /* Preference order when the same id has several files. */
@@ -43,7 +60,7 @@ export function scanCardArt(dir = CARDS_DIR) {
   return manifest;
 }
 
-export function renderManifest(manifest) {
+export function renderManifest(manifest, backgrounds = {}) {
   const entries = Object.entries(manifest)
     .map(([id, url]) => `  ${JSON.stringify(id)}: ${JSON.stringify(url)},`)
     .join("\n");
@@ -54,13 +71,16 @@ export const CARD_ART_MANIFEST = {
 ${entries}
 };
 export default CARD_ART_MANIFEST;
+
+/* Photo backdrops found in public/backgrounds/ (v6 §18). */
+export const BACKGROUND_MANIFEST = ${JSON.stringify(backgrounds)};
 `;
 }
 
 function writeManifest() {
   const manifest = scanCardArt();
   if (!existsSync(dirname(OUT_FILE))) mkdirSync(dirname(OUT_FILE), { recursive: true });
-  const next = renderManifest(manifest);
+  const next = renderManifest(manifest, scanBackgrounds());
   const prev = existsSync(OUT_FILE) ? readFileSync(OUT_FILE, "utf8") : null;
   if (prev !== next) writeFileSync(OUT_FILE, next);
   return manifest;

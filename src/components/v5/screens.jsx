@@ -98,27 +98,23 @@ const POINTS_CHOICES = [
   { id: "partners", label: "Move to airlines & hotels", sub: "The most value, with a little planning." },
 ];
 
-export function YouScreen({ onRestart }) {
+/** How points are valued — the points-use question + flexible-point sliders.
+    Shared by You (legacy) and Profile until Part E replaces it (v6 §20). */
+export function PointValuesBlock({ onChange }) {
   const [profile, setProfile] = useState(loadV5Profile);
-  const { user, loading, firebaseActive, signInWithGoogle, signOut } = useAuth();
-  const setPointsUse = (pointsUse) => setProfile(saveV5Profile({ ...profile, pointsUse }));
+  const save = (patch) => { const next = saveV5Profile({ ...profile, ...patch }); setProfile(next); onChange?.(next); };
+  const setPointsUse = (pointsUse) => save({ pointsUse });
   const setPointValue = (cur, v) => {
     const pointValues = { ...profile.pointValues };
     if (v == null) delete pointValues[cur]; else pointValues[cur] = v;
-    setProfile(saveV5Profile({ ...profile, pointValues }));
+    save({ pointValues });
   };
   /* §4: one slider per flexible currency the person earns. */
   const earned = FLEXIBLE_CURRENCIES.filter((cur) => profile.cardsHeld.some((id) => BY_ID[id]?.pointCurrency === cur));
-
   return (
-    <section className="page you">
-      <header className="page-head">
-        <h1 className="t-d2">You</h1>
-        <p className="t-lead">Your answers, your account, and how we value your points.</p>
-      </header>
-
-      <div className="panel you-block">
-        <h2 className="t-h3" id="points-q">How will you use points?</h2>
+    <>
+      <div className="you-block">
+        <h3 className="t-h3" id="points-q">How will you use points?</h3>
         <p className="t-caption">This sets every "≈ % back" you see.</p>
         <div className="choice-stack" role="radiogroup" aria-labelledby="points-q">
           {POINTS_CHOICES.map((c) => (
@@ -128,10 +124,9 @@ export function YouScreen({ onRestart }) {
           ))}
         </div>
       </div>
-
       {earned.length > 0 && (
-        <div className="panel you-block">
-          <h2 className="t-h3">What your points are worth to you</h2>
+        <div className="you-block">
+          <h3 className="t-h3">What your points are worth to you</h3>
           <p className="t-caption">Flexible points are worth what you get for them. Move a slider if you know your own number.</p>
           {earned.map((cur) => {
             const own = profile.pointValues[cur];
@@ -149,6 +144,23 @@ export function YouScreen({ onRestart }) {
           })}
         </div>
       )}
+
+    </>
+  );
+}
+
+export function YouScreen({ onRestart }) {
+  const { user, loading, firebaseActive, signInWithGoogle, signOut } = useAuth();
+  return (
+    <section className="page you">
+      <header className="page-head">
+        <h1 className="t-d2">You</h1>
+        <p className="t-lead">Your answers, your account, and how we value your points.</p>
+      </header>
+
+      <div className="panel you-block">
+        <PointValuesBlock />
+      </div>
 
       <div className="panel you-block">
         <h2 className="t-h3">Account</h2>

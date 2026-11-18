@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
 import CardFace from "../CardFace.jsx";
 import Choice from "../Choice.jsx";
 import MoneySlider from "../MoneySlider.jsx";
+import Backdrop from "../../v6/Backdrop.jsx";
 import { CARDS, BY_ID } from "../../../data/cards.js";
 import { AIRPORTS } from "../../../data/airports.js";
 import {
@@ -20,8 +21,8 @@ import { saveV5Profile } from "../../../state/v5Profile.js";
 
    Props: initialAnswers, initialStep, onExit() (Back on step 1),
           onDone(profile, answers) */
-export default function Survey({ initialAnswers, initialStep = 0, onExit, onDone }) {
-  const [step, setStep] = useState(initialStep);
+export default function Survey({ initialAnswers, initialStep = 0, initialStepId = null, editOnly = false, onExit, onDone }) {
+  const [step, setStep] = useState(() => (initialStepId && STEPS.includes(initialStepId) ? STEPS.indexOf(initialStepId) : initialStep));
   const [a, setA] = useState(() => ({ ...EMPTY_ANSWERS, ...(initialAnswers || {}) }));
   const set = (patch) => setA((prev) => ({ ...prev, ...patch }));
   const id = STEPS[step];
@@ -33,18 +34,19 @@ export default function Survey({ initialAnswers, initialStep = 0, onExit, onDone
 
   const persist = (answers, completed = false) => saveV5Profile(answersToProfile(answers), { answers, completed });
   const finish = () => onDone?.(persist(a, true), a);
-  const next = () => { if (step === last) return finish(); persist(a); setStep(step + 1); };
-  const back = () => (step === 0 ? onExit?.() : setStep(step - 1));
+  const next = () => { if (step === last || editOnly) return finish(); persist(a); setStep(step + 1); };
+  const back = () => (step === 0 || editOnly ? onExit?.() : setStep(step - 1));
 
   const canContinue = stepComplete(id, a);
 
   return (
     <div className="survey">
+      <Backdrop slot="survey" />
       <div className="survey-top">
         <div className="survey-bar">
           <button className="survey-link" onClick={back}><ArrowLeft size={18} aria-hidden="true" /> Back</button>
           <span className="t-caption">Step {step + 1} of {STEPS.length}</span>
-          {step < last ? <button className="survey-link" onClick={finish}>Skip for now</button> : <span />}
+          {step < last && !editOnly ? <button className="survey-link" onClick={finish}>Skip for now</button> : <span />}
         </div>
         <div className="survey-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1}>
           <span style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
@@ -60,7 +62,7 @@ export default function Survey({ initialAnswers, initialStep = 0, onExit, onDone
           <button className="btn btn-signal survey-next" onClick={finish}>See my best wallet <ArrowRight size={18} aria-hidden="true" /></button>
         ) : (
           <button className="btn btn-ink survey-next" onClick={next} disabled={!canContinue}>
-            {id === "welcome" ? "Start" : "Continue"}
+            {editOnly ? "Save" : id === "welcome" ? "Start" : "Continue"}
           </button>
         )}
       </div>

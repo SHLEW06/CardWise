@@ -17,13 +17,13 @@ const writeManifest = () => {
    rewrites it whenever a file in public/cards/ is added or removed; the
    import then hot-reloads. */
 function cardArtManifest() {
-  const dir = resolve(process.cwd(), "public/cards");
+  const dirs = ["public/cards", "public/backgrounds"].map((d) => resolve(process.cwd(), d));
   return {
     name: "cardwise-card-art-manifest",
     buildStart() { writeManifest(); },
     configureServer(server) {
-      server.watcher.add(dir);
-      const onChange = (file) => { if (file.startsWith(dir)) writeManifest(); };
+      server.watcher.add(dirs);
+      const onChange = (file) => { if (dirs.some((d) => file.startsWith(d))) writeManifest(); };
       server.watcher.on("add", onChange);
       server.watcher.on("unlink", onChange);
     },

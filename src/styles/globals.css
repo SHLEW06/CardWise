@@ -3,8 +3,8 @@
    ----------------------------------------------------------------------------
    Visual language: a cinematic dark travel-finance cockpit. Deep navy/black
    gradients, an animated aurora wash, glassmorphism panels, gold accent, and
-   the signature 3D tilting card art with a slow shine. Space Grotesk (display)
-   + Inter (body) + Space Mono (data) carry the personality.
+   the signature 3D tilting card art with a slow shine. Type now comes from the
+   v6 stack in fonts.css (display serif + UI sans; no mono faces).
    ========================================================================== */
 
 /* v6 §16.2: no Google mono/grotesk faces; every family resolves to the v6 type stack (fonts.css). */
@@ -15,7 +15,7 @@
   --bg:#08080c; --surface:rgba(255,255,255,.045); --surface-2:rgba(255,255,255,.07);
   --line:rgba(255,255,255,.09); --ink:#f5f6fa; --ink-2:#a3a7b6; --ink-3:#6b6f80;
   --accent:#f3e7c9; --good:#5fd6a0; --warn:#f0b35e; --bad:#f08a6e; --lead:rgba(50,110,230,.5);
-  --fdisplay:var(--font-display); --fbody:var(--font-ui); --fmono:var(--font-ui); /* no monospace anywhere (v6 §16.2) */
+  --fdisplay:var(--font-display); --fbody:var(--font-ui); --fmono:var(--font-ui); /* v6 §16.2: one UI face for numbers too */
 }
 
 * { box-sizing:border-box; }

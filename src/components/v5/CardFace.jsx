@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import { Check } from "lucide-react";
 import { materialFor, wordmarkFor, NETWORK_LABEL } from "../../data/cardMaterials.js";
 import { cardDisplayName } from "../../data/cardNames.js";
+import { useTilt } from "../v6/motion.jsx";
 
 /* A card face: the issuer's real art when public/cards/ has it, otherwise a
-   designed face (§7) — material color, finish, issuer wordmark, chip, name,
-   network. Sizes itself from its container's width (container queries), so
-   one component serves a 64px thumbnail and a 380px hero.
+   designed face (§7) — the card's real material colour, finish, issuer
+   wordmark, chip, name, network. Sizes itself from its container's width
+   (container queries), so one component serves a 64px thumbnail and a hero.
 
-   Props: card, selected (2px ink ring + check badge + 4px lift, §9.6),
-          label (accessible name; default "<issuer> <name>"), className */
-export default function CardFace({ card, selected = false, label, className = "" }) {
+   Props: card, selected (gold ring + check badge + 4px lift),
+          tilt (≤ 4° + moving specular, §18), eager (no lazy load, for heroes),
+          label (accessible name; default cardDisplayName), className */
+export default function CardFace({ card, selected = false, label, className = "", tilt = false, eager = false }) {
   const [failed, setFailed] = useState(false);
+  const t = useTilt(4);
   if (!card) return null;
   const art = card.image?.localImage && !failed ? card.image.localImage : null;
   const m = materialFor(card);
@@ -19,13 +22,16 @@ export default function CardFace({ card, selected = false, label, className = ""
 
   return (
     <div
-      className={["v5-face", selected && "is-selected", className].filter(Boolean).join(" ")}
+      ref={tilt ? t.ref : undefined}
+      className={["v5-face", selected && "is-selected", tilt && "can-tilt", className].filter(Boolean).join(" ")}
       role="img"
       aria-label={name}
+      onPointerMove={tilt ? t.onPointerMove : undefined}
+      onPointerLeave={tilt ? t.onPointerLeave : undefined}
     >
       <div className={`v5-face-body ${art ? "has-art" : `is-designed finish-${m.finish}`}`} style={art ? undefined : { "--base": m.base, "--face-ink": m.ink }}>
         {art ? (
-          <img src={art} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />
+          <img src={art} alt="" loading={eager ? "eager" : "lazy"} decoding="async" onError={() => setFailed(true)} />
         ) : (
           <>
             <span className="v5-face-wordmark">{wordmarkFor(card)}</span>
@@ -35,6 +41,7 @@ export default function CardFace({ card, selected = false, label, className = ""
           </>
         )}
       </div>
+      {tilt && <span className="v5-face-shine" aria-hidden="true" />}
       {selected && (
         <span className="v5-face-check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
       )}
