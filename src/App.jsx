@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import CardModal from "./components/CardModal.jsx";
+import CardDetail from "./components/v6/CardDetail.jsx";
+import Explore from "./components/v6/explore/Explore.jsx";
 import GoScreen from "./components/go/GoScreen.jsx";
 import AppShell from "./components/v5/AppShell.jsx";
 import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
-import { HomeScreen, FindScreen } from "./components/v5/screens.jsx";
+import { HomeScreen } from "./components/v5/screens.jsx";
 import Profile from "./components/v6/Profile.jsx";
 import { OffersInterim } from "./components/v6/interim.jsx";
 import WalletLab from "./components/v6/lab/WalletLab.jsx";
@@ -250,7 +251,7 @@ export default function App() {
       )}
       {tab === "offers" && <OffersInterim offers={offers} wallet={wallet} />}
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
-      {tab === "explore" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
+      {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
       {tab === "profile" && (
         <Profile
           onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
@@ -261,17 +262,13 @@ export default function App() {
       )}
 
       {modalCard && (
-        <div className="v5-legacy">
-          <CardModal
-            card={BY_ID[modalCard]}
-            profile={safeProfile}
-            spend={spend}
-            held={wallet}
-            owned={wallet.includes(modalCard)}
-            onClose={() => setModalCard(null)}
-            onToggleOwn={toggleWallet}
-          />
-        </div>
+        <CardDetail
+          cardId={modalCard}
+          profile={v5}
+          onClose={() => setModalCard(null)}
+          onToggleOwn={toggleWallet}
+          onProfileChange={(p) => applyV5(saveV5Profile(p))}
+        />
       )}
     </AppShell>
   );

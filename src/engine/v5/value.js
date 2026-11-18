@@ -435,7 +435,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
 
   const networks = loungeNetworks(card, profile);
   const lounge = loungeTotal(networks);
-  if (lounge > 0) items.push({ id: `${card.id}#lounge`, label: `Airport lounges (${(card.loungeAccess.networks || []).join(", ")})`, face: LOUNGE_RETAIL_CAP, value: Math.round(lounge), kind: "lounge", dedupe: "lounge", networks });
+  if (lounge > 0) items.push({ id: `${card.id}#lounge`, label: `Lounges: ${(card.loungeAccess.networks || []).map((n) => n.replace(/\s*\(.*\)$/, "")).join(", ")}`, face: LOUNGE_RETAIL_CAP, value: Math.round(lounge), kind: "lounge", dedupe: "lounge", networks });
   else if (card.loungeAccess) unused.push({ id: `${card.id}#lounge`, label: "Airport lounges", face: LOUNGE_RETAIL_CAP, reason: profile.travel.lounges === "no" ? "You said lounges don't matter" : trips ? "No lounge where you fly from" : "You don't fly" });
 
   const bags = card.checkedBagBenefits;

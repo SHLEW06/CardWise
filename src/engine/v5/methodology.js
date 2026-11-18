@@ -402,7 +402,7 @@ export function cardFits(rawProfile, catalog = CARDS) {
   const maxD = Math.max(0, ...rows.filter((r) => r.fitsBudget).map((r) => r.delta));
   return Object.fromEntries(rows.map((r) => [r.cardId, {
     delta: r.delta, fitsBudget: r.fitsBudget,
-    fit: r.delta > 0 && maxD > 0 ? Math.min(100, Math.round((100 * r.delta) / maxD)) : null,
+    fit: r.fitsBudget && r.delta > 0 && maxD > 0 ? Math.min(100, Math.round((100 * r.delta) / maxD)) : null,
   }]));
 }
 

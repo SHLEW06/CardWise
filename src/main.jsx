@@ -16,6 +16,7 @@ import "./styles/v5/survey.css";
 import "./styles/v6/backdrop.css";
 import "./styles/v6/screens.css";
 import "./styles/v6/lab.css";
+import "./styles/v6/explore.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

@@ -185,6 +185,32 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   second set of numbers.
 - Tests: `v6Lab.test.jsx`.
 
+## Milestone 6 — done
+
+- `components/v6/explore/Explore.jsx` + `engine/v5/explore.js`: search,
+  16 category chips (For you default = ranked by Δ to their wallet at their
+  budget), filters (fee first, approval, availability, bank), sort (Value
+  to you · Fee · Easiest approval), tiles (photo, name, fee, "≈ $X a year to
+  you" / "Doesn't add value for you", fit 0–100 within budget, approval chip
+  from difficulty + their score + 5/24, availability), Compare 2–3 (v6
+  table, replaces CardComparison / DiscoverHome / GoalShelf).
+- `components/v6/CardDetail.jsx` replaces the dark CardModal everywhere
+  (portal above the shell): lit photo on the card backdrop, "Worth / Would
+  add ≈ $X a year to you" + one line of why, benefits you'd use (icon ·
+  name · value, tap for detail), benefits you wouldn't use with reasons and
+  the split-credit "I'd plan around this" toggle, top-3 earning (blended
+  % back), In your wallet (what it takes from which card, Wallet Score
+  before → after), points chip, lounges at their home airport (AirportFit
+  coverage), "See the math".
+- **ValueBreakdown decision:** the v4 `dashboard/ValueBreakdown` reads the
+  legacy engine; wiring the v5 profile through `legacyBridge` gives it
+  answers, but its numbers still come from a second engine, so it can
+  disagree with the rest of the app. Per the brief ("if it can't be made to
+  adapt, remove it") it's removed from the card detail and replaced by
+  `TheMath` on `walletValue` (E lanes, U face → counted, possible max, F,
+  baseline); a test asserts it changes when survey answers change.
+- Tests: `v6Explore.ui.test.jsx` (incl. no jargon outside See the math).
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -227,8 +253,8 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Next
 
-Milestone 6: Explore (search, category chips, filters, sort, tiles with
-"≈ $X a year to you", fit score, approval chip, availability; Compare 2–3)
-and the new card detail page replacing the dark modal (benefits you'd /
-wouldn't use with the split-credit opt-in, top-3 earning, wallet effect,
-points chip, See the math wired to v5 + test that it changes with answers).
+Milestone 7: Checkout — Search (ranked wallet + offers + best card you
+don't have), ≥ 3,000 brands from name-suggestion-index (license check) under
+the curated overrides with a prefix index, malls kept; Near me (geolocation
+on tap → nearby.js); Best by category table; Flights & hotels (Portal
+calculator).
