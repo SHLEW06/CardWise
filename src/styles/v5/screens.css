@@ -1,0 +1,46 @@
+/* v5 destination screens (phase 3 depth). */
+
+/* Home — dark cinematic hero (§9.8.2): story only, no data on dark. */
+.v5 .home-hero { overflow: hidden; }
+.v5 .home-hero-inner {
+  max-width: var(--max); margin: 0 auto; padding: var(--section) var(--gutter);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center;
+  min-height: min(78vh, 760px);
+}
+.v5 .home-hero-copy { display: grid; gap: 24px; justify-items: start; }
+.v5 .home-hero-inner:has(.home-fan) .home-hero-copy { max-width: 30rem; }
+.v5 .home-hero-inner:not(:has(.home-fan)) { grid-template-columns: minmax(0, 46rem); }
+.v5 .home-fan { position: relative; height: clamp(220px, 28vw, 340px); }
+.v5 .home-fan-card {
+  position: absolute; left: 50%; top: 50%; width: min(78%, 360px);
+  transform: translate(-50%, -50%) translateX(calc(var(--i) * 13%)) rotate(calc(var(--i) * 6deg)) translateY(calc(var(--i) * var(--i) * 3%));
+  transition: transform var(--t-4) var(--ease-out);
+}
+.v5 .home-fan:hover .home-fan-card { transform: translate(-50%, -50%) translateX(calc(var(--i) * 18%)) rotate(calc(var(--i) * 8deg)) translateY(calc(var(--i) * var(--i) * 3%)); }
+
+/* Face grid (Home "Your cards", Find a card) */
+.v5 .face-grid { list-style: none; margin: 24px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 40px 24px; }
+.v5 .face-tile { display: grid; gap: 6px; width: 100%; text-align: left; }
+.v5 .face-tile .v5-face { margin-bottom: 10px; }
+.v5 .face-tile:hover .v5-face:not(.is-selected) { transform: translateY(-2px); }
+.v5 .face-tile-name { font-weight: 600; }
+
+/* You */
+.v5 .you { display: grid; gap: 16px; max-width: 760px; }
+.v5 .you .page-head { margin-bottom: 24px; }
+.v5 .you-block { display: grid; gap: 12px; }
+.v5 .choice-stack { display: grid; gap: 10px; margin-top: 8px; }
+.v5 .choice-stack .choice { width: 100%; padding: 14px 20px; }
+.v5 .you-row { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+/* Legacy islands: old dark screens kept until their phase rebuilds them. */
+.v5 .legacy-frame { max-width: var(--max); margin: 0 auto; padding: 32px var(--gutter) var(--section); }
+.v5 .v5-legacy.cw-root { min-height: auto; border-radius: var(--r-panel); padding: 8px 0 40px; }
+
+@media (max-width: 860px) {
+  .v5 .home-hero-inner { grid-template-columns: 1fr; min-height: 0; }
+  .v5 .home-fan { order: -1; }
+}
+@media (max-width: 520px) {
+  .v5 .face-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+}

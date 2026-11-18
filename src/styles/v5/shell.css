@@ -1,0 +1,50 @@
+/* ============================================================================
+   v5 shell — top nav (desktop) / bottom bar (mobile), page frame (§1, §9.3).
+   ========================================================================== */
+
+.v5 .shell-top {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border-bottom: 1px solid var(--hair);
+  view-transition-name: shell-top;
+}
+.v5 .shell-bar { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); height: 64px; display: flex; align-items: center; gap: 40px; }
+.v5 .shell-wordmark { font-family: var(--f-display); font-size: 1.625rem; letter-spacing: -.5px; line-height: 1; }
+.v5 .shell-nav { display: flex; gap: 4px; margin-left: auto; }
+.v5 .shell-link {
+  position: relative; height: 64px; padding: 0 14px; font-weight: 500; color: var(--ink-2);
+  transition: color var(--t-1) var(--ease-std);
+}
+.v5 .shell-link:hover { color: var(--ink); }
+.v5 .shell-link[aria-current="page"] { color: var(--ink); }
+.v5 .shell-link[aria-current="page"]::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; background: var(--ink);
+}
+
+.v5 .shell-main { min-height: calc(100vh - 64px - 120px); view-transition-name: page; }
+.v5 .page { max-width: var(--max); margin: 0 auto; padding: clamp(40px, 6vw, 88px) var(--gutter) var(--section); }
+.v5 .page-head { display: grid; gap: 16px; margin-bottom: clamp(32px, 5vw, 56px); }
+
+.v5 .shell-foot { border-top: 1px solid var(--hair); }
+.v5 .shell-foot p { max-width: var(--max); margin: 0 auto; padding: 24px var(--gutter) 32px; font-size: var(--fs-caption); color: var(--ink-3); }
+
+.v5 .shell-tabs { display: none; }
+
+@media (max-width: 720px) {
+  .v5 .shell-nav { display: none; }
+  .v5 .shell-bar { height: 56px; }
+  .v5 .shell-main { min-height: calc(100vh - 56px); }
+  .v5 .shell-foot { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .v5 .shell-tabs {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    border-top: 1px solid var(--hair);
+  }
+  .v5 .shell-tab { display: grid; justify-items: center; gap: 2px; padding: 6px 0; font-size: 11px; font-weight: 500; color: var(--ink-3); }
+  .v5 .shell-tab[aria-current="page"] { color: var(--ink); }
+}
+
+/* Route change cross-fade (§9.4): standard easing, 240ms. */
+::view-transition-old(page), ::view-transition-new(page) { animation-duration: 240ms; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }

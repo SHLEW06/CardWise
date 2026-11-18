@@ -59,16 +59,3 @@ export async function deleteOffer(offerId, uid = currentUid()) {
   if (!fb) return;
   try { await deleteDoc(doc(fb.db, "users", uid, "offers", offerId)); } catch { /* may not exist */ }
 }
-
-/* ---- import / export (JSON) ---- */
-export function exportOffersJson(offers) {
-  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), offers }, null, 2);
-}
-
-/** Accepts either our export envelope or a bare array. Returns normalized offers. */
-export function parseOffersJson(text) {
-  const data = JSON.parse(text);
-  const arr = Array.isArray(data) ? data : Array.isArray(data?.offers) ? data.offers : null;
-  if (!arr) throw new Error("Expected an array of offers or { offers: [...] }");
-  return arr.map((o) => normalizeOffer(o));
-}

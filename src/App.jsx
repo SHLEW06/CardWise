@@ -1,66 +1,22 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  TrendingUp, Zap, Compass, Wallet, Plane, ArrowLeftRight, Search,
-  AlertTriangle, Archive, Sliders, Calendar, LayoutGrid, Sparkles,
-  Home, MoreHorizontal, X, Navigation, Tag,
-} from "lucide-react";
+import { Compass } from "lucide-react";
 import Layout from "./components/Layout.jsx";
 import Hero from "./components/Hero.jsx";
 import Onboarding from "./components/Onboarding.jsx";
-import StrategyDashboard from "./components/StrategyDashboard.jsx";
-import SpendRouter from "./components/SpendRouter.jsx";
-import CardExplorer from "./components/CardExplorer.jsx";
-import KeeperAnalyzer from "./components/KeeperAnalyzer.jsx";
-import AirportFit from "./components/AirportFit.jsx";
-import RedemptionExplorer from "./components/RedemptionExplorer.jsx";
-import WalletBuilder from "./components/WalletBuilder.jsx";
-import WarningsPanel from "./components/WarningsPanel.jsx";
 import CardModal from "./components/CardModal.jsx";
-import SavedStrategies from "./components/SavedStrategies.jsx";
-import ValuationsEditor from "./components/ValuationsEditor.jsx";
-import CardTimeline from "./components/CardTimeline.jsx";
-import WalletBoard from "./components/wallet/WalletBoard.jsx";
-import DiscoverHome from "./components/discover/DiscoverHome.jsx";
 import QuickStart from "./components/QuickStart.jsx";
-import SimpleHome from "./components/SimpleHome.jsx";
 import GoScreen from "./components/go/GoScreen.jsx";
-import OffersScreen from "./components/go/OffersScreen.jsx";
+import AppShell from "./components/v5/AppShell.jsx";
+import { HomeScreen, FindScreen, YouScreen } from "./components/v5/screens.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
 import { defaultAnchor } from "./engine/transferValue.js";
 import { buildSpend } from "./engine/scoring.js";
 import { ensureUser } from "./firebase/auth.js";
-import {
-  saveProfile, loadProfile, saveWallet, loadWallet,
-  saveStrategy, loadStrategies, deleteStrategy,
-  saveValOverrides, loadValOverrides,
-} from "./firebase/firestore.js";
+import { saveProfile, loadProfile, saveWallet, loadWallet, loadValOverrides } from "./firebase/firestore.js";
 import { loadOffers, saveOffers } from "./firebase/offers.js";
 import { setOfferStatus } from "./engine/offers/offerModel.js";
-
-/* v4: three things on the main nav. Everything else is a "More tools" item. */
-const CORE_TABS = [
-  { id: "board",    label: "Wallet",       icon: LayoutGrid },
-  { id: "go",       label: "Go",           icon: Navigation },
-  { id: "offers",   label: "Offers",       icon: Tag },
-];
-
-const ADVANCED_TABS = [
-  { id: "home",     label: "Overview",     icon: Home },
-  { id: "explore",  label: "Explore",      icon: Search },
-  { id: "discover", label: "Discover",     icon: Sparkles },
-  { id: "strategy", label: "Strategy",     icon: TrendingUp },
-  { id: "timeline", label: "Timeline",     icon: Calendar },
-  { id: "router",   label: "Spend router", icon: Zap },
-  { id: "keepers",  label: "Keepers",      icon: Wallet },
-  { id: "airport",  label: "Airport fit",  icon: Plane },
-  { id: "redeem",   label: "Redeem",       icon: ArrowLeftRight },
-  { id: "warnings", label: "Watch-outs",   icon: AlertTriangle },
-  { id: "wallet",   label: "Owned cards",  icon: Compass },
-  { id: "saved",    label: "Saved",        icon: Archive },
-  { id: "valuations", label: "Valuations", icon: Sliders },
-];
 
 /* ── URL state ───────────────────────────────────────────────────────────── */
 /* Encode a shareable profile into the URL hash. Only serializes the fields
@@ -161,19 +117,11 @@ function withAnchors(profile) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero | quickstart | onboarding | app
-  const [tab, setTab] = useState("go");
-  const [advanced, setAdvanced] = useState(() => {
-    try {
-      return localStorage.getItem("cw-advanced") === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [tab, setTab] = useState("home");   // home | checkout | find | you (§1)
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState([]);
   const [modalCard, setModalCard] = useState(null);
   const [ready, setReady] = useState(false);
-  const [strategies, setStrategies] = useState([]);
   const [valOverrides, setValOverrides] = useState({});
   const [offers, setOffers] = useState([]);
 
@@ -181,8 +129,8 @@ export default function App() {
   useEffect(() => {
     (async () => {
       await ensureUser();
-      const [p, w, strats, vo, offs] = await Promise.all([
-        loadProfile(), loadWallet(), loadStrategies(), loadValOverrides(), loadOffers(),
+      const [p, w, vo, offs] = await Promise.all([
+        loadProfile(), loadWallet(), loadValOverrides(), loadOffers(),
       ]);
 
       // URL hash takes priority (shareable link)
@@ -195,10 +143,8 @@ export default function App() {
         setScreen("app");
       }
       if (w && w.length) setWallet(w);
-      if (strats) setStrategies(strats);
       if (offs && offs.length) setOffers(offs);
-      /* Land on Go when there's a wallet to route against; otherwise Wallet. */
-      setTab(w && w.length ? "go" : "board");
+      setTab("home");
       setReady(true);
     })();
   }, []);
@@ -217,7 +163,7 @@ export default function App() {
     const withA = withAnchors({ ...p, valOverrides });
     setProfile(withA);
     setScreen("app");
-    setTab("board");
+    setTab("home");
     saveProfile(p);
     /* v3.2: if the deep survey collected current cards, fold their ids into
        the simple wallet array (the rich per-card metadata stays on
@@ -240,11 +186,7 @@ export default function App() {
     });
   };
 
-  /* ── Offers ── */
-  const handleOffersChange = useCallback((next) => {
-    setOffers(next);
-    try { saveOffers(next); } catch { /* best effort */ }
-  }, []);
+  /* ── Offers (arrive by sync only, §15) ── */
   const markOfferAdded = useCallback((offerId) => {
     setOffers((prev) => {
       const next = prev.map((o) => (o.id === offerId ? setOfferStatus(o, "added") : o));
@@ -255,79 +197,14 @@ export default function App() {
 
   const restart = () => {
     setScreen("hero");
-    setTab("go");
+    setTab("home");
     window.history.replaceState(null, "", window.location.pathname);
   };
-
-  // ── Valuations ──
-  const handleValChange = useCallback((next) => {
-    setValOverrides(next);
-    saveValOverrides(next);
-    setProfile((p) => p ? { ...p, valOverrides: next } : p);
-  }, []);
-  const handleValReset = useCallback(() => {
-    setValOverrides({});
-    saveValOverrides({});
-    setProfile((p) => p ? { ...p, valOverrides: {} } : p);
-  }, []);
-
-  // ── Strategies ──
-  const handleSaveStrategy = useCallback((strategyData) => {
-    const entry = {
-      ...strategyData,
-      profile: (() => {
-        const slim = {};
-        for (const k of PROFILE_URL_KEYS) if (profile?.[k] != null) slim[k] = profile[k];
-        return slim;
-      })(),
-    };
-    saveStrategy(entry).then(() => loadStrategies().then(setStrategies));
-  }, [profile]);
-
-  const handleLoadStrategy = useCallback((strategy) => {
-    if (strategy.profile) {
-      const loaded = withAnchors({ ...strategy.profile, valOverrides });
-      setProfile(loaded);
-      saveProfile(strategy.profile);
-    }
-    setAdvanced(true);
-    setTab("strategy");
-  }, [valOverrides]);
-
-  const handleDeleteStrategy = useCallback((id) => {
-    deleteStrategy(id).then(() => loadStrategies().then(setStrategies));
-  }, []);
-
-  /* Merge patch into the live profile. Used by the Wallet board's credit-
-     realism toggles so the engine picks up user answers without a full
-     onboarding round-trip. */
-  const updateProfile = useCallback((patch) => {
-    setProfile((p) => {
-      if (!p) return p;
-      const merged = { ...p, ...patch };
-      /* Keep saved copy in sync when we can — best-effort, non-blocking. */
-      try { saveProfile(merged); } catch { /* silent */ }
-      return merged;
-    });
-  }, []);
 
   const spend = useMemo(() => (profile ? buildSpend(profile) : {}), [profile]);
   const held = wallet;
 
   const openCard = (id) => setModalCard(id);
-  const toggleAdvanced = () => {
-    setAdvanced((isAdvanced) => {
-      const next = !isAdvanced;
-      try {
-        localStorage.setItem("cw-advanced", next ? "1" : "0");
-      } catch {
-        /* best effort */
-      }
-      if (!next && ADVANCED_TABS.some((item) => item.id === tab)) setTab("go");
-      return next;
-    });
-  };
-
   // ----- render -----
   if (!ready) {
     return <Layout><div className="cw-empty" style={{ paddingTop: 120 }}><Compass size={28} className="cw-spin" /><p>Loading CardWise…</p></div></Layout>;
@@ -337,7 +214,7 @@ export default function App() {
     return (
       <Layout onLogoClick={restart}>
         <Hero
-          onStart={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("board"); }}
+          onStart={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("home"); }}
           onSetup={() => setScreen("quickstart")}
         />
       </Layout>
@@ -357,54 +234,35 @@ export default function App() {
   }
 
   const safeProfile = profile || withAnchors({ valOverrides });
-  const visibleTabs = advanced ? [...CORE_TABS, ...ADVANCED_TABS] : CORE_TABS;
-
-  const nav = (
-    <nav className="cw-nav">
-      {visibleTabs.map((t) => {
-        const Icon = t.icon;
-        return (
-          <button key={t.id} className={["cw-nav-item", tab === t.id && "cw-nav-on"].filter(Boolean).join(" ")} onClick={() => setTab(t.id)}>
-            <Icon size={15} /> {t.label}
-          </button>
-        );
-      })}
-      <button className="cw-nav-item cw-nav-more" onClick={toggleAdvanced}>
-        {advanced ? <><X size={15} /> Simple view</> : <><MoreHorizontal size={15} /> More tools</>}
-      </button>
-    </nav>
-  );
 
   return (
-    <Layout nav={nav} onLogoClick={restart}>
-      {tab === "go" && <GoScreen wallet={wallet} offers={offers} profile={safeProfile} onOpenCard={openCard} onMarkAdded={markOfferAdded} onGoTab={setTab} />}
-      {tab === "offers" && <OffersScreen wallet={wallet} offers={offers} onChange={handleOffersChange} />}
-      {tab === "home" && <SimpleHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onToggleWallet={toggleWallet} onGoTab={setTab} />}
-      {tab === "discover" && <DiscoverHome profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSwitchTab={setTab} />}
-      {tab === "board" && <WalletBoard profile={safeProfile} wallet={wallet} onToggleWallet={toggleWallet} onUpdateProfile={updateProfile} />}
-      {tab === "strategy" && <StrategyDashboard profile={safeProfile} wallet={wallet} onOpenCard={openCard} onSaveStrategy={handleSaveStrategy} />}
-      {tab === "timeline" && <CardTimeline profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
-      {tab === "router" && <SpendRouter profile={safeProfile} wallet={wallet} />}
-      {tab === "explore" && <CardExplorer profile={safeProfile} wallet={wallet} onOpenCard={openCard} />}
-      {tab === "keepers" && <KeeperAnalyzer profile={safeProfile} wallet={wallet} onOpenCard={openCard} onGoWallet={() => setTab("wallet")} />}
-      {tab === "airport" && <AirportFit profile={safeProfile} />}
-      {tab === "redeem" && <RedemptionExplorer profile={safeProfile} />}
-      {tab === "warnings" && <WarningsPanel profile={safeProfile} wallet={wallet} />}
-      {tab === "wallet" && <WalletBuilder wallet={wallet} onToggle={toggleWallet} onOpenCard={openCard} profile={safeProfile} />}
-      {tab === "saved" && <SavedStrategies strategies={strategies} onLoad={handleLoadStrategy} onDelete={handleDeleteStrategy} />}
-      {tab === "valuations" && <ValuationsEditor overrides={valOverrides} onChange={handleValChange} onReset={handleValReset} />}
+    <AppShell current={tab} onNavigate={setTab} onLogo={restart}>
+      {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("quickstart")} />}
+      {tab === "checkout" && (
+        /* Phase 7 rebuilds Checkout; until then the existing Go screen runs as a legacy island. */
+        <div className="legacy-frame">
+          <div className="v5-legacy cw-root">
+            <GoScreen wallet={wallet} offers={offers} profile={safeProfile} onOpenCard={openCard} onMarkAdded={markOfferAdded}
+              onGoTab={(t) => setTab(t === "board" ? "home" : t)} />
+          </div>
+        </div>
+      )}
+      {tab === "find" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
+      {tab === "you" && <YouScreen onRestart={restart} />}
 
       {modalCard && (
-        <CardModal
-          card={BY_ID[modalCard]}
-          profile={safeProfile}
-          spend={spend}
-          held={held}
-          owned={wallet.includes(modalCard)}
-          onClose={() => setModalCard(null)}
-          onToggleOwn={toggleWallet}
-        />
+        <div className="v5-legacy">
+          <CardModal
+            card={BY_ID[modalCard]}
+            profile={safeProfile}
+            spend={spend}
+            held={held}
+            owned={wallet.includes(modalCard)}
+            onClose={() => setModalCard(null)}
+            onToggleOwn={toggleWallet}
+          />
+        </div>
       )}
-    </Layout>
+    </AppShell>
   );
 }

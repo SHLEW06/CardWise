@@ -25,8 +25,24 @@ const FIT_ROWS = [
   ["premiumBenefitFitScore", "Premium benefits", "#f0b35e"],
 ];
 
+/* Never default a home airport (docs/REDESIGN_SPEC.md §2). Without one, ask
+   for it instead of silently analysing someone else's airport. */
 export default function AirportFit({ profile }) {
-  const [home, setHome] = useState(profile.homeAirport || "ATL");
+  const [typed, setTyped] = useState("");
+  if (profile.homeAirport) return <AirportFitFor profile={profile} initialHome={profile.homeAirport} />;
+  if (typed.length === 3 && getAirportProfile(typed)) return <AirportFitFor profile={profile} initialHome={typed} />;
+  return (
+    <div className="cw-panel">
+      <div className="cw-panel-title">Add your home airport</div>
+      <p>Airport fit needs to know where you fly from. Type its three-letter code.</p>
+      <input className="cw-input" value={typed} maxLength={3} aria-label="Home airport code"
+        onChange={(e) => setTyped(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""))} placeholder="e.g. SEA" />
+    </div>
+  );
+}
+
+function AirportFitFor({ profile, initialHome }) {
+  const [home, setHome] = useState(initialHome);
   const [dest, setDest] = useState("");
   const [destQuery, setDestQuery] = useState("");
 

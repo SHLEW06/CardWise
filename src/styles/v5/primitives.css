@@ -1,0 +1,101 @@
+/* ============================================================================
+   v5 primitives — type, buttons, choices (§9.6 selected state), panels,
+   card faces (§7, §9.3).
+   ========================================================================== */
+
+/* ── Type ── */
+.v5 .t-d1, .v5 .t-d2, .v5 .t-h1 { font-family: var(--f-display); font-weight: 400; letter-spacing: var(--ls-display); line-height: 1.02; margin: 0; }
+.v5 .t-d1 { font-size: var(--fs-d1); }
+.v5 .t-d2 { font-size: var(--fs-d2); }
+.v5 .t-h1 { font-size: var(--fs-h1); line-height: 1.08; }
+.v5 .t-h2 { font-family: var(--f-ui); font-weight: 600; font-size: var(--fs-h2); letter-spacing: -.02em; line-height: 1.15; margin: 0; }
+.v5 .t-h3 { font-weight: 600; font-size: var(--fs-h3); letter-spacing: -.01em; margin: 0; }
+.v5 .t-lead { font-size: 1.125rem; color: var(--ink-2); max-width: 36em; margin: 0; }
+.v5 .t-caption { font-size: var(--fs-caption); color: var(--ink-3); }
+.v5 .t-value { font-family: var(--f-display); letter-spacing: var(--ls-display); font-variant-numeric: tabular-nums; color: var(--gold-deep); }
+.v5 .on-night .t-value { color: var(--gold); }
+.v5 .on-night .t-lead { color: color-mix(in srgb, var(--night-ink) 72%, transparent); }
+
+/* ── Buttons: one signal CTA per page; ink is the default primary ── */
+.v5 .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 0 22px; border-radius: var(--r-pill);
+  font-weight: 600; font-size: 1rem; letter-spacing: -.005em;
+  transition: transform var(--t-1) var(--ease-out), background var(--t-2) var(--ease-std), color var(--t-2) var(--ease-std);
+}
+.v5 .btn:active { transform: scale(.98); }
+.v5 .btn-ink { background: var(--ink); color: var(--paper); }
+.v5 .btn-ink:hover { background: #26262a; }
+.v5 .btn-signal { background: var(--signal); color: var(--signal-ink); }
+.v5 .btn-signal:hover { background: #ff7447; }
+.v5 .btn-quiet { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--hair-strong); }
+.v5 .btn-quiet:hover { box-shadow: inset 0 0 0 1px var(--ink); }
+.v5 .on-night .btn-quiet { color: var(--night-ink); box-shadow: inset 0 0 0 1px rgba(244, 241, 234, .3); }
+.v5 .btn[disabled], .v5 .btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; transform: none; }
+
+/* ── Choice (§9.6): every survey / settings option ── */
+.v5 .choice {
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 52px; padding: 0 20px; border-radius: var(--r-control);
+  background: var(--surface); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  font-weight: 500; text-align: left;
+  transition: box-shadow var(--t-1) var(--ease-std), background var(--t-1) var(--ease-std), color var(--t-1) var(--ease-std);
+}
+.v5 .choice:hover { box-shadow: inset 0 0 0 1px var(--hair-strong); }
+.v5 .choice[aria-pressed="true"], .v5 .choice[aria-checked="true"] {
+  background: var(--ink); color: #fff; box-shadow: none;
+  animation: v5-press var(--t-1) var(--ease-out);
+}
+.v5 .choice-check { width: 16px; height: 16px; flex: none; display: none; }
+.v5 .choice[aria-pressed="true"] .choice-check, .v5 .choice[aria-checked="true"] .choice-check { display: block; }
+.v5 .choice-sub { display: block; font-weight: 400; font-size: var(--fs-small); color: var(--ink-2); }
+.v5 .choice[aria-pressed="true"] .choice-sub, .v5 .choice[aria-checked="true"] .choice-sub { color: rgba(255, 255, 255, .72); }
+.v5 .choice-pill { border-radius: var(--r-pill); min-height: 44px; padding: 0 18px; }
+@keyframes v5-press { 0% { transform: scale(1); } 50% { transform: scale(.98); } 100% { transform: scale(1); } }
+
+/* ── Panels: no shadow, 1px hair ── */
+.v5 .panel { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-panel); padding: clamp(20px, 3vw, 32px); }
+
+/* ── Card face (§7, §9.3): radius 4.5% of width; realistic shadow ── */
+.v5 .v5-face { position: relative; container-type: inline-size; width: 100%; aspect-ratio: 1.586; transition: transform var(--t-2) var(--ease-out); }
+.v5 .v5-face-body {
+  position: absolute; inset: 0; border-radius: 4.5% / 7.14%; overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.v5 .v5-face-body.has-art { background: var(--paper-2); }
+.v5 .v5-face-body img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v5 .v5-face-body.is-designed { background-color: var(--base); color: var(--face-ink); }
+/* Light falls from the top-left; the card edge catches a thin highlight. */
+.v5 .v5-face-body.is-designed::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 42%, rgba(0, 0, 0, .14) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  border-radius: inherit;
+}
+/* Brushed metal: fine horizontal grain. */
+.v5 .finish-metal::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: .55;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .07) 0 1px, rgba(0, 0, 0, .05) 1px 2px, transparent 2px 3px);
+}
+.v5 .v5-face-wordmark { position: absolute; top: 8%; left: 6.5%; font-weight: 600; font-size: 5.6cqw; letter-spacing: -.01em; }
+.v5 .v5-face-chip {
+  position: absolute; top: 36%; left: 6.5%; width: 13%; aspect-ratio: 1.3; border-radius: 1.6cqw;
+  background: linear-gradient(140deg, #e6cf8f, #b8964f 55%, #d9bf7a);
+  box-shadow: inset 0 0 0 .4cqw rgba(90, 64, 20, .35);
+}
+.v5 .v5-face-chip::after {
+  content: ""; position: absolute; inset: 22% 18%;
+  border-top: .35cqw solid rgba(90, 64, 20, .4); border-bottom: .35cqw solid rgba(90, 64, 20, .4);
+}
+.v5 .v5-face-name { position: absolute; left: 6.5%; bottom: 8%; right: 34%; font-size: 4.4cqw; font-weight: 500; line-height: 1.15; opacity: .92; }
+.v5 .v5-face-network { position: absolute; right: 6.5%; bottom: 8%; font-weight: 700; font-size: 4.8cqw; letter-spacing: .02em; opacity: .9; }
+.v5 .v5-face-network.net-visa { font-style: italic; font-size: 6cqw; letter-spacing: 0; }
+
+.v5 .v5-face.is-selected { transform: translateY(-4px); }
+.v5 .v5-face.is-selected .v5-face-body { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink), var(--shadow-card); }
+.v5 .v5-face-check {
+  position: absolute; top: -8px; right: -8px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--ink); color: #fff;
+  box-shadow: 0 0 0 2px var(--paper);
+}
