@@ -55,8 +55,20 @@ export const DEFAULT_PROFILE = Object.freeze({
   brands: { airlines: [], hotels: [], everyday: [] },   // step 7
   credit: { score: SCORE_BUCKETS.unsure, newCards24mo: 0 },  // step 8
   pointsUse: null,                     // You screen; null → from `wants`
+  pointValues: {},                     // You screen sliders: { chase: 1.8 } (cents), flexible points only
   newCardComfort: DEFAULT_NEW_CARD_COMFORT,
 });
+
+/* Only flexible currencies, clamped to a sane range (cents per point). Kept in
+   sync with v5/valuation.js FLEXIBLE_CURRENCIES / POINT_VALUE_RANGE. */
+const FLEXIBLE = ["chase", "amex", "citi", "c1", "bilt"];
+function cleanPointValues(v) {
+  const out = {};
+  for (const [k, n] of Object.entries(v || {})) {
+    if (FLEXIBLE.includes(k) && Number.isFinite(Number(n))) out[k] = Math.min(3, Math.max(0.5, Number(n)));
+  }
+  return out;
+}
 
 const lower = (xs) => (Array.isArray(xs) ? xs.map((x) => String(x).toLowerCase()) : []);
 
@@ -90,6 +102,7 @@ export function normalizeProfile(p = {}) {
       newCards24mo: Math.max(0, Number(p.credit?.newCards24mo) || 0),
     },
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : POINTS_USE_FROM_WANTS[wants],
+    pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
   };
 }

@@ -21,7 +21,7 @@ import {
   BAG_FEE, STATUS_VALUE,
 } from "../../data/benefitUsage.js";
 import { annualSpend } from "../profileDefaults.js";
-import { cppFor, pctBack, BANK_CURRENCIES } from "./valuation.js";
+import { cppFor, cppForProfile, pctBack, BANK_CURRENCIES } from "./valuation.js";
 
 export const AIRLINE_CURRENCIES = new Set(["delta", "united", "aa", "southwest", "alaska", "jetblue", "aeroplan", "avios", "flyingblue"]);
 export const HOTEL_CURRENCIES = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham"]);
@@ -91,12 +91,12 @@ export const transfersAlone = (card) => (card.transferAccess || []).includes(car
     its own (Freedom, Ink Cash, Double Cash…) is worth the partner rate only
     when the wallet also has a card that can; otherwise it's cash. */
 export function cardCpp(card, profile, wallet = []) {
-  const mode = profile.pointsUse;
-  if (mode !== "partners" || !BANK_CURRENCIES.has(card.pointCurrency) || transfersAlone(card)) {
-    return cppFor(card.pointCurrency, mode);
-  }
-  const paired = wallet.some((w) => w.pointCurrency === card.pointCurrency && transfersAlone(w));
-  return cppFor(card.pointCurrency, paired ? "partners" : "cash");
+  const cur = card.pointCurrency;
+  if (!BANK_CURRENCIES.has(cur) || transfersAlone(card)) return cppForProfile(cur, profile);
+  const paired = wallet.some((w) => w.pointCurrency === cur && transfersAlone(w));
+  if (paired) return cppForProfile(cur, profile);
+  /* Can't reach partners: worth cash (or the person's own lower value). */
+  return Math.min(cppFor(cur, "cash"), cppForProfile(cur, profile));
 }
 
 /** { category: $/yr } this card would earn on ALL of the person's spend.
@@ -217,7 +217,7 @@ export function benefitBreakdown(card, profile) {
   if (status) items.push({ label: "Elite status", face: status, value: status, kind: "status" });
 
   if (card.anniversaryPoints) {
-    const v = card.anniversaryPoints * (cppFor(card.pointCurrency, profile.pointsUse) / 100);
+    const v = card.anniversaryPoints * (cppForProfile(card.pointCurrency, profile) / 100);
     items.push({ label: `${card.anniversaryPoints.toLocaleString("en-US")} bonus points each year`, face: Math.round(v), value: Math.round(v), kind: "points" });
   }
 

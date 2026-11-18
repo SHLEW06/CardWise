@@ -4,6 +4,9 @@ import { useAuth } from "../../firebase/useAuth.js";
 import CardFace from "./CardFace.jsx";
 import Choice from "./Choice.jsx";
 import { loadV5Profile, saveV5Profile } from "../../state/v5Profile.js";
+import { cppFor, FLEXIBLE_CURRENCIES, POINT_VALUE_RANGE } from "../../engine/v5/valuation.js";
+
+const FLEX_NAMES = { chase: "Chase Ultimate Rewards", amex: "Amex Membership Rewards", citi: "Citi ThankYou", c1: "Capital One Miles", bilt: "Bilt Points" };
 
 /* Phase 3: the four destinations at shell depth. Home (phase 5), Find a card
    (phase 6) and Checkout (phase 7) are rebuilt in their own phases; these
@@ -99,6 +102,13 @@ export function YouScreen({ onRestart }) {
   const [profile, setProfile] = useState(loadV5Profile);
   const { user, loading, firebaseActive, signInWithGoogle, signOut } = useAuth();
   const setPointsUse = (pointsUse) => setProfile(saveV5Profile({ ...profile, pointsUse }));
+  const setPointValue = (cur, v) => {
+    const pointValues = { ...profile.pointValues };
+    if (v == null) delete pointValues[cur]; else pointValues[cur] = v;
+    setProfile(saveV5Profile({ ...profile, pointValues }));
+  };
+  /* §4: one slider per flexible currency the person earns. */
+  const earned = FLEXIBLE_CURRENCIES.filter((cur) => profile.cardsHeld.some((id) => BY_ID[id]?.pointCurrency === cur));
 
   return (
     <section className="page you">
@@ -118,6 +128,27 @@ export function YouScreen({ onRestart }) {
           ))}
         </div>
       </div>
+
+      {earned.length > 0 && (
+        <div className="panel you-block">
+          <h2 className="t-h3">What your points are worth to you</h2>
+          <p className="t-caption">Flexible points are worth what you get for them. Move a slider if you know your own number.</p>
+          {earned.map((cur) => {
+            const own = profile.pointValues[cur];
+            const value = own ?? cppFor(cur, profile.pointsUse);
+            return (
+              <label key={cur} className="spend-row">
+                <span className="spend-label">{FLEX_NAMES[cur]}</span>
+                <span className="spend-value">100,000 points ≈ ${Math.round(value * 1000).toLocaleString("en-US")}</span>
+                <input type="range" min={POINT_VALUE_RANGE.min} max={POINT_VALUE_RANGE.max} step={POINT_VALUE_RANGE.step} value={value}
+                  onChange={(e) => setPointValue(cur, Number(e.target.value))}
+                  aria-valuetext={`100,000 points is about $${Math.round(value * 1000).toLocaleString("en-US")}`} />
+                {own != null && <button className="survey-link point-reset" onClick={() => setPointValue(cur, null)}>Use the default</button>}
+              </label>
+            );
+          })}
+        </div>
+      )}
 
       <div className="panel you-block">
         <h2 className="t-h3">Account</h2>

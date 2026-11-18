@@ -39,8 +39,14 @@
 
 @media (max-width: 860px) {
   .v5 .home-hero-inner { grid-template-columns: 1fr; min-height: 0; }
-  .v5 .home-fan { order: -1; }
+  .v5 .home-fan { order: -1; height: clamp(180px, 50vw, 300px); }
+  /* Keep the whole fan inside the viewport: half a card (29%) + two steps of
+     spread (2 × 10% of 58%) + rotation ≈ 44% of the width from center. */
+  .v5 .home-fan-card { width: 58%; transform: translate(-50%, -50%) translateX(calc(var(--i) * 10%)) rotate(calc(var(--i) * 6deg)) translateY(calc(var(--i) * var(--i) * 3%)); }
+  .v5 .home-fan:hover .home-fan-card { transform: translate(-50%, -50%) translateX(calc(var(--i) * 10%)) rotate(calc(var(--i) * 6deg)) translateY(calc(var(--i) * var(--i) * 3%)); }
 }
 @media (max-width: 520px) {
   .v5 .face-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
 }
+.v5 .you .spend-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ink); height: 28px; }
+.v5 .point-reset { grid-column: 1 / -1; justify-self: start; min-height: 32px; font-size: var(--fs-small); }

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Compass } from "lucide-react";
 import Layout from "./components/Layout.jsx";
-import Hero from "./components/Hero.jsx";
-import Onboarding from "./components/Onboarding.jsx";
 import CardModal from "./components/CardModal.jsx";
-import QuickStart from "./components/QuickStart.jsx";
 import GoScreen from "./components/go/GoScreen.jsx";
 import AppShell from "./components/v5/AppShell.jsx";
+import Landing from "./components/v5/Landing.jsx";
+import Survey from "./components/v5/survey/Survey.jsx";
+import { hydrateV5Record } from "./state/v5Profile.js";
+import { toLegacyProfile } from "./state/legacyBridge.js";
 import { HomeScreen, FindScreen, YouScreen } from "./components/v5/screens.jsx";
 
 import { PROGRAMS } from "./data/programs.js";
@@ -116,7 +117,8 @@ function withAnchors(profile) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("hero"); // hero | quickstart | onboarding | app
+  const [screen, setScreen] = useState("hero"); // hero (landing) | survey | app
+  const [surveyAnswers, setSurveyAnswers] = useState(null);
   const [tab, setTab] = useState("home");   // home | checkout | find | you (§1)
   const [profile, setProfile] = useState(null);
   const [wallet, setWallet] = useState([]);
@@ -129,13 +131,14 @@ export default function App() {
   useEffect(() => {
     (async () => {
       await ensureUser();
-      const [p, w, vo, offs] = await Promise.all([
-        loadProfile(), loadWallet(), loadValOverrides(), loadOffers(),
+      const [p, w, vo, offs, v5] = await Promise.all([
+        loadProfile(), loadWallet(), loadValOverrides(), loadOffers(), hydrateV5Record(),
       ]);
+      if (v5.answers) setSurveyAnswers(v5.answers);
 
-      // URL hash takes priority (shareable link)
+      // URL hash takes priority (shareable link); a finished v5 survey next.
       const hashProfile = profileFromHash();
-      const sourceProfile = hashProfile || p;
+      const sourceProfile = hashProfile || (v5.completedAt ? toLegacyProfile(v5.profile) : null) || p;
 
       if (vo && Object.keys(vo).length) setValOverrides(vo);
       if (sourceProfile) {
@@ -211,33 +214,32 @@ export default function App() {
   }
 
   if (screen === "hero") {
+    return <Landing onStart={() => setScreen("survey")} />;
+  }
+
+  if (screen === "survey") {
     return (
-      <Layout onLogoClick={restart}>
-        <Hero
-          onStart={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("home"); }}
-          onSetup={() => setScreen("quickstart")}
+      <div className="v5">
+        <Survey
+          initialAnswers={surveyAnswers}
+          onExit={() => setScreen(profile ? "app" : "hero")}
+          onDone={(v5Profile, answers) => {
+            setSurveyAnswers(answers);
+            /* The survey's cards become the wallet; old screens get the bridged profile. */
+            setWallet(v5Profile.cardsHeld);
+            saveWallet(v5Profile.cardsHeld);
+            finishOnboarding(toLegacyProfile(v5Profile));
+          }}
         />
-      </Layout>
+      </div>
     );
-  }
-
-  if (screen === "quickstart") {
-    return (
-      <Layout onLogoClick={restart}>
-        <QuickStart onDone={finishOnboarding} onDetailed={() => setScreen("onboarding")} />
-      </Layout>
-    );
-  }
-
-  if (screen === "onboarding") {
-    return <Layout onLogoClick={restart}><Onboarding onDone={finishOnboarding} /></Layout>;
   }
 
   const safeProfile = profile || withAnchors({ valOverrides });
 
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart}>
-      {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("quickstart")} />}
+      {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("survey")} />}
       {tab === "checkout" && (
         /* Phase 7 rebuilds Checkout; until then the existing Go screen runs as a legacy island. */
         <div className="legacy-frame">
@@ -248,7 +250,7 @@ export default function App() {
         </div>
       )}
       {tab === "find" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
-      {tab === "you" && <YouScreen onRestart={restart} />}
+      {tab === "you" && <YouScreen onRestart={() => setScreen("survey")} />}
 
       {modalCard && (
         <div className="v5-legacy">

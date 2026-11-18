@@ -43,6 +43,19 @@ export function cppFor(currency, mode = "partners") {
   return floor;
 }
 
+/* §4 standardization rule: the one thing a person may set by hand is the
+   value of FLEXIBLE points — one slider per currency on the You page. */
+export const FLEXIBLE_CURRENCIES = ["chase", "amex", "citi", "c1", "bilt"];
+export const POINT_VALUE_RANGE = { min: 0.5, max: 3.0, step: 0.05 };   // cents per point
+
+/** cpp for this person: their slider value for a flexible currency, if set,
+    otherwise the value from their points-use mode. */
+export function cppForProfile(currency, profile) {
+  const own = profile?.pointValues?.[currency];
+  if (FLEXIBLE_CURRENCIES.includes(currency) && Number.isFinite(own)) return own;
+  return cppFor(currency, profile?.pointsUse);
+}
+
 /** Percent back for an earn rate (points per $) at a cpp (cents). */
 export const pctBack = (rate, cpp) => rate * cpp;
 

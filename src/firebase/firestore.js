@@ -37,6 +37,21 @@ export async function saveProfile(profile, uid = currentUid()) {
   await setDoc(doc(fb.db, "users", uid), { profile, updatedAt: serverTimestamp() }, { merge: true });
 }
 
+/* v5 profile + raw survey answers (§2: saved after every step). */
+export async function saveV5ProfileRemote(record, uid = currentUid()) {
+  const fb = getFirebase();
+  if (!fb) return;
+  await setDoc(doc(fb.db, "users", uid), { v5: record, updatedAt: serverTimestamp() }, { merge: true });
+}
+export async function loadV5ProfileRemote(uid = currentUid()) {
+  const fb = getFirebase();
+  if (!fb) return null;
+  try {
+    const snap = await getDoc(doc(fb.db, "users", uid));
+    return snap.exists() ? snap.data().v5 || null : null;
+  } catch { return null; }
+}
+
 export async function loadProfile(uid = currentUid()) {
   const fb = getFirebase();
   if (!fb) return readLocal(ns(uid, "profile"), null);
