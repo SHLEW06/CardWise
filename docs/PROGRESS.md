@@ -16,7 +16,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 6. Explore + card detail (H) | — |
 | 7. Checkout (J) | done |
 | 8. Offers + connector (K) — stop for calibration | done; calibration waiting on you |
-| 9. Home (L) + polish + screenshots | — |
+| 9. Home (L) + polish + screenshots | done |
 
 ## Milestone 1 — done
 
@@ -279,6 +279,21 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
    `FILL_ME`s, save `calibration/amex.json` / `chase.json`, and finish the
    adapters + tests.
 
+## Milestone 9 — done
+
+- Home (`components/v6/Home.jsx`): "≈ $X a year" (plainly says when fees
+  outweigh value) over their real cards fanned on the night horizon, Wallet
+  Score dial + best at budget; ONE next move with its $ impact (switch /
+  cancel a card that costs them, else the next card to get); Near-you strip
+  only if location permission was already granted (Home never prompts);
+  top offers to add; links into Wallet Lab and Explore. Replaces the v5
+  HomeScreen.
+- Polish: jargon sweep of consumer surfaces (only "See the math" uses
+  multipliers/¢); production build OK; full suite 1,337 tests / 66 files.
+- Screenshots (desktop 1440×900 + phone 390×844):
+  `screenshots/v6/desktop/*.png`, `screenshots/v6/phone/*.png` (gitignored:
+  they contain personal-use issuer card art).
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -322,7 +337,10 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Next
 
-Milestone 9: Home (score + ≈ $X a year over the fanned real cards on the
-backdrop, Your next move, Near-you strip when location is on, top offers,
-links into Wallet Lab and Explore) + polish + final screenshots. Then wait
-for the user's calibration run to finish the adapters.
+Waiting on the user: run the calibration steps above (Amex, Chase). Then:
+read `connector/calibration/*.suggested.json` + the raw captures, write
+`calibration/amex.json` / `chase.json`, add adapter tests, re-run the
+connector suite, and wire the first real sync into Offers.
+Possible follow-ups (not in the brief): generate the backdrop photos from
+`docs/BACKGROUNDS.md`; licensed PP fonts into `public/fonts/`; re-verify the
+items in "Facts I couldn't verify".

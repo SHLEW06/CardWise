@@ -28,3 +28,6 @@ public/backgrounds/
 
 # vite writes these next to the config when it bundles it
 vite.config.js.timestamp-*
+
+# review screenshots (contain personal-use card art)
+screenshots/

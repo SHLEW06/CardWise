@@ -19,6 +19,7 @@ import "./styles/v6/lab.css";
 import "./styles/v6/explore.css";
 import "./styles/v6/checkout.css";
 import "./styles/v6/offers.css";
+import "./styles/v6/home.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

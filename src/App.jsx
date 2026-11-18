@@ -7,7 +7,7 @@ import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
-import { HomeScreen } from "./components/v5/screens.jsx";
+import Home from "./components/v6/Home.jsx";
 import Profile from "./components/v6/Profile.jsx";
 import Offers from "./components/v6/offers/Offers.jsx";
 import ConnectedBanks from "./components/v6/offers/ConnectedBanks.jsx";
@@ -233,14 +233,13 @@ export default function App() {
   }
 
   const safeProfile = profile || withAnchors({ valOverrides });
-  const heroCard = wallet.find((id) => BY_ID[id]?.image?.localImage) || "csr";
-  /* Home keeps its own card fan until milestone 9 puts the hero card on the backdrop. */
+  /* Home lights the person's own cards on the horizon itself (a fan, not one
+     hero object); Wallet Lab's shelves use their cards too. */
   const backdrop = tab === "lab" ? { cards: wallet } : undefined;
-  void heroCard;
 
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
-      {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("survey")} />}
+      {tab === "home" && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={() => { setSurveyStep(null); setScreen("survey"); }} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
