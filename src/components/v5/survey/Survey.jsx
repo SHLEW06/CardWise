@@ -12,12 +12,13 @@ import { CARDS, BY_ID } from "../../../data/cards.js";
 import { AIRPORTS } from "../../../data/airports.js";
 import {
   MOST_HELD, SPEND_ROWS, SPEND_GROUPS, SPEND_MAX, SPEND_STEP, RENT_MAX, GAS_AT, WAREHOUSE_CLUBS, STORES,
-  FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS,
+  FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
 } from "../../../data/surveyOptions.js";
 import { perkBrandsInCatalog } from "../../../data/creditBrands.js";
 import { SPEND_PRESETS, SCORE_BUCKETS } from "../../../engine/profileDefaults.js";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
 import { walletScore } from "../../../engine/v5/methodology.js";
+import { applyTimeline, monthLabel } from "../../../engine/v5/lab.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { STEP_DEFS, stepsFor, draftFrom, MODES } from "../../../state/surveyAnswers.js";
 import { saveV5Profile } from "../../../state/v5Profile.js";
@@ -133,6 +134,11 @@ function Step({ id, d, set, mode, headRef }) {
           <Head headRef={headRef} title="Most you'd pay in yearly card fees, all cards combined."
             sub="Some cards charge a yearly fee but give back more in benefits. We'll find the best setup within this." />
           <FeeBudget value={d.feeBudget} onChange={(feeBudget) => set({ feeBudget })} />
+          <fieldset className="survey-group">
+            <legend className="t-h3">Memberships you already pay for <span className="t-caption">(optional)</span></legend>
+            <p className="t-caption">Some cards only work with a paid membership. If you already have it, it won't count against your fee budget.</p>
+            <ToggleChips options={MEMBERSHIPS} picked={d.memberships} onChange={(memberships) => set({ memberships })} label="Memberships you already pay for" />
+          </fieldset>
         </>
       );
     case "credit": return <CreditStep d={d} set={set} headRef={headRef} />;
@@ -472,6 +478,12 @@ function RevealStep({ d, headRef }) {
   const s = useMemo(() => walletScore(d), [d]);
   const best = s.best;
   const has = d.cardsHeld.length > 0;
+  /* Review #9: "Get now" lists only what to apply for now (likely approvals,
+     one at a time); the rest go to "When to apply", in order. */
+  const plan = useMemo(() => applyTimeline(best.wallet, d), [best, d]);
+  const held = best.wallet.filter((id) => d.cardsHeld.includes(id));
+  const now = plan.filter((t) => t.month === 0).map((t) => t.cardId);
+  const later = plan.filter((t) => t.month > 0);
   return (
     <>
       <Head headRef={headRef} eyebrow="Your best setup"
@@ -485,8 +497,9 @@ function RevealStep({ d, headRef }) {
           <p className="t-caption">After fees, with benefits you'd use. {fmt(best.value.N)} more than a simple 2% card.</p>
         </div>
       </div>
+      <h2 className="t-h3 reveal-sub">Get now</h2>
       <ul className="reveal-cards">
-        {best.wallet.map((id, k) => (
+        {[...held, ...now].map((id, k) => (
           <Reveal as="li" i={k} key={id}>
             <CardFace card={BY_ID[id]} tilt />
             <span className="reveal-card-name">{cardDisplayName(BY_ID[id])}</span>
@@ -494,6 +507,21 @@ function RevealStep({ d, headRef }) {
           </Reveal>
         ))}
       </ul>
+      {later.length > 0 && (
+        <>
+          <h2 className="t-h3 reveal-sub">When to apply</h2>
+          <p className="t-caption">One new card at a time keeps each approval likely and each welcome bonus reachable.</p>
+          <ol className="timeline">
+            {later.map((t) => (
+              <li key={t.cardId} className="timeline-row">
+                <span className="timeline-when">{monthLabel(t.month)}</span>
+                <span className="timeline-name">{cardDisplayName(BY_ID[t.cardId])}</span>
+                {t.notes.slice(0, 1).map((n) => <span key={n} className="t-caption">{n}</span>)}
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
     </>
   );
 }

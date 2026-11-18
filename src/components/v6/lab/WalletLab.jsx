@@ -18,7 +18,7 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
-import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts } from "../../../engine/v5/methodology.js";
+import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
 import { alternativesForSlot, swapSentence, applyTimeline, monthLabel } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
@@ -32,7 +32,6 @@ import { Reveal, CountUp } from "../motion.jsx";
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const signed = (n) => `${n >= 0 ? "+" : "−"}${money(n)}`;
 const pctText = (p) => `≈ ${(Math.round(p * 10) / 10).toString()}% back`;
-const scoreOf = (n, best) => (best <= 0 ? (n >= best ? 100 : 0) : Math.max(0, Math.min(100, Math.round((100 * n) / best))));
 
 export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard }) {
   const [draft, setDraft] = useState(() => normalizeProfile(saved));
@@ -55,7 +54,11 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
   const setup = custom || mine.wallet;
   const value = useMemo(() => walletValue(setup, p), [setup, p]);
   const slots = useMemo(() => slotsFor(value, p), [value, p]);
-  const score = scoreOf(value.N, best.value.N);
+  const score = scoreFrom(value.N, best.value.N);
+  /* "Your wallet now" — the same number Home shows (same function, same budget). */
+  const nowValue = useMemo(() => walletValue(p.cardsHeld, p), [p]);
+  const nowScore = scoreFrom(nowValue.N, best.value.N);
+  const sameAsHeld = [...setup].sort().join() === [...p.cardsHeld].sort().join();
 
   useEffect(() => { if (!toast) return undefined; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t); }, [toast]);
 
@@ -69,11 +72,13 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
   return (
     <section className="page lab">
       <Reveal as="header" className="lab-head">
-        <ScoreDial score={score} caption="Wallet Score" />
+        <ScoreDial score={score} caption={sameAsHeld ? "Your wallet" : "Suggested setup"} label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">
-          <p className="t-eyebrow">Wallet Lab</p>
-          <p className="lab-now"><span className="t-big"><CountUp value={value.net} /></span><span className="lab-unit">a year, this setup</span></p>
+          <p className="t-eyebrow">Wallet Lab · {sameAsHeld ? "your wallet" : "suggested setup"}</p>
+          <p className="lab-now"><span className="t-big"><CountUp value={value.net} /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
+          <p className="t-caption lab-basis">Score {score} = {scoreBasisText(value.N, best.value.N)}.</p>
           <dl className="lab-refs">
+            {!sameAsHeld && <div><dt>Your wallet now</dt><dd className="t-value" data-testid="lab-now-score">{nowScore} <span className="t-caption">· {money(nowValue.net)} a year</span></dd></div>}
             <div><dt>Best at your budget</dt><dd className="t-value"><CountUp value={best.value.net} /></dd></div>
             <div><dt>With no fee limit</dt><dd className="t-value"><CountUp value={noLimit.value.net} /></dd></div>
           </dl>

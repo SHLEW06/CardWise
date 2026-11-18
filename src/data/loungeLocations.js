@@ -10,6 +10,11 @@
    (airports.js), which is a modeling default.
    ========================================================================== */
 
+/* Chase Sapphire Lounges by The Club left Priority Pass on Aug 15, 2026: only
+   cards that list "Chase Sapphire Lounge" themselves (Sapphire Reserve,
+   Ritz-Carlton) get them. Priority Pass coverage below never includes them. */
+export const SAPPHIRE_LEFT_PRIORITY_PASS = "2026-08-15";
+
 export const NETWORK_AIRPORTS = {
   centurion: { verify: true, airports: ["ATL", "CLT", "DEN", "DFW", "IAH", "JFK", "LAS", "LAX", "LGA", "MIA", "PHL", "PHX", "SEA", "SFO"] },
   sapphire: { verify: true, airports: ["BOS", "LGA", "PHL", "JFK"] },

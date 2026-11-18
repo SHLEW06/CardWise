@@ -67,6 +67,7 @@ export const DEFAULT_PROFILE = Object.freeze({
   credit: { score: SCORE_BUCKETS.unsure, newCards24mo: 0, pastAmex: [], pastChase: [] },
   partnerPicks: {},                    // { chase: ["aeroplan", "united"] } — Part E; missing currency → from brands
   planAround: [],                      // credit ids the person opted into ("I'd plan around this")
+  memberships: [],                     // paid memberships they already have: robinhood-gold, costco, sams, amazon-prime, walmart-plus
   includeBonus: false,                 // count year-one welcome bonuses in the score
   maxCards: DEFAULT_MAX_CARDS,
   pointsUse: null,                     // v5 legacy; no longer prices bank points (Part E replaces it)
@@ -98,6 +99,14 @@ function migrateSpend(raw = {}, rent) {
   }
   if (rent != null) s.rent = rent;               // v5 kept rent outside spend; it wins when given
   return s;
+}
+
+/* Memberships: an array of keys, or the v4 object { robinhoodGold: true … }. */
+const LEGACY_MEMBERSHIP = { robinhoodGold: "robinhood-gold", amazonPrime: "amazon-prime", costco: "costco", walmartPlus: "walmart-plus", samsClub: "sams" };
+function normalizeMemberships(m) {
+  if (Array.isArray(m)) return Array.from(new Set(m.map((x) => String(x).toLowerCase())));
+  if (m && typeof m === "object") return Object.entries(m).filter(([, v]) => v).map(([k]) => LEGACY_MEMBERSHIP[k]).filter(Boolean);
+  return [];
 }
 
 /** Fill a partial profile with defaults. Pure; never invents an airport. */
@@ -145,6 +154,7 @@ export function normalizeProfile(p = {}) {
     },
     partnerPicks,
     planAround: Array.isArray(p.planAround) ? [...p.planAround] : [],
+    memberships: normalizeMemberships(p.memberships),
     includeBonus: !!p.includeBonus,
     maxCards: Number.isFinite(p.maxCards) ? Math.max(1, Math.min(10, p.maxCards)) : d.maxCards,
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : { cash: "cash", both: "portal", travel: "partners" }[wants],

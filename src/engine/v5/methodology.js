@@ -36,8 +36,14 @@ const EPS = 1e-6;
 
 /* approvalDifficulty 1–4 easy, 5–6 good (670+), 7–10 excellent (740+). */
 export function scoreNeeded(card) {
+  /* Secured cards approve without a score. Otherwise the stricter of the
+     difficulty tier and the catalog's own minimum (creditProfileFit:
+     670 for standard rewards cards, 600 for student / builder cards) —
+     review #9: a $0 rewards card is not "no score needed". */
+  if (card.cardType === "secured") return 0;
   const d = card.approvalDifficulty || 5;
-  return d <= 4 ? 0 : d <= 6 ? 670 : 740;
+  const tier = d <= 4 ? 0 : d <= 6 ? 670 : 740;
+  return Math.max(tier, card.creditProfileFit?.minScore || 0);
 }
 /* An unknown score ("Not sure") never blocks a card. */
 export const approvalOk = (card, profile) => profile.credit.score == null || profile.credit.score >= scoreNeeded(card);
@@ -372,15 +378,25 @@ export const clearOptimizerCache = () => cache.clear();
 /* ── scores ──────────────────────────────────────────────────────────────── */
 
 /** Wallet Score 0–100: how close their wallet is to the best one at their budget. */
+/** The score from the two numbers it's made of: extra over a 2% card for a
+    wallet (n) and for the best wallet at the budget (best). Screens show
+    both numbers next to the dial, so the score is explainable (review #3). */
+export function scoreFrom(n, best) {
+  if (best <= 0) return n >= best - 1 ? 100 : 0;
+  return Math.max(0, Math.min(100, Math.round((100 * n) / best)));
+}
+
 export function walletScore(rawProfile, opts = {}) {
   const profile = normalizeProfile(rawProfile);
   const current = walletValue(profile.cardsHeld, profile, { normalized: true });
   const best = optimalWallet(profile, { budget: opts.budget ?? profile.feeBudget });
-  const Nb = best.value.N;
-  let score;
-  if (Nb <= 0) score = current.N >= Nb - 1 ? 100 : 0;
-  else score = Math.round((100 * current.N) / Nb);
-  return { score: Math.max(0, Math.min(100, score)), current, best };
+  return { score: scoreFrom(current.N, best.value.N), current, best };
+}
+
+/** "$377 of a possible $1,640 a year more than a simple 2% card" */
+export function scoreBasisText(n, best) {
+  const m = (x) => `${x < 0 ? "−" : ""}$${Math.round(Math.abs(x)).toLocaleString("en-US")}`;
+  return `${m(n)} of a possible ${m(best)} a year more than a simple 2% card`;
 }
 
 /**

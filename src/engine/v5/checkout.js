@@ -20,7 +20,8 @@ import { offerMatchesMerchant } from "../offers/findRewards.js";
 import { isLive, offerValueFor, describeOffer } from "../offers/offerModel.js";
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
-import { earnRate, cardCpp } from "./value.js";
+import { earnRate, cardCpp, creditUsage } from "./value.js";
+import { PERK_BRANDS, brandsForCredit, isBrandCredit } from "../../data/creditBrands.js";
 import { eligibility } from "./methodology.js";
 
 /* Curated category (cardRouter names) → v5 bucket + the store's own rules. */
@@ -127,6 +128,27 @@ export function matchStore(name, minScore = 0.75) {
   return r && r.score >= minScore ? r : null;
 }
 
+/* ── brand credits at a store (review #5) ─────────────────────────────── */
+
+/** Perk brands a store IS (lululemon → "lululemon"), by the credit patterns. */
+export function perkKeysForStore(store) {
+  const name = String(store?.name || "");
+  return PERK_BRANDS.filter((b) => b.pattern.test(name) && !/digital entertainment|rideshare|splurge/i.test(b.pattern.source)).map((b) => b.key);
+}
+
+/** A card's credit that pays at this store, valued for this person (0 unless
+    they picked that brand). → { label, face, value } | null */
+export function storeCredit(card, store, profile) {
+  const keys = perkKeysForStore(store);
+  if (!keys.length) return null;
+  for (const c of card.credits || []) {
+    if (!isBrandCredit(c) || !brandsForCredit(c).some((k) => keys.includes(k))) continue;
+    const u = creditUsage(card, c, profile);
+    return { label: c.name, face: c.annual, value: Math.round(c.annual * u.factor), picked: u.factor > 0 };
+  }
+  return null;
+}
+
 /* ── ranking ────────────────────────────────────────────────────────────── */
 
 const STORE_KEY = { amazon: "Amazon", target: "Target", walmart: "Walmart", "whole foods": "WholeFoods" };
@@ -171,7 +193,7 @@ export function rankPurchase(input, rawProfile, offers = [], { today = new Date(
       .sort((a, b) => b.math.value - a.math.value || b.math.potential - a.math.potential);
     const top = mine[0] || null;
     const total = Math.round(((spend * pct) / 100 + (top ? top.math.value : 0)) * 100) / 100;
-    return { cardId: id, pct, rate: r.rate, cpp, total, blocked: r.blocked || null, offer: top?.offer || null, offerMath: top?.math || null, needsActivation: !!(top && top.offer.status === "available"), otherOffers: mine.length - (top ? 1 : 0) };
+    return { cardId: id, pct, rate: r.rate, cpp, total, blocked: r.blocked || null, offer: top?.offer || null, offerMath: top?.math || null, needsActivation: !!(top && top.offer.status === "available"), otherOffers: mine.length - (top ? 1 : 0), credit: storeCredit(card, store, profile) };
   });
   /* Money first when there is an amount, then % back; a card that can't pay
      there goes last (A5). */
@@ -181,15 +203,25 @@ export function rankPurchase(input, rawProfile, offers = [], { today = new Date(
     .sort((a, b) => b.math.potential - a.math.potential);
   const nearMiss = matching.map((o) => ({ offer: o, cardId: o.cardId, text: describeOffer(o), math: offerValueFor(o, spend) }))
     .filter((x) => spend > 0 && !x.math.qualifies && x.math.shortfall > 0).sort((a, b) => a.math.shortfall - b.math.shortfall);
-  /* The best card they don't have, for this purchase. */
+  /* The best card they don't have, for this purchase: a card with a credit
+     at this store wins when they picked that brand (its value to them);
+     otherwise the best % back that beats their wallet. */
   let bestElsewhere = null;
   const bestHeld = rows.find((r) => !r.blocked)?.pct ?? 0;
+  const heldCredit = Math.max(0, ...rows.map((r) => r.credit?.value || 0));
   for (const c of CARDS) {
     if (wallet.includes(c.id) || !eligibility(c, profile).ok) continue;
     const r = rateAt(c, store, channel, profile);
     if (r.blocked) continue;
     const pct = r.rate * cardCpp(c, profile, [...wallet, c.id]);
-    if (pct > bestHeld + 0.25 && (!bestElsewhere || pct > bestElsewhere.pct || (pct === bestElsewhere.pct && (c.annualFee || 0) < (BY_ID[bestElsewhere.cardId].annualFee || 0)))) bestElsewhere = { cardId: c.id, pct };
+    const credit = storeCredit(c, store, profile);
+    const cv = credit?.value || 0;
+    const cand = { cardId: c.id, pct, credit: cv > heldCredit ? credit : null };
+    const beats = cv > heldCredit || pct > bestHeld + 0.25;
+    if (!beats) continue;
+    const key = (x) => [x.credit?.value || 0, x.pct, -(BY_ID[x.cardId].annualFee || 0)];
+    const better = (a, b) => { const ka = key(a), kb = key(b); for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] > kb[i]; return false; };
+    if (!bestElsewhere || better(cand, bestElsewhere)) bestElsewhere = cand;
   }
   return { store, bucket, amount: spend, channel, rows, best: rows[0] || null, activateFirst, nearMiss, bestElsewhere };
 }

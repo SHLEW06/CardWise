@@ -59,8 +59,8 @@ describe("lab engine", () => {
 describe("Wallet Lab screen", () => {
   it("header: dial, this setup a year, best at budget, no fee limit", () => {
     render(<WalletLab profile={P} />);
-    expect(screen.getByRole("meter", { name: "Wallet Score" })).toBeInTheDocument();
-    expect(screen.getByText("a year, this setup")).toBeInTheDocument();
+    expect(screen.getByRole("meter", { name: /^Wallet Score, (your wallet|suggested setup)$/ })).toBeInTheDocument();
+    expect(screen.getByText(/^a year, (your wallet|this suggested setup)$/)).toBeInTheDocument();
     expect(screen.getByText("Best at your budget")).toBeInTheDocument();
     expect(screen.getByText("With no fee limit")).toBeInTheDocument();
   });

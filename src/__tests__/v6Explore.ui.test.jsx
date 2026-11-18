@@ -18,8 +18,8 @@ const spend = (o) => ({ dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, tr
 const P = { cardsHeld: ["citi-double-cash"], feeBudget: 400, spend: spend({ dining: 700, groceries: 600 }), travel: { trips: 4, homeAirport: "ATL", lounges: "yes" }, brands: { airlines: ["delta"], perks: ["resy", "uber"] }, credit: { score: 760 } };
 
 describe("explore engine", () => {
-  it("has the sixteen category chips, For you first", () => {
-    expect(CATEGORY_CHIPS.map((c) => c.label)).toEqual(["For you", "Luxury & lounge", "Travel points", "Cash back", "No annual fee", "Hotel cards", "Airline cards", "Dining & groceries", "Gas & EV", "Costco & wholesale", "Keeper cards (pay for themselves)", "Flat-rate everyday", "Rotating 5%", "Starter & credit building", "Students", "Business"]);
+  it("has the category chips, For you first, plus Lounge on a budget", () => {
+    expect(CATEGORY_CHIPS.map((c) => c.label)).toEqual(["For you", "Luxury & lounge", "Lounge on a budget", "Travel points", "Cash back", "No annual fee", "Hotel cards", "Airline cards", "Dining & groceries", "Gas & EV", "Costco & wholesale", "Keeper cards (pay for themselves)", "Flat-rate everyday", "Rotating 5%", "Starter & credit building", "Students", "Business"]);
   });
   it("For you ranks by what each card adds to their wallet; held cards last; business only under Business", () => {
     const rows = exploreRows(P);

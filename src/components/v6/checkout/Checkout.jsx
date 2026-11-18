@@ -128,25 +128,28 @@ function Result({ r, profile, onOpenCard, onMarkAdded }) {
       )}
       <ol className="rank-list">
         {r.rows.map((row, i) => (
-          <Reveal as="li" i={i} key={row.cardId} className={`rank-row ${i === 0 && !row.blocked ? "is-best" : ""}`}>
+          <li key={row.cardId} style={{ "--i": i }} className={`rank-row reveal-now ${i === 0 && !row.blocked ? "is-best" : ""}`}>
             <button className="rank-photo" onClick={() => onOpenCard?.(row.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[row.cardId])}`}><CardFace card={BY_ID[row.cardId]} /></button>
             <div className="rank-copy">
               <span className="rank-label">{i === 0 && !row.blocked ? "Best card" : `#${i + 1}`}</span>
               <span className="rank-name">{cardDisplayName(BY_ID[row.cardId])}</span>
               {row.blocked && <span className="t-caption">{row.blocked}</span>}
+              {row.credit && <span className="t-caption">{row.credit.picked ? `Its ${row.credit.label.replace(/\s*\(.*$/, "")} applies here — ≈ $${row.credit.value} a year to you` : `Has a ${row.credit.label.replace(/\s*\(.*$/, "")} here (you didn't pick this brand, so we count $0)`}</span>}
               {row.offer && <span className="t-caption">+ {row.offer.merchant}: {row.offerMath?.value > 0 ? `${money(row.offerMath.value)} offer` : row.offerMath?.note || "offer on this card"}{row.needsActivation ? " (add it first)" : ""}</span>}
             </div>
             <span className="rank-value">
               {spend > 0 ? <><strong>{money(row.total)}</strong><span className="t-caption">back</span></> : <span className="t-value">{pct(row.pct)}</span>}
             </span>
-          </Reveal>
+          </li>
         ))}
       </ol>
       {r.nearMiss.map((n) => <p key={n.offer.id} className="t-caption">Spend {money(n.math.shortfall)} more for {n.text} on {cardDisplayName(BY_ID[n.cardId])}.</p>)}
       {r.bestElsewhere && (
         <button className="panel elsewhere" onClick={() => onOpenCard?.(r.bestElsewhere.cardId)}>
           <span className="t-caption">The best card you don't have</span>
-          <span>{cardDisplayName(BY_ID[r.bestElsewhere.cardId])} would earn {pct(r.bestElsewhere.pct)} here — see card</span>
+          <span>{r.bestElsewhere.credit
+            ? `${cardDisplayName(BY_ID[r.bestElsewhere.cardId])}: its ${r.bestElsewhere.credit.label.replace(/\s*\(.*$/, "")} is worth ≈ $${r.bestElsewhere.credit.value} a year to you here, plus ${pct(r.bestElsewhere.pct)} — see card`
+            : `${cardDisplayName(BY_ID[r.bestElsewhere.cardId])} would earn ${pct(r.bestElsewhere.pct)} here — see card`}</span>
         </button>
       )}
     </div>

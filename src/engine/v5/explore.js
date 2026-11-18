@@ -15,9 +15,22 @@ import { cardDisplayName } from "../../data/cardNames.js";
 
 const r = (c, k) => (c.earnRates || {})[k] ?? 0;
 
+/* Category membership by card FEATURES (review #4):
+   Luxury = premium fee tier AND (full lounge access OR premium travel credits).
+   Full lounge access = a lounge network with no visit / pass limit.
+   Premium travel credits = at least $250 a year of broad, portal or airline credits. */
+export const PREMIUM_FEE = 395;
+export const PREMIUM_TRAVEL_CREDITS = 250;
+const LIMITED = /\d+\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i;
+export const hasLounge = (c) => !!(c.loungeAccess && (c.loungeAccess.networks || []).length);
+export const hasFullLounge = (c) => hasLounge(c) && c.loungeAccess.networks.some((n) => !LIMITED.test(n));
+export const travelCredits = (c) => (c.credits || []).filter((x) => ["broad", "portal", "airline"].includes(x.kind)).reduce((t, x) => t + (x.annual || 0), 0);
+export const isLuxury = (c) => (c.annualFee || 0) >= PREMIUM_FEE && (hasFullLounge(c) || travelCredits(c) >= PREMIUM_TRAVEL_CREDITS);
+
 export const CATEGORY_CHIPS = [
   { key: "foryou", label: "For you" },
-  { key: "luxury", label: "Luxury & lounge", test: (c) => rolesFor(c).includes("Lounge card") || (c.annualFee || 0) >= 395 },
+  { key: "luxury", label: "Luxury & lounge", test: (c) => isLuxury(c) },
+  { key: "budgetLounge", label: "Lounge on a budget", test: (c) => !isLuxury(c) && hasLounge(c) && (c.annualFee || 0) < PREMIUM_FEE },
   { key: "points", label: "Travel points", test: (c) => BANK_CURRENCIES.has(c.pointCurrency) && (transfersAlone(c) || ["amex", "bilt"].includes(c.pointCurrency)) },
   { key: "cash", label: "Cash back", test: (c) => CASH_LIKE.has(c.pointCurrency) },
   { key: "nofee", label: "No annual fee", test: (c) => !(c.annualFee > 0) },
@@ -139,6 +152,14 @@ export function cardDetail(cardId, rawProfile, bestN = null) {
   return {
     card, name: cardDisplayName(card), solo,
     inWallet: { has, before, after, delta: after.N - before.N, takes, scoreBefore: score(before.N), scoreAfter: score(after.N) },
+    /* What this card itself brings in the wallet (review #6): its rewards on
+       the spend it wins + the benefits counted for it − its fee. */
+    own: (() => {
+      const earn = Math.round(after.earning.perCard[cardId]?.value || 0);
+      const benefits = after.benefits.filter((x) => x.cardId === cardId).reduce((t, x) => t + x.value, 0);
+      const fee = cardFee(card, p);
+      return { earn, benefits, fee, net: earn + benefits - fee };
+    })(),
     used: b.items, unused: b.unused, topEarning, eligibility: eligibility(card, p), fee: cardFee(card, p),
   };
 }

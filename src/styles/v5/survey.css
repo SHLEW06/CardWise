@@ -47,7 +47,10 @@
 .v5 .survey-foot {
   position: fixed !important; left: 0; right: 0; bottom: 0; z-index: 10 !important;
   padding: 16px var(--gutter) calc(16px + env(safe-area-inset-bottom));
-  background: rgba(11, 10, 8, .7); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--hair);
+  /* Glass that hides what scrolls under it (review #8): near-opaque night,
+     blur, and a hairline on top. */
+  background: rgba(11, 10, 8, .9); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%);
+  border-top: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 -12px 32px -12px rgba(0, 0, 0, .6);
   display: flex; justify-content: center;
 }
 .v5 .survey-next { min-width: min(100%, 320px); }
@@ -147,3 +150,5 @@
 .v5 .dial-inner { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; }
 .v5 .dial-num { font-family: var(--f-display); font-weight: 300; font-size: 3.25rem; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums lining-nums; }
 .v5 .dial-label { font-size: var(--fs-caption); color: var(--ink-2); letter-spacing: .04em; }
+
+.v5 .reveal-sub { margin-top: 12px; }

@@ -360,10 +360,13 @@ export function loungeNetworks(card, profile) {
   for (const n of l.networks) {
     const air = AIRLINE_LOUNGES.find((a) => a.pattern.test(n));
     if (air && !profile.brands.airlines.includes(air.airline)) continue;
+    /* A visit limit is read only from that network's own label ("15 visits",
+       "4 passes a year"). "Priority Pass" contains the word "Pass" but is a
+       membership — it must not inherit another network's pass count (it did
+       before: Strata Elite's Priority Pass was capped at its 4 Admirals passes). */
     let v = visits;
-    const passes = /(\d+)\s*(?:one-time\s*)?(?:passes|visits)/i.exec(n);
-    if (passes) v = Math.min(v, Number(passes[1]));
-    else if (/pass|visit/i.test(n) && l.passes) v = Math.min(v, l.passes);
+    const limit = /(\d+)\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i.exec(n);
+    if (limit) v = Math.min(v, Number(limit[1]));
     const key = networkKey(n) || n;
     const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport);
     out[key] = Math.max(out[key] || 0, Math.min(val, LOUNGE_RETAIL_CAP));
@@ -467,13 +470,29 @@ export const benefitValue = (card, profile) => benefitBreakdown(card, profile).t
 
 /* Membership a card needs to work (Robinhood Gold, Prime, Costco) counts as
    part of its yearly cost — unless the person already pays for it. */
-const MEMBERSHIP_BRAND = { "Amazon Prime": "amazon", "Costco membership": "costco" };
-export function cardFee(card, profile) {
+/* Required memberships (v6 review #2): a card that only works with a paid
+   membership (Robinhood Gold, Costco, Amazon Prime …) carries that cost in
+   F(W) and against the fee budget — unless the person already pays for it
+   (survey: "Memberships you already pay for"). Shopping at Costco implies a
+   Costco membership; a v5 store pick (Amazon) still counts. */
+export const MEMBERSHIP_KEY = { "Robinhood Gold": "robinhood-gold", "Costco membership": "costco", "Amazon Prime": "amazon-prime", "Sam's Club membership": "sams", "Walmart+": "walmart-plus" };
+const LEGACY_STORE = { "amazon-prime": "amazon", costco: "costco" };
+export function paysMembership(profile, key) {
+  if (!key) return false;
+  if ((profile?.memberships || []).includes(key)) return true;
+  if (LEGACY_STORE[key] && profile?.brands?.everyday?.includes(LEGACY_STORE[key])) return true;
+  return key === "costco" && profile?.spend?.warehouse > 0 && (profile?.warehouseClub || "costco") === "costco";
+}
+/** The membership a card needs and whether it's already paid for. */
+export function membershipCost(card, profile) {
   const sub = card.requiresSubscription;
-  const brand = sub && MEMBERSHIP_BRAND[sub.name];
-  const already = brand && (profile?.brands?.everyday?.includes(brand) || (brand === "costco" && (profile?.spend?.warehouse > 0 && profile?.warehouseClub === "costco")));
-  const subFee = sub && !already ? sub.annual || 0 : 0;
-  return (card.annualFee || 0) + subFee;
+  if (!sub) return null;
+  const key = MEMBERSHIP_KEY[sub.name] || null;
+  const paid = paysMembership(profile, key);
+  return { name: sub.name, key, annual: sub.annual || 0, paid, counted: paid ? 0 : sub.annual || 0 };
+}
+export function cardFee(card, profile) {
+  return (card.annualFee || 0) + (membershipCost(card, profile)?.counted || 0);
 }
 
 /** Everything one card is worth to one person on its own (beside `wallet` for points). */

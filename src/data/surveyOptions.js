@@ -97,6 +97,13 @@ export const HOTEL_BRANDS = [
   { key: "accor", label: "Accor" }, { key: "sonesta", label: "Sonesta", program: false }, { key: "independent", label: "Independent / whatever's cheapest", program: false },
 ];
 
+/* ── Step 5: memberships you already pay for (optional) — a card that needs
+   one only counts its cost when you don't already pay it. ── */
+export const MEMBERSHIPS = [
+  { key: "robinhood-gold", label: "Robinhood Gold" }, { key: "costco", label: "Costco" }, { key: "sams", label: "Sam's Club" },
+  { key: "amazon-prime", label: "Amazon Prime" }, { key: "walmart-plus", label: "Walmart+" },
+];
+
 /* ── Step 6: credit ── */
 export const SCORE_OPTIONS = [
   { key: "unsure", label: "Not sure" }, { key: "<670", label: "Below 670" }, { key: "670-739", label: "670–739" },

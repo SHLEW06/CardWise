@@ -57,6 +57,14 @@ function whyLine(d) {
   return `Mostly its ${parts.join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
 }
 
+/** One line on break-even for a card they hold. */
+export function breakEvenLine(own) {
+  const got = own.earn + own.benefits;
+  if (!own.fee) return `No yearly fee — ${money(own.earn)} in rewards${own.benefits ? ` and ${money(own.benefits)} in benefits you use` : ""}.`;
+  if (got >= own.fee) return `${money(own.earn)} in rewards and ${money(own.benefits)} in benefits you use cover its ${money(own.fee)} fee with ${money(got - own.fee)} to spare.`;
+  return `It's ${money(own.fee - got)} short of breaking even: ${money(own.earn)} in rewards and ${money(own.benefits)} in benefits you use against a ${money(own.fee)} fee.`;
+}
+
 export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange }) {
   const profile = normalizeProfile(raw);
   const [math, setMath] = useState(false);
@@ -92,10 +100,17 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
           <Reveal i={1} as="header" className="detail-head">
             <p className="t-eyebrow">{c.issuer} · {d.fee ? `${money(d.fee)} a year` : "No yearly fee"}</p>
             <h1 className="t-d2">{d.name}</h1>
-            <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} /></span><span className="detail-unit"> a year to you</span></p>
-            <p className="t-lead">{value > 0 ? whyLine(d) : d.inWallet.has
-              ? "For you it gives back about what it costs — see Keep or cancel in Wallet Lab."
-              : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
+            {d.inWallet.has ? (
+              <>
+                <p className="detail-value"><span className="t-big">{d.own.net >= 0 ? "Worth" : "Costs you"} ≈ <CountUp value={Math.abs(d.own.net)} /></span><span className="detail-unit"> a year to you{d.own.fee ? ` after its ${money(d.own.fee)} fee` : ""}</span></p>
+                <p className="t-lead">{breakEvenLine(d.own)}</p>
+              </>
+            ) : (
+              <>
+                <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} /></span><span className="detail-unit"> a year to you</span></p>
+                <p className="t-lead">{value > 0 ? whyLine(d) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
+              </>
+            )}
             <div className="detail-tags">
               <span className="tag">{pointsChip(c, profile, [...wallet, c.id])}</span>
               <span className={`tag ${ap.level === 0 ? "tag-good" : ap.level === 2 ? "tag-warn" : ""}`}>{ap.label} approval{ap.needs ? ` · ${ap.needs}` : ""}</span>

@@ -201,7 +201,7 @@ export const CARDS = [
     earnRates: { Flights: 3, General: 1 }, portalMultipliers: {}, boost: "delta",
     credits: [cred("$240 Resy credit ($20 a month)", 240, "MEDIUM", "dining", "monthly"), cred("$120 rideshare credit ($10 a month)", 120, "MEDIUM", "merchant", "monthly"), cred("$200 Delta Stays credit", 200, "MEDIUM", "portal", "annual")],
     benefits: ["15 Delta Sky Club visits/year", "Amex Centurion access on Delta flights", "Annual companion certificate (incl. first class)", "Status head-start + MQD boost"],
-    transferAccess: [], loungeAccess: { networks: ["Delta Sky Club (15 visits a year, flying Delta)"], passes: 15, estAnnual: 300, use: "MEDIUM", type: "Sky Club visits" },
+    transferAccess: [], loungeAccess: { networks: ["Delta Sky Club (15 visits a year, flying Delta)", "Centurion Lounge (flying Delta)"], passes: 15, estAnnual: 300, use: "MEDIUM", type: "Sky Club visits" },
     hotelStatus: null, airlineStatus: { program: "delta", tier: "status boost", estValue: 100 },
     checkedBagBenefits: { bags: 1, estAnnual: 140, use: "MEDIUM" },
     companionCertificates: [{ name: "Annual companion certificate (incl. first)", estValue: 350, use: "MEDIUM" }], freeNightCertificates: [],

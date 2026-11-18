@@ -10,7 +10,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
 import { Reveal, CountUp, useParallax } from "./motion.jsx";
-import { walletScore } from "../../engine/v5/methodology.js";
+import { walletScore, scoreBasisText } from "../../engine/v5/methodology.js";
 import { optimizeWallet } from "../../engine/v5/optimizer.js";
 import { describeOffer, isLive, offerValueFor } from "../../engine/offers/offerModel.js";
 import { matchStore, rankPurchase } from "../../engine/v5/checkout.js";
@@ -77,7 +77,10 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             : `${cards.length} card${cards.length === 1 ? "" : "s"}, after fees, with the benefits you'd actually use.`}</p>
           <div className="home-score">
             <ScoreDial score={s.score} size={120} caption="Wallet Score" />
-            <p className="t-caption">Best possible at your fee budget: <span className="t-value">{money(s.best.value.net)} a year</span></p>
+            <div className="home-basis">
+              <p className="t-caption" data-testid="home-score-basis">Score {s.score} = {scoreBasisText(s.current.N, s.best.value.N)}.</p>
+              <p className="t-caption">Best possible at your fee budget: <span className="t-value">{money(s.best.value.net)} a year</span></p>
+            </div>
           </div>
         </Reveal>
         <div className="home-fan-v6" aria-hidden="true">

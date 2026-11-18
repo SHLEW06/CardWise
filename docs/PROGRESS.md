@@ -13,9 +13,9 @@ After a context reset: re-read the brief, then this file, then continue at
 | 3. Engine (E, G, I) + METHODOLOGY.md + golden tests | done |
 | 4. Survey rebuild (D) | done |
 | 5. Wallet Lab (F) | done |
-| 6. Explore + card detail (H) | — |
+| 6. Explore + card detail (H) | done |
 | 7. Checkout (J) | done |
-| 8. Offers + connector (K) — stop for calibration | done; calibration waiting on you |
+| 8. Offers + connector (K) — stop for calibration | done; calibration outputs not found yet (see Review fixes) |
 | 9. Home (L) + polish + screenshots | done |
 
 ## Milestone 1 — done
@@ -294,6 +294,54 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   `screenshots/v6/desktop/*.png`, `screenshots/v6/phone/*.png` (gitignored:
   they contain personal-use issuer card art).
 
+## Review fixes (2026-11-18, after v6)
+
+- **Calibration:** asked to finish it, but no outputs exist on this Mac — no
+  `connector/.env`, no `connector/calibration/amex.suggested.json` /
+  `chase.suggested.json`, no `connector/data/calibration-raw/`, no vault
+  (searched the whole home folder). Adapters are NOT finished; nothing was
+  guessed. Steps still in "Calibration" above.
+- **1 Lounges:** limits read only from each network's own label (the old
+  code let "Priority Pass" inherit another network's pass count — Strata
+  Elite's Priority Pass was capped at its 4 Admirals passes); Altitude
+  Connect = Priority Pass, 4 visits a year (issuer page per review; the
+  Business Altitude Connect page says "four complimentary visits per
+  membership year" — the consumer page's scripted HTML only says "12-month
+  membership"); checked issuer pages for Delta Reserve (15 Sky Club visits
+  per Medallion Year + Centurion Lounge — added), Platinum (10 Sky Club
+  visits), Strata Elite + AA Globe (4 Admirals passes), United Explorer (2
+  passes), United Club / AA Executive (unlimited), Brilliant (unlimited
+  Priority Pass), Bilt Palladium (Priority Pass), Venture X (Priority Pass +
+  Capital One lounges). Sapphire Lounges count only on cards that list
+  them (left Priority Pass Aug 15 2026). Business Altitude Connect isn't in
+  the catalog. Golden 5 re-run → METHODOLOGY §7.
+- **2 Memberships:** `cardFee` already added `requiresSubscription`
+  (Robinhood Gold $60, Costco $65, Prime $139) to F(W) and the budget, but
+  only Prime/Costco could be exempted, by inference. Now: survey fee step
+  "Memberships you already pay for" (Robinhood Gold, Costco, Sam's Club,
+  Amazon Prime, Walmart+) → `profile.memberships` → exempt; Costco shoppers
+  count as members; v4 object form still read. Tested both cards.
+- **3 Score:** `scoreFrom(n, best)` everywhere; Home and Wallet Lab show
+  "Score N = $X of a possible $Y a year more than a simple 2% card"; Lab
+  labels "Suggested setup" vs "Your wallet" and shows "Your wallet now: N"
+  (same number as Home). Tested.
+- **4 Explore:** Luxury = fee ≥ $395 AND (lounge network with no visit limit
+  OR ≥ $250 of travel credits); new "Lounge on a budget" chip; sorted by
+  value to you.
+- **5 Checkout:** every wallet card listed (rows no longer wait for
+  scroll-reveal); brand credits at the store shown on held cards; "Best card
+  you don't have" prefers a card whose credit pays there when they picked
+  that brand (Platinum's lululemon credit ≈ $180/yr for a lululemon picker).
+- **6 Card detail (held):** "Worth ≈ $X a year to you after its $325 fee"
+  (its rewards in the wallet + counted benefits − fee) + one break-even line.
+- **7 White first paint:** inline night background in index.html `<head>`.
+- **8 Survey bar:** near-opaque glass + blur + top hairline + soft shadow.
+- **9 Approvals:** score needed = stricter of the difficulty tier and the
+  catalog's `creditProfileFit.minScore` (secured: none); the reveal shows
+  "Get now" (one card) and "When to apply" for the rest, in order.
+- **10** Status table fixed.
+- Tests: `v6Review.test.jsx` (+ two updated); 1,353 passing.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -316,6 +364,11 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   One ~6 months, Amex family order, Citi 48 months) are common practice /
   issuer terms as known in 2026, not re-read this session.
 - **Mall coordinates** in `data/places.js` are approximate (≈ 200 m).
+- **Altitude Connect's 4-visit limit** on the consumer page (scripted HTML
+  shows only "12-month membership"; set from the review + the business card's
+  page). **Hilton Aspire Priority Pass**: the Aspire page text no longer
+  mentions it — kept, verify. **BofA Premium Rewards Elite** and **Atmos
+  Summit** lounge terms: pages render client-side — kept, verify.
 - **Lounge locations** (Centurion, Sapphire, Capital One lists in
   `data/loungeLocations.js`) — from 2026 knowledge, flagged `verify`.
 - **One Key Mastercard** earn rates — Wells Fargo's page blocked scripted
