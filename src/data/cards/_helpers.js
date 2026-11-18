@@ -26,7 +26,11 @@ export const cred = (name, annual, use, kind = "merchant", cadence = "annual") =
    earn it (0 = arrives automatically each year). */
 export const fnc = (name, pointCap, use, spend = 0) => ({ name, pointCap, use, spend });
 
-/* Compact builder for cards added in the v5 data refresh: every schema field
+/* `storeLocked: "<brand>"` on a card = its rewards can only be spent with that
+   store (e.g. T-Mobile bill credits, Disney Rewards Dollars). The v5 optimizer
+   only recommends it to people who picked that brand.
+
+   Compact builder for cards added in the v5 data refresh: every schema field
    the engines read gets an explicit empty default, so a new entry only states
    what the issuer page states. */
 export const card = (c) => ({

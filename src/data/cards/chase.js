@@ -323,7 +323,7 @@ export const CARDS = [
     annualFee: 450, currency: "Marriott Bonvoy", pointCurrency: "marriott",
     earnRates: { Hotels: 6, Dining: 3, Flights: 3, General: 2 }, portalMultipliers: {},
     credits: [cred("$300 airline incidental credit (bags, seats, lounge passes)", 300, "EASY", "airline", "annual"), cred("$100 hotel credit on 2+ night Ritz-Carlton / St. Regis stays", 100, "MEDIUM", "hotel", "annual"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 30, "EASY", "membership", "4yr")],
-    benefits: ["Free night every year (up to 85k points)", "Priority Pass Select + Chase Sapphire Lounges (2 guests free)", "3 Club Level upgrades a year", "Marriott Gold Elite"],
+    benefits: ["Free night every year (up to 85k points)", "Priority Pass Select + Chase Sapphire Lounges (2 guests free)", "3 Club Level upgrades a year"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass Select", "Chase Sapphire Lounge"], guests: 2, guestFee: 27, estAnnual: 200, use: "MEDIUM", type: "Priority Pass + Chase lounges" },
     hotelStatus: { program: "marriott", tier: "Platinum", estValue: 120 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [],
@@ -568,6 +568,7 @@ export const CARDS = [
     tags: ["cashback"], beginner: 7, complexity: 3,
     why: "Disney Rewards Dollars for Disney fans.",
     verifiedSource: "https://creditcards.chase.com/all-credit-cards (listing summary)",
+    storeLocked: "disney",
   }),
   card({
     id: "disney-visa", name: "Disney Visa", issuer: "Chase", network: "VISA",
@@ -576,6 +577,7 @@ export const CARDS = [
     tags: ["cashback"], beginner: 8, complexity: 2,
     why: "No-fee Disney card with park and shopping perks.",
     verifiedSource: "https://creditcards.chase.com/all-credit-cards (listing summary)",
+    storeLocked: "disney",
   }),
   card({
     id: "amazon-visa", name: "Amazon Visa", issuer: "Chase (Amazon)", network: "VISA",

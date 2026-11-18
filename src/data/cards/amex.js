@@ -418,6 +418,7 @@ export const CARDS = [
     tags: ["business", "flexible"], beginner: 6, complexity: 4,
     why: "Flat 2x transferable points with no fee, for businesses.",
     verifiedAt: VERIFIED, verifiedSource: "americanexpress.com (search: $0 fee, 2x up to $50k)",
+    transferAccess: ["amex"],
   }),
   card({
     id: "amex-biz-plat", name: "Business Platinum", issuer: "American Express", network: "AMEX",
@@ -426,5 +427,6 @@ export const CARDS = [
     tags: ["business", "premium", "lounge", "travel"], beginner: 3, complexity: 8,
     why: "Amex's business lounge card. Credits and earn rates not yet verified.",
     verifiedSource: "americanexpress.com (search: $895 fee only)",
+    transferAccess: ["amex"],
   }),
 ];
