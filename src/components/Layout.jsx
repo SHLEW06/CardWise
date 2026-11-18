@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Compass, LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "../firebase/useAuth.js";
+import { VALUATIONS_AS_OF } from "../data/valuations.js";
 
 /* App shell: aurora background, header (logo + auth + optional nav slot), footer with
    the honest seed-data disclaimer. */
@@ -52,7 +53,7 @@ export default function Layout({ children, nav, onLogoClick }) {
       </header>
       <main className="cw-main">{children}</main>
       <footer className="cw-footer">
-        Card fees, earn rates, credits, and point values are best-effort seed data (June 2026) and change often — verify current terms before relying on them.
+        Card fees, earn rates and credits are best-effort seed data (June 2026); point values and transfer partners were last updated {VALUATIONS_AS_OF}. All of it changes often — verify current terms before relying on them.
         CardWise is not financial advice. Pay your balance in full every month, and never spend extra to chase rewards.
       </footer>
     </div>

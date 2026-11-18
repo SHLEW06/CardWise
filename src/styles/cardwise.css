@@ -5,11 +5,12 @@
 
 /* --------------------------------- landing -------------------------------- */
 .cw-landing { display:grid; grid-template-columns:1.05fr .95fr; gap:30px; align-items:center; min-height:62vh; padding-top:18px; }
-.cw-landing-cards { position:relative; height:440px; }
-.cw-hero-card { position:absolute; }
-.cw-hero-0 { left:2%; top:18%; z-index:3; }
-.cw-hero-1 { left:30%; top:2%; z-index:2; opacity:.96; }
-.cw-hero-2 { left:18%; top:46%; z-index:1; opacity:.92; }
+.cw-landing-steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; }
+.cw-landing-step { display:grid; grid-template-columns:44px 1fr; gap:14px; align-items:start; padding:18px 20px; background:var(--surface); border:1px solid var(--line); border-radius:16px; }
+.cw-landing-step-icon { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:rgba(243,231,201,.1); color:var(--accent); }
+.cw-landing-step-k { font-family:var(--fmono); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+.cw-landing-step h3 { margin:3px 0 4px; font-size:16px; font-weight:600; color:var(--ink); }
+.cw-landing-step p { margin:0; color:var(--ink-2); font-size:14px; line-height:1.5; }
 .cw-landing-stats { display:flex; gap:30px; margin-top:34px; flex-wrap:wrap; }
 .cw-stat-num { font-family:var(--fmono); font-weight:700; font-size:24px; color:var(--accent); }
 .cw-stat-lab { font-size:12px; color:var(--ink-3); margin-top:2px; }
@@ -308,7 +309,7 @@
 /* small responsive cleanups for new screens */
 @media (max-width:900px) {
   .cw-landing { grid-template-columns:1fr; gap:10px; }
-  .cw-landing-cards { height:330px; margin-top:10px; }
+  .cw-landing-steps { margin-top:18px; }
   .cw-options, .cw-options-multi { grid-template-columns:repeat(2,1fr); }
   .cw-router-result { grid-template-columns:1fr; }
   .cw-keeper-row { grid-template-columns:1fr; gap:10px; }

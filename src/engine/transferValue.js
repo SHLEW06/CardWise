@@ -9,7 +9,7 @@
    ========================================================================== */
 
 import { VAL, VAL_META, blendedCppFromMeta } from "../data/valuations.js";
-import { PROGRAMS, LOYALTY, isBank } from "../data/programs.js";
+import { PROGRAMS, LOYALTY, isBank, SCHEDULED_RATIOS } from "../data/programs.js";
 import { DESTINATION_PARTNERS, DESTINATION_BIAS } from "../data/transferPartners.js";
 
 /* resolve a valuation, honoring per-user overrides in profile.valOverrides.
@@ -27,13 +27,30 @@ const valOf = (key, profile = {}) => {
   return VAL[key] || 0;
 };
 
-/* partner points received per 1 bank point. Chase→Hyatt is the famous special
-   case: the Reserve keeps 1:1, the Preferred is 4:3 (25% worse). */
-export function transferRatio(program, partner, held = []) {
-  if (program === "chase" && partner === "hyatt") {
-    const hasReserve = held.includes("csr");
-    return hasReserve ? 1.0 : 0.75; // 4:3 ≈ 0.75 effective
+/* Cards that keep Chase → Hyatt at 1:1. Every other UR card (Sapphire
+   Preferred, Ink Preferred, Ink Plus, Corporate Flex) is 4:3 since
+   Oct 1, 2026. "csr-business" is listed ahead of it joining the catalog. */
+export const HYATT_FULL_RATIO_CARDS = ["csr", "csr-business"];
+
+/* Ratio from SCHEDULED_RATIOS in force on `asOf`, or null if none applies. */
+export function scheduledRatio(program, partner, asOf = new Date()) {
+  const t = asOf instanceof Date ? asOf.getTime() : new Date(asOf).getTime();
+  let hit = null;
+  for (const s of SCHEDULED_RATIOS) {
+    if (s.program !== program || s.partner !== partner) continue;
+    if (t >= new Date(s.effective + "T00:00:00").getTime() && (!hit || s.effective > hit.effective)) hit = s;
   }
+  return hit ? hit.ratio : null;
+}
+
+/* partner points received per 1 bank point. Chase→Hyatt depends on the card
+   you hold; Bilt→Hyatt depends on the date (4:3 from Jan 1, 2027). */
+export function transferRatio(program, partner, held = [], asOf = new Date()) {
+  if (program === "chase" && partner === "hyatt") {
+    return held.some((id) => HYATT_FULL_RATIO_CARDS.includes(id)) ? 1.0 : 0.75; // 4:3
+  }
+  const scheduled = scheduledRatio(program, partner, asOf);
+  if (scheduled != null) return scheduled;
   return (PROGRAMS[program] && PROGRAMS[program].ratios[partner]) || 1.0;
 }
 

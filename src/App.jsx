@@ -336,7 +336,10 @@ export default function App() {
   if (screen === "hero") {
     return (
       <Layout onLogoClick={restart}>
-        <Hero onStart={() => setScreen("quickstart")} onExplore={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("explore"); }} />
+        <Hero
+          onStart={() => { setProfile((p) => p || withAnchors({ valOverrides })); setScreen("app"); setTab("board"); }}
+          onSetup={() => setScreen("quickstart")}
+        />
       </Layout>
     );
   }

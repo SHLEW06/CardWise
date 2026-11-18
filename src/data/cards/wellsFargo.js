@@ -71,7 +71,7 @@ export const CARDS = [
     avoidIf: ["You don't pay rent and won't hit 5 transactions/month"],
     overlapTags: ["renter"], tags: ["renter", "travel", "flexible"],
     beginner: 7, complexity: 4, art: "bilt", sourceDate: SD, needsVerification: true,
-    why: "Earning transferable points on rent is found money, and reaching both Hyatt and Alaska is rare. Needs 5 transactions/month to post.",
+    why: "Earning transferable points on rent is found money, and reaching both Hyatt and Alaska (Atmos) is rare. Hyatt transfers drop from 1:1 to 4:3 on Jan 1, 2027. Needs 5 transactions/month to post.",
   },
   {
     id: "wf-attune", name: "Wells Fargo Attune", issuer: "Wells Fargo", network: "VISA",
