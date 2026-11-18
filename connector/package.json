@@ -1,0 +1,19 @@
+{
+  "name": "cardwise-connector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CardWise bank connector: remote-browser login + encrypted session vault + per-bank adapters (offers sync and add).",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.js",
+    "keys": "node scripts/make-keys.js",
+    "calibrate": "node scripts/calibrate.js",
+    "mockbank": "node src/mockbank/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0",
+    "ws": "^8.18.0"
+  }
+}

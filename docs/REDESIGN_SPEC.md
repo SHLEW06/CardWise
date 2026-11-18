@@ -147,6 +147,15 @@ prune time.
 
 ## 4. Points valuation — one question, one number
 
+**Standardization rule (2026-11-18):** users never type data into CardWise.
+No manual offers, no photo uploads, no custom earn rates, credits, fees or
+per-program valuations. Everything comes from the catalog, the survey, or a
+connection (§15). **The one exception:** the value of *flexible* points
+(Chase Ultimate Rewards, Amex Membership Rewards, Citi ThankYou, Capital One
+Miles, Bilt) — a single slider per currency on the You page (default =
+the choice below), because how much those are worth genuinely depends on
+the person.
+
 You → "How will you use points?" **Cash it out · Book travel through the card · Move to airlines & hotels (best value)**.
 
 | Choice | cpp |
@@ -215,7 +224,7 @@ the user is under 5/24. No separate timeline screen.
 
 ## 7. Card faces
 
-- 70/83 cards have issuer art in `public/cards/` (gitignored; source URLs in
+- 74/83 cards have issuer art in `public/cards/` (Robinhood Gold and Venmo were perspective-corrected from issuer 3D renders) (gitignored; source URLs in
   `public/cards/art-urls.txt`). Run `npm run art:fetch` for new catalog cards
   using the same issuer-page harvesting approach (Amex `cardarts/`, Chase
   `jpmc-marketplace/card-art/`, Citi `_306x192.webp`, Capital One
@@ -332,6 +341,32 @@ settles into a stack on scroll. No stock photos, no illustrations, no emoji.
   lifts 4px.
 - Focus: 2px `--navy` ring offset 2px.
 
+### 9.8 Direction: Robinhood-style (chosen 2026-11-18 — overrides 9.1 where they differ)
+
+Study robinhood.com and robinhood.com/us/en/gold before phase 3. Values measured
+from their CSS on 2026-11-18:
+
+| Element | Robinhood | CardWise |
+|---|---|---|
+| Dark base | warm near-black `#110e08` (never `#000`) | `--night: #110E08`, `--night-2: #1C180D`, `--night-ink: #F4F1EA` |
+| Warm neutrals | `#35322d`, `#4d4a46`, `#dad3c0` | `--stone: #35322D`, `--sand: #DAD3C0` |
+| Premium accent | gold `#cfb97d` / `#94814c` | `--gold: #CFB97D`, `--gold-deep: #94814C` (value numbers, "best card" marks) |
+| Signal accent | neon `#ccff00`, used very sparingly | ONE signal color only, for the single primary CTA per page — pick our own, do NOT reuse Robinhood's neon or gold as brand identity |
+| Fonts | Capsule Sans + Martina Plantijn (licensed); site also loads **Geist** and **Instrument Serif** | Geist (UI) + Instrument Serif (display) — the same free faces |
+| Type | 72 / 58 / 44 / 32px headings, letter-spacing −1px on display, 16px body | same scale, fluid between breakpoints |
+| Motion | full-bleed looping muted hero videos, Lottie, 150–400ms UI transitions | see below |
+
+Page rhythm (how Robinhood builds each page):
+1. **One idea per full-height section.** Huge headline (≤ 8 words), one sentence, one button, one visual. No grids of features.
+2. **Alternate dark cinematic sections** (`--night`) for story/hero moments with **light warm sections** (`--paper`) for anything the user reads or compares (survey, Find a card list, card detail facts). Data never sits on dark.
+3. **Cinematic product visual:** Robinhood uses pre-rendered 3D videos of its card. We render **the user's own cards in real time in 3D**: React Three Fiber (`@react-three/fiber` + `@react-three/drei`), a rounded-box card mesh with the card face PNG as the texture, metallic/roughness material, soft studio environment light, slow idle rotation, pointer parallax. Hero on Home = their wallet fanning out in 3D; Find a card detail = the card turning to face the user. Fallback (no WebGL / reduced motion): the flat PNG with CSS tilt. Lazy-load the 3D bundle so first paint stays fast.
+4. **Scroll-linked reveals:** headline lines rise 24px + fade as they enter (Motion `whileInView`), section visuals scale 0.96 → 1. No parallax on text.
+5. **Gold = premium value.** The net-value number and "Best card" marks use `--gold` on dark, `--gold-deep` on light.
+
+Do NOT copy: Robinhood's logo, feather mark, neon brand color as our identity,
+their videos/images, or page copy. Replicate the *structure, rhythm, restraint
+and motion quality*, not the brand.
+
 ### 9.7 Anti-AI checklist (review every screen against it)
 
 No emoji · no sparkle icons · no gradient text or backgrounds · no glow ·
@@ -386,3 +421,93 @@ missed alerts, latency, wrong picks. No Apple Pay card switching.
 Offer-sync browser extension and Plaid, as written in `docs/UPGRADE_PLAN.md`
 Prompts 5 and 7. Points balances later via AwardWallet Account Access API
 (OAuth, no passwords) or MX Rewards (beta).
+
+## 14. Parked — travel portal vs. direct price check (Phase 3, with the extension)
+
+Question: is booking through a card's travel portal (Chase Travel, Amex Travel,
+Capital One Travel, Citi Travel) worth it once its higher price is counted
+against its bigger points multiplier?
+
+Status (checked 2026-11-18): **no issuer portal has a public API**, so this
+can't run server-side. Amadeus Self-Service (the old free flight-price API) was
+shut down 17 Jul 2026. It is buildable only as part of the offer-sync extension:
+
+1. Extension reads the portal's checkout price + item (flight/hotel, dates) from
+   the user's own logged-in portal tab.
+2. Market price from a paid self-serve source (SerpApi Google Flights / Google
+   Hotels, or Ignav for flights); hotel "book direct" rate from the chain's site
+   when the extension sees it.
+3. Math (engine, pure, tested):
+   ```
+   portalNet = portalPrice − portalPrice × portalRate × cpp − portalOnlyCredits
+   directNet = directPrice − directPrice × bestCardRate × cpp − directPerks
+   directPerks = hotel elite benefits/points/night credits the user loses on a
+                 third-party booking (only if they picked that hotel brand)
+   → recommend the lower net, show both lines in plain words
+   ```
+Until then: no UI for this. Reviewer data shows portals usually price at or a
+few % above direct for flights (Capital One closest to direct, Amex highest),
+so the default advice text is "check the airline/hotel price before you book in
+a portal".
+
+
+## 15. Bank connections, offers and "near me" (chosen 2026-11-18)
+
+**Decision:** copy MaxRewards' in-app bank sign-in, run by our own connector.
+Code: `connector/` (tested: 13 tests incl. full login → sync → add on a mock
+bank; see `connector/README.md`). The app-side pieces are in `connector/client/`.
+
+How it works: the user taps **Connect Amex** → a sheet shows Amex's real
+sign-in page streamed live from a real Chrome on the connector; taps and
+typing are replayed there; when Amex shows the signed-in page, the connector
+saves an **encrypted session** (AES-256-GCM, per user, per bank — never the
+password) and closes. From then on **Sync** reads offers from the bank's own
+offers page, and **Add** clicks the bank's own Add buttons.
+
+Where the connector runs: first on Shunji's Mac (`npm start`), later a
+server. Per-user isolation: with `FIREBASE_PROJECT_ID` set, every request
+carries the user's Firebase ID token and only reaches that user's vault.
+
+### 15.1 App integration (build in phase 5–7)
+1. Copy `connector/client/*` into `src/connector/` (+ `connect.css`).
+2. **You page → "Connected banks"**: list banks from `/v1/banks`; Connect /
+   Reconnect / Disconnect; shows last sync time. Uncalibrated banks show
+   "Coming soon", never a broken flow.
+3. **Sync**: on app open (if last sync > 6h) and on pull-to-refresh →
+   `client.sync()` → `mapSyncedOffers()` → `mergeOffers()` → `saveOffers()`.
+   `SESSION_EXPIRED` → a quiet "Reconnect Amex" row on Home, no modal.
+4. **Auto-add offers** (You page switch, ON by default): after each sync, add
+   every `available` offer whose merchant the user hasn't excluded — but first
+   choose **which card gets each offer**: when the same merchant offer is on
+   several cards, add it to the card with the highest base earn at that
+   merchant (`findRewards`), because many issuers only allow one card per
+   offer. Review list: "Added 14 offers · Undo" for 24h.
+5. **No manual offer entry anywhere.** Remove OffersScreen's add form and JSON
+   import/export.
+
+### 15.2 Offers for people who haven't connected
+- **Rotating 5% categories** (Freedom Flex, Discover it, Cash+, Citi
+  Dividend) are the same for everyone → `src/data/rotatingCategories.js`
+  updated quarterly, shown exactly, with an activation reminder (Discover
+  activation is not retroactive).
+- **Likely offers** (later): aggregate anonymized synced offers (merchant,
+  terms, card product, dates — nothing about the person) → "68% of Amex Gold
+  holders have this" + a link to the issuer's offers page. Never shown as certain.
+
+### 15.3 Near me (web prototype)
+`connector/client/nearby.js`: browser geolocation → nearby stores from
+OpenStreetMap (Overpass, re-queried only after moving 80m or 2 min) → same
+`findRewards` engine → per store: best card + live offers.
+- **Checkout** shows a "Near you" list when location is allowed.
+- **Home** shows a banner when within ~120m of a store with an offer:
+  "Nike is nearby — use Gold Card. Add the offer first: $20 back on $100."
+  One alert per brand per day; browser notification only if the tab is in
+  the background and the user allowed notifications.
+- Websites can't use location in the background; the iPhone app (§12)
+  replaces this with Core Location region monitoring.
+
+### 15.4 Before other people use it
+Firebase auth on; connector behind HTTPS; vault key in a secrets manager;
+no request-body logging; written security note; privacy page copy:
+"Your bank login happens on your bank's own page. CardWise stores only an
+encrypted session to read your offers — never your password or card numbers."

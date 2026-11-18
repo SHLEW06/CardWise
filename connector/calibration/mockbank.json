@@ -1,0 +1,25 @@
+{
+  "loggedIn": { "urlNotMatching": "login", "selectorAny": ["#account-name"] },
+  "offers": {
+    "mode": "network",
+    "network": {
+      "urlPattern": "/api/offers$",
+      "itemsPath": "result.offers",
+      "fields": {
+        "externalId": "id",
+        "merchant": "merchant.name",
+        "text": "headline",
+        "expires": "endDate",
+        "added": "state=ENROLLED"
+      }
+    },
+    "card": { "name": "#account-name", "last4": "#account-last4" }
+  },
+  "add": {
+    "tile": "[data-offer-id]",
+    "button": "button.add",
+    "matchBy": "externalId",
+    "idAttr": "data-offer-id",
+    "addedSelector": ".added"
+  }
+}
