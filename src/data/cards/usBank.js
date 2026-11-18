@@ -1,13 +1,15 @@
 /* US Bank — Altitude family + Cash+.
    See cards/index.js for catalog assembly + enrichment. */
 
-import { SD, cred } from "./_helpers.js";
+import { SD, cred, VERIFIED, card } from "./_helpers.js";
 
 export const ART = {
   "usb-altitude-reserve":   { grad: "linear-gradient(135deg,#1a1040,#301870 52%,#4c28a8)", glow: "rgba(100,70,200,.48)", ink: "#fff",     tag: "US Bank Points" },
   "usb-altitude-go": { grad: "linear-gradient(135deg,#0e1238,#1c2068 55%,#3a4ab0)", glow: "rgba(90,110,200,.45)", ink: "#fff", tag: "US Bank Points" },
   "usb-altitude-connect": { grad: "linear-gradient(135deg,#0a0e28,#161e54 52%,#2a3490)", glow: "rgba(80,100,190,.42)", ink: "#fff", tag: "US Bank Points" },
   "usb-cash-plus":   { grad: "linear-gradient(135deg,#1a1f30,#2a324a 55%,#4a546e)", glow: "rgba(130,145,180,.4)", ink: "#fff", tag: "Cash back" },
+  /* v5 data refresh — neutral placeholder until the designed fallback face (phase 3) */
+  "usb-smartly":            { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
 };
 
 export const CARDS = [
@@ -27,6 +29,11 @@ export const CARDS = [
     overlapTags: ["premium-travel", "lounge", "mobile-wallet"], tags: ["travel", "premium", "lounge"],
     beginner: 5, complexity: 6, art: "usb-altitude-reserve", sourceDate: SD, needsVerification: true,
     why: "3x via mobile wallet turns every tap-to-pay into 3x — after the $325 credit the effective fee is just $75, with Priority Pass thrown in.",
+    availabilityStatus: "closed",
+    verifiedAt: null,
+    verifiedSource: "https://www.usbank.com/credit-cards/benefits.html",
+    closedNote: "Listed under \"no longer accepting new applications\".",
+    statusCheckedAt: VERIFIED,
   },
   {
     id: "usb-altitude-go", name: "US Bank Altitude Go", issuer: "US Bank", network: "VISA",
@@ -41,26 +48,30 @@ export const CARDS = [
     bestFor: ["A no-fee 4x dining card for foodies", "Capital One Savor / SavorOne alternative for non-Cap One users"],
     avoidIf: ["You travel internationally (has FTF)", "You already hold Amex Gold for dining"],
     overlapTags: ["dining-card", "no-fee-4x"], tags: ["food", "cashback"],
-    beginner: 8, complexity: 3, art: "usb-altitude-go", sourceDate: SD, needsVerification: true,
+    beginner: 8, complexity: 3, art: "usb-altitude-go", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "4x on dining at no fee — the best no-fee dining-only card outside the Cap One Savor family.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html",
   },
   {
     id: "usb-altitude-connect", name: "US Bank Altitude Connect", issuer: "US Bank", network: "VISA",
     annualFee: 0, currency: "US Bank Points", pointCurrency: "cash",
-    earnRates: { Travel: 4, Gas: 4, EV: 4, Groceries: 2, Dining: 2, Streaming: 2, General: 1 }, portalMultipliers: {},
+    earnRates: { Travel: 4, Gas: 4, EV: 4, Groceries: 2, Dining: 2, Streaming: 2, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
     credits: [],
     benefits: ["4x travel, gas station & EV charging", "2x groceries, dining & streaming", "Priority Pass lounge passes ($95 fee waived first year for visits)", "No annual fee", "No foreign transaction fee"],
-    transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
+    transferAccess: [], loungeAccess: { networks: ["Priority Pass (12-month membership)"], estAnnual: 150, use: "MEDIUM", type: "Priority Pass" }, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: [], travelProtections: ["Trip cancellation", "Lost baggage"], foreignTransactionFee: 0,
     downgradeOptions: [], productChangePaths: [],
     bestFor: ["A no-fee travel/gas card with no FX", "Light Priority Pass users"],
     avoidIf: ["You need transferable points (US Bank Points are statement credit only on this card)"],
     overlapTags: ["no-fee-4x"], tags: ["travel", "cashback"],
-    beginner: 7, complexity: 4, art: "usb-altitude-connect", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 4, art: "usb-altitude-connect", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "Strong no-fee 4x travel/gas card with no FX — verify current Priority Pass benefit before counting it.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.usbank.com/credit-cards/altitude-connect-visa-signature-credit-card.html",
   },
   {
     id: "usb-cash-plus", name: "US Bank Cash+ Visa Signature", issuer: "US Bank", network: "VISA",
@@ -79,4 +90,11 @@ export const CARDS = [
     availabilityStatus: "openToNewApplicants",
     why: "Two 5% picks at no fee is genuinely top-tier — but only if your top categories appear on the choice list.",
   },
+  /* ── Added in the v5 data refresh ── */
+  card({ id: "usb-smartly", name: "U.S. Bank Smartly", issuer: "US Bank", network: "VISA",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash", earnRates: { General: 2 },
+    benefits: ["2% everywhere; up to 4% with U.S. Bank Smartly Savings balances"],
+    tags: ["cashback", "flat"], beginner: 8, complexity: 3,
+    why: "2% flat, more if you bank with U.S. Bank.",
+    verifiedAt: VERIFIED, verifiedSource: "https://www.usbank.com/credit-cards.html" }),
 ];

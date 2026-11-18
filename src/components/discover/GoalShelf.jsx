@@ -18,7 +18,7 @@ export default function GoalShelf({ title, subtitle, filter, profile, wallet, on
     for (const card of CARDS) {
       if (heldSet.has(card.id)) continue;
       if (card.cardType === "business") continue;
-      if (card.availabilityStatus === "discontinuedDoNotRecommend") continue;
+      if (card.availabilityStatus === "closed") continue;
       if (!filter(card)) continue;
       let mv = null;
       try {

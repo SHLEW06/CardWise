@@ -37,7 +37,7 @@ describe("CardExplorer facet catalogs", () => {
   it("covers every availability status", () => {
     const ids = AVAILABILITY_STATES.map((a) => a.id);
     for (const required of ["openToNewApplicants", "productChangeOnly",
-      "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"]) {
+      "downgradeOnly", "inviteOnly", "closed"]) {
       expect(ids).toContain(required);
     }
   });

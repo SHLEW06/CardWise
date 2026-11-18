@@ -380,7 +380,7 @@ const AVAILABILITY_RULES = [
     id: "discontinued",
     issuer: "*",
     severity: SEVERITY.BLOCKER,
-    appliesTo: { availabilityStatuses: ["discontinuedDoNotRecommend"] },
+    appliesTo: { availabilityStatuses: ["closed"] },
     conditionKey: "always",
     message: "Discontinued — no longer open for new applications. Skip.",
   },

@@ -32,7 +32,7 @@ function AvailabilityHeaderPill({ status }) {
     productChangeOnly: "Product change only",
     downgradeOnly: "Downgrade only",
     inviteOnly: "Invite only",
-    discontinuedDoNotRecommend: "Discontinued",
+    closed: "Closed",
   }[status];
   if (!label) return null;
   return <span className="cw-pill cw-pill-sm cw-pill-warn">{label}</span>;

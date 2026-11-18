@@ -80,7 +80,7 @@ export default function CardShop({ profile, wallet, onOpenCard }) {
     for (const card of CARDS) {
       if (heldSet.has(card.id)) continue;
       if (card.cardType === "business") continue;
-      if (card.availabilityStatus === "discontinuedDoNotRecommend") continue;
+      if (card.availabilityStatus === "closed") continue;
       if (!matchesChip(card, chip)) continue;
       if (q && !card.name.toLowerCase().includes(q) && !card.issuer.toLowerCase().includes(q)) continue;
       let mv = null;

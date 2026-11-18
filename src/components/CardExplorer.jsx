@@ -45,7 +45,7 @@ const AVAILABILITY_STATES = [
   { id: "productChangeOnly",         label: "Product change only" },
   { id: "downgradeOnly",             label: "Downgrade only" },
   { id: "inviteOnly",                label: "Invite only" },
-  { id: "discontinuedDoNotRecommend", label: "Discontinued" },
+  { id: "closed", label: "Closed" },
 ];
 
 const CARD_TYPES = [

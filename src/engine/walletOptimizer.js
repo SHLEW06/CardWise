@@ -73,7 +73,7 @@ function _eligiblePool(profile, allCards, alreadyHeld) {
     if (held.has(c.id)) return false;
     if (c.cardType === "business") return false;
     if (c.tags?.includes("business")) return false;
-    if (["productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"]
+    if (["productChangeOnly", "downgradeOnly", "inviteOnly", "closed"]
         .includes(c.availabilityStatus)) return false;
     if (!isApplyNowEligible(c, profile)) return false;
     return true;
@@ -146,7 +146,7 @@ export function recommendBestLaterCards(userProfile = {}, currentWallet = [], al
     if (heldIds.includes(c.id)) continue;
     if (c.cardType === "business") continue;
     if (c.tags?.includes("business")) continue;
-    if (c.availabilityStatus === "discontinuedDoNotRecommend") continue;
+    if (c.availabilityStatus === "closed") continue;
     if (c.availabilityStatus === "productChangeOnly") continue;
     if (c.availabilityStatus === "downgradeOnly") continue;
     if (c.availabilityStatus === "inviteOnly") continue;

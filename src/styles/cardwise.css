@@ -580,7 +580,7 @@
 .cw-modal-availability-productChangeOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
 .cw-modal-availability-downgradeOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
 .cw-modal-availability-inviteOnly { background:rgba(230,180,60,.08); border:1px solid rgba(230,180,60,.4); color:var(--warn); }
-.cw-modal-availability-discontinuedDoNotRecommend { background:rgba(220,90,90,.08); border:1px solid rgba(220,90,90,.4); color:var(--bad); }
+.cw-modal-availability-closed { background:rgba(220,90,90,.08); border:1px solid rgba(220,90,90,.4); color:var(--bad); }
 .cw-modal-alt { margin-top:14px; }
 
 .cw-btn-sm { padding:5px 10px !important; font-size:12px !important; }

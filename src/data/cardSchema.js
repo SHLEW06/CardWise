@@ -10,7 +10,14 @@
 
      availabilityStatus    — openToNewApplicants | productChangeOnly |
                              downgradeOnly | inviteOnly |
-                             discontinuedDoNotRecommend
+                             closed  (no longer offered; kept because people
+                             still hold it — survey search + keep/downgrade
+                             advice only, never recommended)
+     verifiedAt            — "YYYY-MM-DD" when fee AND credits were read on the
+                             issuer's own site (null otherwise). Always the
+                             inverse of needsVerification.
+     verifiedSource        — URL / note naming that issuer page
+     statusCheckedAt       — date the open/closed status alone was checked
      cardType              — consumer | business | student | secured | charge
      approvalDifficulty    — 1 (easy) … 10 (very hard)
      creditProfileFit      — { minScore, recommendedScore, idealIncome }
@@ -130,6 +137,7 @@ const ISSUER_VELOCITY = {
   Barclays: "barclays-conservative",
   Synchrony: "none",
   Apple: "none",
+  Bilt: "none",
 };
 
 const CURRENCY_TO_ECOSYSTEM = {
@@ -268,6 +276,8 @@ function inferCardFamily(card) {
 
   /* Niche */
   if (issuer === "Robinhood") return "niche-robinhood";
+  if (issuer === "Bilt") return "bilt";
+  if (issuer === "Synchrony (Amazon)") return "store-amazon";
 
   return "other";
 }
@@ -278,6 +288,8 @@ export function enrichCard(card, ART) {
   const roleMeta = roleMetaFor(id);
   return {
     /* existing schema preserved */
+    verifiedAt: null,
+    verifiedSource: null,
     ...card,
 
     /* new v3.1 fields with defaults — existing card.X always wins */

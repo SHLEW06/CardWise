@@ -70,12 +70,12 @@ const PREMIUM_TRAVELER_USES_CREDITS = normalizeUserProfile({
   spendAmounts: { Dining: 800, Groceries: 400, Flights: 700, Hotels: 500, General: 400 },
   benefitUsage: {
     /* Amex Plat credit slugs — the user says they DO use these. */
-    "amex-plat:200-airline-fee-credit": true,
-    "amex-plat:200-hotel-credit-fhr-thc": true,
-    "amex-plat:200-uber-cash": true,
-    "amex-plat:240-digital-ent-credit": false,
-    "amex-plat:155-walmart-credit": false,
-    "amex-plat:300-equinox-soulcycle": false,
+    "amex-plat:200-airline-fee-credit-one-airline-you-pick": true,
+    "amex-plat:600-fine-hotels-resorts-hotel-collection-credit-300-per-half-year": true,
+    "amex-plat:200-uber-cash-15-a-month-20-in-december": true,
+    "amex-plat:300-digital-entertainment-credit-25-a-month": false,
+    "amex-plat:155-walmart-membership-credit": false,
+    "amex-plat:300-lululemon-credit-75-a-quarter": false,
   },
   bookingStyle: "transfer",
 });

@@ -82,7 +82,7 @@ export function classifyRecommendation(mvResult, options = {}) {
       return DECISION_LABELS.PRODUCT_CHANGE_TARGET;
     if (card.availabilityStatus === "downgradeOnly")
       return DECISION_LABELS.DOWNGRADE_PATH_ONLY;
-    if (card.availabilityStatus === "discontinuedDoNotRecommend"
+    if (card.availabilityStatus === "closed"
         || card.cardType === "business")
       return DECISION_LABELS.AVOID_FOR_THIS_PROFILE;
   }

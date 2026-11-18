@@ -477,7 +477,7 @@ export function classifyKeeperDecision(input = {}) {
   /* Category-specific overrides take precedence. */
   if (card.cardFamily === "credit-tool") return KEEPER_DECISIONS.CREDIT_TOOL_ONLY;
   if (card.availabilityStatus === "downgradeOnly") return KEEPER_DECISIONS.DOWNGRADE_PATH_ONLY;
-  if (card.availabilityStatus === "discontinuedDoNotRecommend") return KEEPER_DECISIONS.CANCEL;
+  if (card.availabilityStatus === "closed") return KEEPER_DECISIONS.CANCEL;
   if (card.cardType === "business") return KEEPER_DECISIONS.NOT_NEEDED;
 
   /* If the card is a builder card and the user is past that phase, it's

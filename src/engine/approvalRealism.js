@@ -133,7 +133,7 @@ export function approvalRealism(cardId, profile = {}) {
   }
 
   /* 8) Discontinued / product-change-only */
-  if (card.availabilityStatus === "discontinuedDoNotRecommend") {
+  if (card.availabilityStatus === "closed") {
     s = 0;
     warnings.push("This product is no longer open for new applications.");
   }

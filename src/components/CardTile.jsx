@@ -59,7 +59,7 @@ function AvailabilityBadge({ status }) {
     productChangeOnly: "Product change only",
     downgradeOnly: "Downgrade only",
     inviteOnly: "Invite only",
-    discontinuedDoNotRecommend: "Discontinued",
+    closed: "Closed",
   }[status] || status;
   const Icon = status === "downgradeOnly" ? ArrowDownToDot
              : status === "productChangeOnly" ? RefreshCw

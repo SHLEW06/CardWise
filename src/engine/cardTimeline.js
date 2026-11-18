@@ -67,7 +67,7 @@ export function buildTimeline(profile, held = [], opts = {}) {
      decides where each card lands, not the candidate filter. */
   const candidates = CARDS
     .filter((c) => !held.includes(c.id))
-    .filter((c) => c.availabilityStatus !== "discontinuedDoNotRecommend")
+    .filter((c) => c.availabilityStatus !== "closed")
     .filter((c) => c.cardType !== "business")          // consumer recommendations only
     .filter((c) => !c.tags?.includes("business"))      // legacy tag-based guard
     .map((c) => {

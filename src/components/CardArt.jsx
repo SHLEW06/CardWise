@@ -88,7 +88,7 @@ export default function CardArt({
   const isProductChange = availability === "productChangeOnly";
   const isDowngradeOnly = availability === "downgradeOnly";
   const isInviteOnly = availability === "inviteOnly";
-  const isDiscontinued = availability === "discontinuedDoNotRecommend";
+  const isDiscontinued = availability === "closed";
   const requiresMembership = !!card.requiresSubscription;
 
   /* Prompt-14: softened tilt magnitudes for a more premium, less gaudy feel.
@@ -235,9 +235,9 @@ export default function CardArt({
               </span>
             )}
             {isDiscontinued && (
-              <span className="cw-cc-badge cw-cc-badge-bad" title="Discontinued">
+              <span className="cw-cc-badge cw-cc-badge-bad" title="Closed to new applicants">
                 <AlertTriangle size={12} aria-hidden="true" />
-                <span className="cw-cc-badge-lab">Discontinued</span>
+                <span className="cw-cc-badge-lab">Closed</span>
               </span>
             )}
           </div>

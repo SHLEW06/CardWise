@@ -83,7 +83,7 @@ function tagsHave(card, ...needles) {
 function isProductChangeOnly(card) { return card.availabilityStatus === "productChangeOnly"; }
 function isDowngradeOnly(card)     { return card.availabilityStatus === "downgradeOnly"; }
 function isInviteOnly(card)        { return card.availabilityStatus === "inviteOnly"; }
-function isDiscontinued(card)      { return card.availabilityStatus === "discontinuedDoNotRecommend"; }
+function isDiscontinued(card)      { return card.availabilityStatus === "closed"; }
 function isBusiness(card)          { return card.cardType === "business" || tagsHave(card, "business"); }
 
 /** Credit tool with no rewards — slate-edge / c1-platinum. Distinct from

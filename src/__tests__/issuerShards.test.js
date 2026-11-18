@@ -93,7 +93,7 @@ describe("issuer-sharded catalog", () => {
 
   it("every card has a valid availabilityStatus", () => {
     const valid = ["openToNewApplicants", "productChangeOnly", "downgradeOnly",
-                   "inviteOnly", "discontinuedDoNotRecommend"];
+                   "inviteOnly", "closed"];
     for (const c of CARDS) {
       expect(valid).toContain(c.availabilityStatus);
     }

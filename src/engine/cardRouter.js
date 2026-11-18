@@ -147,9 +147,9 @@ const DRUGSTORE_HARDCODES = new Set(["freedom-unlimited", "freedom-flex"]);
 export const PURCHASE_EARN_OVERRIDES = {
   "freedom-unlimited": { Dining: 3, Drugstores: 3, General: 1.5 },
   "freedom-flex":      { Dining: 3, Drugstores: 3, General: 1 },   // +5% rotating quarterly (activation) — not modeled per merchant
-  csp:                 { Dining: 3, Streaming: 3, Flights: 2, Hotels: 2, Transit: 2, General: 1 }, // 3x online groceries not modeled
+  csp:                 { Dining: 3, Streaming: 3, Gas: 3, EV: 3, Flights: 2, Hotels: 2, Transit: 2, General: 1 }, // 3x online groceries not modeled
   bcp:                 { Groceries: 6, Streaming: 6, Gas: 3, Transit: 3, General: 1 },
-  "wf-autograph":      { Dining: 3, Flights: 3, Hotels: 3, Gas: 3, Transit: 3, Streaming: 3, General: 1 },
+  "wf-autograph":      { Dining: 3, Flights: 3, Hotels: 3, Gas: 3, Transit: 3, Streaming: 3, Wireless: 3, General: 1 },
 };
 
 export function purchaseEarnRates(card) {

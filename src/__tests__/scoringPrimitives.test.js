@@ -164,7 +164,7 @@ describe("Cost + complexity", () => {
   it("cost is a negative annual fee (or zero for no-fee cards)", () => {
     /* toBeCloseTo tolerates the -0 vs +0 Object.is quirk. */
     expect(calculateCostScore(BY_ID["active-cash"], STRONG).annualFee).toBeCloseTo(0);
-    expect(calculateCostScore(BY_ID["csr"], STRONG).annualFee).toBe(-550);
+    expect(calculateCostScore(BY_ID["csr"], STRONG).annualFee).toBe(-795);
   });
   it("membership penalty fires only when memberships are declared missing", () => {
     const noMem = { ...STRONG, memberships: { robinhoodGold: false } };

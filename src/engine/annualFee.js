@@ -29,7 +29,7 @@
    preserved unchanged so v3.1/v3.2 tests keep passing.
    ========================================================================== */
 
-import { F, realizedCredits, effectiveFee, annualRewards, buildSpend, CATS } from "./scoring.js";
+import { F, realizedCredits, travelCreditFactor, structuredCreditFriction, effectiveFee, annualRewards, buildSpend, CATS } from "./scoring.js";
 import { CERT_EV } from "../data/valuations.js";
 
 /* expected value of a free-night certificate, conservatively realized */
@@ -161,10 +161,16 @@ export function estimateCreditUtilization(credit, profile = {}, card = null) {
   const level = profile.basics?.level || profile.level || "some";
   const simplicity = profile.preferences?.simplicity || profile.simplicity || "balanced";
   let friction = 1.0;
-  const monthly = /\$\d+\/mo|monthly/.test(name);
-  const merchant = /uber|resy|dunkin|walmart|equinox|soulcycle|clear|disney|hotel|streaming|dining/i.test(name);
-  if (monthly) friction *= 0.85;
-  if (merchant) friction *= 0.85;
+  /* Structured fields from the v5 data refresh (cred(name, annual, use,
+     kind, cadence)) win; the name regexes stay as a fallback for entries
+     that predate them. */
+  if (credit.kind || credit.cadence) {
+    friction *= structuredCreditFriction(credit);
+  } else {
+    if (/\$\d+\/mo|monthly/.test(name)) friction *= 0.85;
+    if (/uber|resy|dunkin|walmart|equinox|soulcycle|clear|disney|hotel|streaming|dining/i.test(name)) friction *= 0.85;
+  }
+  friction *= travelCreditFactor(credit, profile);
   /* Simple/beginner users capture less of a complex credit stack. */
   if (simplicity === "simple") friction *= 0.9;
   if (level === "beginner") friction *= 0.92;
@@ -433,7 +439,7 @@ export function calculateAnnualFeeBreakEven(card, profile = {}) {
   const spend = buildSpend(profile);
   const held = (profile.currentWallet || []).map((w) => w.id).filter(Boolean);
   const rewards = annualRewards(card, spend, profile, held);
-  const credits = realizedCredits(card);
+  const credits = realizedCredits(card, profile);
   const fee = effectiveFee(card);
 
   /* If credits already cover the fee, break-even is $0. */
@@ -489,7 +495,7 @@ export function generateAnnualFeeExplanation(card, profile = {}) {
 /* full break-even picture for a card */
 export function breakEven(card, spend, profile, held = []) {
   const fee = effectiveFee(card);
-  const credits = realizedCredits(card);
+  const credits = realizedCredits(card, profile);
   const freeNight = Math.round(freeNightValue(card));
   const companion = Math.round(companionValue(card));
   const bags = Math.round(checkedBagValue(card, profile));

@@ -24,7 +24,7 @@ import { effCpp } from "./transferValue.js";
 /* ----------------------------- helpers ----------------------------------- */
 
 const NON_ELIGIBLE_STATUSES = new Set([
-  "productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend",
+  "productChangeOnly", "downgradeOnly", "inviteOnly", "closed",
 ]);
 
 function _isEligibleAlternative(candidate, profile) {

@@ -1,7 +1,7 @@
 /* Store / co-brand cards: Apple, Amazon, Costco, Target, PayPal, Venmo.
    See cards/index.js for catalog assembly + enrichment. */
 
-import { SD } from "./_helpers.js";
+import { SD, VERIFIED, card } from "./_helpers.js";
 
 export const ART = {
   "apple-card":      { grad: "linear-gradient(135deg,#f0f0f0,#dcdcdc 55%,#a0a0a0)", glow: "rgba(120,120,130,.35)", ink: "#1a1a1f", tag: "Apple Cash" },
@@ -10,6 +10,9 @@ export const ART = {
   "target-circle":   { grad: "linear-gradient(135deg,#5a0a0e,#a01018 55%,#d02030)", glow: "rgba(205,40,60,.48)", ink: "#fff", tag: "Target" },
   "venmo":           { grad: "linear-gradient(135deg,#08183e,#1830a0 55%,#3060e0)", glow: "rgba(60,110,235,.5)", ink: "#fff", tag: "Cash back" },
   "paypal-cash":     { grad: "linear-gradient(135deg,#06143a,#103480 55%,#2a5fc0)", glow: "rgba(60,120,210,.48)", ink: "#fff", tag: "Cash back" },
+  /* v5 data refresh — neutral placeholder until the designed fallback face (phase 3) */
+  "amazon-store":           { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
+  "target-mastercard":      { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
 };
 
 export const CARDS = [
@@ -26,9 +29,11 @@ export const CARDS = [
     bestFor: ["Apple-ecosystem users who use Apple Pay everywhere", "Anyone who buys Apple hardware regularly"],
     avoidIf: ["You'd rather take 3% flat cash (Robinhood) or 2% (Active Cash)"],
     overlapTags: ["mobile-wallet"], tags: ["cashback", "flat"],
-    beginner: 8, complexity: 2, art: "apple-card", sourceDate: SD, needsVerification: true,
+    beginner: 8, complexity: 2, art: "apple-card", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "Strong only inside the Apple ecosystem; the 2% Apple Pay rate beats Active Cash on tap-to-pay, but only on Apple Pay.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.apple.com/apple-card/",
   },
   {
     id: "amazon-prime", name: "Amazon Prime Visa", issuer: "Chase (Amazon)", network: "VISA",
@@ -80,15 +85,17 @@ export const CARDS = [
     bestFor: ["Target regulars — 5% off applied at checkout is rare", "Households doing heavy weekly Target shopping"],
     avoidIf: ["You rarely shop at Target", "You want a card you can use anywhere"],
     overlapTags: ["store-card-target"], tags: ["cashback"],
-    beginner: 7, complexity: 1, art: "target-circle", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 1, art: "target-circle", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     cardType: "consumer",
     why: "5% off at checkout for Target regulars — only valuable for the Target purchases themselves.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.target.com/circlecard",
   },
   {
     id: "venmo", name: "Venmo Credit Card", issuer: "Synchrony (Venmo)", network: "VISA",
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
-    earnRates: { Top: 3, Top2: 2, General: 1 }, portalMultipliers: {},
+    earnRates: { Dining: 3, Entertainment: 3, Venmo: 3, General: 1 }, portalMultipliers: {},
     credits: [],
     benefits: ["Auto 3% on your top monthly category, 2% on the next", "1% on everything else", "Pay off balance through Venmo", "No annual fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
@@ -98,14 +105,16 @@ export const CARDS = [
     bestFor: ["A no-fee Custom Cash analogue that auto-tracks top categories", "Venmo-heavy users"],
     avoidIf: ["You'd rather have a richer 5%+ category card", "You travel internationally (has FTF)"],
     overlapTags: ["category-auto"], tags: ["cashback"],
-    beginner: 7, complexity: 3, art: "venmo", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 3, art: "venmo", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "Auto-tracks your top spend categories at no fee — less compelling than Citi Custom Cash but useful as a no-friction option.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://venmo.com/about/creditcard/",
   },
   {
     id: "paypal-cash", name: "PayPal Cashback Mastercard", issuer: "Synchrony (PayPal)", network: "MASTERCARD",
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
-    earnRates: { PayPal: 3, General: 2 }, portalMultipliers: {},
+    earnRates: { PayPal: 3, General: 1.5 }, portalMultipliers: {},
     credits: [],
     benefits: ["3% via PayPal checkout", "2% on everything else", "No annual fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
@@ -115,8 +124,22 @@ export const CARDS = [
     bestFor: ["A no-fee 2% flat card that pays 3% through PayPal checkout"],
     avoidIf: ["You want transferable points", "You travel internationally (has FTF)"],
     overlapTags: ["flat-2pct", "catch-all"], tags: ["cashback", "flat"],
-    beginner: 8, complexity: 2, art: "paypal-cash", sourceDate: SD, needsVerification: true,
+    beginner: 8, complexity: 2, art: "paypal-cash", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "Quietly one of the easier 2% flat cards — and 3% through PayPal pushes it ahead of Active Cash for online shoppers.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "paypal.com (search: 3% PayPal, 1.5% elsewhere, $0)",
   },
+  /* ── Added in the v5 data refresh ── */
+  card({ id: "amazon-store", name: "Amazon Store Card", issuer: "Synchrony (Amazon)", network: null,
+    annualFee: 0, currency: "Amazon credit", pointCurrency: "cash", earnRates: { Amazon: 5, WholeFoods: 5, General: 0 },
+    benefits: ["5% back at Amazon and Whole Foods with Prime (no rewards without Prime)", "Only works at Amazon"],
+    tags: ["cashback", "builder"], beginner: 8, complexity: 2,
+    why: "Amazon-only card; 5% back with Prime, nothing without it.",
+    verifiedAt: VERIFIED, verifiedSource: "amazon.com (search: $0 fee, 5% with Prime, Synchrony)" }),
+  card({ id: "target-mastercard", name: "Target Mastercard", issuer: "TD Bank (Target)", network: "MASTERCARD",
+    annualFee: 0, currency: "Target discount", pointCurrency: "cash", earnRates: { Target: 5, Dining: 2, Gas: 2, General: 1 },
+    tags: ["cashback"], beginner: 8, complexity: 2,
+    why: "5% off at Target, plus 2% on dining and gas elsewhere.",
+    verifiedAt: VERIFIED, verifiedSource: "https://www.target.com/circlecard" }),
 ];

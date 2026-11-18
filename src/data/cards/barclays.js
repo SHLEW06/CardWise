@@ -26,6 +26,8 @@ export const CARDS = [
     beginner: 6, complexity: 3, art: "jetblue-plus", sourceDate: SD, needsVerification: true,
     availabilityStatus: "openToNewApplicants",
     why: "The free checked bag and 10% award rebate easily clear the $99 fee for JetBlue regulars.",
+    verifiedSource: "cards.barclaycardus.com (search)",
+    verificationNote: "Fee verified ($99); credits not readable.",
   },
   {
     id: "jetblue", name: "JetBlue Card", issuer: "Barclays", network: "MASTERCARD",
@@ -44,5 +46,7 @@ export const CARDS = [
     availabilityStatus: "openToNewApplicants",
     why: "The no-fee JetBlue companion — primarily a downgrade landing spot from JetBlue Plus.",
     recommendedFor: ["no-fee", "airline-loyalist"],
+    verifiedSource: "cards.barclaycardus.com (search)",
+    verificationNote: "Fee verified ($0); earn not readable.",
   },
 ];

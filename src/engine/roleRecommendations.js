@@ -61,7 +61,7 @@ function _idsOf(currentWallet) {
 
 function _annualNet(card, profile, heldIds) {
   const spend = buildSpend(profile);
-  return annualRewards(card, spend, profile, heldIds) + realizedCredits(card) - effectiveFee(card);
+  return annualRewards(card, spend, profile, heldIds) + realizedCredits(card, profile) - effectiveFee(card);
 }
 
 function _monthlySpend(profile, cat) {
@@ -104,7 +104,7 @@ function _basePool(profile, allCards, heldIds, role) {
   return allCards.filter((c) => {
     if (held.has(c.id)) return false;
     if (!allowsBusiness && (c.cardType === "business" || c.tags?.includes("business"))) return false;
-    if (c.availabilityStatus === "discontinuedDoNotRecommend") return false;
+    if (c.availabilityStatus === "closed") return false;
     if (["productChangeOnly", "downgradeOnly", "inviteOnly"].includes(c.availabilityStatus)
         && !allowsAvailability.has(c.availabilityStatus)) return false;
     /* Hard-exclude cards whose membership requirement the user has actively

@@ -108,7 +108,7 @@ describe("availability label handling", () => {
   });
 
   it("discontinued card → not recommended", () => {
-    const fake = { ...BY_ID["active-cash"], availabilityStatus: "discontinuedDoNotRecommend" };
+    const fake = { ...BY_ID["active-cash"], availabilityStatus: "closed" };
     const f = estimateApprovalFit(fake, STRONG_PROFILE);
     expect(f.label).toBe(APPROVAL_LABELS.DISCONTINUED);
     expect(f.applyNowEligible).toBe(false);

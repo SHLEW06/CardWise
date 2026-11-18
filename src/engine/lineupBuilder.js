@@ -140,7 +140,7 @@ export function buildLineup(profile, spend, options = {}) {
     if (c.appOnly) return false;
     if (c.cardType === "business") return false;
     if (c.tags?.includes("business")) return false;
-    if (["productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"]
+    if (["productChangeOnly", "downgradeOnly", "inviteOnly", "closed"]
         .includes(c.availabilityStatus)) return false;
     if (futureCardIds.has(c.id)) return false;
     if (effectiveFee(c) > budget) return false;

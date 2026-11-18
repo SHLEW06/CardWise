@@ -118,7 +118,7 @@ export default function CardModal({ card, profile, spend, held = [], owned, onCl
               {availability === "productChangeOnly" && <><RefreshCw size={14} /> Product change only — not open to new applications. Reached via product change from another card in the same family.</>}
               {availability === "downgradeOnly" && <><ArrowDownToDot size={14} /> Downgrade landing spot — cannot be applied for directly.</>}
               {availability === "inviteOnly" && <><Lock size={14} /> Invite only — not open to public applications.</>}
-              {availability === "discontinuedDoNotRecommend" && <><AlertTriangle size={14} /> Discontinued — no longer offered by the issuer.</>}
+              {availability === "closed" && <><AlertTriangle size={14} /> Closed to new applicants. Shown because people still hold it.</>}
             </div>
           )}
           <div className="cw-modal-pills">

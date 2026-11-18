@@ -1,12 +1,16 @@
 /* Discover — it, it Chrome, it Student.
    See cards/index.js for catalog assembly + enrichment. */
 
-import { SD } from "./_helpers.js";
+import { SD, VERIFIED, card } from "./_helpers.js";
 
 export const ART = {
   "discover-it":            { grad: "linear-gradient(135deg,#5c2800,#a85010 52%,#e07828)", glow: "rgba(210,130,50,.48)",  ink: "#fff",     tag: "Cash back" },
   "discover-chrome": { grad: "linear-gradient(135deg,#1a1a1f,#2c2c33 55%,#4a4a55)", glow: "rgba(155,160,175,.4)", ink: "#fff", tag: "Cash back" },
   "discover-student":{ grad: "linear-gradient(135deg,#6a3210,#a85a20 55%,#dc8a38)", glow: "rgba(205,135,55,.45)", ink: "#fff", tag: "Cash back" },
+  /* v5 data refresh — neutral placeholder until the designed fallback face (phase 3) */
+  "discover-it-miles":      { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
+  "discover-it-secured":    { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
+  "discover-student-chrome":{ grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Cash back" },
 };
 
 export const CARDS = [
@@ -23,8 +27,10 @@ export const CARDS = [
     bestFor: ["First-year cashback match doubles all earnings", "Rotating category maximizers with no fee"],
     avoidIf: ["You won't track and activate rotating categories", "You want transferable points"],
     overlapTags: ["rotating", "no-fee"], tags: ["cashback", "rotating"],
-    beginner: 7, complexity: 3, art: "discover-it", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 3, art: "discover-it", sourceDate: SD, needsVerification: false,
     why: "The first-year cashback match is effectively a free double — and 5% rotating categories stay valuable with no annual fee.",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.discover.com/credit-cards/",
   },
   {
     id: "discover-chrome", name: "Discover it Chrome", issuer: "Discover", network: "DISCOVER",
@@ -39,10 +45,12 @@ export const CARDS = [
     bestFor: ["A no-rotating-category alternative to Discover it Cash Back", "First-year match doubles gas & dining for one year"],
     avoidIf: ["You'd track 5% rotating categories (Discover it Cash Back wins)"],
     overlapTags: ["no-fee"], tags: ["cashback"],
-    beginner: 8, complexity: 2, art: "discover-chrome", sourceDate: SD, needsVerification: true,
+    beginner: 8, complexity: 2, art: "discover-chrome", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "The set-and-forget Discover — modest gas & dining bonus, first-year match, no annual fee.",
     recommendedFor: ["no-fee", "starter"],
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.discover.com/credit-cards/",
   },
   {
     id: "discover-student", name: "Discover it Student Cash Back", issuer: "Discover", network: "DISCOVER",
@@ -57,10 +65,29 @@ export const CARDS = [
     bestFor: ["Students starting credit history", "Earning rotating categories without an income requirement"],
     avoidIf: ["You're not in school"],
     overlapTags: ["rotating", "no-fee"], tags: ["cashback", "rotating", "student", "builder"],
-    beginner: 9, complexity: 3, art: "discover-student", sourceDate: SD, needsVerification: true,
+    beginner: 9, complexity: 3, art: "discover-student", sourceDate: SD, needsVerification: false,
     availabilityStatus: "openToNewApplicants",
     why: "First-year match on rotating 5% categories with no fee — one of the strongest student card setups.",
     recommendedFor: ["starter", "no-fee"],
     cardType: "student",
+    verifiedAt: VERIFIED,
+    verifiedSource: "https://www.discover.com/credit-cards/",
   },
+  /* ── Added in the v5 data refresh (discover.com, now a Capital One site) ── */
+  card({ id: "discover-it-miles", name: "Discover it Miles", issuer: "Discover", network: "DISCOVER",
+    annualFee: 0, currency: "Miles (cash value)", pointCurrency: "cash", earnRates: { General: 1.5 },
+    benefits: ["All miles earned in year one are matched"],
+    tags: ["travel", "flat"], beginner: 9, complexity: 1,
+    why: "1.5x on everything, doubled the first year by Discover's match.",
+    verifiedAt: VERIFIED, verifiedSource: "https://www.discover.com/credit-cards/travel/" }),
+  card({ id: "discover-it-secured", name: "Discover it Secured", issuer: "Discover", network: "DISCOVER",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash", cardType: "secured", earnRates: { Rotating: 5, General: 1 },
+    tags: ["builder", "rotating"], beginner: 10, complexity: 2,
+    why: "Builds credit and still earns 5% rotating cash back; deposit from $49.",
+    verifiedAt: VERIFIED, verifiedSource: "https://www.discover.com/credit-cards/" }),
+  card({ id: "discover-student-chrome", name: "Discover it Student Chrome", issuer: "Discover", network: "DISCOVER",
+    annualFee: 0, currency: "Cash back", pointCurrency: "cash", cardType: "student", earnRates: { Gas: 2, Dining: 2, General: 1 },
+    tags: ["student", "builder"], beginner: 10, complexity: 1,
+    why: "A student card with 2% on gas and restaurants (first $1,000 a quarter).",
+    verifiedAt: VERIFIED, verifiedSource: "https://www.discover.com/credit-cards/" }),
 ];

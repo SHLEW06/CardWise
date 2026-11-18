@@ -46,7 +46,7 @@ export default function WalletCardPicker({ profile, wallet, onClose, onOpenCard,
 
     for (const card of CARDS) {
       if (card.cardType === "business") continue;
-      if (!heldSet.has(card.id) && card.availabilityStatus === "discontinuedDoNotRecommend") continue;
+      if (!heldSet.has(card.id) && card.availabilityStatus === "closed") continue;
       if (!matchesFilter(card, filter, heldSet)) continue;
       if (q && !cardSearchText(card).includes(q)) continue;
 

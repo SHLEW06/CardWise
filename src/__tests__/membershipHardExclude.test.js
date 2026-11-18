@@ -58,7 +58,7 @@ describe("opting in restores recommendation eligibility", () => {
   it("Amazon Prime Visa becomes selectable when Amazon Prime is satisfied AND user has Amazon spend", () => {
     /* We can't guarantee Amazon Prime ranks #1 for an arbitrary profile, but
        it should at least pass through the lineup pool filter. */
-    const pool = CARDS.filter((c) => !["productChangeOnly", "downgradeOnly", "inviteOnly", "discontinuedDoNotRecommend"].includes(c.availabilityStatus));
+    const pool = CARDS.filter((c) => !["productChangeOnly", "downgradeOnly", "inviteOnly", "closed"].includes(c.availabilityStatus));
     expect(pool.some((c) => c.id === "amazon-prime")).toBe(true);
     /* With memberships satisfied, the timeline should be allowed to consider
        the card even if it doesn't rank #1. */

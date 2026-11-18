@@ -105,9 +105,42 @@ export function annualRewards(card, spend, profile, held = []) {
   return Math.round(t);
 }
 
+/* Credits that only pay out when you travel (portal bookings, airline fees,
+   hotel stays) are worth little to someone who takes no trips. 0.3 matches
+   the "0 trips" factor in docs/REDESIGN_SPEC.md §3.1. A profile with no
+   travel answers, or a broad "any travel" credit, is left at 1. */
+const TRAVEL_ONLY_KINDS = new Set(["portal", "airline", "hotel"]);
+export function travelCreditFactor(credit, profile) {
+  if (!profile || !TRAVEL_ONLY_KINDS.has(credit?.kind)) return 1;
+  const t = profile.travel || profile;
+  const dom = t.domesticTripsPerYear, intl = t.internationalTripsPerYear;
+  if (dom == null && intl == null) {
+    /* Legacy flat profiles have no trip counts; "no hotels, no lounges, not
+       a travel goal" is their way of saying they don't travel. */
+    const legacyNoTravel = profile.hotelUsage === "none"
+      && (profile.lounge == null || profile.lounge === "no")
+      && !["travel", "luxury"].includes(profile.goal);
+    return legacyNoTravel ? 0.3 : 1;
+  }
+  return (Number(dom) || 0) + (Number(intl) || 0) === 0 ? 0.3 : 1;
+}
+
+/* Friction from the credit's structured shape (cred(name, annual, use, kind,
+   cadence)): monthly drips and single-merchant credits are rarely used in
+   full, promo codes even less. Shared by realizedCredits and
+   annualFee.estimateCreditUtilization so both credit paths agree. */
+export function structuredCreditFriction(credit) {
+  let f = 1;
+  if (credit?.cadence === "monthly") f *= 0.85;
+  if (["merchant", "dining", "membership", "hotel", "promo"].includes(credit?.kind)) f *= 0.85;
+  if (credit?.kind === "promo") f *= 0.5;
+  return f;
+}
+
 /* dollar value of a card's recurring credits that the user actually uses */
-export function realizedCredits(card) {
-  return Math.round((card.credits || []).reduce((t, c) => t + c.annual * (F[c.use] || 0.6), 0));
+export function realizedCredits(card, profile = null) {
+  return Math.round((card.credits || []).reduce(
+    (t, c) => t + c.annual * (F[c.use] || 0.6) * structuredCreditFriction(c) * travelCreditFactor(c, profile), 0));
 }
 
 /* effective annual fee = sticker fee + any required subscription (e.g. Robinhood Gold) */
@@ -146,7 +179,7 @@ export function membershipGate(card, profile = {}) {
 }
 
 export const netValue = (card, spend, profile, held = []) =>
-  annualRewards(card, spend, profile, held) + realizedCredits(card) - effectiveFee(card);
+  annualRewards(card, spend, profile, held) + realizedCredits(card, profile) - effectiveFee(card);
 
 /* the card's strongest bonus category (for overlap detection) */
 export function topCategory(card) {
@@ -249,7 +282,7 @@ export function scoreCard(card, profile, spend, held = []) {
 
   // v3.1: availability — never recommend product-change-only / discontinued
   // cards as a "next card".
-  if (card.availabilityStatus === "discontinuedDoNotRecommend") s -= 1000;
+  if (card.availabilityStatus === "closed") s -= 1000;
   if (["productChangeOnly", "inviteOnly", "downgradeOnly"].includes(card.availabilityStatus)) s -= 220;
 
   // category redundancy vs held cards
@@ -396,7 +429,7 @@ export function calculateSpendScore(card, profile = {}, spend = null) {
  * Each component is rounded individually so the breakdown matches the total.
  */
 export function calculateBenefitScore(card, profile = {}) {
-  const credits      = realizedCredits(card);
+  const credits      = realizedCredits(card, profile);
   const freeNight    = _freeNightValue(card);
   const companion    = _companionValue(card);
   const bags         = _checkedBagValue(card, profile);
@@ -884,7 +917,7 @@ export function strategyScore(ids, profile, spend, held = []) {
   }
   const earnings = clamp((weighted / 5) * 100);
   const rewards = cards.reduce((t, c) => t + annualRewards(c, spend, profile, held), 0);
-  const credits = cards.reduce((t, c) => t + realizedCredits(c), 0);
+  const credits = cards.reduce((t, c) => t + realizedCredits(c, profile), 0);
   const fees = cards.reduce((t, c) => t + effectiveFee(c), 0);
   const feeEff = fees === 0 ? 100 : clamp(((rewards + credits) / (rewards + credits + fees)) * 100);
   const beginner = clamp((cards.reduce((t, c) => t + (c.beginner || 5), 0) / cards.length) * 10);
