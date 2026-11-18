@@ -63,7 +63,7 @@ export const CARDS = [
   {
     id: "freedom-unlimited", name: "Freedom Unlimited", issuer: "Chase", network: "VISA",
     annualFee: 0, currency: "Chase UR", pointCurrency: "chase",
-    earnRates: { Dining: 3, Online: 3, General: 1.5 }, portalMultipliers: { Travel: 5 },
+    earnRates: { Dining: 3, Drugstores: 3, General: 1.5 }, portalMultipliers: { Travel: 5 },
     credits: [], benefits: ["3% dining & drugstores", "5% Chase Travel portal", "1.5% everything else"],
     transferAccess: ["Transferable once paired with a Sapphire"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
@@ -80,7 +80,8 @@ export const CARDS = [
   {
     id: "freedom-flex", name: "Freedom Flex", issuer: "Chase", network: "MASTERCARD",
     annualFee: 0, currency: "Chase UR", pointCurrency: "chase",
-    earnRates: { Dining: 3, Online: 5, General: 1 }, portalMultipliers: { Travel: 5 },
+    earnRates: { Dining: 3, Drugstores: 3, General: 1 }, portalMultipliers: { Travel: 5 },
+    rotating: { rate: 5, quarterlyCap: 1500, activate: true, source: "https://creditcards.chase.com/cash-back-credit-cards/freedom/flex", checked: "2026-11-18" },
     credits: [], benefits: ["5% rotating quarterly categories (activate)", "3% dining & drugstores", "Cell phone protection"],
     transferAccess: ["Transferable once paired with a Sapphire"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
@@ -97,7 +98,7 @@ export const CARDS = [
   {
     id: "csp", name: "Sapphire Preferred", issuer: "Chase", network: "VISA",
     annualFee: 95, currency: "Chase UR", pointCurrency: "chase",
-    earnRates: { Dining: 3, Online: 3, Streaming: 3, Gas: 3, EV: 3, Flights: 2, Hotels: 2, Transit: 2, General: 1 }, portalMultipliers: { Travel: 5 },
+    earnRates: { Dining: 3, Streaming: 3, Gas: 3, EV: 3, VacationRentals: 3, OnlineGrocery: 3, Flights: 2, Hotels: 2, Transit: 2, General: 1 }, portalMultipliers: { Travel: 5 },
     credits: [cred("$100 Chase Travel hotel credit", 100, "MEDIUM", "portal", "annual"), cred("DoorDash promo ($10 a month, non-restaurant)", 120, "HARD", "promo", "monthly"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 30, "EASY", "membership", "4yr")],
     benefits: ["3x dining, gas & EV charging, streaming and online grocery", "5x Chase Travel, 2x other travel", "Transfers to Hyatt (4:3), United, Aeroplan and more", "Primary rental car coverage"],
     transferAccess: ["chase"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
@@ -350,7 +351,7 @@ export const CARDS = [
     transferAccess: [], loungeAccess: null,
     hotelStatus: { program: "hyatt", tier: "Discoverist", estValue: 30 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [],
-    freeNightCertificates: [fnc("Anniversary free night (Category 1–4)", 25000, "MEDIUM"), fnc("Extra free night after $15k spend (Category 1–4)", 25000, "HARD", 15000)],
+    freeNightCertificates: [fnc("Anniversary free night (Category 1–4)", 18000, "MEDIUM"), fnc("Extra free night after $15k spend (Category 1–4)", 18000, "HARD", 15000)],
     directBookingBenefits: ["Member rates"], travelProtections: ["Trip delay", "Baggage"], foreignTransactionFee: 0,
     downgradeOptions: [], productChangePaths: [],
     bestFor: ["Hyatt stayers — the highest-value hotel currency", "Anyone who can use a Cat 1-4 night yearly"],

@@ -6,7 +6,8 @@ import { VAL } from "../data/valuations.js";
 import { CREDIT_USAGE, LOUNGE_RETAIL_CAP } from "../data/benefitUsage.js";
 import { normalizeProfile, DEFAULT_PROFILE } from "../engine/profileDefaults.js";
 import { cppFor, formatPctBack } from "../engine/v5/valuation.js";
-import { cardValue, benefitBreakdown, rolesFor, cardCpp, cardFee, marginalRewards } from "../engine/v5/value.js";
+import { cardValue, benefitBreakdown, rolesFor, cardCpp, cardFee, marginalRewards, creditUsage } from "../engine/v5/value.js";
+import { walletValue, MIN_GAIN } from "../engine/v5/methodology.js";
 import { optimizeWallet, slotsFilled } from "../engine/v5/optimizer.js";
 
 const recommended = (r) => [...r.getNext, ...r.later].filter((x) => !x.waitingOn);
@@ -70,10 +71,12 @@ describe("benefit and reward value", () => {
     expect(noAA).toBeUndefined();
     expect(withAA.value).toBeGreaterThan(0);
   });
+  /* v6 §20: Freedom points are 1¢ alone; beside a Sapphire they're worth the
+     person's partner average (here United 1.2¢ × 1 and Aeroplan 1.45¢ × 1). */
   it("Freedom points are only worth partner value beside a card that can transfer", () => {
-    const p = normalizeProfile({ wants: "travel" });
+    const p = normalizeProfile({ wants: "travel", brands: { airlines: ["united", "aeroplan"] } });
     expect(cardCpp(BY_ID["freedom-unlimited"], p, [])).toBe(1);
-    expect(cardCpp(BY_ID["freedom-unlimited"], p, [BY_ID.csp])).toBe(VAL.chase);
+    expect(cardCpp(BY_ID["freedom-unlimited"], p, [BY_ID.csp])).toBeCloseTo((1.2 + 1.45) / 2, 6);
   });
   it("a required membership counts as part of the fee unless you already shop there", () => {
     expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({}))).toBe(BY_ID["robinhood-gold"].requiresSubscription.annual);
@@ -143,13 +146,12 @@ describe("worked example: $0 budget", () => {
     { feeBudget: 0, wants: "cash" },
     { feeBudget: 0, wants: "travel", travel: { trips: 8, lounges: "yes", homeAirport: "ATL" }, brands: { airlines: ["delta"], hotels: ["marriott"] } },
   ];
-  it.each(profiles.map((p, i) => [i, p]))("profile %i: only $0-fee cards, benefit pass skipped", (_i, p) => {
+  /* v6: a $0-fee card that happens to include lounge access may appear —
+     the rule is about fees, not roles. */
+  it.each(profiles.map((p, i) => [i, p]))("profile %i: only $0-fee cards", (_i, p) => {
     const r = optimizeWallet(p);
     expect(recommended(r).length).toBeGreaterThan(0);
-    for (const x of recommended(r)) {
-      expect(x.annualFee, x.cardId).toBe(0);
-      expect(["Lounge card", "Hotel keeper", "Airline keeper"]).not.toContain(x.role);
-    }
+    for (const x of recommended(r)) expect(x.annualFee, x.cardId).toBe(0);
   });
 });
 
@@ -174,9 +176,19 @@ describe("fee budget is never exceeded", () => {
 
 describe("Altitude Go is not recommended when dining already earns ≥ 3x", () => {
   const heavyDining = { spend: { dining: 900 }, credit: { score: 770 } };
+  /* v6: the exact optimizer may still add Altitude Go for its other
+     categories, but never FOR dining when Amex Gold already earns at least as
+     much there — and only when it adds more than the $25 minimum. */
   it("holding Amex Gold (4x dining)", () => {
     for (const wants of ["cash", "travel"]) for (const feeBudget of [0, 300, 700]) {
-      expect(recIds(optimizeWallet({ ...heavyDining, wants, feeBudget, cardsHeld: ["amex-gold"] }))).not.toContain("usb-altitude-go");
+      const r = optimizeWallet({ ...heavyDining, wants, feeBudget, cardsHeld: ["amex-gold"] });
+      if (!recIds(r).includes("usb-altitude-go")) continue;
+      const v = walletValue(r.wallet, r.profile);
+      const dining = v.earning.byBucket.dining;
+      const altDining = dining.filter((x) => x.cardId === "usb-altitude-go").reduce((t, x) => t + x.dollars, 0);
+      const goldPct = dining.find((x) => x.cardId === "amex-gold")?.pct ?? 0;
+      if (goldPct >= 4) expect(altDining).toBe(0);
+      expect(recommended(r).find((x) => x.cardId === "usb-altitude-go").gain).toBeGreaterThan(MIN_GAIN);
     }
   });
   it("when the benefit pass already chose a 3x-dining card (Strata Elite / AA Executive for an AA-hub flyer)", () => {
@@ -226,12 +238,14 @@ describe("eligibility", () => {
       expect(apps.length).toBeLessThanOrEqual(2);
     }
   });
-  it("airline keeper needs a picked airline AND a home airport that is its hub", () => {
-    const base = { wants: "travel", feeBudget: 700, travel: { trips: 6, lounges: "no" }, brands: { airlines: ["delta"] }, credit: { score: 770 } };
-    const noAirport = recommended(optimizeWallet(base));
-    const atl = recommended(optimizeWallet({ ...base, travel: { ...base.travel, homeAirport: "ATL" } }));
-    expect(noAirport.some((x) => x.role === "Airline keeper")).toBe(false);
-    expect(atl.some((x) => x.role === "Airline keeper")).toBe(true);
+  /* v6 §22: airline perks count only for an airline they picked (the hub
+     only changes lounge coverage). */
+  it("airline keeper needs a picked airline", () => {
+    const base = { wants: "travel", feeBudget: 700, travel: { trips: 6, lounges: "no", homeAirport: "ATL" }, credit: { score: 770 } };
+    const delta = recommended(optimizeWallet({ ...base, brands: { airlines: ["delta"] } }));
+    const none = recommended(optimizeWallet({ ...base, brands: { airlines: [] } }));
+    expect(delta.some((x) => BY_ID[x.cardId].pointCurrency === "delta")).toBe(true);
+    expect(none.some((x) => rolesFor(BY_ID[x.cardId]).includes("Airline keeper"))).toBe(false);
   });
 });
 
@@ -255,11 +269,18 @@ describe("output", () => {
 
 /* Decision 2026-11-18: store credits count only for brands the person picked. */
 describe("store credits and held premium cards", () => {
-  it("unpicked store credits count 0.2 (0.15 monthly); picked 0.8", () => {
-    expect(CREDIT_USAGE.merchant({ pickedMerchant: false })).toBe(0.2);
-    expect(CREDIT_USAGE.merchant({ pickedMerchant: false, monthly: true })).toBe(0.15);
-    expect(CREDIT_USAGE.dining({ pickedMerchant: true, monthly: true })).toBe(0.8);
-    expect(CREDIT_USAGE.membership({ travelMembership: false, pickedMerchant: false })).toBe(0.2);
+  /* v6 §22: brand credits count only when picked (unpicked $0); picked by
+     cadence 0.9 / 0.75 / 0.6 / 0.5. */
+  it("unpicked brand credits count $0; picked ones by how often they reset", () => {
+    const none = normalizeProfile({});
+    const picks = normalizeProfile({ brands: { perks: ["uber", "resy", "lululemon", "oura", "dunkin"] } });
+    const gold = BY_ID["amex-gold"], plat = BY_ID["amex-plat"];
+    const uber = gold.credits.find((c) => /Uber/.test(c.name));
+    expect(creditUsage(gold, uber, none).factor).toBe(0);
+    expect(creditUsage(gold, uber, picks).factor).toBe(0.5);                                   // monthly
+    expect(creditUsage(gold, gold.credits.find((c) => /Resy/.test(c.name)), picks).factor).toBe(0.75);   // semiannual
+    expect(creditUsage(plat, plat.credits.find((c) => /lululemon/.test(c.name)), picks).factor).toBe(0.6); // quarterly
+    expect(creditUsage(plat, plat.credits.find((c) => /Oura/.test(c.name)), picks).factor).toBe(0.9);     // annual
   });
   it("Platinum holder, 0 trips, no brands picked → cancel or switch (Gold downgrade path)", () => {
     const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 } });
@@ -269,17 +290,23 @@ describe("store credits and held premium cards", () => {
     expect(v.action).toBe("downgrade");
     expect(v.downgradeTo).toBe("amex-gold");
   });
-  it("Platinum holder who picked Uber and flies 5× a year → keep", () => {
-    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 5 }, brands: { everyday: ["uber/lyft"] } });
+  /* v6: Uber alone no longer carries an $895 card (unpicked credits are $0);
+     a lounge-loving flyer who uses the credit stack keeps it. */
+  it("Platinum holder who uses the credits and lounges, flying 5× a year → keep", () => {
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 5, lounges: "yes", homeAirport: "ATL" }, brands: { perks: ["uber", "uber one", "resy", "clear", "disney+"] } });
     expect(r.keep.find((x) => x.cardId === "amex-plat").action).toBe("keep");
   });
+  it("Platinum holder who picked only Uber and flies 5× → switch down", () => {
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 5 }, brands: { perks: ["uber"] } });
+    expect(["downgrade", "cancel"]).toContain([...r.keep, ...r.skip].find((x) => x.cardId === "amex-plat").action);
+  });
   it("a held card kept mainly by store credits names them in its verdict", () => {
-    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 }, brands: { everyday: ["uber/lyft", "walmart"] } });
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 }, brands: { perks: ["uber", "uber one", "walmart+", "resy", "lululemon", "disney+", "oura", "clear"] } });
     const k = r.keep.find((x) => x.cardId === "amex-plat");
     expect(k.action).toBe("keep");
     expect(k.sentence).toMatch(/^Worth keeping if you use: /);
     expect(k.sentence).toMatch(/Uber Cash/);
-    expect(k.sentence).toMatch(/Walmart\+/);
+    expect(k.dependsOn.some((d) => /Walmart\+/.test(d))).toBe(true);   // the sentence names the top four
     expect(k.dependsOn.length).toBeGreaterThan(0);
   });
 });

@@ -1,38 +1,49 @@
 /* ============================================================================
-   v5/value.js — per-card value for one person (docs/REDESIGN_SPEC.md §3.1).
+   v5/value.js — earning, benefits and fees for one person
+   (v6: docs/REDESIGN_SPEC.md §22, formulas in docs/METHODOLOGY.md).
    ----------------------------------------------------------------------------
-     benefitValue(card, profile)  = Σ benefit.face × usage(benefit, profile)
-     rewardsValue(card, profile)  = Σ_category spend × rate × cpp(currency, profile)
-     netValue                     = benefitValue + rewardsValue − annualFee
-     effectiveFee                 = max(0, annualFee − benefitValue)
+   Earning E(W): each category's spend goes to the card with the highest NET
+   return (rate × value per point in THIS wallet), respecting caps; overflow
+   falls to the next best card ("lanes", allocateSpend).
+   Benefits U: face × usage, per the rules in data/benefitUsage.js; wallet
+   dedupe (lounges, Global Entry, CLEAR, protections) happens in
+   methodology.js.
+   Fees F: steady-state annual fee + any required membership.
    Every function takes a NORMALIZED profile (profileDefaults.normalizeProfile).
    Pure; no React, no storage.
-
-   Simplifications (documented, conservative):
-     • earn caps (e.g. 4x up to $25k) are not applied;
-     • portal-only multipliers are ignored (you'd have to book in the portal);
-     • rotating 5% categories are not counted.
    ========================================================================== */
 
 import {
-  CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP, MERCHANT_WORDS, STORE_CREDIT_KINDS,
-  FREE_NIGHT_USAGE, UNCAPPED_FREE_NIGHT_POINTS, COMPANION_USAGE,
-  LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
-  BAG_FEE, STATUS_VALUE,
+  CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP,
+  UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
+  BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
+  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS,
 } from "../../data/benefitUsage.js";
-import { annualSpend } from "../profileDefaults.js";
-import { cppFor, cppForProfile, pctBack, BANK_CURRENCIES } from "./valuation.js";
+import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
+import { pctBack, BANK_CURRENCIES } from "./valuation.js";
+import { cardPointValue } from "./pointValues.js";
+import { VAL } from "../../data/valuations.js";
+import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, PERK_BY_KEY } from "../../data/creditBrands.js";
+import { loungeCoverage } from "../airportFit.js";
+import { networkKey } from "../../data/loungeLocations.js";
 
 export const AIRLINE_CURRENCIES = new Set(["delta", "united", "aa", "southwest", "alaska", "jetblue", "aeroplan", "avios", "flyingblue"]);
 export const HOTEL_CURRENCIES = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham"]);
+export const CATEGORIES = SPEND_CATEGORIES;
 
-/* Brand-specific earn keys in the catalog → the airline they belong to. */
+/* Brand-specific earn keys in the catalog → the airline/hotel they belong to. */
 const AIRLINE_KEYS = { United: "united", Delta: "delta", AA: "aa", Southwest: "southwest", Alaska: "alaska", JetBlue: "jetblue" };
-/* Everyday brands (survey step 7) → catalog earn keys. */
-const MERCHANT_KEYS = {
-  amazon: ["Amazon"], target: ["Target"], walmart: ["Walmart"], costco: ["CostcoBuy", "Costco"],
-  apple: ["Apple"], "whole foods": ["WholeFoods"], doordash: ["DoorDash"],
-};
+const HOTEL_KEYS = { Hilton: "hilton" };
+/* Stores (brands.everyday) → catalog earn keys that pay only there. */
+const STORE_KEYS = { amazon: ["Amazon"], target: ["Target"], walmart: ["Walmart"], apple: ["Apple"], paypal: ["PayPal"] };
+/* Share of online spend that a single store gets when picked (modeling default). */
+export const STORE_ONLINE_SHARE = 0.5;
+/* Rotating 5%: share of each eligible category's spend that falls in that
+   quarter's categories (modeling default; categories change every quarter). */
+export const ROTATING_SHARE = 0.25;
+const ROTATING_ELIGIBLE = ["groceries", "gas", "online", "dining", "drugstores", "transit", "streaming", "warehouse", "other"];
+/* Custom Cash "top category" — eligible categories on Citi's terms. */
+const TOP_ELIGIBLE = ["dining", "gas", "groceries", "transit", "streaming", "drugstores", "flights", "hotels"];
 
 const has = (o, k) => o && o[k] != null;
 
@@ -41,97 +52,224 @@ export function cardBrand(card) {
   const pc = card.pointCurrency;
   return AIRLINE_CURRENCIES.has(pc) || HOTEL_CURRENCIES.has(pc) ? pc : null;
 }
-
 export function pickedBrand(profile, brand) {
   if (!brand) return false;
   return profile.brands.airlines.includes(brand) || profile.brands.hotels.includes(brand);
 }
+const isVisa = (card) => String(card.network || "").toUpperCase() === "VISA";
 
-/* ── earn rate per v5 spend category ─────────────────────────────────────── */
+/* ── earn rates ──────────────────────────────────────────────────────────── */
 
-/** Points per $ this card earns on one v5 category, for this person. */
-export function earnRate(card, category, profile) {
+/** Best catalog key for a category: [rate, key]. Base = General. */
+function bestKey(card, keys) {
   const r = card.earnRates || {};
-  const base = r.General ?? 1;
-  const best = (...keys) => keys.reduce((m, k) => (has(r, k) ? Math.max(m, r[k]) : m), base);
-  const brand = cardBrand(card);
-  const brandPicked = pickedBrand(profile, brand);
-  const merchantKeys = profile.brands.everyday.flatMap((b) => MERCHANT_KEYS[b] || []);
-
-  switch (category) {
-    case "groceries": return best("Groceries", ...merchantKeys.filter((k) => k === "WholeFoods"));
-    case "dining":    return best("Dining", "Restaurants");
-    case "gas":       return best("Gas");
-    case "transit":   return best("Transit");
-    case "online":    return best(...merchantKeys.filter((k) => k !== "WholeFoods"));
-    case "bills":     return best("Streaming", "Wireless", "Internet", "Utilities");
-    case "other":     return base;
-    case "rent":      return has(r, "Rent") ? r.Rent : 0;   // most cards can't pay rent without a fee
-    case "flights": {
-      const airlineKeys = Object.entries(AIRLINE_KEYS).filter(([, a]) => profile.brands.airlines.includes(a)).map(([k]) => k);
-      /* A co-brand's "Flights" bonus is really its own airline's flights. */
-      if (brand && AIRLINE_CURRENCIES.has(brand) && !brandPicked) return best(...airlineKeys);
-      return best("Flights", "Travel", ...airlineKeys);
-    }
-    case "hotels": {
-      if (brand && HOTEL_CURRENCIES.has(brand) && !brandPicked) return best("Travel");
-      return best("Hotels", "Travel");
-    }
-    default: return base;
-  }
-}
-
-export const CATEGORIES = ["groceries", "dining", "gas", "transit", "online", "bills", "other", "rent", "flights", "hotels"];
-
-/** Can this card's points move to partners by itself? (transferAccess lists
-    its own currency, e.g. Sapphire Preferred → ["chase"]). */
-export const transfersAlone = (card) => (card.transferAccess || []).includes(card.pointCurrency);
-
-/** Cents per point for THIS card. A bank-points card that can't transfer on
-    its own (Freedom, Ink Cash, Double Cash…) is worth the partner rate only
-    when the wallet also has a card that can; otherwise it's cash. */
-export function cardCpp(card, profile, wallet = []) {
-  const cur = card.pointCurrency;
-  if (!BANK_CURRENCIES.has(cur) || transfersAlone(card)) return cppForProfile(cur, profile);
-  const paired = wallet.some((w) => w.pointCurrency === cur && transfersAlone(w));
-  if (paired) return cppForProfile(cur, profile);
-  /* Can't reach partners: worth cash (or the person's own lower value). */
-  return Math.min(cppFor(cur, "cash"), cppForProfile(cur, profile));
-}
-
-/** { category: $/yr } this card would earn on ALL of the person's spend.
-    `wallet` = the other cards it would sit beside (for points pairing). */
-export function rewardsByCategory(card, profile, wallet = []) {
-  const spend = annualSpend(profile);
-  const cpp = cardCpp(card, profile, wallet);
-  const out = {};
-  for (const cat of CATEGORIES) out[cat] = (spend[cat] || 0) * earnRate(card, cat, profile) * (cpp / 100);
+  let out = [r.General ?? 1, "General"];
+  for (const k of keys) if (has(r, k) && r[k] > out[0]) out = [r[k], k];
   return out;
 }
 
-/** Standalone annual rewards in $ (as if every purchase went on this card). */
+/** Keys that earn a bonus in a category for this person. */
+function keysFor(card, category, profile) {
+  const brand = cardBrand(card);
+  const brandPicked = pickedBrand(profile, brand);
+  switch (category) {
+    case "groceries": return ["Groceries", ...(profile.brands.everyday.includes("whole foods") ? ["WholeFoods"] : [])];
+    case "dining": return ["Dining", "Restaurants"];
+    case "warehouse": {
+      const club = profile.warehouseClub;
+      if (club === "costco") return ["CostcoBuy", ...(card.id === "bjs-one-plus" ? [] : ["Wholesale"])];
+      if (club === "bjs") return ["Wholesale"];
+      return card.id === "bjs-one-plus" ? [] : ["Wholesale"];
+    }
+    case "gas": return ["Gas"];
+    case "gasCostco": return ["CostcoGas", "Gas"];
+    case "ev": return ["EV"];
+    case "transit": return ["Transit"];
+    case "flights": {
+      const airlineKeys = Object.entries(AIRLINE_KEYS).filter(([, a]) => profile.brands.airlines.includes(a)).map(([k]) => k);
+      /* A co-brand's "Flights" bonus is really its own airline's flights. */
+      if (brand && AIRLINE_CURRENCIES.has(brand) && !brandPicked) return airlineKeys;
+      return ["Flights", "Travel", ...airlineKeys];
+    }
+    case "hotels": {
+      const hotelKeys = Object.entries(HOTEL_KEYS).filter(([, h]) => profile.brands.hotels.includes(h)).map(([k]) => k);
+      if (brand && HOTEL_CURRENCIES.has(brand) && !brandPicked) return ["Travel"];
+      return ["Hotels", "Travel", ...hotelKeys];
+    }
+    case "rentals": return ["VacationRentals", "Travel"];
+    case "streaming": return ["Streaming", "Entertainment"];
+    case "drugstores": return ["Drugstores"];
+    case "online": return ["Online"];
+    case "phone": return ["Wireless", "Internet", "Utilities", "Mobile", ...(profile.brands.everyday.includes("t-mobile") ? ["TMobile"] : [])];
+    case "rent": return ["Rent"];
+    default: return [];
+  }
+}
+
+/** Points per $ this card earns on one category (before caps), for this person. */
+export function earnRate(card, category, profile) {
+  if (category === "rent") return has(card.earnRates, "Rent") ? card.earnRates.Rent : 0;   // most cards can't pay rent without a fee
+  if (category === "gas" && profile.gasAt === "costco") return earnRate(card, "gasCostco", profile);
+  return bestKey(card, keysFor(card, category, profile))[0];
+}
+
+/** Is this card usable at all for this spend? Costco takes only Visa in store. */
+function usable(card, bucket, profile) {
+  if (bucket === "gasCostco") return isVisa(card);
+  if (bucket === "warehouse" && profile.warehouseClub === "costco") return isVisa(card);
+  return true;
+}
+
+const capFor = (card, key) => (card.earnCaps || []).findIndex((c) => c.keys.includes(key));
+
+/**
+ * Lanes: every (card, spend bucket) way to earn, with its rate and caps.
+ *   { cardId, bucket, rate, pools: [{ id, cap }], exclusive }
+ * A pool is a shared annual dollar cap: one card's cap may cover several
+ * keys (Costco gas + EV); rotating 5% shares one pool per category across
+ * every rotating card (they all chase the same quarter's categories).
+ */
+export function lanesFor(card, profile, spend = buckets(profile)) {
+  const out = [];
+  const r = card.earnRates || {};
+  const general = r.General ?? 1;
+  for (const [bucket, dollars] of Object.entries(spend)) {
+    if (!dollars || !usable(card, bucket, profile)) continue;
+    const baseRate = bucket === "rent" ? 0 : general;
+    const [rate, key] = bucket === "rent" ? [has(r, "Rent") ? r.Rent : 0, "Rent"] : bestKey(card, keysFor(card, bucket, profile));
+    const ci = capFor(card, key);
+    if (rate > baseRate && ci >= 0) {
+      const cap = card.earnCaps[ci];
+      out.push({ cardId: card.id, bucket, rate, bonus: true, pools: [{ id: `${card.id}#cap${ci}`, cap: cap.annual }], exclusive: cap.single ? `${card.id}#cap${ci}` : null });
+      out.push({ cardId: card.id, bucket, rate: Math.max(baseRate, cap.after ?? baseRate), pools: [], exclusive: null });
+    } else {
+      out.push({ cardId: card.id, bucket, rate, bonus: key !== "General", pools: [], exclusive: null });
+    }
+    /* Custom Cash: 5% on its single top eligible category. */
+    if (has(r, "Top") && TOP_ELIGIBLE.includes(bucket === "gasCostco" ? "gas" : bucket)) {
+      const ti = capFor(card, "Top");
+      const cap = ti >= 0 ? card.earnCaps[ti] : { annual: Infinity };
+      out.push({ cardId: card.id, bucket, rate: r.Top, pools: [{ id: `${card.id}#top`, cap: cap.annual }], exclusive: `${card.id}#top` });
+    }
+    /* Rotating 5% (Freedom Flex, Discover it, Chase Freedom): a share of each
+       eligible category, $1,500 a quarter. */
+    const rot = card.rotating || (has(r, "Rotating") ? { rate: r.Rotating, quarterlyCap: 1500 } : null);
+    if (rot && ROTATING_ELIGIBLE.includes(bucket === "gasCostco" ? "gas" : bucket)) {
+      out.push({ cardId: card.id, bucket, rate: rot.rate, pools: [{ id: `${card.id}#rot`, cap: rot.quarterlyCap * 4 }, { id: `rotating#${bucket}`, cap: dollars * ROTATING_SHARE }], exclusive: null, rotating: true });
+    }
+    /* One store's own earn key applies to that store's share of online spend. */
+    if (bucket === "online") {
+      for (const [store, keys] of Object.entries(STORE_KEYS)) {
+        if (!profile.brands.everyday.includes(store)) continue;
+        for (const k of keys) if (has(r, k) && r[k] > rate) out.push({ cardId: card.id, bucket, rate: r[k], pools: [{ id: `store#${store}`, cap: dollars * STORE_ONLINE_SHARE }], exclusive: null, store });
+      }
+    }
+  }
+  return out;
+}
+
+/** Spend buckets: categories, with gas split by where they buy it. */
+export function buckets(profile) {
+  const a = annualSpend(profile);
+  const out = { ...a };
+  const costcoShare = profile.gasAt === "costco" ? 1 : profile.gasAt === "both" ? 0.5 : 0;
+  out.gas = a.gas * (1 - costcoShare);
+  out.gasCostco = a.gas * costcoShare;
+  return out;
+}
+
+/** Cents per point for each card IN this wallet (value depends on the wallet). */
+export function walletCpp(cards, profile) {
+  const ids = cards.map((c) => c.id);
+  return Object.fromEntries(cards.map((c) => [c.id, cardPointValue(c, profile, ids).cpp]));
+}
+
+/**
+ * E(W): allocate every dollar of spend to the best net lane, caps respected.
+ * Returns { total, byBucket: { bucket: [{ cardId, dollars, rate, cpp, pct, value }] },
+ *           perCard: { cardId: { value, dollars } }, cpp: { cardId: cpp } }
+ */
+export function allocateSpend(cards, profile, opts = {}) {
+  const spend = opts.spend || buckets(profile);
+  const cpp = opts.cpp || walletCpp(cards, profile);
+  const lanes = [];
+  for (const c of cards) for (const l of (opts.lanes?.[c.id] || lanesFor(c, profile, spend))) lanes.push({ ...l, pct: l.rate * cpp[c.id] });
+  /* Ties go to the card whose bonus is FOR this spend (the Costco Visa's 2%
+     at Costco over a flat 2% card), then bigger buckets, then card id. */
+  lanes.sort((a, b) => b.pct - a.pct || (b.bonus ? 1 : 0) - (a.bonus ? 1 : 0) || (spend[b.bucket] - spend[a.bucket]) || (a.cardId < b.cardId ? -1 : a.cardId > b.cardId ? 1 : 0));
+  const left = { ...spend };
+  const poolLeft = {};
+  const exclusiveUsed = {};
+  const byBucket = {};
+  const perCard = Object.fromEntries(cards.map((c) => [c.id, { value: 0, dollars: 0 }]));
+  let total = 0;
+  for (const l of lanes) {
+    if (!(left[l.bucket] > 0) || l.pct <= 0) continue;
+    if (l.exclusive) {
+      const used = exclusiveUsed[l.exclusive];
+      if (used && used !== l.bucket) continue;
+    }
+    let room = left[l.bucket];
+    for (const pl of l.pools) {
+      if (!(pl.id in poolLeft)) poolLeft[pl.id] = pl.cap;
+      room = Math.min(room, poolLeft[pl.id]);
+    }
+    if (room <= 0) continue;
+    const value = (room * l.pct) / 100;
+    left[l.bucket] -= room;
+    for (const pl of l.pools) poolLeft[pl.id] -= room;
+    if (l.exclusive) exclusiveUsed[l.exclusive] = l.bucket;
+    (byBucket[l.bucket] ||= []).push({ cardId: l.cardId, dollars: room, rate: l.rate, cpp: cpp[l.cardId], pct: l.pct, value, rotating: !!l.rotating, capped: l.pools.length > 0 });
+    perCard[l.cardId].value += value;
+    perCard[l.cardId].dollars += room;
+    total += value;
+  }
+  return { total, byBucket, perCard, cpp, unallocated: left };
+}
+
+/* ── v5-compatible helpers (rewards for one card) ───────────────────────── */
+
+/** Cents per point for THIS card beside `wallet` (Part E unlocks). */
+export function cardCpp(card, profile, wallet = []) {
+  return cardPointValue(card, profile, wallet.map((w) => (typeof w === "string" ? w : w.id))).cpp;
+}
+
+/** Can this card's points move to partners by itself? */
+export const transfersAlone = (card) => (card.transferAccess || []).includes(card.pointCurrency);
+
+/** { category: $/yr } this card would earn on ALL of the person's spend, caps applied. */
+export function rewardsByCategory(card, profile, wallet = []) {
+  const cards = [card];
+  const cpp = { [card.id]: cardCpp(card, profile, wallet) };
+  const a = allocateSpend(cards, profile, { cpp });
+  const out = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+  for (const [bucket, rows] of Object.entries(a.byBucket)) {
+    const cat = bucket === "gasCostco" ? "gas" : bucket;
+    out[cat] = (out[cat] || 0) + rows.reduce((t, r) => t + r.value, 0);
+  }
+  return out;
+}
+
 export function rewardsValue(card, profile, wallet = []) {
   return Math.round(Object.values(rewardsByCategory(card, profile, wallet)).reduce((a, b) => a + b, 0));
 }
 
-/** Best $/yr per category across a set of cards (each valued beside the others). */
+/** $/yr per category earned by a set of cards together (each at its wallet value). */
 export function bestByCategory(cards, profile) {
-  const best = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
-  for (const card of cards) {
-    const r = rewardsByCategory(card, profile, cards);
-    for (const c of CATEGORIES) best[c] = Math.max(best[c], r[c]);
+  const a = allocateSpend(cards, profile);
+  const out = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+  for (const [bucket, rows] of Object.entries(a.byBucket)) {
+    const cat = bucket === "gasCostco" ? "gas" : bucket;
+    out[cat] = (out[cat] || 0) + rows.reduce((t, r) => t + r.value, 0);
   }
-  return best;
+  return out;
 }
 
-/** Extra $/yr this card adds over a wallet: it only counts where it beats
-    what the wallet already earns (§3.3 step 3). */
+/** Extra $/yr of EARNING this card adds to a wallet: E(W ∪ k) − E(W). */
 export function marginalRewards(card, walletCards, profile) {
-  const have = bestByCategory(walletCards, profile);
-  const mine = rewardsByCategory(card, profile, walletCards);
-  let t = 0;
-  for (const c of CATEGORIES) t += Math.max(0, mine[c] - have[c]);
-  return Math.round(t);
+  const without = allocateSpend(walletCards, profile).total;
+  const withIt = allocateSpend([...walletCards.filter((c) => c.id !== card.id), card], profile).total;
+  return Math.round(withIt - without);
 }
 
 /** "≈ X% back" number for a category on this card, for this person. */
@@ -141,25 +279,103 @@ export function pctBackFor(card, category, profile, wallet = []) {
 
 /* ── benefits ────────────────────────────────────────────────────────────── */
 
-function merchantPicked(name, profile) {
-  const picks = [...profile.brands.everyday, ...profile.brands.airlines];
-  return picks.some((b) => MERCHANT_WORDS[b]?.test(name));
+const slug = (s) => String(s).toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+export const creditId = (card, credit) => `${card.id}#${slug(credit.name)}`;
+
+const isTravelKind = (k) => k === "hotel" || k === "portal" || k === "airline";
+/** Split / hard-to-use travel credit: a hotel, portal or airline credit paid
+    in halves or quarters (The Edit, FHR, Hilton Aspire resort + flight …). */
+export const isSplitCredit = (credit) => isTravelKind(credit.kind) && (credit.cadence === "semiannual" || credit.cadence === "quarterly");
+
+const HOTEL_WORDS = { hilton: /hilton/i, marriott: /marriott|ritz|st\. regis/i, hyatt: /hyatt/i, ihg: /\bihg\b/i };
+const AIRLINE_WORDS = { delta: /delta/i, united: /united/i, aa: /american airlines|\baa\b|admirals/i, aeroplan: /air canada/i, southwest: /southwest/i, jetblue: /jetblue/i, alaska: /alaska/i };
+
+/** Which airline / hotel brand a travel credit belongs to (null = any). */
+function travelBrandOf(card, credit) {
+  const brand = cardBrand(card);
+  for (const [k, re] of Object.entries({ ...HOTEL_WORDS, ...AIRLINE_WORDS })) if (re.test(credit.name)) return k;
+  if (credit.kind === "hotel" && brand && HOTEL_CURRENCIES.has(brand)) return brand;
+  return null;
 }
 
-function loungeValue(card, profile) {
+/**
+ * How much of a credit this person gets: { factor, reason, split, brands, planned }.
+ * `reason` is plain words for "Benefits you wouldn't use".
+ */
+export function creditUsage(card, credit, profile) {
+  const trips = profile.travel.trips;
+  const nights = hotelNights(profile);
+  const id = creditId(card, credit);
+  const cad = credit.cadence || "annual";
+  if (isBrandCredit(credit)) {
+    const brands = brandsForCredit(credit);
+    if (!creditPicked(credit, profile)) {
+      const label = PERK_BY_KEY[brands[0]]?.label || "that brand";
+      return { factor: 0, reason: `You didn't pick ${label}`, brands };
+    }
+    const f = (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * (credit.kind === "promo" ? PROMO_FACTOR : 1);
+    return { factor: f, reason: null, brands };
+  }
+  if (isGeneralCredit(credit)) return { factor: BRAND_CREDIT_CADENCE[cad] ?? 0.9, reason: null, brands: [] };
+  if (credit.kind === "membership" && TRAVEL_MEMBERSHIP.test(credit.name)) {
+    return trips > 0 ? { factor: 0.9, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You don't fly", dedupe: "globalEntry" };
+  }
+  if (isSplitCredit(credit)) {
+    const brand = travelBrandOf(card, credit);
+    const brandOk = !brand || pickedBrand(profile, brand);
+    const enough = credit.kind === "airline" ? trips >= SPLIT_MIN_TRIPS : nights >= SPLIT_MIN_NIGHTS;
+    const planned = profile.planAround.includes(id);
+    if (planned && brandOk && enough) return { factor: SPLIT_CREDIT_FACTOR, reason: null, split: true, planned };
+    const why = !brandOk ? `You didn't pick ${brand}` : !enough ? (credit.kind === "airline" ? "Needs 2+ trips a year" : "Needs 4+ paid hotel nights a year") : "Split credit — $0 unless you plan around it";
+    return { factor: 0, reason: why, split: true, planned, canPlan: brandOk && enough };
+  }
+  if (credit.kind === "broad") return { factor: trips > 0 ? 0.95 : 0.6, reason: null };
+  if (credit.kind === "hotel") {
+    const brand = travelBrandOf(card, credit);
+    return brand && !pickedBrand(profile, brand) ? { factor: 0, reason: `You didn't pick ${brand}` } : { factor: nights >= 2 ? 0.8 : 0, reason: nights >= 2 ? null : "You rarely stay in hotels" };
+  }
+  if (credit.kind === "airline") {
+    const brand = travelBrandOf(card, credit);
+    if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
+    if (!trips) return { factor: 0, reason: "You don't fly" };
+    return { factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null };
+  }
+  if (credit.kind === "portal") {
+    const brand = travelBrandOf(card, credit);
+    if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
+    return { factor: CREDIT_USAGE.portal({ trips }), reason: trips ? null : "You don't travel" };
+  }
+  const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
+  return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
+}
+
+/** Lounge value per network for this card: { [networkKey]: $ }. */
+export function loungeNetworks(card, profile) {
   const l = card.loungeAccess;
-  if (!l || !Array.isArray(l.networks)) return null;
-  const usable = l.networks.filter((n) => {
+  if (!l || !Array.isArray(l.networks)) return {};
+  const interest = LOUNGE_INTEREST[profile.travel.lounges] ?? 0;
+  if (!interest) return {};
+  let visits = profile.travel.trips * 2 * interest;
+  const out = {};
+  for (const n of l.networks) {
     const air = AIRLINE_LOUNGES.find((a) => a.pattern.test(n));
-    return !air || profile.brands.airlines.includes(air.airline);
-  });
-  if (!usable.length) return null;
-  let visits = profile.travel.trips * 2 * (LOUNGE_INTEREST[profile.travel.lounges] ?? 0);
-  /* Pass-limited access (e.g. "2 one-time passes"): never more visits than passes. */
-  const passOnly = usable.every((n) => /pass|visit/i.test(n));
-  if (passOnly && l.passes) visits = Math.min(visits, l.passes);
-  const value = Math.min(visits * LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP);
-  return { label: `Airport lounges (${usable.join(", ")})`, face: LOUNGE_RETAIL_CAP, value: Math.round(value), kind: "lounge" };
+    if (air && !profile.brands.airlines.includes(air.airline)) continue;
+    let v = visits;
+    const passes = /(\d+)\s*(?:one-time\s*)?(?:passes|visits)/i.exec(n);
+    if (passes) v = Math.min(v, Number(passes[1]));
+    else if (/pass|visit/i.test(n) && l.passes) v = Math.min(v, l.passes);
+    const key = networkKey(n) || n;
+    const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport);
+    out[key] = Math.max(out[key] || 0, Math.min(val, LOUNGE_RETAIL_CAP));
+  }
+  return out;
+}
+
+/** Lounge $ for a set of network values: best one + a small share of the rest, capped. */
+export function loungeTotal(networks) {
+  const vals = Object.values(networks).sort((a, b) => b - a);
+  if (!vals.length) return 0;
+  return Math.min(LOUNGE_RETAIL_CAP, vals[0] + SECOND_LOUNGE_SHARE * vals.slice(1).reduce((a, b) => a + b, 0));
 }
 
 function statusValue(status, profile) {
@@ -169,83 +385,108 @@ function statusValue(status, profile) {
   return STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0;
 }
 
-/** Itemized benefit value: { total, items: [{ label, face, value, kind }] }. */
-export function benefitBreakdown(card, profile) {
+/** Protections this card carries (keys from benefitUsage PROTECTIONS). */
+export function protectionsOf(card) {
+  const text = [...(card.travelProtections || []), ...(card.benefits || [])].join(" | ");
+  return PROTECTIONS.filter((p) => p.pattern.test(text));
+}
+
+/**
+ * Itemized benefits for ONE card: { total, items, unused }.
+ *   items  [{ id, label, face, value, kind, dedupe?, networks? }]  — value > 0
+ *   unused [{ id, label, face, reason, split, canPlan, planned }]   — counted $0
+ * `ctx.cardSpend` = dollars this card gets in the wallet (spend-gated perks);
+ * `ctx.wallet` = card ids beside it (for points value).
+ */
+export function benefitBreakdown(card, profile, ctx = {}) {
   const items = [];
+  const unused = [];
   const trips = profile.travel.trips;
+  const nights = hotelNights(profile);
   const brand = cardBrand(card);
   const pickedCardBrand = pickedBrand(profile, brand);
-  const totalSpend = Object.values(annualSpend(profile)).reduce((a, b) => a + b, 0);
+  const reachable = (need) => !need || (ctx.cardSpend ?? totalAnnualSpend(profile)) >= need;
 
   for (const c of card.credits || []) {
-    const fn = CREDIT_USAGE[c.kind] || CREDIT_USAGE.merchant;
-    const travelMembership = TRAVEL_MEMBERSHIP.test(c.name);
-    const usage = fn({
-      trips, pickedCardBrand, travelMembership,
-      pickedMerchant: merchantPicked(c.name, profile),
-      monthly: c.cadence === "monthly",
-    }) * (c.use === "HARD" ? HARD_TO_USE : 1);
-    const store = STORE_CREDIT_KINDS.has(c.kind) || (c.kind === "membership" && !travelMembership);
-    items.push({ label: c.name, face: c.annual, value: Math.round(c.annual * usage), kind: "credit", store });
+    const u = creditUsage(card, c, profile);
+    const id = creditId(card, c);
+    const value = Math.round(c.annual * u.factor);
+    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", dedupe: u.dedupe || (brandsForCredit(c).includes("clear") ? "clear" : null), split: !!u.split });
+    else unused.push({ id, label: c.name, face: c.annual, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
 
   for (const n of card.freeNightCertificates || []) {
-    if (n.spend && n.spend > totalSpend) continue;            // unreachable for this person
     const pc = card.pointCurrency;
     const points = n.pointCap || UNCAPPED_FREE_NIGHT_POINTS[pc] || 0;
-    const face = points * (cppFor(pc, "partners") / 100);
-    const usage = FREE_NIGHT_USAGE({ trips, pickedCardBrand });
-    items.push({ label: n.name, face: Math.round(face), value: Math.round(face * usage), kind: "freeNight" });
+    const face = Math.round(points * ((VAL[pc] ?? 0) / 100));
+    const p = pickedCardBrand && nights > 0 && reachable(n.spend) ? FREE_NIGHT_P_USE : 0;
+    const id = `${card.id}#night-${slug(n.name)}`;
+    if (p > 0) items.push({ id, label: n.name, face, value: Math.round(face * p), kind: "freeNight" });
+    else unused.push({ id, label: n.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : !nights ? "You don't stay in hotels" : `Needs $${n.spend.toLocaleString("en-US")} a year on this card` });
   }
 
   for (const cc of card.companionCertificates || []) {
-    if (cc.spend && cc.spend > totalSpend) continue;
     const face = cc.estValue || 0;
-    items.push({ label: cc.name, face, value: Math.round(face * COMPANION_USAGE({ trips, pickedCardBrand })), kind: "companion" });
+    const ok = pickedCardBrand && trips >= 2 && reachable(cc.spend);
+    const id = `${card.id}#companion-${slug(cc.name)}`;
+    if (ok) items.push({ id, label: cc.name, face, value: Math.round(face * COMPANION_P_USE * Math.min(1, trips / 3)), kind: "companion" });
+    else unused.push({ id, label: cc.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : trips < 2 ? "Needs 2+ trips a year" : `Needs $${(cc.spend || 0).toLocaleString("en-US")} a year on this card` });
   }
 
-  const lounge = loungeValue(card, profile);
-  if (lounge) items.push(lounge);
+  const networks = loungeNetworks(card, profile);
+  const lounge = loungeTotal(networks);
+  if (lounge > 0) items.push({ id: `${card.id}#lounge`, label: `Airport lounges (${(card.loungeAccess.networks || []).join(", ")})`, face: LOUNGE_RETAIL_CAP, value: Math.round(lounge), kind: "lounge", dedupe: "lounge", networks });
+  else if (card.loungeAccess) unused.push({ id: `${card.id}#lounge`, label: "Airport lounges", face: LOUNGE_RETAIL_CAP, reason: profile.travel.lounges === "no" ? "You said lounges don't matter" : trips ? "No lounge where you fly from" : "You don't fly" });
 
   const bags = card.checkedBagBenefits;
-  if (bags && brand && AIRLINE_CURRENCIES.has(brand) && pickedCardBrand) {
+  if (bags && brand && AIRLINE_CURRENCIES.has(brand)) {
     const v = BAG_FEE * (bags.bags || 1) * trips * 2;
-    items.push({ label: `Free checked bag${(bags.bags || 1) > 1 ? "s" : ""}`, face: v, value: Math.round(v), kind: "bags" });
+    /* Two cards from the same airline don't waive two sets of bag fees. */
+    if (pickedCardBrand && v > 0) items.push({ id: `${card.id}#bags`, label: `Free checked bag${(bags.bags || 1) > 1 ? "s" : ""}`, face: v, value: Math.round(v), kind: "bags", dedupe: `bags:${brand}` });
+    else unused.push({ id: `${card.id}#bags`, label: "Free checked bags", face: 0, reason: pickedCardBrand ? "You don't fly" : `You didn't pick ${brand}` });
   }
 
   const status = statusValue(card.hotelStatus, profile) + statusValue(card.airlineStatus, profile);
-  if (status) items.push({ label: "Elite status", face: status, value: status, kind: "status" });
+  if (status) items.push({ id: `${card.id}#status`, label: "Elite status", face: status, value: status, kind: "status" });
 
   if (card.anniversaryPoints) {
-    const v = card.anniversaryPoints * (cppForProfile(card.pointCurrency, profile) / 100);
-    items.push({ label: `${card.anniversaryPoints.toLocaleString("en-US")} bonus points each year`, face: Math.round(v), value: Math.round(v), kind: "points" });
+    const cpp = cardPointValue(card, profile, ctx.wallet || []).cpp;
+    const v = Math.round(card.anniversaryPoints * (cpp / 100));
+    items.push({ id: `${card.id}#anniversary`, label: `${card.anniversaryPoints.toLocaleString("en-US")} bonus points each year`, face: v, value: v, kind: "points" });
   }
 
-  return { total: items.reduce((t, i) => t + i.value, 0), items };
+  for (const p of protectionsOf(card)) {
+    if (p.needsTrips && !trips) continue;
+    items.push({ id: `${card.id}#${p.key}`, label: p.label, face: p.value, value: p.value, kind: "protection", dedupe: p.key });
+  }
+
+  return { total: items.reduce((t, i) => t + i.value, 0), items, unused };
 }
 
 export const benefitValue = (card, profile) => benefitBreakdown(card, profile).total;
 
 /* Membership a card needs to work (Robinhood Gold, Prime, Costco) counts as
-   part of its yearly cost — unless the person picked that store in survey
-   step 7, in which case they pay for it anyway. */
+   part of its yearly cost — unless the person already pays for it. */
 const MEMBERSHIP_BRAND = { "Amazon Prime": "amazon", "Costco membership": "costco" };
 export function cardFee(card, profile) {
   const sub = card.requiresSubscription;
   const brand = sub && MEMBERSHIP_BRAND[sub.name];
-  const subFee = sub && !(brand && profile?.brands?.everyday?.includes(brand)) ? sub.annual || 0 : 0;
+  const already = brand && (profile?.brands?.everyday?.includes(brand) || (brand === "costco" && (profile?.spend?.warehouse > 0 && profile?.warehouseClub === "costco")));
+  const subFee = sub && !already ? sub.annual || 0 : 0;
   return (card.annualFee || 0) + subFee;
 }
 
-/** Everything one card is worth to one person (beside `wallet`, if given). */
+/** Everything one card is worth to one person on its own (beside `wallet` for points). */
 export function cardValue(card, profile, wallet = []) {
-  const benefits = benefitBreakdown(card, profile);
-  const rewards = rewardsValue(card, profile, wallet);
+  const ids = wallet.map((w) => (typeof w === "string" ? w : w.id));
+  const benefits = benefitBreakdown(card, profile, { wallet: ids });
+  const rewards = rewardsValue(card, profile, ids);
   const fee = cardFee(card, profile);
   return {
     cardId: card.id,
     benefitValue: benefits.total,
     benefits: benefits.items,
+    unusedBenefits: benefits.unused,
     rewardsValue: rewards,
     annualFee: fee,
     netValue: benefits.total + rewards - fee,
@@ -256,7 +497,6 @@ export function cardValue(card, profile, wallet = []) {
 /* ── roles (§3.2) — derived from data, no hand tagging ───────────────────── */
 
 export const ROLES = ["Lounge card", "Hotel keeper", "Airline keeper", "Starter", "Everyday earner", "Category earner"];
-
 const BROAD_LOUNGE = /priority pass|centurion|capital one lounge|sapphire lounge|membership/i;
 
 export function rolesFor(card) {
@@ -271,10 +511,11 @@ export function rolesFor(card) {
   if (["student", "secured"].includes(card.cardType) || tags.some((t) => ["builder", "credit-tool", "balance-transfer"].includes(t))) out.push("Starter");
   const r = card.earnRates || {};
   const general = r.General ?? 1;
-  const bonus = Object.entries(r).some(([k, v]) => k !== "General" && v > general);
+  const bonus = Object.entries(r).some(([k, v]) => k !== "General" && v > general) || !!card.rotating;
   if (general >= 1.5) out.push("Everyday earner");
   if (bonus || !out.length) out.push("Category earner");
   return out;
 }
 
 export const primaryRole = (card) => rolesFor(card)[0];
+export { BANK_CURRENCIES };

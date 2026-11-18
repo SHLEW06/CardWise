@@ -30,7 +30,8 @@ describe("Checkout ranks by effective % back", () => {
   });
 
   it("(b) beside a Sapphire Preferred the same Freedom points are worth more than cash", () => {
-    const r = findRewards({ query: "Home Depot", amount: 0 }, ["freedom-unlimited", "csp"], [], {}, { v5Profile: travel });
+    /* v6 §20: worth more than cash only once they'd use a partner (here United). */
+    const r = findRewards({ query: "Home Depot", amount: 0 }, ["freedom-unlimited", "csp"], [], {}, { v5Profile: { ...travel, brands: { airlines: ["united", "aeroplan"] } } });
     expect(r.cards.find((c) => c.cardId === "freedom-unlimited").base.pct).toBeGreaterThan(1.5);
   });
 });

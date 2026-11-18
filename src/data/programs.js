@@ -115,6 +115,55 @@ export const SCHEDULED_RATIOS = [
     note: "Bilt → World of Hyatt drops from 1:1 to 4:3 on Jan 1, 2027." },
 ];
 
+/* ── Unlock rules (v6 §20, Part E): a currency's value depends on the WALLET,
+   not on one card. Data, read by engine/v5/pointValues.js.
+     unlockCards   any of these in the wallet → full partner list
+     any           every card earning this currency can transfer
+     alone         what points are worth with no unlock card:
+                     { cpp }                     a fixed cash value, or
+                     { partners, ratioFactor }   a short partner list at a
+                                                 reduced ratio, floored at cash
+     convertFrom   cash-back cards whose rewards become this currency when an
+                   unlock card is in the wallet (Capital One)
+     boost         "up to" travel-portal values on select bookings — shown as
+                   "up to", never used as a flat rate
+   Checked 2026-11-18 against the issuers' card pages where noted; items
+   marked `verify` are listed in docs/PROGRESS.md. */
+export const TRANSFER_RULES = {
+  chase: {
+    unlockCards: ["csp", "csr", "ink-preferred"],
+    alone: { cpp: 1.0 },
+    boost: {
+      csp: { upTo: 1.5, premiumCabinUpTo: 1.75 },
+      "ink-preferred": { upTo: 1.5, premiumCabinUpTo: 1.75 },
+      csr: { upTo: 2.0 },
+    },
+    legacy: "Points earned before Oct 26, 2025 by cardholders who opened before June 23, 2025 keep 1.25¢ (Preferred) / 1.5¢ (Reserve) in Chase Travel until Oct 26, 2027.",
+    note: "Freedom points are worth 1¢ on their own. Add a Sapphire Preferred or Reserve and they can move to airlines and hotels, or get up to 1.5–2¢ on select Chase Travel bookings.",
+  },
+  citi: {
+    unlockCards: ["citi-strata", "citi-strata-elite"],
+    /* No-fee ThankYou cards reach a short list at a reduced ratio (verify:
+       Citi's no-fee transfer list and ratio weren't re-read in v6). */
+    alone: { partners: ["jetblue", "choice", "wyndham"], ratioFactor: 0.7, verify: true },
+    note: "Double Cash and Custom Cash points reach only a few partners. A Strata Premier or Strata Elite opens the full list.",
+  },
+  c1: {
+    unlockCards: ["venture", "venture-x", "venture-business", "venture-x-business", "venture-one"],
+    any: false,
+    alone: { cpp: 1.0 },
+    convertFrom: ["quicksilver", "quicksilver-one", "savor", "savor-one"],
+    note: "Quicksilver and Savor cash back turns into miles only beside a Venture, Venture X or Spark Miles.",
+  },
+  wf: {
+    unlockCards: ["wf-autograph", "wf-autograph-journey", "wf-attune"],
+    alone: { cpp: 1.0 },
+    note: "Autograph and Autograph Journey points move to partners.",
+  },
+  amex: { any: true, alone: { cpp: 1.0 }, note: "Every Membership Rewards card can move points to partners." },
+  bilt: { any: true, alone: { cpp: 1.0 }, note: "Every Bilt card can move points to partners." },
+};
+
 export const isBank = (k) => !!PROGRAMS[k];
 export const programShort = (k) => (PROGRAMS[k] ? PROGRAMS[k].short : (LOYALTY[k] ? LOYALTY[k].name : "Cash back"));
 

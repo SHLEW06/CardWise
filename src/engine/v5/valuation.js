@@ -11,6 +11,7 @@
    ========================================================================== */
 
 import { VAL, VAL_META, VALUATIONS_AS_OF } from "../../data/valuations.js";
+import { currencyValue } from "./pointValues.js";
 
 export const POINTS_MODES = ["cash", "portal", "partners"];
 
@@ -48,12 +49,10 @@ export function cppFor(currency, mode = "partners") {
 export const FLEXIBLE_CURRENCIES = ["chase", "amex", "citi", "c1", "bilt"];
 export const POINT_VALUE_RANGE = { min: 0.5, max: 3.0, step: 0.05 };   // cents per point
 
-/** cpp for this person: their slider value for a flexible currency, if set,
-    otherwise the value from their points-use mode. */
+/** cpp for this person (v6 Part E): their partner picks, beside the cards
+    they hold. The v5 sliders (`pointValues`) no longer price anything. */
 export function cppForProfile(currency, profile) {
-  const own = profile?.pointValues?.[currency];
-  if (FLEXIBLE_CURRENCIES.includes(currency) && Number.isFinite(own)) return own;
-  return cppFor(currency, profile?.pointsUse);
+  return currencyValue(currency, profile, profile?.cardsHeld || []).cpp;
 }
 
 /** Percent back for an earn rate (points per $) at a cpp (cents). */

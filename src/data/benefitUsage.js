@@ -108,5 +108,39 @@ export const STATUS_VALUE = [
   { pattern: /silver|discoverist|25k/i, value: 50 },
 ];
 
-/* Insurance / protections are shown as text and never counted. */
+/* ── v6 (docs/REDESIGN_SPEC.md §22, docs/METHODOLOGY.md §2) ─────────────────
+   These replace the v5 store-credit factors above for the v6 engine.        */
+
+/* Brand credits count ONLY when the person picked one of the brands
+   (data/creditBrands.js). Factor by how often the credit resets — the more
+   pieces, the more of it gets forgotten. v5 used a flat 0.8 for picked
+   brands; the brief's cadence factors are used as given (annual 0.9 ≥ 0.8,
+   monthly 0.5 is the harder-to-use drip). Unpicked → $0 (was 0.2). */
+export const BRAND_CREDIT_CADENCE = { annual: 0.9, "4yr": 0.9, semiannual: 0.75, quarterly: 0.6, monthly: 0.5 };
+/* Promo codes are discounts on purchases you'd have to choose to make. */
+export const PROMO_FACTOR = 0.5;
+
+/* Split hotel / travel credits (two halves, quarterly pieces, minimum
+   stays): $0 unless the brand/program was picked, ≥ 4 paid nights a year,
+   AND the person taps "I'd plan around this". Even then ≤ 0.6. */
+export const SPLIT_CREDIT_FACTOR = 0.6;
+export const SPLIT_MIN_NIGHTS = 4;
+export const SPLIT_MIN_TRIPS = 2;
+
+/* Free nights: P(use) when the brand was picked and they stay in hotels. */
+export const FREE_NIGHT_P_USE = 0.85;
+/* Companion certificates: picked airline, ≥ 2 round trips a year. */
+export const COMPANION_P_USE = 0.6;
+
+/* A second lounge network adds only this share of its own value. */
+export const SECOND_LOUNGE_SHARE = 0.15;
+
+/* Protections: small fixed values, counted once per wallet. Modeling
+   defaults — what an average cardholder would pay to insure the same. */
+export const PROTECTIONS = [
+  { key: "cellPhone", label: "Cell phone protection", pattern: /cell phone/i, value: 20, needsTrips: false },
+  { key: "tripProtection", label: "Trip delay / cancellation cover", pattern: /trip (delay|cancel)/i, value: 25, needsTrips: true },
+  { key: "rentalCar", label: "Primary rental car cover", pattern: /primary (cdw|rental)/i, value: 15, needsTrips: true },
+];
+/* v5 name, kept for old imports. */
 export const PROTECTIONS_VALUE = 0;

@@ -117,6 +117,7 @@ export const CARDS = [
     why: "No rewards — 21 months of 0% intro APR.",
     verifiedAt: VERIFIED, verifiedSource: "https://creditcards.wellsfargo.com/" }),
   card({ id: "one-key", name: "One Key Mastercard", issuer: "Wells Fargo", network: "MASTERCARD",
+    travelOnlyRewards: true,   // OneKeyCash pays only toward Expedia / Hotels.com / Vrbo travel
     annualFee: 0, currency: "OneKeyCash", pointCurrency: "cash",
     earnRates: { Gas: 3, Groceries: 3, Dining: 3, General: 1.5 },
     benefits: ["3% on Expedia, Hotels.com and Vrbo", "One Key Silver tier (Gold after $15,000 a year)"],

@@ -14,6 +14,7 @@ import { useAuth } from "../../firebase/useAuth.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { Reveal } from "./motion.jsx";
 import FeeBudget from "./FeeBudget.jsx";
+import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const list = (xs, none = "None picked") => (xs.length ? xs.join(", ") : none);
@@ -72,7 +73,8 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, slots 
 
       <Reveal i={3} className="panel profile-block" id="point-values">
         <h2 className="t-h2">Point values</h2>
-        {slots.pointValues || <p className="t-caption">Set on the survey's point-values step.</p>}
+        <p className="t-caption">Pick the airlines and hotels you'd actually move points to. Every "≈ % back" in the app uses this.</p>
+        {slots.pointValues || <PartnerPicker profile={profile} currencies={currenciesFor(profile, BY_ID)} onChange={(partnerPicks) => save({ partnerPicks })} />}
       </Reveal>
 
       <Reveal i={4} className="panel profile-block">

@@ -13,7 +13,7 @@ export const CARDS = [
     id: "jetblue-plus", name: "JetBlue Plus", issuer: "Barclays", network: "MASTERCARD",
     annualFee: 99, currency: "JetBlue TrueBlue", pointCurrency: "jetblue",
     earnRates: { JetBlue: 6, Dining: 2, Groceries: 2, General: 1 }, portalMultipliers: {},
-    credits: [cred("$100 statement credit after $500 JetBlue purchase", 100, "MEDIUM")],
+    credits: [cred("$100 statement credit after $500 JetBlue purchase", 100, "MEDIUM", "airline")],
     benefits: ["First checked bag free", "6x JetBlue", "10% TrueBlue rebate on award redemptions", "Mosaic status with $50k spend", "5,000 anniversary bonus points"],
     transferAccess: [], loungeAccess: null, hotelStatus: null,
     airlineStatus: { program: "jetblue", tier: "none", estValue: 0 },

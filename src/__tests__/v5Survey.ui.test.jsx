@@ -47,7 +47,7 @@ describe("survey answers → profile", () => {
     }));
     expect(p).toMatchObject({ wants: "travel", feeBudget: 700, rent: 2000, cardsHeld: ["csp"] });
     expect(p.travel).toMatchObject({ trips: 4, homeAirport: "SEA", lounges: "sometimes" });
-    expect(p.credit).toEqual({ score: 770, newCards24mo: 5 });
+    expect(p.credit).toMatchObject({ score: 770, newCards24mo: 5 });
     expect(normalizeProfile(answersToProfile({ ...EMPTY_ANSWERS, fee: "any" })).feeBudget).toBe(Infinity);
   });
   it("Continue rules", () => {
@@ -130,7 +130,7 @@ describe("survey flow (§2)", () => {
     expect(p).toMatchObject({ cardsHeld: ["csr"], wants: "travel", feeBudget: 700, rent: 0 });
     expect(p.travel).toMatchObject({ trips: 4, homeAirport: "SEA", lounges: "yes" });
     expect(p.brands.hotels).toEqual(["hyatt"]);
-    expect(p.credit).toEqual({ score: 770, newCards24mo: 2 });
+    expect(p.credit).toMatchObject({ score: 770, newCards24mo: 2 });
   });
 
   it("0 trips: no airport or lounge questions", () => {

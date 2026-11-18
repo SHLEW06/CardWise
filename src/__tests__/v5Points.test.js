@@ -52,29 +52,20 @@ describe("Your points, explained (§2 step 9)", () => {
   });
 });
 
-describe("flexible-points slider (§4)", () => {
-  it("only the five flexible currencies can be set", () => {
-    expect(FLEXIBLE_CURRENCIES).toEqual(["chase", "amex", "citi", "c1", "bilt"]);
-    const p = normalizeProfile({ pointValues: { chase: 1.8, delta: 2, cash: 3 } });
-    expect(p.pointValues).toEqual({ chase: 1.8 });
-  });
-  it("is clamped to 0.5–3.0 cents", () => {
+/* v6 §20 replaced the v5 sliders: flexible points are valued by the
+   partners a person would use (see pointValues.test.js). */
+describe("v5 slider values no longer price points", () => {
+  it("normalizeProfile still parses and clamps them (old saved profiles load)", () => {
+    expect(normalizeProfile({ pointValues: { chase: 1.8, delta: 2, cash: 3 } }).pointValues).toEqual({ chase: 1.8 });
     expect(normalizeProfile({ pointValues: { amex: 9 } }).pointValues.amex).toBe(3);
-    expect(normalizeProfile({ pointValues: { amex: 0.1 } }).pointValues.amex).toBe(0.5);
   });
-  it("overrides the mode's value for that currency only", () => {
-    const p = normalizeProfile({ wants: "travel", pointValues: { chase: 1.2 } });
-    expect(cppForProfile("chase", p)).toBe(1.2);
-    expect(cppForProfile("amex", p)).toBe(VAL.amex);
-  });
-  it("flows into rewards: valuing Chase points lower lowers Sapphire Preferred's value", () => {
-    const base = normalizeProfile({ wants: "travel" });
-    const low = normalizeProfile({ wants: "travel", pointValues: { chase: 0.8 } });
-    expect(rewardsValue(BY_ID.csp, low)).toBeLessThan(rewardsValue(BY_ID.csp, base));
-  });
-  it("can't lift points that can't transfer above cash", () => {
-    const p = normalizeProfile({ wants: "travel", pointValues: { chase: 2.5 } });
+  it("but valuation ignores them", () => {
+    const p = normalizeProfile({ wants: "travel", pointValues: { chase: 2.5 }, cardsHeld: ["csp"] });
+    expect(cppForProfile("chase", p)).toBe(1);   // no partners picked → cash baseline
     expect(cardCpp(BY_ID["freedom-unlimited"], p, [])).toBe(1);
-    expect(cardCpp(BY_ID["freedom-unlimited"], p, [BY_ID.csp])).toBe(2.5);
+    expect(rewardsValue(BY_ID.csp, p)).toBe(rewardsValue(BY_ID.csp, normalizeProfile({ wants: "travel", cardsHeld: ["csp"] })));
+  });
+  it("FLEXIBLE_CURRENCIES is unchanged for old callers", () => {
+    expect(FLEXIBLE_CURRENCIES).toEqual(["chase", "amex", "citi", "c1", "bilt"]);
   });
 });

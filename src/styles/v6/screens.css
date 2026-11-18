@@ -28,3 +28,11 @@
 
 /* Interim offers list */
 .v5 .offer-row { display: grid; gap: 2px; padding: 14px 4px; }
+
+/* Point values — partner picker (§20) */
+.v5 .partner-picker { display: grid; gap: 28px; }
+.v5 .partner-block { display: grid; gap: 10px; padding-top: 20px; border-top: 1px solid var(--hair); }
+.v5 .partner-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.v5 .partner-name { font-family: var(--f-display); font-weight: 400; font-size: 1.5rem; letter-spacing: -.02em; margin: 0; }
+.v5 .partner-value { font-size: 1.0625rem; }
+.v5 .partner-picker .choice-pill { min-height: 38px; font-size: var(--fs-small); }

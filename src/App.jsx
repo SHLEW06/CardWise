@@ -6,7 +6,7 @@ import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
-import { HomeScreen, FindScreen, PointValuesBlock } from "./components/v5/screens.jsx";
+import { HomeScreen, FindScreen } from "./components/v5/screens.jsx";
 import Profile from "./components/v6/Profile.jsx";
 import { OffersInterim, LabInterim } from "./components/v6/interim.jsx";
 import { useAuth } from "./firebase/useAuth.js";
@@ -258,7 +258,6 @@ export default function App() {
           onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
           onRestart={() => { setSurveyStep(null); setScreen("survey"); }}
           onProfileChange={applyV5}
-          slots={{ pointValues: <PointValuesBlock onChange={applyV5} /> }}
         />
       )}
 

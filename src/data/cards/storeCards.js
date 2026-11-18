@@ -57,7 +57,8 @@ export const CARDS = [
   {
     id: "costco-citi", name: "Costco Anywhere Visa", issuer: "Citi (Costco)", network: "VISA",
     annualFee: 0, currency: "Costco credit", pointCurrency: "cash",
-    earnRates: { Gas: 4, Restaurants: 3, Travel: 3, CostcoBuy: 2, General: 1 }, portalMultipliers: {},
+    earnRates: { CostcoGas: 5, Gas: 4, EV: 4, Restaurants: 3, Travel: 3, CostcoBuy: 2, General: 1 }, portalMultipliers: {},
+    earnCaps: [{ keys: ["CostcoGas", "Gas", "EV"], annual: 7000, after: 1 }],
     credits: [],
     benefits: ["4% gas worldwide (to $7k/yr)", "3% restaurants & eligible travel", "2% Costco & Costco.com", "1% elsewhere", "No annual fee (Costco membership required)", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

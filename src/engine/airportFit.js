@@ -11,6 +11,31 @@
 
 import { AIRPORTS } from "../data/airports.js";
 import { ROUTE_PROFILES } from "../data/routeProfiles.js";
+import { NETWORK_AIRPORTS, NETWORK_KEYS, networkKey, UNKNOWN_AIRPORT_COVERAGE, PRIORITY_PASS_COVERAGE } from "../data/loungeLocations.js";
+
+/* v6 §22: chance (0–1) that a lounge network has a lounge where this person
+   flies from. Listed networks are exact; Priority Pass and airline clubs are
+   estimated from airport size and the airline's presence. No airport → 0.5. */
+export function loungeCoverage(networkName, code) {
+  const key = networkKey(networkName);
+  const ap = code ? AIRPORTS[code] : null;
+  if (!ap) return UNKNOWN_AIRPORT_COVERAGE;
+  if (NETWORK_AIRPORTS[key]) return NETWORK_AIRPORTS[key].airports.includes(code) ? 1 : 0;
+  if (key === "prioritypass") {
+    /* At a fortress hub (one airline ≥ 60% of flights) most travelers fly
+       from that airline's concourses, where Priority Pass lounges are rare. */
+    const fortress = Object.values(ap.hubAirlines || {}).some((v) => v >= 0.6);
+    return Math.min(fortress ? 0.5 : 1, PRIORITY_PASS_COVERAGE[ap.airportType] ?? 0.6);
+  }
+  const airline = NETWORK_KEYS.find((n) => n.key === key)?.airline;
+  if (airline) {
+    if ((ap.hubAirlines?.[airline] || 0) >= 0.2) return 1;
+    const name = { delta: "Delta", united: "United", aa: "American", alaska: "Alaska", aeroplan: "Air Canada" }[airline];
+    if ((ap.dominantAirlines || []).includes(name)) return 0.8;
+    return ap.airportType === "mega-hub" || ap.airportType === "large" ? 0.6 : 0.3;
+  }
+  return UNKNOWN_AIRPORT_COVERAGE;
+}
 
 const norm = (n) => Math.max(0, Math.min(1, n));
 const pct = (n) => Math.round(norm(n) * 100);

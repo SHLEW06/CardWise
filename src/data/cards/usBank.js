@@ -17,7 +17,7 @@ export const CARDS = [
     id: "usb-altitude-reserve", name: "US Bank Altitude Reserve", issuer: "US Bank", network: "VISA",
     annualFee: 400, currency: "US Bank Points", pointCurrency: "cash",
     earnRates: { Travel: 3, Mobile: 3, General: 1 }, portalMultipliers: {},
-    credits: [cred("$325 annual travel/dining credit", 325, "EASY"), cred("Global Entry/TSA credit", 25, "EASY")],
+    credits: [cred("$325 annual travel/dining credit", 325, "EASY"), cred("Global Entry/TSA credit", 25, "EASY", "membership", "4yr")],
     benefits: ["3x real-time mobile wallet purchases (Apple Pay / Google Pay)", "3x travel", "$325 annual travel & dining credit", "Priority Pass lounges", "Global Entry/TSA credit", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass"], estAnnual: 150, use: "MEDIUM", type: "Priority Pass" },
     hotelStatus: null, airlineStatus: null,
@@ -38,7 +38,8 @@ export const CARDS = [
   {
     id: "usb-altitude-go", name: "US Bank Altitude Go", issuer: "US Bank", network: "VISA",
     annualFee: 0, currency: "US Bank Points", pointCurrency: "cash",
-    earnRates: { Dining: 4, Groceries: 2, Gas: 2, Streaming: 2, General: 1 }, portalMultipliers: {},
+    earnRates: { Dining: 4, Groceries: 2, Gas: 2, EV: 2, Streaming: 2, General: 1 }, portalMultipliers: {},
+    earnCaps: [{ keys: ["Dining"], annual: 8000, after: 1 }],
     credits: [cred("$15 annual streaming credit", 15, "EASY")],
     benefits: ["4x dining", "2x groceries, gas & streaming", "$15 annual streaming credit", "No annual fee", "Cell phone protection"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
@@ -57,7 +58,8 @@ export const CARDS = [
   {
     id: "usb-altitude-connect", name: "US Bank Altitude Connect", issuer: "US Bank", network: "VISA",
     annualFee: 0, currency: "US Bank Points", pointCurrency: "cash",
-    earnRates: { Travel: 4, Gas: 4, EV: 4, Groceries: 2, Dining: 2, Streaming: 2, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
+    earnRates: { Travel: 4, Gas: 4, EV: 4, Groceries: 2, Dining: 2, Streaming: 2, General: 1 },
+    earnCaps: [{ keys: ["Gas", "EV"], annual: 4000, after: 1 }], portalMultipliers: { Hotels: 5, Car: 5 },
     credits: [],
     benefits: ["4x travel, gas station & EV charging", "2x groceries, dining & streaming", "Priority Pass lounge passes ($95 fee waived first year for visits)", "No annual fee", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass (12-month membership)"], estAnnual: 150, use: "MEDIUM", type: "Priority Pass" }, hotelStatus: null, airlineStatus: null,

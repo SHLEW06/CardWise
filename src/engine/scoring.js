@@ -6,6 +6,7 @@
    advertised face value. That's the difference between a coupon book and value.
    ========================================================================== */
 
+import { isBrandCredit, creditPicked } from "../data/creditBrands.js";
 import { BY_ID } from "../data/cards.js";
 import { effCpp } from "./transferValue.js";
 import {
@@ -138,9 +139,18 @@ export function structuredCreditFriction(credit) {
 }
 
 /* dollar value of a card's recurring credits that the user actually uses */
+const LEGACY_UNPICKED_BRAND = 0.2;
 export function realizedCredits(card, profile = null) {
-  return Math.round((card.credits || []).reduce(
-    (t, c) => t + c.annual * (F[c.use] || 0.6) * structuredCreditFriction(c) * travelCreditFactor(c, profile), 0));
+  /* v6 §22, folded in: a brand credit (Uber, Dunkin', Oura …) counts only
+     when the person picked that brand. Legacy profiles carry no brand picks,
+     so they get v5's old unpicked-brand factor instead. */
+  const knowsBrands = !!profile?.brands;
+  return Math.round((card.credits || []).reduce((t, c) => {
+    const base = c.annual * (F[c.use] || 0.6) * structuredCreditFriction(c) * travelCreditFactor(c, profile);
+    if (!isBrandCredit(c) || creditPicked(c, profile || {})) return t + base;
+    /* Unpicked brand: $0 when we know their brands; v5's 0.2 when we don't. */
+    return t + (knowsBrands ? 0 : base * LEGACY_UNPICKED_BRAND);
+  }, 0));
 }
 
 /* effective annual fee = sticker fee + any required subscription (e.g. Robinhood Gold) */
