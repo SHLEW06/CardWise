@@ -11,15 +11,17 @@
 
 import { AIRPORTS } from "../data/airports.js";
 import { ROUTE_PROFILES } from "../data/routeProfiles.js";
-import { NETWORK_AIRPORTS, NETWORK_KEYS, networkKey, UNKNOWN_AIRPORT_COVERAGE, PRIORITY_PASS_COVERAGE } from "../data/loungeLocations.js";
+import { NETWORK_AIRPORTS, NETWORK_KEYS, networkKey, UNKNOWN_AIRPORT_COVERAGE, PRIORITY_PASS_COVERAGE, LOUNGE_SITES, INTL_ONLY_PRACTICALITY } from "../data/loungeLocations.js";
 
 /* v6 §22: chance (0–1) that a lounge network has a lounge where this person
    flies from. Listed networks are exact; Priority Pass and airline clubs are
    estimated from airport size and the airline's presence. No airport → 0.5. */
-export function loungeCoverage(networkName, code) {
+export function loungeCoverage(networkName, code, intlShare = 0) {
   const key = networkKey(networkName);
   const ap = code ? AIRPORTS[code] : null;
   if (!ap) return UNKNOWN_AIRPORT_COVERAGE;
+  const sites = LOUNGE_SITES[code]?.networks?.[key];
+  if (sites) return loungePracticality(key, code, intlShare);
   if (NETWORK_AIRPORTS[key]) return NETWORK_AIRPORTS[key].airports.includes(code) ? 1 : 0;
   if (key === "prioritypass") {
     /* At a fortress hub (one airline ≥ 60% of flights) most travelers fly
@@ -35,6 +37,20 @@ export function loungeCoverage(networkName, code) {
     return ap.airportType === "mega-hub" || ap.airportType === "large" ? 0.6 : 0.3;
   }
   return UNKNOWN_AIRPORT_COVERAGE;
+}
+
+/* For a network whose lounges at this airport are known: 1 if one is in a
+   concourse they fly from; if all are international-only, the domestic
+   share of trips gets INTL_ONLY_PRACTICALITY. */
+export function loungePracticality(key, code, intlShare = 0) {
+  const site = LOUNGE_SITES[code];
+  const lounges = site?.networks?.[key];
+  if (!lounges?.length) return 1;
+  const intlOnly = lounges.every((l) => site.intlConcourses.includes(l.concourse));
+  if (!intlOnly) return 1;
+  const f = INTL_ONLY_PRACTICALITY[site.airside ? "airside" : "landside"];
+  const s = Math.max(0, Math.min(1, intlShare || 0));
+  return s + (1 - s) * f;
 }
 
 const norm = (n) => Math.max(0, Math.min(1, n));

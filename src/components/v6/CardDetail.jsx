@@ -19,6 +19,7 @@ import { cardDetail, approvalChip, availabilityOf } from "../../engine/v5/explor
 import { optimalWallet } from "../../engine/v5/methodology.js";
 import { pointsChip } from "../../engine/v5/pointValues.js";
 import { loungeCoverage } from "../../engine/airportFit.js";
+import { LOUNGE_SITES, networkKey } from "../../data/loungeLocations.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
@@ -209,11 +210,15 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
               <h2 className="t-h2">Lounges{profile.travel.homeAirport ? ` at ${profile.travel.homeAirport}` : ""}</h2>
               <ul className="rows">
                 {(c.loungeAccess.networks || []).map((n) => {
-                  const cov = loungeCoverage(n, profile.travel.homeAirport);
+                  const code = profile.travel.homeAirport;
+                  const cov = loungeCoverage(n, code, profile.travel.intlShare);
+                  const site = code ? LOUNGE_SITES[code] : null;
+                  const known = site?.networks?.[networkKey(n)];
+                  const where = known && `${known.map((l) => l.name).join(", ")} · Concourse ${[...new Set(known.map((l) => l.concourse))].join(", ")}${known.every((l) => site.intlConcourses.includes(l.concourse)) ? " (international) — a detour from domestic gates" : ""}`;
                   return (
                     <li key={n} className="earn-row">
                       <span>{n}</span>
-                      <span className="t-caption">{!profile.travel.homeAirport ? "Add your home airport to check" : cov >= 1 ? "Yes, where you fly from" : cov >= 0.5 ? "Some, depending on terminal" : cov > 0 ? "Few" : "None where you fly from"}</span>
+                      <span className="t-caption">{!code ? "Add your home airport to check" : where || (cov >= 1 ? "Yes, where you fly from" : cov >= 0.5 ? "Some, depending on terminal" : cov > 0 ? "Few" : "None where you fly from")}</span>
                     </li>
                   );
                 })}

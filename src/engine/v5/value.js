@@ -25,7 +25,7 @@ import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
 import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
-import { networkKey } from "../../data/loungeLocations.js";
+import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
 export const AIRLINE_CURRENCIES = new Set(["delta", "united", "aa", "southwest", "alaska", "jetblue", "aeroplan", "avios", "flyingblue"]);
 export const HOTEL_CURRENCIES = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham"]);
@@ -368,10 +368,38 @@ export function loungeNetworks(card, profile) {
     const limit = /(\d+)\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i.exec(n);
     if (limit) v = Math.min(v, Number(limit[1]));
     const key = networkKey(n) || n;
-    const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport);
+    const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare);
     out[key] = Math.max(out[key] || 0, Math.min(val, LOUNGE_RETAIL_CAP));
   }
   return out;
+}
+
+/** Per-network lounge math for this card at their home airport — which
+    lounges, which concourse, visits, coverage and $ (for "See the math" and
+    the docs). Same numbers as loungeNetworks. */
+export function loungeBreakdown(card, profile) {
+  const l = card.loungeAccess;
+  if (!l || !Array.isArray(l.networks)) return [];
+  const code = profile.travel.homeAirport;
+  const interest = LOUNGE_INTEREST[profile.travel.lounges] ?? 0;
+  const wanted = profile.travel.trips * 2 * interest;
+  const site = code ? LOUNGE_SITES[code] : null;
+  const vals = loungeNetworks(card, profile);
+  return l.networks.map((n) => {
+    const key = networkKey(n) || n;
+    const air = AIRLINE_LOUNGES.find((a) => a.pattern.test(n));
+    const skipped = air && !profile.brands.airlines.includes(air.airline);
+    const limit = /(\d+)\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i.exec(n);
+    const visits = limit ? Math.min(wanted, Number(limit[1])) : wanted;
+    return {
+      network: n, key, visits, limit: limit ? Number(limit[1]) : null,
+      coverage: skipped ? 0 : loungeCoverage(n, code, profile.travel.intlShare),
+      lounges: site?.networks?.[key] || null,
+      notCounted: site?.notCounted?.[key] || [],
+      value: skipped ? 0 : Math.round(vals[key] || 0),
+      why: skipped ? "airline not picked" : null,
+    };
+  });
 }
 
 /** Lounge $ for a set of network values: best one + a small share of the rest, capped. */

@@ -34,19 +34,41 @@ const EPS = 1e-6;
 
 /* ── eligibility (issuer rules + credit profile) ─────────────────────────── */
 
-/* approvalDifficulty 1–4 easy, 5–6 good (670+), 7–10 excellent (740+). */
+/* Approval tiers (FICO bands):
+     secured      — no score needed; only suggested below SECURED_BELOW (580,
+                    "poor") or with no credit history
+     student      — FAIR_MIN (580, "fair") and up, or no credit history (they
+                    are made for a first card); only suggested below 670
+     standard     — 670 ("good"), or the catalog's creditProfileFit.minScore
+     difficulty 7+ — 740 ("very good")
+   The catalog's minScore for builder cards (600 on secured and student alike)
+   is a placeholder, so the builder tiers above replace it. */
+export const SECURED_BELOW = 580;
+export const FAIR_MIN = 580;
+export const GOOD_MIN = 670;
 export function scoreNeeded(card) {
-  /* Secured cards approve without a score. Otherwise the stricter of the
-     difficulty tier and the catalog's own minimum (creditProfileFit:
-     670 for standard rewards cards, 600 for student / builder cards) —
-     review #9: a $0 rewards card is not "no score needed". */
   if (card.cardType === "secured") return 0;
+  if (card.cardType === "student") return FAIR_MIN;
   const d = card.approvalDifficulty || 5;
-  const tier = d <= 4 ? 0 : d <= 6 ? 670 : 740;
+  const tier = d <= 4 ? 0 : d <= 6 ? GOOD_MIN : 740;
   return Math.max(tier, card.creditProfileFit?.minScore || 0);
 }
-/* An unknown score ("Not sure") never blocks a card. */
-export const approvalOk = (card, profile) => profile.credit.score == null || profile.credit.score >= scoreNeeded(card);
+/* An unknown score ("Not sure") never blocks a card. No credit history:
+   only secured and student cards. */
+export const approvalOk = (card, profile) => {
+  if (profile.credit.noHistory) return ["secured", "student"].includes(card.cardType);
+  return profile.credit.score == null || profile.credit.score >= scoreNeeded(card);
+};
+/* Builder cards are for building credit, only suggested to someone who
+   needs one: secured below 580 or no history; student below 670 or no
+   history. */
+export function builderFits(card, profile) {
+  const { score: s, noHistory } = profile.credit;
+  if (noHistory) return true;
+  if (s == null) return false;
+  if (card.cardType === "secured") return s < SECURED_BELOW;
+  return s < GOOD_MIN;
+}
 export const isChase = (card) => /^Chase/.test(card.issuer || "");
 const isC1 = (card) => card.issuer === "Capital One" && card.cardType !== "business";
 
@@ -55,9 +77,7 @@ export function eligibility(card, profile) {
   const held = profile.cardsHeld;
   if (held.includes(card.id)) return { ok: true, how: "held" };
   if (card.cardType === "business") return { ok: false, why: "business" };
-  /* Student and secured cards are for building credit: only suggested to
-     someone whose score is below 670 (or who already holds one). */
-  if (["student", "secured"].includes(card.cardType) && !(profile.credit.score != null && profile.credit.score < 670)) return { ok: false, why: "builder" };
+  if (["student", "secured"].includes(card.cardType) && !builderFits(card, profile)) return { ok: false, why: "builder" };
   if (card.storeLocked && !profile.brands.everyday.includes(card.storeLocked)) return { ok: false, why: "store" };
   if (card.availabilityStatus === "productChangeOnly") {
     const from = held.map((id) => BY_ID[id]).find((h) => h && h.cardFamily && h.cardFamily === card.cardFamily);

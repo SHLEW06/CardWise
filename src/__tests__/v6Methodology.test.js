@@ -8,7 +8,7 @@ import { TRANSFER_RULES, PROGRAMS } from "../data/programs.js";
 import { BRAND_CREDIT_CADENCE, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, FREE_NIGHT_P_USE, SECOND_LOUNGE_SHARE, LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP } from "../data/benefitUsage.js";
 import { normalizeProfile, annualSpend } from "../engine/profileDefaults.js";
 import { currencyValue, cardPointValue, pointsChip, isUnlocked, partnerPicksFor } from "../engine/v5/pointValues.js";
-import { allocateSpend, benefitBreakdown, creditUsage, creditId, cardCpp, pctBackFor, loungeTotal, earnRate } from "../engine/v5/value.js";
+import { allocateSpend, benefitBreakdown, creditUsage, creditId, cardCpp, pctBackFor, loungeTotal, earnRate, loungeBreakdown } from "../engine/v5/value.js";
 import { walletValue, optimalWallet, walletScore, cardFits, heldCardVerdicts, slotsFor, sampleWallets, baseline, MIN_GAIN, eligibility } from "../engine/v5/methodology.js";
 import { breakevenPrice, portalBreakeven } from "../engine/v5/breakeven.js";
 
@@ -287,6 +287,18 @@ describe("golden profiles", () => {
     expect(r.value.F).toBe(0);
     expect(r.wallet.length).toBeGreaterThan(0);
     for (const id of r.wallet) expect(BY_ID[id].annualFee, id).toBe(0);
+    /* 640 is fair credit: student / fair-credit unsecured cards, never secured. */
+    for (const id of r.wallet) expect(BY_ID[id].cardType, id).not.toBe("secured");
+    expect(r.wallet).toEqual(expect.arrayContaining(["discover-student"]));
+    /* Secured cards only below 580 or with no credit history. */
+    for (const credit of [{ score: 550 }, { noHistory: true }]) {
+      const w = optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit }).wallet;
+      expect(w.length).toBeGreaterThan(0);
+      for (const id of w) expect(["secured", "student"], `${JSON.stringify(credit)} ${id}`).toContain(BY_ID[id].cardType);
+      if (credit.score) for (const id of w) expect(BY_ID[id].cardType).toBe("secured");
+    }
+    /* 670+: neither builder type. */
+    for (const id of optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 705 } }).wallet) expect(["secured", "student"]).not.toContain(BY_ID[id].cardType);
   });
   it("2. Costco family with Costco gas → the Costco Anywhere Visa is in the wallet", () => {
     const r = optimalWallet({ feeBudget: 100, spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" });
@@ -322,6 +334,18 @@ describe("golden profiles", () => {
     for (const w of [yes, no]) expect(w.wallet.some((id) => BY_ID[id].pointCurrency === "delta")).toBe(true);
     expect(no.wallet).not.toContain("delta-reserve");
     expect(no.wallet).not.toContain("amex-plat");
+    /* ATL's Priority Pass lounges (The Club ATL, Poppin) are both on Concourse
+       F, international: a domestic Delta flyer gets 0.4 practicality, not full
+       coverage, so the lounge value comes from Sky Club access (Reserve). */
+    expect(yes.wallet).toContain("delta-reserve");
+    expect(yes.value.benefits.find((b) => b.dedupe === "lounge").cardId).toBe("delta-reserve");
+    const pp = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } })).find((b) => b.key === "prioritypass");
+    expect(pp.coverage).toBeCloseTo(0.4, 9);
+    expect(pp.lounges.map((l) => l.concourse)).toEqual(["F", "F"]);
+    expect(pp.value).toBe(Math.round(16 * 35 * 0.4));
+    /* Mostly international flyers pass Concourse F: Priority Pass counts in full again. */
+    const intl = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", intlShare: 0.8 } })).find((b) => b.key === "prioritypass");
+    expect(intl.coverage).toBeCloseTo(0.8 + 0.2 * 0.4, 9);
   });
   it("6. Sapphire Reserve vs Robinhood Gold on dining: Chase wins above 1.0¢, ties at 1.0¢", () => {
     const w = ["csr", "robinhood-gold"];

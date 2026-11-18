@@ -17,7 +17,8 @@ export const TRIP_BUCKETS = { "0": 0, "1-2": 1.5, "3-5": 4, "6+": 7 };
 
 /* Credit score buckets → a representative score. "Not sure" stays null:
    unknown is not the same as low, so nothing is blocked. */
-export const SCORE_BUCKETS = { unsure: null, "<670": 640, "670-739": 705, "740-799": 770, "800+": 820 };
+/* "580-669" comes before the legacy "<670" so a saved 640 shows as fair. */
+export const SCORE_BUCKETS = { unsure: null, none: null, "<580": 550, "580-669": 640, "<670": 640, "670-739": 705, "740-799": 770, "800+": 820 };
 
 /* New cards opened in the last 24 months (Chase 5/24). */
 export const NEW_CARD_BUCKETS = { "0": 0, "1-2": 2, "3-4": 4, "5+": 5 };
@@ -62,9 +63,10 @@ export const DEFAULT_PROFILE = Object.freeze({
     trips: 0,                          // round trips (flights) per year
     hotelNights: null,                 // paid nights per year; null → trips × 2
     lounges: "no",                     // "no" | "sometimes" | "yes"
+    intlShare: 0,                      // share of trips that are international (0 | 0.3 | 0.8); lounge practicality
   },
   brands: { airlines: [], hotels: [], everyday: [], perks: [] },
-  credit: { score: SCORE_BUCKETS.unsure, newCards24mo: 0, pastAmex: [], pastChase: [] },
+  credit: { score: SCORE_BUCKETS.unsure, noHistory: false, newCards24mo: 0, pastAmex: [], pastChase: [] },
   partnerPicks: {},                    // { chase: ["aeroplan", "united"] } — Part E; missing currency → from brands
   planAround: [],                      // credit ids the person opted into ("I'd plan around this")
   memberships: [],                     // paid memberships they already have: robinhood-gold, costco, sams, amazon-prime, walmart-plus
@@ -116,6 +118,7 @@ export function normalizeProfile(p = {}) {
   travel.homeAirport = travel.homeAirport ? String(travel.homeAirport).toUpperCase() : null;
   travel.trips = num(travel.trips);
   travel.hotelNights = travel.hotelNights == null ? null : num(travel.hotelNights);
+  travel.intlShare = Math.max(0, Math.min(1, Number(travel.intlShare) || 0));
   if (!(travel.lounges in { no: 1, sometimes: 1, yes: 1 })) travel.lounges = "no";
   /* No flights → no airport lounge question. */
   if (travel.trips === 0) travel.lounges = "no";
@@ -148,6 +151,7 @@ export function normalizeProfile(p = {}) {
     },
     credit: {
       score: Number(p.credit?.score) || null,
+      noHistory: p.credit?.noHistory === true,
       newCards24mo: num(p.credit?.newCards24mo),
       pastAmex: lower(p.credit?.pastAmex),
       pastChase: lower(p.credit?.pastChase),

@@ -12,7 +12,7 @@ import { CARDS, BY_ID } from "../../../data/cards.js";
 import { AIRPORTS } from "../../../data/airports.js";
 import {
   MOST_HELD, SPEND_ROWS, SPEND_GROUPS, SPEND_MAX, SPEND_STEP, RENT_MAX, GAS_AT, WAREHOUSE_CLUBS, STORES,
-  FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
+  FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
 } from "../../../data/surveyOptions.js";
 import { perkBrandsInCatalog } from "../../../data/creditBrands.js";
 import { SPEND_PRESETS, SCORE_BUCKETS } from "../../../engine/profileDefaults.js";
@@ -357,6 +357,13 @@ function TravelStep({ d, set, mode, headRef }) {
             )}
           </fieldset>
           <fieldset className="survey-group">
+            <legend className="t-h3" id="q-intl">How many of those trips are international?</legend>
+            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-intl">
+              {INTL_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={(t.intlShare || 0) === o.key} onSelect={() => setTravel({ intlShare: o.key })}>{o.label}</Choice>)}
+            </div>
+            <p className="t-caption">Some airports keep their lounges in the international terminal.</p>
+          </fieldset>
+          <fieldset className="survey-group">
             <legend className="t-h3" id="q-lounge">Do airport lounges matter to you?</legend>
             <div className="choice-stack" role="radiogroup" aria-labelledby="q-lounge">
               {LOUNGE_OPTIONS.map((o) => <Choice key={o.key} radio selected={t.lounges === o.key} sub={o.sub} onSelect={() => setTravel({ lounges: o.key })}>{o.label}</Choice>)}
@@ -413,7 +420,7 @@ function BrandsStep({ d, set, headRef }) {
 const PAST = (issuer) => CARDS.filter((c) => c.issuer === issuer && c.cardType !== "business").map((c) => ({ key: c.id, label: c.name }));
 const PAST_AMEX = PAST("American Express");
 const PAST_CHASE = PAST("Chase");
-const scoreKey = (score) => (score == null ? "unsure" : Object.entries(SCORE_BUCKETS).find(([, v]) => v === score)?.[0] || "unsure");
+const scoreKey = (c) => (c.noHistory ? "none" : c.score == null ? "unsure" : Object.entries(SCORE_BUCKETS).find(([, v]) => v === c.score)?.[0] || "unsure");
 
 function CreditStep({ d, set, headRef }) {
   const c = d.credit;
@@ -424,7 +431,7 @@ function CreditStep({ d, set, headRef }) {
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-score">Credit score</legend>
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-score">
-          {SCORE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={scoreKey(c.score) === o.key} onSelect={() => setCredit({ score: SCORE_BUCKETS[o.key] })}>{o.label}</Choice>)}
+          {SCORE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={scoreKey(c) === o.key} onSelect={() => setCredit({ score: SCORE_BUCKETS[o.key], noHistory: o.key === "none" })}>{o.label}</Choice>)}
         </div>
       </fieldset>
       <fieldset className="survey-group">

@@ -57,6 +57,11 @@ export const FLIGHT_OPTIONS = [
 export const NIGHT_OPTIONS = [
   { key: 0, label: "None" }, { key: 2, label: "1–3" }, { key: 6, label: "4–9" }, { key: 14, label: "10–19" }, { key: 25, label: "20+" },
 ];
+/* Share of trips that are international — some airports keep a network's
+   only lounges in the international concourses (loungeLocations.js). */
+export const INTL_OPTIONS = [
+  { key: 0, label: "None" }, { key: 0.3, label: "Some" }, { key: 0.8, label: "Most" },
+];
 export const LOUNGE_OPTIONS = [
   { key: "yes", label: "Yes", sub: "I'd pay for lounge access." },
   { key: "sometimes", label: "Sometimes", sub: "Nice if it's included." },
@@ -106,7 +111,8 @@ export const MEMBERSHIPS = [
 
 /* ── Step 6: credit ── */
 export const SCORE_OPTIONS = [
-  { key: "unsure", label: "Not sure" }, { key: "<670", label: "Below 670" }, { key: "670-739", label: "670–739" },
+  { key: "unsure", label: "Not sure" }, { key: "none", label: "No credit yet" }, { key: "<580", label: "Below 580" },
+  { key: "580-669", label: "580–669" }, { key: "670-739", label: "670–739" },
   { key: "740-799", label: "740–799" }, { key: "800+", label: "800+" },
 ];
 export const NEW_CARD_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({ key: n, label: n === 5 ? "5 or more" : String(n) }));

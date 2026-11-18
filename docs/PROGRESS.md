@@ -342,6 +342,28 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 - **10** Status table fixed.
 - Tests: `v6Review.test.jsx` (+ two updated); 1,353 passing.
 
+## Review 2 (2026-11-18)
+
+- **Calibration:** still no outputs — no `connector/.env`,
+  `connector/calibration/*.suggested.json` or `connector/data/` anywhere on
+  disk (searched `/`). `calibrate` reads `connector/.env` first and throws
+  "CONNECTOR_TOKEN missing … (run: npm run keys)" without it, before Chrome
+  opens — most likely why the runs left nothing. Adapters not finished.
+- **Credit tiers:** secured cards only below 580 or with no credit history
+  (new survey answer "No credit yet"; "Below 670" split into "Below 580" and
+  "580–669", a saved 640 shows as 580–669); student cards need 580; no
+  history allows secured + student only. Golden 1 (640) → Discover it
+  Student + Freedom Rise. Capital One student cards aren't in the catalog.
+  Gap: there's no "I'm a student" answer, so a 640 non-student can also be
+  shown student cards (as before).
+- **Lounge practicality:** `LOUNGE_SITES` (ATL: Priority Pass = The Club ATL
+  + Poppin, both Concourse F; Centurion = Concourse E); a network whose only
+  lounges are international-concourse gets 0.4 for domestic trips (airside
+  detour). New survey question "How many of those trips are
+  international?" (`travel.intlShare`). Card detail names the lounges and
+  concourse. Golden 5 → Delta Reserve (METHODOLOGY §7 has the breakdown).
+- Tests: `v6Review2.test.jsx` (9) + golden 1 and 5 extended.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -369,6 +391,10 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   page). **Hilton Aspire Priority Pass**: the Aspire page text no longer
   mentions it — kept, verify. **BofA Premium Rewards Elite** and **Atmos
   Summit** lounge terms: pages render client-side — kept, verify.
+- **ATL lounge sites** (The Club ATL + Poppin on F, Centurion on E) are from
+  lounge guides, not prioritypass.com (client-rendered); Escape Lounge (A)
+  Priority Pass status conflicting — not counted. The 0.4 / 0.1 practicality
+  factors are modeling defaults.
 - **Lounge locations** (Centurion, Sapphire, Capital One lists in
   `data/loungeLocations.js`) — from 2026 knowledge, flagged `verify`.
 - **One Key Mastercard** earn rates — Wells Fargo's page blocked scripted

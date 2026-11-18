@@ -121,7 +121,7 @@ category, then card id (deterministic).
 | **Split travel credits** (two halves, quarterly pieces, minimum stays: The Edit, Fine Hotels + Resorts, Hilton Aspire resort + flight, IHG F&B …) | **$0 by default.** Count only if the brand/program was picked AND ≥ 4 paid hotel nights (≥ 2 trips for airline ones) AND they tapped "I'd plan around this" — then **0.6**. Shown behind "Why this counts as $0". |
 | Free night certificates | `pointCap × v_program × P(use)`; `P = 0.85` if the brand was picked and `n > 0`, else 0. Caps: Marriott 35k, Ritz 85k, Hyatt Cat 1–4 = 18k, IHG 40k; uncapped Hilton nights valued at an 80k-point redemption. Spend-gated certificates count only if the allocation in §2 puts that much on the card. |
 | Companion certificates | picked airline and ≥ 2 trips: `0.6 × face × min(1, T/3)` |
-| **Lounges** | `visits = 2T × λ`, per network: `visits × $35 × coverage(network, home airport)`, capped at that network's own visit / pass limit (read only from its label — e.g. Altitude Connect Priority Pass 4 visits, Delta Reserve 15 and Platinum 10 Sky Club visits, Strata Elite / AA Globe 4 Admirals passes; a Priority Pass *membership* never inherits another network's pass count) and at $469 (Priority Pass Select retail). Chase Sapphire Lounges left Priority Pass on Aug 15 2026: only cards that list them (Sapphire Reserve, Ritz-Carlton) count them. Airline clubs only for a picked airline. Coverage: Centurion / Sapphire / Capital One lounges by airport list (to verify); Priority Pass by airport size, ½ at a fortress hub (one airline ≥ 60%); airline clubs 1 at a hub, 0.8 where dominant, else 0.3–0.6; unknown airport 0.5. Wallet: best network + 15% of each other one, capped. |
+| **Lounges** | `visits = 2T × λ`, per network: `visits × $35 × coverage(network, home airport)`, capped at that network's own visit / pass limit (read only from its label — e.g. Altitude Connect Priority Pass 4 visits, Delta Reserve 15 and Platinum 10 Sky Club visits, Strata Elite / AA Globe 4 Admirals passes; a Priority Pass *membership* never inherits another network's pass count) and at $469 (Priority Pass Select retail). Chase Sapphire Lounges left Priority Pass on Aug 15 2026: only cards that list them (Sapphire Reserve, Ritz-Carlton) count them. Airline clubs only for a picked airline. Coverage: where we know a network's lounges at that airport (`LOUNGE_SITES`; ATL so far), coverage = practicality: 1 if one is in a concourse they fly from; if all are in the international concourses, `intlShare + (1 − intlShare) × 0.4` (airside detour; 0.1 if behind another checkpoint), with `intlShare` from the survey ("How many of those trips are international?" None 0 / Some 0.3 / Most 0.8; default 0). Otherwise: Centurion / Sapphire / Capital One lounges by airport list (to verify); Priority Pass by airport size, ½ at a fortress hub (one airline ≥ 60%); airline clubs 1 at a hub, 0.8 where dominant, else 0.3–0.6; unknown airport 0.5. Wallet: best network + 15% of each other one, capped. |
 | Checked bags | picked airline: $35 × bags × 2T, once per airline |
 | Elite status | picked brand: $50–150 by tier |
 | Anniversary points | points × `v` |
@@ -151,9 +151,12 @@ W*(B)    = argmax N(W) − $25 × |W|
 - **Eligibility** (`methodology.eligibility`): held cards always; otherwise
   open to new applicants, not business, store-locked only for that store's
   shoppers, product-change-only only as an upgrade from a held card in the
-  family, Chase blocked at 5/24, approval score (difficulty 1–4 any; 5–6
-  670+; 7–10 740+; unknown score never blocks), student/secured cards only
-  under 670. Pairs that can't coexist: one Sapphire at a time; an upgrade
+  family, Chase blocked at 5/24, approval score (secured: none; student:
+  580+ "fair"; difficulty 1–4 any; 5–6 670+; 7–10 740+; the catalog's
+  creditProfileFit.minScore when stricter; unknown score never blocks).
+  Builder cards only for someone who needs one: secured below 580 or with
+  no credit history ("No credit yet" in the survey), student below 670 or
+  with no history; no history allows only those two types. Pairs that can't coexist: one Sapphire at a time; an upgrade
   replaces its source card. Capital One: ≤ 2 personal cards.
 - **$25 per card**: a card has to add more than $25 a year to be worth
   carrying (v5's MIN_GAIN, kept) — in the search objective only; reported N
@@ -206,11 +209,11 @@ applies to select bookings".
 
 | # | Profile | Asserted |
 |---|---|---|
-| 1 | $0 budget, student (score < 670), dining + groceries | every card $0 fee and likely approved at their score (secured cards); one to get now, the rest in "When to apply" order |
+| 1 | $0 budget, student, 640 (fair), dining + groceries | every card $0 fee, student / fair-credit unsecured, never secured (Discover it Student, Freedom Rise); secured only at 550 or no history; neither at 705; one to get now, the rest in "When to apply" order |
 | 2 | Costco family, Costco gas | Costco Visa in the wallet and in the Costco slot |
 | 3 | Foodie: Dunkin', Resy, Uber; $1,200 dining / $1,000 groceries a month; Aeroplan + Flying Blue picked; $400 | Amex Gold, its picked credits counted, 4x at MR = 1.45¢ |
 | 4 | Hyatt picker, $400 | World of Hyatt; Freedom points priced at Hyatt transfer value beside a Sapphire (1.65 × 0.75 = 1.24¢), 1¢ alone |
-| 5 | ATL Delta flyer, $1,000 | Lounge Yes counts lounge value (Venture X: Priority Pass + Capital One lounges); No counts none and holds no Reserve / Platinum; a Delta card either way |
+| 5 | ATL Delta flyer (domestic), $1,000 | Lounge Yes → Delta Reserve, lounge value from Sky Clubs; Priority Pass at ATL counts 0.4 (both lounges on Concourse F); mostly-international flyer 0.88; No counts none and holds no Reserve / Platinum; a Delta card either way |
 | 6 | Sapphire Reserve vs Robinhood Gold, 3x dining | ties at 1.0¢; Chase ahead at 1.2¢ |
 | 7 | Non-traveler holding Platinum, no brands | cancel or downgrade |
 | 8 | Split hotel credit | $0 default; $300 (0.6 × $500 The Edit) after opt-in with 6 nights |
@@ -222,18 +225,34 @@ forced):
   Hyatt value Chase points are worth 1.24¢ beside it; Freedom Unlimited's
   1.5x becomes 1.86%, below a 2% card, and the optimizer prefers World of
   Hyatt + no-fee cards.
-- *5* — the brief expected a Delta Reserve or Platinum lineup. Re-run after
-  the lounge fixes (Altitude Connect's Priority Pass is 4 visits a year, not
-  unlimited): Lounge Yes → Delta Gold, Venture X, Altitude Connect, Freedom
-  Flex, Altitude Go, Blue Cash Preferred (+$1,364 over a 2% card); the lounge
-  value now comes from Venture X's Priority Pass + Capital One lounges
-  ($280 at ATL, where Priority Pass coverage is halved — Delta's fortress
-  hub). Swapping Delta Gold for the Reserve gives +$1,273: its 15 Sky Club
-  visits, companion certificate and Delta Stays credit don't cover the extra
-  $500 of fee on these answers. Lounge No → no lounge card.
-- *1* — re-run with the approval fix: a 640-score student now gets secured
-  cards only (Discover it Secured now, Capital One's in 3 months); standard
-  $0 rewards cards need about 670 (the catalog's own creditProfileFit).
+- *5* — now matches the brief (Delta Reserve). Lounge breakdown at ATL,
+  8 trips, lounges Yes → 16 visits wanted:
+
+  | Card | Network | ATL lounges (concourse) | Visits | Coverage | $ |
+  |---|---|---|---|---|---|
+  | Delta Reserve | Sky Club (15/yr) | every concourse | 15 | 1.0 | 469 (cap) |
+  | Delta Reserve | Centurion (flying Delta) | Centurion (E, intl) | 16 | 0.4 | 224 |
+  | Platinum | Sky Club (10/yr) | every concourse | 10 | 1.0 | 350 |
+  | Venture X | Priority Pass | The Club ATL (F), Poppin (F) | 16 | 0.4 | 224 |
+  | Venture X | Capital One Lounge | none at ATL | — | 0 | 0 |
+  | Sapphire Reserve | Priority Pass | same as above | 16 | 0.4 | 224 |
+  | Altitude Connect | Priority Pass (4/yr) | same as above | 4 | 0.4 | 56 |
+
+  Not counted at ATL: Minute Suites (B, E, F; Priority Pass covers the
+  first hour, but it's a rest room, not a lounge); an Escape Lounge on A
+  that some guides list as Priority Pass (unconfirmed).
+  Before (fortress-hub ½): Venture X $280 → Delta Gold, Venture X,
+  Altitude Connect, Freedom Flex, Altitude Go, Blue Cash Preferred
+  (+$1,364). After (domestic, 0.4): **Delta Reserve, Robinhood Gold,
+  Altitude Connect, Freedom Flex, Altitude Go, Blue Cash Preferred**
+  (+$1,334 over a 2% card, fees $805 incl. Robinhood Gold's $60). With
+  "Some" international (0.3) Venture X returns ($325, +$1,375); "Most"
+  (0.8) $469, +$1,519. Lounge No → unchanged (Delta Gold lineup, +$1,145).
+- *1* — 640 is fair credit, not poor: Freedom Rise now, Discover it Student
+  in 3 months (+$50 over a 2% card at these answers). Secured cards only
+  below 580 or with no history (Discover it Secured, Capital One Quicksilver
+  Secured). Capital One's Savor / Quicksilver Student cards aren't in the
+  catalog (not added: needs issuer-page verification and art).
 - *3* — Gold wins only when MR is worth more than cash to them (airline
   partners picked) and spend is high; at 1¢ its 4x is 4%, matched by no-fee
   cards.
