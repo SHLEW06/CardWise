@@ -12,6 +12,15 @@
      brands     — { airlines: [], hotels: [], everyday: [] } (program keys / names)
    ========================================================================== */
 
+/* Store-credit usage: picked brand 0.8; unpicked 0.2; unpicked monthly drip 0.15. */
+export const STORE_CREDIT_USAGE = { picked: 0.8, unpicked: 0.2, unpickedMonthly: 0.15 };
+function storeCredit({ pickedMerchant, monthly }) {
+  if (pickedMerchant) return STORE_CREDIT_USAGE.picked;
+  return monthly ? STORE_CREDIT_USAGE.unpickedMonthly : STORE_CREDIT_USAGE.unpicked;
+}
+/* Kinds that are "store credits" for the keep-verdict wording. */
+export const STORE_CREDIT_KINDS = new Set(["dining", "merchant"]);
+
 /* ── Statement credits, by the `kind` on each credit (data/cards/_helpers.js) ── */
 export const CREDIT_USAGE = {
   /* Spec: "Statement credit, broad (e.g. travel)" → 0.95 */
@@ -28,15 +37,17 @@ export const CREDIT_USAGE = {
   /* On-property spend at one hotel brand. */
   hotel: ({ trips, pickedCardBrand }) => (pickedCardBrand ? 0.8 : trips >= 3 ? 0.4 : 0.1),
 
-  /* Spec: "specific merchant / monthly drip" → 0.5, 0.8 if the user picked
-     that brand in survey step 7. */
-  dining: ({ pickedMerchant }) => (pickedMerchant ? 0.8 : 0.5),
-  merchant: ({ pickedMerchant }) => (pickedMerchant ? 0.8 : 0.5),
+  /* Store credits (one merchant, a dining platform, a non-travel
+     membership). Decision 2026-11-18: they count only when the person picked
+     that brand in survey step 7 (0.8); otherwise 0.2, and 0.15 for a
+     monthly drip, which is easiest to forget. */
+  dining: storeCredit,
+  merchant: storeCredit,
 
   /* Pays for a membership. Travel memberships (Global Entry, TSA PreCheck,
-     CLEAR, NEXUS) only matter if you fly; others are a specific merchant. */
-  membership: ({ trips, travelMembership, pickedMerchant }) =>
-    travelMembership ? (trips >= 3 ? 0.8 : trips >= 1 ? 0.5 : 0.1) : pickedMerchant ? 0.8 : 0.5,
+     CLEAR, NEXUS) only matter if you fly; others are a store credit. */
+  membership: (ctx) =>
+    ctx.travelMembership ? (ctx.trips >= 3 ? 0.8 : ctx.trips >= 1 ? 0.5 : 0.1) : storeCredit(ctx),
 
   /* Promo codes are discounts on purchases you'd have to choose to make. */
   promo: () => 0.15,

@@ -55,9 +55,8 @@ describe("profileDefaults", () => {
 /* ── §3.1 value model ─────────────────────────────────────────────────── */
 describe("benefit and reward value", () => {
   const flyer = normalizeProfile({ wants: "travel", travel: { trips: 6, lounges: "yes" } });
-  it("broad credits count at 0.95, specific merchants at 0.5 (0.8 if picked)", () => {
+  it("broad credits count at 0.95; store credits 0.8 only when the brand was picked", () => {
     expect(CREDIT_USAGE.broad({})).toBe(0.95);
-    expect(CREDIT_USAGE.merchant({ pickedMerchant: false })).toBe(0.5);
     expect(CREDIT_USAGE.merchant({ pickedMerchant: true })).toBe(0.8);
   });
   it("lounge value never exceeds the retail price of access", () => {
@@ -251,5 +250,36 @@ describe("output", () => {
   it("runs over the whole catalog without throwing for an empty profile", () => {
     expect(() => optimizeWallet({})).not.toThrow();
     expect(() => optimizeWallet({ cardsHeld: CARDS.map((c) => c.id) })).not.toThrow();
+  });
+});
+
+/* Decision 2026-11-18: store credits count only for brands the person picked. */
+describe("store credits and held premium cards", () => {
+  it("unpicked store credits count 0.2 (0.15 monthly); picked 0.8", () => {
+    expect(CREDIT_USAGE.merchant({ pickedMerchant: false })).toBe(0.2);
+    expect(CREDIT_USAGE.merchant({ pickedMerchant: false, monthly: true })).toBe(0.15);
+    expect(CREDIT_USAGE.dining({ pickedMerchant: true, monthly: true })).toBe(0.8);
+    expect(CREDIT_USAGE.membership({ travelMembership: false, pickedMerchant: false })).toBe(0.2);
+  });
+  it("Platinum holder, 0 trips, no brands picked → cancel or switch (Gold downgrade path)", () => {
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 } });
+    const v = [...r.keep, ...r.skip].find((x) => x.cardId === "amex-plat");
+    expect(["downgrade", "cancel"]).toContain(v.action);
+    expect(BY_ID["amex-plat"].downgradeOptionIds).toContain("amex-gold");
+    expect(v.action).toBe("downgrade");
+    expect(v.downgradeTo).toBe("amex-gold");
+  });
+  it("Platinum holder who picked Uber and flies 5× a year → keep", () => {
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 5 }, brands: { everyday: ["uber/lyft"] } });
+    expect(r.keep.find((x) => x.cardId === "amex-plat").action).toBe("keep");
+  });
+  it("a held card kept mainly by store credits names them in its verdict", () => {
+    const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 }, brands: { everyday: ["uber/lyft", "walmart"] } });
+    const k = r.keep.find((x) => x.cardId === "amex-plat");
+    expect(k.action).toBe("keep");
+    expect(k.sentence).toMatch(/^Worth keeping if you use: /);
+    expect(k.sentence).toMatch(/Uber Cash/);
+    expect(k.sentence).toMatch(/Walmart\+/);
+    expect(k.dependsOn.length).toBeGreaterThan(0);
   });
 });

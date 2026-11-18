@@ -46,6 +46,10 @@ const BRAND_NAMES = {
 };
 const brandName = (b) => BRAND_NAMES[b] || b;
 const aOrAn = (word) => (/^[aeiou]/i.test(word) ? "an" : "a");
+const listWords = (xs) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+/** "$200 Uber Cash ($15 a month + $20 in December)" → "Uber Cash". */
+export const shortCreditName = (name) =>
+  String(name).replace(/\s*\(.*$/, "").replace(/^\$[\d,]+\s+/, "").replace(/\s+credit$/i, "").trim();
 const CATEGORY_WORDS = {
   groceries: "groceries", dining: "dining out", gas: "gas", transit: "transit", online: "online shopping",
   bills: "bills and subscriptions", other: "everything else", rent: "rent", flights: "flights", hotels: "hotels",
@@ -100,6 +104,8 @@ function sentenceFor(kind, card, v, profile, ctx = {}) {
       const monthly = Math.round((annualSpend(profile)[cat] || 0) / 12);
       return `Because you spend about ${money(monthly)} a month on ${CATEGORY_WORDS[cat]}, it earns ${formatPctBack(pct)} there — about ${money(ctx.gain)} a year more than your other cards.`;
     }
+    case "keepForStoreCredits":
+      return `Worth keeping if you use: ${listWords(ctx.credits)}.`;
     case "keep":
       return v.annualFee
         ? `You already have it, and for you it's worth about ${money(v.benefitValue + v.rewardsValue)} a year against a ${money(v.annualFee)} fee.`
@@ -132,7 +138,15 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
     const card = byId[id];
     const v = cardValue(card, profile);
     if (v.netValue >= 0 || !v.annualFee) {
-      keep.push({ cardId: id, action: "keep", role: primaryRole(card), sentence: sentenceFor("keep", card, v, profile), netValue: v.netValue, effectiveFee: v.effectiveFee });
+      /* Kept mainly by store credits = it would not pay without them. Say
+         which ones, so the person can decide if they really use them. */
+      const store = v.benefits.filter((b) => b.store && b.value > 0).sort((a, b) => b.value - a.value);
+      const storeValue = store.reduce((t, b) => t + b.value, 0);
+      const byStore = v.annualFee > 0 && storeValue > 0 && v.netValue - storeValue < 0;
+      const sentence = byStore
+        ? sentenceFor("keepForStoreCredits", card, v, profile, { credits: store.slice(0, 4).map((b) => shortCreditName(b.label)) })
+        : sentenceFor("keep", card, v, profile);
+      keep.push({ cardId: id, action: "keep", role: primaryRole(card), sentence, netValue: v.netValue, effectiveFee: v.effectiveFee, ...(byStore ? { dependsOn: store.map((b) => b.label) } : {}) });
       walletCards.push(card); fees += v.annualFee;
       continue;
     }

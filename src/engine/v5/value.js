@@ -15,7 +15,7 @@
    ========================================================================== */
 
 import {
-  CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP, MERCHANT_WORDS,
+  CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP, MERCHANT_WORDS, STORE_CREDIT_KINDS,
   FREE_NIGHT_USAGE, UNCAPPED_FREE_NIGHT_POINTS, COMPANION_USAGE,
   LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, STATUS_VALUE,
@@ -179,12 +179,14 @@ export function benefitBreakdown(card, profile) {
 
   for (const c of card.credits || []) {
     const fn = CREDIT_USAGE[c.kind] || CREDIT_USAGE.merchant;
+    const travelMembership = TRAVEL_MEMBERSHIP.test(c.name);
     const usage = fn({
-      trips, pickedCardBrand,
+      trips, pickedCardBrand, travelMembership,
       pickedMerchant: merchantPicked(c.name, profile),
-      travelMembership: TRAVEL_MEMBERSHIP.test(c.name),
+      monthly: c.cadence === "monthly",
     }) * (c.use === "HARD" ? HARD_TO_USE : 1);
-    items.push({ label: c.name, face: c.annual, value: Math.round(c.annual * usage), kind: "credit" });
+    const store = STORE_CREDIT_KINDS.has(c.kind) || (c.kind === "membership" && !travelMembership);
+    items.push({ label: c.name, face: c.annual, value: Math.round(c.annual * usage), kind: "credit", store });
   }
 
   for (const n of card.freeNightCertificates || []) {
