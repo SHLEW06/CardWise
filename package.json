@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && firebase deploy",
+    "pretest": "node scripts/build-card-art-manifest.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "predev": "node scripts/build-card-art-manifest.mjs",
