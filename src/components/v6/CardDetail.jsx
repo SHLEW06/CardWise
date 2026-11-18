@@ -93,7 +93,9 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             <p className="t-eyebrow">{c.issuer} · {d.fee ? `${money(d.fee)} a year` : "No yearly fee"}</p>
             <h1 className="t-d2">{d.name}</h1>
             <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} /></span><span className="detail-unit"> a year to you</span></p>
-            <p className="t-lead">{value > 0 ? whyLine(d) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
+            <p className="t-lead">{value > 0 ? whyLine(d) : d.inWallet.has
+              ? "For you it gives back about what it costs — see Keep or cancel in Wallet Lab."
+              : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
             <div className="detail-tags">
               <span className="tag">{pointsChip(c, profile, [...wallet, c.id])}</span>
               <span className={`tag ${ap.level === 0 ? "tag-good" : ap.level === 2 ? "tag-warn" : ""}`}>{ap.label} approval{ap.needs ? ` · ${ap.needs}` : ""}</span>
