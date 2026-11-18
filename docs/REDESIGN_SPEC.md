@@ -558,3 +558,155 @@ Firebase auth on; connector behind HTTPS; vault key in a secrets manager;
 no request-body logging; written security note; privacy page copy:
 "Your bank login happens on your bank's own page. CardWise stores only an
 encrypted session to read your offers — never your password or card numbers."
+
+---
+
+# v6 (written 2026-11-18 from `docs/CLAUDE_CODE_V6_PROMPT.md`)
+
+The v6 prompt is the full brief; these sections are its decisions in short
+form so this file stays the one reference. Where v6 and §1–§15 differ, v6
+wins. Nine sections for twelve parts: Parts G and I share §22 (both are
+engine math) and Parts J, K and L share §24 (the "use it" surfaces).
+
+Carried-over rules: no bank passwords or card numbers stored or logged;
+`public/cards|fonts|backgrounds/` stay gitignored; Robinhood is studied for
+technique only; card facts come from issuer pages, dated, or are left out and
+listed in `docs/PROGRESS.md`; the v5 engine is the single source of numbers;
+consumer copy never says cpp/MR/UR/multiplier/breakage/haircut — jargon lives
+only behind "See the math".
+
+## 16. Fixes carried over (Part A)
+
+1. **Card photos everywhere.** Find the real reason `CardFace` shows the
+   designed face (dev server, request, CSS, CSP — in that order), fix it, test
+   `<img src="/cards/amex-gold.png">`. Fetch official art for the cards that
+   have none. The designed face is a last resort and uses the card's real
+   colour and material.
+2. **Fonts.** §9.9 stands. `@font-face` hooks for PP Editorial New / PP Neue
+   Montreal with `font-display: swap` and preload; fall back to Instrument
+   Serif + Geist. Display 300–400, nothing above 500, **no monospace
+   anywhere**; numbers are Neue Montreal with `tabular-nums`.
+3. **Your points** rebuilt per §9.10.
+4. **Typeable sliders**: every money slider has a synced `$` field (numeric
+   keypad, typed values above max are kept).
+5. **Checkout**: rank by effective % back (+ offer value once an amount
+   exists); use v5 `cppFor` (Freedom alone = 1.5%, not 2.25%); no doubled
+   issuer in names; no "Add one ›" link or badge over art.
+
+## 17. Navigation (Part B)
+
+Five tabs: **Home · Checkout · Offers · Wallet Lab · Explore**. "You" becomes
+an avatar button (top right) opening **Profile**: survey answers (edit any
+step), point values, connected banks, fee budget, saved setups, settings.
+Hidden v4 features come back restyled where they belong (table in the v6
+prompt, Part B). Any component that duplicates v5 math is rewired to v5 —
+never two numbers for the same card.
+
+## 18. Design v6 — dark, lit, photographic (Part C)
+
+Overrides §9.1/§9.3/§9.8 where they differ.
+- Base night `#0B0A08`–`#110E08`; content on frosted glass
+  (`rgba(12,11,9,.55)`, `blur(24px) saturate(140%)`, hairline
+  `rgba(255,255,255,.08)`) over a per-screen backdrop. Paper `#F5F3EE` only
+  for an occasional editorial band.
+- Text `#F5F3EE`; secondary `#B9B2A3` (≥ 4.5:1 on its real background); gold
+  `#CFB97D` / `#94814C` for values and accents only, never paragraphs.
+- Corners 0–4px everywhere; primary buttons are pills; card photos keep a
+  real card radius (≈ 4.5% of width).
+- Motion: reveal = opacity, 16px rise, 10px blur over 700ms
+  `cubic-bezier(.16,1,.3,1)`, 60ms stagger; headline parallax ≤ 24px; tab
+  switch with View Transitions + blur cross-fade; card tilt ≤ 4° with moving
+  specular; numbers count up; all off under `prefers-reduced-motion`.
+- Type: display serif 300–400, hero 72–112px desktop / 44–56 phone,
+  −0.02em; UI sans 400/500; gold/ivory gradient on hero lines sparingly.
+- **Backdrops**: `<Backdrop slot="home|checkout|offers|lab|explore|survey|card">`
+  loads `public/backgrounds/<slot>.(avif|webp)` if present, else a procedural
+  scene (lit card on a dark curved horizon, rim light, grain, light drift;
+  city bokeh for Checkout, gold spotlight for Explore, card shelves for Wallet
+  Lab). Compositions and image-model prompts live in `docs/BACKGROUNDS.md`.
+
+## 19. Survey v6 (Part D)
+
+Every question optional with a default; progress indicator; **Quick (2 min)**
+asks ★ steps, **Thorough (6 min)** asks all. Saved per user (Firestore signed
+in, localStorage otherwise); every step editable from Profile.
+1. ★ Cards you have — whole catalog, real photos, clear selected state.
+2. ★ Spending (monthly, yearly shown; slider + typed `$`): dining,
+   groceries, warehouse clubs (separate), gas, EV charging, rideshare &
+   transit, flights, hotels, vacation rentals, streaming, drugstores, online,
+   rent, phone/utilities, everything else; plus "Where do you buy gas?".
+3. ★ Travel: flights/yr, home airport (typeahead), airlines (grouped by
+   alliance, every transfer partner, every US co-brand), hotel nights/yr,
+   hotel brands, ★ lounge preference Yes/Sometimes/No.
+4. ★ Brands you already use — generated from every merchant credit in the
+   card data, grouped (Food & delivery · Rides · Shopping & wellness ·
+   Streaming & news · Travel extras). A test fails if a merchant credit has no
+   brand chip.
+5. ★ Fee budget: $0 · 100 · 250 · 500 · 750 · 1,000 · 1,500 · type an amount.
+6. Credit profile: score band, cards opened in 24 months, past Amex/Chase cards.
+7. Point values (§20), pre-selected from step 3.
+8. Your points (§16.3).
+9. Your best setup: score, optimal wallet at budget, "Open Wallet Lab".
+
+## 20. Point values — partner-based (Part E)
+
+Editable only for flexible currencies (Chase, Amex, Capital One, Citi, Bilt,
+Wells Fargo). Per currency, a row of major partners ("Aeroplan · 1:1 ·
+≈ 1.5¢"); the person toggles the ones they'd use (defaults from survey picks).
+**Value = mean of selected partners' (partner value × ratio), floored at the
+currency's cash value; none selected = cash/portal baseline.** Partner values
+live in `src/data/partnerValuations.js` from one dated published source.
+**Unlocks** are data in `programs.js` and depend on the *wallet*: Chase
+transfers need Sapphire Preferred/Reserve or Ink Preferred (Freedom alone =
+1¢); Citi full partners need Strata Premier/Elite; Capital One cash cards
+convert only beside a Venture/Venture X/Spark Miles; Amex MR and Bilt transfer
+from any earning card. Chase Points Boost (up to 1.5¢ / 1.75¢ / 2¢ on select
+bookings) is shown as "up to", never a flat rate.
+
+## 21. Wallet Lab (Part F)
+
+Score dial, "≈ $X a year", best at budget, with no fee limit; live fee-budget
+slider + `$` field; spending drawer (what-if or save); relevant slots only
+(Keeper hotel · Lounge · Everyday · Dining · Groceries · Costco · Gas & EV ·
+Flights · Hotels · Online · Rotating 5% · Rent); tap a slot → ranked
+alternatives with net value, fee impact, what it displaces, one-tap swap and a
+diff toast; modes "From my wallet" / "From scratch"; sample wallets (Lounge &
+credits, Simple cash back, Points traveler, Hotel loyalist, Costco family);
+panels Keep or cancel · When to apply · Saved setups · Portal vs direct.
+
+## 22. Value methodology + portal breakeven (Parts G, I)
+
+Full formulas in `docs/METHODOLOGY.md`. `N(W) = E(W) + U(W) − F(W)` over a 2%
+flat baseline. E allocates each category's spend to the best *net* card with
+caps and overflow, at wallet-dependent point values. U dedupes lounge / GE /
+CLEAR; brand credits count only for picked brands (annual .9, semiannual .75,
+quarterly .6, monthly .5); split hotel credits are $0 unless opted in with
+≥ 4 paid nights (≤ 0.6); free nights = cap × program value × P(use); lounge
+value only for Yes (Sometimes = ½) via home-airport coverage. F = steady-state
+fees; welcome bonuses separate. `W*(B) = argmax N` within budget, issuer rules
+and ≤ 6 cards — exact branch-and-bound over a pruned candidate set, < 150 ms,
+memoized. Wallet Score = 100 × N(current)/N(W*); card fit = 100 × Δk / max Δ.
+Eight golden-profile tests.
+Portal breakeven: `net_D = D(1 − r_D)`, `net_P = P(1 − e_P·v)`,
+`P* = (net_D + L)/(1 − e_P·v)`; book in the portal if `P < P*`.
+
+## 23. Explore + card detail (Part H)
+
+Search, category chips (For you default … Business), filters (fee first),
+sort Value to you · Fee · Easiest approval. Tiles: photo, name, fee,
+"≈ $X a year to you", fit score, approval chip, availability. Compare 2–3.
+Card detail replaces the dark modal: lit photo, headline value, benefits you'd
+use / wouldn't (with reasons and the split-credit opt-in), top-3 earning as %
+back, wallet effect, points chip, "See the math" (ValueBreakdown, kept only if
+it responds to survey answers).
+
+## 24. Checkout, Offers, Home (Parts J, K, L)
+
+**Checkout** — Search · Near me · Best by category · Flights & hotels. ≥ 3,000
+brands from name-suggestion-index (BSD-3-Clause) under our curated overrides,
+lazy prefix index (< 20 ms); geolocation only on tap, never stored or sent to
+our servers. **Offers** — all synced offers, filters, Add all, per-card
+auto-add with exclusions; Connect a bank via the connector (`npm run
+dev:all`), encrypted sessions, calibration for Amex/Chase by the user.
+**Home** — score + "≈ $X a year" over fanned card photos, one next move,
+near-you strip, top offers, links. No dense panels.

@@ -18,16 +18,30 @@ describe("Your points, explained (§2 step 9)", () => {
     expect(r.programs[0].partnersYouPicked).toEqual([expect.objectContaining({ key: "hyatt", ratioText: "4:3" })]);
   });
   it("is honest that Freedom-style points can't transfer alone", () => {
-    const r = explainPoints({ cardsHeld: ["freedom-unlimited"], brands: { airlines: ["united"] } });
+    const everyday = { groceries: 0, dining: 0, gasTransit: 0, online: 0, bills: 0, other: 1000 };
+    const r = explainPoints({ cardsHeld: ["freedom-unlimited"], spend: everyday, brands: { airlines: ["united"] } });
     expect(r.programs[0].transferable).toBe(false);
     expect(r.programs[0].partnersYouPicked).toEqual([]);
-    expect(r.programs[0].sentence).toMatch(/only move to airlines and hotels alongside/);
+    expect(r.programs[0].sentence).toBe("Worth about 1.5% today. Add a Sapphire Preferred and the same points move to United — a brand you picked.");
+    expect(r.programs[0].pctText).toBe("≈ 1.5% back");
   });
   it("names co-brand and cash-back programs in plain words", () => {
     const r = explainPoints({ cardsHeld: ["delta-gold", "citi-double-cash", "quicksilver"] });
     const byCur = Object.fromEntries(r.programs.map((p) => [p.currency, p]));
-    expect(byCur.delta.sentence).toMatch(/Delta SkyMiles/);
-    expect(byCur.cash.sentence).toMatch(/pays you cash/);
+    expect(byCur.delta.name).toMatch(/Delta SkyMiles/);
+    expect(byCur.delta.sentence).toMatch(/^Best used for Delta flights/);
+    expect(byCur.cash.sentence).toBe("Paid as cash. Nothing to plan or transfer.");
+    /* §9.10: never restate the card name. */
+    for (const p of r.programs) for (const n of p.cards) expect(p.sentence).not.toContain(n);
+  });
+  it("names the home airport for an airline program (§9.10)", () => {
+    const r = explainPoints({ cardsHeld: ["delta-gold"], travel: { trips: 4, homeAirport: "ATL" }, brands: { airlines: ["delta"] } });
+    expect(r.programs[0].sentence).toBe("Best used for Delta flights from ATL, your home airport, an airline you picked.");
+  });
+  it("Freedom beside a Sapphire counts as transferable", () => {
+    const r = explainPoints({ cardsHeld: ["freedom-unlimited", "csp"], brands: { airlines: ["united"] } });
+    expect(r.programs[0].transferable).toBe(true);
+    expect(r.programs[0].photoCardId).toBe("csp");
   });
   it("with no cards, points to what comes next", () => {
     expect(explainPoints({}).programs).toEqual([]);

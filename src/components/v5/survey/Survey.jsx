@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
 import CardFace from "../CardFace.jsx";
 import Choice from "../Choice.jsx";
+import MoneySlider from "../MoneySlider.jsx";
 import { CARDS, BY_ID } from "../../../data/cards.js";
 import { AIRPORTS } from "../../../data/airports.js";
 import {
@@ -228,13 +229,8 @@ function SpendStep({ a, set, headRef }) {
       </div>
       <div className="spend-rows">
         {SPEND_ROWS.map((r) => (
-          <label key={r.key} className="spend-row">
-            <span className="spend-label">{r.label}</span>
-            <span className="spend-value">{money(a.spend[r.key])}</span>
-            <input type="range" min={0} max={SPEND_MAX} step={SPEND_STEP} value={a.spend[r.key]}
-              onChange={(e) => set({ spendPreset: null, spend: { ...a.spend, [r.key]: Number(e.target.value) } })}
-              aria-valuetext={`${money(a.spend[r.key])} a month`} />
-          </label>
+          <MoneySlider key={r.key} label={r.label} value={a.spend[r.key]} max={SPEND_MAX} step={SPEND_STEP} suffix="/mo" yearly
+            onChange={(n) => set({ spendPreset: null, spend: { ...a.spend, [r.key]: n } })} />
         ))}
       </div>
       <fieldset className="survey-group">
@@ -244,11 +240,7 @@ function SpendStep({ a, set, headRef }) {
           <Choice radio pill selected={a.paysRent === true} onSelect={() => set({ paysRent: true })}>Yes</Choice>
         </div>
         {a.paysRent && (
-          <label className="spend-row">
-            <span className="spend-label">Rent each month</span>
-            <span className="spend-value">{money(a.rent)}</span>
-            <input type="range" min={0} max={RENT_MAX} step={50} value={a.rent} onChange={(e) => set({ rent: Number(e.target.value) })} aria-valuetext={`${money(a.rent)} a month`} />
-          </label>
+          <MoneySlider label="Rent each month" value={a.rent} max={RENT_MAX} step={50} suffix="/mo" yearly onChange={(n) => set({ rent: n })} />
         )}
       </fieldset>
     </>
@@ -326,14 +318,18 @@ function PointsStep({ a, headRef }) {
   const r = useMemo(() => explainPoints(answersToProfile(a)), [a]);
   return (
     <>
-      <Head headRef={headRef} title="Your points, explained." />
+      <Head headRef={headRef} title="Here's what your points can do." />
       {r.summary && <p className="t-lead">{r.summary}</p>}
       <ul className="points-list">
-        {r.programs.map((p) => (
-          <li key={p.currency} className="panel points-item">
-            <span className="t-h3">{p.name}</span>
-            <p>{p.sentence}</p>
-            <span className="t-caption">{p.cards.join(" · ")}</span>
+        {r.programs.map((p, i) => (
+          <li key={p.currency} className="points-item" style={{ "--i": i }}>
+            <div className="points-photo"><CardFace card={BY_ID[p.photoCardId]} /></div>
+            <div className="points-copy">
+              <h2 className="points-name">{p.name}</h2>
+              <p>{p.sentence}</p>
+              {p.note && !p.transferable && <p className="t-caption">{p.note}</p>}
+            </div>
+            <span className="points-value">{p.pctText}</span>
           </li>
         ))}
       </ul>

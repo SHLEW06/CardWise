@@ -195,7 +195,7 @@
 .sh-big {
   font-size: clamp(42px, 11vw, 64px);
   margin: 8px 0 14px;
-  font-weight: 700;
+  font-weight:500;
 }
 
 .sh-big-unit {

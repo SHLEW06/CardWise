@@ -37,8 +37,8 @@
   --signal-ink: #110E08;
 
   /* ── Type (§9.2 faces; §9.8 scale 72 / 58 / 44 / 32, −1px on display; 16px body) ── */
-  --f-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  --f-ui: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --f-display: var(--font-display);
+  --f-ui: var(--font-ui);
   --fs-d1: clamp(2.75rem, 1.6rem + 3.6vw, 4.5rem);    /* 44 → 72 */
   --fs-d2: clamp(2.25rem, 1.4rem + 2.8vw, 3.625rem);  /* 36 → 58 */
   --fs-h1: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem);  /* 30 → 44 */

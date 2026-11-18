@@ -64,7 +64,7 @@ export default function SpendRouter({ profile, wallet }) {
               <div className="cw-router-dollars" style={{ marginTop: 4, color: "var(--muted)" }}>
                 Baseline ({recommendation.baselineAlternative.cardName}): {fmtMoney(recommendation.baselineAlternative.estimatedValue)}
               </div>
-              <div className="cw-router-dollars" style={{ marginTop: 2, fontWeight: 600 }}>
+              <div className="cw-router-dollars" style={{ marginTop: 2, fontWeight: 500 }}>
                 Incremental: {recommendation.incrementalValue >= 0 ? "+" : ""}{fmtMoney(recommendation.incrementalValue)}
               </div>
             </div>

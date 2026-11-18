@@ -19,7 +19,8 @@
 
 import { BY_ID } from "../../data/cards.js";
 import { calculatePurchaseRewardValue } from "../cardRouter.js";
-import { effCpp } from "../transferValue.js";
+import { cardCpp } from "../v5/value.js";
+import { normalizeProfile } from "../profileDefaults.js";
 import { matchBrand, normalizeMerchant } from "./brandMatch.js";
 import { BRAND_BY_KEY } from "./brands.js";
 import { isLive, offerValueFor, describeOffer, issuerOfferPage } from "./offerModel.js";
@@ -54,21 +55,37 @@ export function resolveQuery(query, channel = "any") {
   return { brand, match: m, merchant, merchantNorm: normalizeMerchant(merchant), category };
 }
 
-export function findRewards(input, wallet, offers = [], profile = {}, { today = new Date() } = {}) {
+/* v6 §16.5: Checkout values points with the v5 engine (cardCpp), which knows
+   that Freedom-style points are cash unless a transfer card sits in the same
+   wallet. `v5Profile` is the person's v5 profile; without one, a default
+   profile in the matching points mode is used. */
+function v5From(profile, v5Profile) {
+  if (v5Profile) return normalizeProfile(v5Profile);
+  const cash = profile?.goal === "cashback" || profile?.pointPref === "cash";
+  return normalizeProfile({ wants: cash ? "cash" : "travel" });
+}
+
+export function findRewards(input, wallet, offers = [], profile = {}, { today = new Date(), v5Profile = null } = {}) {
   const { query = "", amount = 0, channel = "any" } = input || {};
   const spend = Number(amount) || 0;
   const r = resolveQuery(query, channel);
   const ids = idsOf(wallet);
+  const v5 = v5From(profile, v5Profile);
+  const walletCards = ids.map((id) => BY_ID[id]).filter(Boolean);
+  const cppOf = (card) => cardCpp(card, v5, walletCards);
   const liveOffers = (offers || []).filter((o) => isLive(o, today) && channelOk(o, channel));
   const matching = liveOffers.filter((o) => offerMatchesMerchant(o, { brandKey: r.brand?.key, merchantNorm: r.merchantNorm }));
 
   const cards = ids.map((cardId) => {
     const card = BY_ID[cardId];
     if (!card) return null;
-    const base = calculatePurchaseRewardValue(card, r.category, spend, { ...profile, currentWallet: ids }) || {
-      rate: 0, cpp: 1, pct: 0, rewardsValue: 0, estimatedValue: 0, adjustmentNotes: [],
+    const raw = calculatePurchaseRewardValue(card, r.category, spend, { ...profile, currentWallet: ids }) || {
+      rate: 0, cpp: 1, pct: 0, rewardsValue: 0, adjustments: 0, estimatedValue: 0, adjustmentNotes: [],
     };
-    const cpp = card.pointCurrency ? effCpp(card.pointCurrency, profile, ids) : 1;
+    const cpp = cppOf(card);
+    const pct = +((raw.rate || 0) * cpp).toFixed(2);
+    const rewardsValue = Math.round(spend * pct) / 100;
+    const base = { ...raw, cpp: +cpp.toFixed(3), pct, rewardsValue, estimatedValue: Math.round((rewardsValue + (raw.adjustments || 0)) * 100) / 100 };
     const mine = matching.filter((o) => o.cardId === cardId);
     const scored = mine.map((o) => ({ offer: o, math: offerValueFor(o, spend, { cpp, baseRate: base.rate || 1 }) }))
       .sort((a, b) => b.math.value - a.math.value || b.math.potential - a.math.potential);
@@ -77,7 +94,7 @@ export function findRewards(input, wallet, offers = [], profile = {}, { today = 
     const top = scored[0] || null;
     const total = +(base.estimatedValue + (top ? top.math.value : 0)).toFixed(2);
     const reasons = [];
-    if (base.rate) reasons.push(`${base.rate}x on ${categoryLabel(r.category)} ≈ ${base.pct}%`);
+    if (base.rate) reasons.push(`≈ ${base.pct}% back on ${categoryLabel(r.category)}`);
     if (top && top.math.value) reasons.push(`+ ${describeOffer(top.offer)}${top.offer.status === "available" ? " (activate first)" : ""}`);
     if (top && !top.math.value && top.math.note) reasons.push(`${describeOffer(top.offer)} — ${top.math.note}`);
     for (const n of base.adjustmentNotes || []) reasons.push(n);
@@ -93,7 +110,10 @@ export function findRewards(input, wallet, offers = [], profile = {}, { today = 
     };
   }).filter(Boolean);
 
-  cards.sort((a, b) => b.total - a.total || b.base.estimatedValue - a.base.estimatedValue);
+  /* Rank by money when there is an amount, and always by effective % back
+     after that — with no amount every total is $0, which used to leave the
+     cards in wallet order (§16.5a). */
+  cards.sort((a, b) => b.total - a.total || b.base.pct - a.base.pct || b.base.estimatedValue - a.base.estimatedValue);
   cards.forEach((c, i) => { c.rank = i + 1; });
 
   const withCard = (o) => ({ offer: o, card: BY_ID[o.cardId] || null });
@@ -101,7 +121,7 @@ export function findRewards(input, wallet, offers = [], profile = {}, { today = 
     .filter((o) => o.status === "available")
     .map((o) => {
       const card = BY_ID[o.cardId];
-      const cpp = card?.pointCurrency ? effCpp(card.pointCurrency, profile, ids) : 1;
+      const cpp = card ? cppOf(card) : 1;
       return { ...withCard(o), math: offerValueFor(o, spend, { cpp }) };
     })
     .sort((a, b) => b.math.potential - a.math.potential);

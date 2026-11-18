@@ -72,7 +72,7 @@
 .v5 .spend-rows { display: grid; gap: 4px; }
 .v5 .spend-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--hair); }
 .v5 .spend-label { font-weight: 500; }
-.v5 .spend-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+.v5 .spend-value { font-variant-numeric: tabular-nums; font-weight:500; }
 .v5 .spend-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ink); height: 28px; }
 
 /* Step 6: airport search */
@@ -82,10 +82,37 @@
 .v5 .airport-list button strong { color: var(--ink); margin-right: 6px; }
 .v5 .airport-list button:hover, .v5 .airport-list button:focus-visible { background: var(--paper-2); }
 
-/* Step 9 */
-.v5 .points-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-.v5 .points-item { display: grid; gap: 6px; }
-.v5 .points-item p { margin: 0; font-size: 1.0625rem; }
+/* Step 9 — "Here's what your points can do" (§9.10): an editorial list,
+   hairlines not boxes; photo · program + one sentence · value in gold. */
+.v5 .points-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; }
+.v5 .points-item {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 20px; align-items: center;
+  padding: 24px 0; border-top: 1px solid var(--hair);
+  animation: v5-reveal 700ms cubic-bezier(.16, 1, .3, 1) both; animation-delay: calc(var(--i) * 60ms);
+}
+.v5 .points-item:last-child { border-bottom: 1px solid var(--hair); }
+.v5 .points-name { font-family: var(--f-display); font-weight: 400; font-size: 1.75rem; letter-spacing: -.02em; line-height: 1.1; margin: 0 0 6px; }
+.v5 .points-copy p { margin: 0; color: var(--ink-2); }
+.v5 .points-copy p + p { margin-top: 6px; }
+.v5 .points-value { font-family: var(--f-ui); font-size: 1.25rem; font-variant-numeric: tabular-nums; color: var(--gold-deep); white-space: nowrap; }
+@keyframes v5-reveal { from { opacity: 0; transform: translateY(16px); filter: blur(10px); } }
+@media (max-width: 520px) {
+  .v5 .points-item { grid-template-columns: 72px minmax(0, 1fr); }
+  .v5 .points-value { grid-column: 2; }
+}
+
+/* Money slider + typed $ field (§16.4) */
+.v5 .money-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--hair); }
+.v5 .money-label { font-weight: 500; }
+.v5 .money-field {
+  display: inline-flex; align-items: center; gap: 2px; height: 40px; padding: 0 10px; min-width: 128px;
+  border-radius: 4px; box-shadow: inset 0 0 0 1px var(--hair-strong); color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.v5 .money-field:focus-within { box-shadow: inset 0 0 0 2px var(--navy); }
+.v5 .money-field input { width: 6ch; flex: 1; border: 0; background: none; font: inherit; color: var(--ink); text-align: right; outline: none; font-variant-numeric: tabular-nums; }
+.v5 .money-suffix { font-size: var(--fs-small); color: var(--ink-3); margin-left: 2px; }
+.v5 .money-range { grid-column: 1 / -1; width: 100%; accent-color: var(--ink); height: 28px; }
+.v5 .money-hint { grid-column: 1 / -1; font-size: var(--fs-caption); color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 860px) {
   .v5 .landing-body { grid-template-columns: 1fr; gap: 24px; align-content: center; }

@@ -23,7 +23,7 @@
 .v5 .face-tile { display: grid; gap: 6px; width: 100%; text-align: left; }
 .v5 .face-tile .v5-face { margin-bottom: 10px; }
 .v5 .face-tile:hover .v5-face:not(.is-selected) { transform: translateY(-2px); }
-.v5 .face-tile-name { font-weight: 600; }
+.v5 .face-tile-name { font-weight:500; }
 
 /* You */
 .v5 .you { display: grid; gap: 16px; max-width: 760px; }

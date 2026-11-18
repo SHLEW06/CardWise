@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Check } from "lucide-react";
 import { materialFor, wordmarkFor, NETWORK_LABEL } from "../../data/cardMaterials.js";
+import { cardDisplayName } from "../../data/cardNames.js";
 
 /* A card face: the issuer's real art when public/cards/ has it, otherwise a
    designed face (§7) — material color, finish, issuer wordmark, chip, name,
@@ -14,7 +15,7 @@ export default function CardFace({ card, selected = false, label, className = ""
   if (!card) return null;
   const art = card.image?.localImage && !failed ? card.image.localImage : null;
   const m = materialFor(card);
-  const name = label || `${card.issuer} ${card.name}`;
+  const name = label || cardDisplayName(card);
 
   return (
     <div

@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Search, Zap, ExternalLink, ChevronRight, Store, Globe, AlertCircle, Check, Plus } from "lucide-react";
-import CardArt from "../CardArt.jsx";
+import CardFace from "../v5/CardFace.jsx";
+import { cardDisplayName } from "../../data/cardNames.js";
+import { loadV5Profile } from "../../state/v5Profile.js";
 import { findRewards } from "../../engine/offers/findRewards.js";
 import { matchBrands } from "../../engine/offers/brandMatch.js";
 import { describeOffer, daysUntilExpiry } from "../../engine/offers/offerModel.js";
@@ -27,7 +29,7 @@ export default function GoScreen({ wallet = [], offers = [], profile = {}, onOpe
   const suggestions = useMemo(() => (query.trim().length >= 2 ? matchBrands(query, { limit: 5 }) : []), [query]);
   const result = useMemo(() => {
     if (!query.trim()) return null;
-    return findRewards({ query, amount: Number(amount) || 0, channel }, wallet, offers, profile);
+    return findRewards({ query, amount: Number(amount) || 0, channel }, wallet, offers, profile, { v5Profile: loadV5Profile() });
   }, [query, amount, channel, wallet, offers, profile]);
 
   const hasWallet = wallet.length > 0;
@@ -123,7 +125,7 @@ export default function GoScreen({ wallet = [], offers = [], profile = {}, onOpe
                     <li key={offer.id} className="go-activate-row">
                       <div className="go-activate-main">
                         <strong>{describeOffer(offer)}</strong>
-                        <span className="go-activate-card">{card?.issuer} {card?.name}</span>
+                        <span className="go-activate-card">{cardDisplayName(card)}</span>
                         {math.note && <span className="go-note">{math.note}</span>}
                         {days != null && days <= 14 && <span className="go-note go-warn">Expires in {days}d</span>}
                       </div>
@@ -156,17 +158,17 @@ export default function GoScreen({ wallet = [], offers = [], profile = {}, onOpe
             {result.cards.map((row, i) => (
               <article key={row.cardId} className={["go-card", i === 0 && "go-card-best"].filter(Boolean).join(" ")}>
                 <div className="go-card-art">
-                  <CardArt card={row.card} size="sm" variant="tile" onClick={() => onOpenCard?.(row.cardId)} />
+                  <button className="go-card-photo" onClick={() => onOpenCard?.(row.cardId)} aria-label={`Open ${cardDisplayName(row.card)}`}><CardFace card={row.card} /></button>
                 </div>
                 <div className="go-card-body">
                   <div className="go-card-top">
                     <div>
                       <div className="go-card-rank">{i === 0 ? "Best card" : `#${row.rank}`}</div>
-                      <div className="go-card-name">{row.card.issuer} {row.card.name}</div>
+                      <div className="go-card-name">{cardDisplayName(row.card)}</div>
                     </div>
                     <div className="go-card-total">
-                      <span className="go-card-total-num">{spend > 0 ? money(row.total) : `${row.base.pct}%`}</span>
-                      <span className="go-card-total-lab">{spend > 0 ? "back" : "effective"}</span>
+                      <span className="go-card-total-num">{spend > 0 ? money(row.total) : `≈ ${row.base.pct}%`}</span>
+                      <span className="go-card-total-lab">back</span>
                     </div>
                   </div>
                   <ul className="go-reasons">
@@ -185,7 +187,6 @@ export default function GoScreen({ wallet = [], offers = [], profile = {}, onOpe
             {result.offersConsidered === 0 && (
               <p className="go-none">
                 No card-linked offers for {result.merchant} on your cards right now.
-                <button className="go-link" onClick={() => onGoTab?.("offers")}>Add one <ChevronRight size={13} /></button>
               </p>
             )}
 

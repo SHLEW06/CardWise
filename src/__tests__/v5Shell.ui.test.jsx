@@ -8,6 +8,7 @@ import "@testing-library/jest-dom/vitest";
 import AppShell, { DESTINATIONS } from "../components/v5/AppShell.jsx";
 import Choice from "../components/v5/Choice.jsx";
 import CardFace from "../components/v5/CardFace.jsx";
+import { cardDisplayName } from "../data/cardNames.js";
 import { FindScreen, YouScreen } from "../components/v5/screens.jsx";
 import { BY_ID, CARDS } from "../data/cards/index.js";
 import { loadV5Profile } from "../state/v5Profile.js";
@@ -72,7 +73,7 @@ describe("card faces (§7)", () => {
     expect(container.querySelector(".v5-face-wordmark").textContent).toBe("Apple");
     expect(container.querySelector(".v5-face-chip")).toBeTruthy();
     expect(container.querySelector(".v5-face-name").textContent).toBe(card.name);
-    expect(screen.getByRole("img", { name: `${card.issuer} ${card.name}` })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: cardDisplayName(card) })).toBeInTheDocument();   // §16.5c: issuer never doubled
   });
   it("selected tile: ring + check badge", () => {
     const { container } = render(<CardFace card={BY_ID.csp} selected />);

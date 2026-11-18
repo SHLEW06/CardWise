@@ -123,7 +123,7 @@ describe("survey flow (§2)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Alaska" }));
     next();                                                     // 7 brands
     radio("740–799"); radio("1–2"); next();                     // 8 credit
-    expect(screen.getByRole("heading", { name: "Your points, explained." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Here's what your points can do." })).toBeInTheDocument();
     expect(screen.getByText(/Your Chase points move 1:1 to Hyatt/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /See my best wallet/ }));   // 9
     const [p] = onDone.mock.calls[0];
@@ -161,5 +161,24 @@ describe("You — flexible points slider (§4)", () => {
     expect(screen.getByText("100,000 points ≈ $1,500")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Use the default" }));
     expect(loadV5Record().profile.pointValues).toEqual({});
+  });
+});
+
+describe("typeable money sliders (v6 §16.4)", () => {
+  it("the $ field uses the number keypad, syncs with the slider, and keeps values above max", async () => {
+    const { default: MoneySlider } = await import("../components/v5/MoneySlider.jsx");
+    function H() { const [v, setV] = React.useState(300); return <MoneySlider label="Dining" value={v} onChange={setV} max={2000} suffix="/mo" yearly />; }
+    render(<H />);
+    const field = screen.getByLabelText("Dining per month, in dollars");
+    const range = screen.getByLabelText("Dining");
+    expect(field).toHaveAttribute("inputmode", "numeric");
+    fireEvent.change(range, { target: { value: "500" } });
+    expect(field).toHaveValue("500");
+    fireEvent.focus(field);
+    fireEvent.change(field, { target: { value: "$3,500" } });
+    fireEvent.blur(field);
+    expect(field).toHaveValue("3,500");
+    expect(range).toHaveValue("2000");                 // slider pins at max
+    expect(screen.getByText("$42,000 a year")).toBeInTheDocument();   // typed value kept
   });
 });
