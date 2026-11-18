@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import CardDetail from "./components/v6/CardDetail.jsx";
 import Explore from "./components/v6/explore/Explore.jsx";
-import GoScreen from "./components/go/GoScreen.jsx";
+import Checkout from "./components/v6/checkout/Checkout.jsx";
 import AppShell from "./components/v5/AppShell.jsx";
 import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
@@ -240,15 +240,7 @@ export default function App() {
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
       {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("survey")} />}
-      {tab === "checkout" && (
-        /* Milestone 7 rebuilds Checkout; until then the Go screen runs as a legacy island. */
-        <div className="legacy-frame">
-          <div className="v5-legacy cw-root">
-            <GoScreen wallet={wallet} offers={offers} profile={safeProfile} onOpenCard={openCard} onMarkAdded={markOfferAdded}
-              onGoTab={(t) => setTab(t === "board" ? "home" : t)} />
-          </div>
-        </div>
-      )}
+      {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <OffersInterim offers={offers} wallet={wallet} />}
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}

@@ -14,7 +14,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 4. Survey rebuild (D) | done |
 | 5. Wallet Lab (F) | done |
 | 6. Explore + card detail (H) | — |
-| 7. Checkout (J) | — |
+| 7. Checkout (J) | done |
 | 8. Offers + connector (K) — stop for calibration | — |
 | 9. Home (L) + polish + screenshots | — |
 
@@ -211,6 +211,27 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   baseline); a test asserts it changes when survey answers change.
 - Tests: `v6Explore.ui.test.jsx` (incl. no jargon outside See the math).
 
+## Milestone 7 — done
+
+- `components/v6/checkout/Checkout.jsx` + `engine/v5/checkout.js` replace
+  the v4 Go screen and SpendRouter; all % back from the v5 engine.
+  - **Search**: ~3,150 stores (230 curated with their merchant rules on top
+    + 2,920 US brands from name-suggestion-index 8.0.20261101, BSD-3-Clause
+    — license read in the package; notice in the JSON and
+    `docs/THIRD_PARTY.md`), lazy-loaded with a 2-letter prefix index
+    (< 20 ms, tested). Ranked by money with an amount, else % back; Costco
+    Visa-only; offers stacked (add-first, near-miss); best card you don't
+    have. Rebuild: `node scripts/build-brands.mjs <nsi.min.json>`.
+  - **Near me**: geolocation only on tap; coarse in-memory cache for the
+    tab; coordinates go only to OpenStreetMap's Overpass (from the browser);
+    fallback: type a store or pick one of 12 malls/outlets (Lenox Square …
+    North Georgia Premium Outlets) — stores there come live from OSM.
+  - **Best by category**: their best card + ≈ % back + the best they could get.
+  - **Flights & hotels**: the Part I calculator.
+- The "predownloaded malls" didn't exist in the repo (only placeholder
+  copy); recreated as `data/places.js` with approximate coordinates.
+- Tests: `v6Checkout.test.jsx`.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -232,6 +253,7 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 - **Issuer pacing rules** in `engine/v5/lab.js` (3-month spacing, Capital
   One ~6 months, Amex family order, Citi 48 months) are common practice /
   issuer terms as known in 2026, not re-read this session.
+- **Mall coordinates** in `data/places.js` are approximate (≈ 200 m).
 - **Lounge locations** (Centurion, Sapphire, Capital One lists in
   `data/loungeLocations.js`) — from 2026 knowledge, flagged `verify`.
 - **One Key Mastercard** earn rates — Wells Fargo's page blocked scripted
@@ -253,8 +275,8 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Next
 
-Milestone 7: Checkout — Search (ranked wallet + offers + best card you
-don't have), ≥ 3,000 brands from name-suggestion-index (license check) under
-the curated overrides with a prefix index, malls kept; Near me (geolocation
-on tap → nearby.js); Best by category table; Flights & hotels (Portal
-calculator).
+Milestone 8: Offers tab (all offers, filters card/category/expiring/
+added, "Spend $75, get $10", Add all, per-card auto-add with exclusions) +
+wire ConnectBankSheet / connectorClient to `connector/`, `npm run dev:all`,
+sync → mapSyncedOffers → Offers; prepare `npm run calibrate -- amex|chase`
+and STOP for the user's calibration run.
