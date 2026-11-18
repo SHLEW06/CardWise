@@ -196,3 +196,24 @@ describe("findRewards", () => {
     expect(gold.total).toBeGreaterThan(0);
   });
 });
+
+describe("purchase-level earn rates (Online is a survey bucket, not a merchant bonus)", () => {
+  const rate = (q, id, channel = "any") =>
+    findRewards({ query: q, amount: 100, channel }, [id], [], {}, { today: TODAY }).cards[0].base.rate;
+  it("retail and online shopping earn the base rate on these cards", () => {
+    expect(rate("Nike", "freedom-unlimited")).toBe(1.5);
+    expect(rate("Nike", "csp")).toBe(1);
+    expect(rate("Nike", "freedom-flex")).toBe(1);
+    expect(rate("Nike", "bcp")).toBe(1);
+    expect(rate("Nike", "wf-autograph")).toBe(1);
+    expect(rate("Nike", "csp", "online")).toBe(1);
+    expect(rate("Microsoft", "freedom-unlimited")).toBe(1.5);
+  });
+  it("their real bonus categories still apply", () => {
+    expect(rate("CVS", "freedom-unlimited")).toBe(3);
+    expect(rate("Netflix", "csp")).toBe(3);
+    expect(rate("Netflix", "bcp")).toBe(6);
+    expect(rate("Shell", "wf-autograph")).toBe(3);
+    expect(rate("Chipotle", "csp")).toBe(3);
+  });
+});

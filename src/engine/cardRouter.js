@@ -138,6 +138,24 @@ export function resolveCategory(category) {
    benefit. Apply that override before the generic fallback. */
 const DRUGSTORE_HARDCODES = new Set(["freedom-unlimited", "freedom-flex"]);
 
+/* Purchase-level earn rates for cards whose catalog `earnRates.Online` is a
+   survey-bucket stand-in rather than a real "online shopping" bonus. The
+   strategy engine models spend in coarse buckets (Online ≈ streaming /
+   drugstores / rotating), so the catalog keeps that; routing ONE purchase at
+   ONE merchant needs the real categories, or every online or retail purchase
+   looks like a 3x bonus. These replace earnRates for rateForCategory only. */
+export const PURCHASE_EARN_OVERRIDES = {
+  "freedom-unlimited": { Dining: 3, Drugstores: 3, General: 1.5 },
+  "freedom-flex":      { Dining: 3, Drugstores: 3, General: 1 },   // +5% rotating quarterly (activation) — not modeled per merchant
+  csp:                 { Dining: 3, Streaming: 3, Flights: 2, Hotels: 2, Transit: 2, General: 1 }, // 3x online groceries not modeled
+  bcp:                 { Groceries: 6, Streaming: 6, Gas: 3, Transit: 3, General: 1 },
+  "wf-autograph":      { Dining: 3, Flights: 3, Hotels: 3, Gas: 3, Transit: 3, Streaming: 3, General: 1 },
+};
+
+export function purchaseEarnRates(card) {
+  return (card && PURCHASE_EARN_OVERRIDES[card.id]) || card?.earnRates || {};
+}
+
 /** Effective earn rate for a card on a semantic category, walking the
    resolver's fallback ladder. Handles the Freedom drugstore override. */
 export function rateForCategory(card, categoryId) {
@@ -148,8 +166,9 @@ export function rateForCategory(card, categoryId) {
 
   if (id === "drugstores" && DRUGSTORE_HARDCODES.has(card.id)) return 3;
 
+  const rates = purchaseEarnRates(card);
   for (const key of resolver.ladder) {
-    const v = card.earnRates?.[key];
+    const v = rates[key];
     if (v != null) return v;
   }
   /* Ultimate fallback: catalog rateFor never returns undefined. */
