@@ -125,6 +125,10 @@ export function normalizeOffer(raw, { now = new Date() } = {}) {
     usedAt: raw.usedAt || null,
     importedAt: raw.importedAt || now.toISOString(),
     notes: raw.notes || null,
+    /* Synced offers keep what the connector needs to add them (§15.1). */
+    ...(raw.externalId ? { externalId: raw.externalId } : {}),
+    ...(raw.cardName ? { cardName: raw.cardName } : {}),
+    ...(raw.last4 ? { last4: String(raw.last4).slice(-4) } : {}),
   };
   base.id = raw.id || `${base.cardId || "card"}:${slug(base.brandKey || merchant)}:${(base.expires || "open").slice(0, 7)}`;
   return base;
@@ -181,7 +185,8 @@ export function offerValueFor(offer, amount, { cpp = 1, baseRate = 1 } = {}) {
 export function describeOffer(offer) {
   const min = offer.minSpend ? ` on $${offer.minSpend}+` : "";
   switch (offer.kind) {
-    case "spendGet":   return `$${offer.reward} back${min}`;
+    /* v6 §24: plain amounts — "Spend $75, get $10". */
+    case "spendGet":   return offer.minSpend ? `Spend $${offer.minSpend}, get $${offer.reward}` : `$${offer.reward} back`;
     case "percent":    return `${offer.reward}% back${min}${offer.maxReward != null ? ` (up to $${offer.maxReward})` : ""}`;
     case "points":     return `${offer.reward.toLocaleString()} bonus points${min}`;
     case "multiplier": return `${offer.reward}x points${min}`;

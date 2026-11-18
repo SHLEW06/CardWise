@@ -13,7 +13,7 @@ import { parseMoney } from "../../v5/MoneySlider.jsx";
 import PortalCalculator from "../PortalCalculator.jsx";
 import { Reveal } from "../motion.jsx";
 import { searchStores, rankPurchase, bestByCategory, loadGeneratedBrands, matchStore, storeCount, BUCKET_WORDS } from "../../../engine/v5/checkout.js";
-import { queryNearbyStores, distanceMeters } from "../../../../connector/client/nearby.js";
+import { queryNearbyStores, distanceMeters } from "../../../connector/nearby.js";
 import { PLACES, PLACE_RADIUS_M } from "../../../data/places.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { BY_ID } from "../../../data/cards/index.js";

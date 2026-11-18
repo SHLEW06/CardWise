@@ -15,7 +15,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 5. Wallet Lab (F) | done |
 | 6. Explore + card detail (H) | — |
 | 7. Checkout (J) | done |
-| 8. Offers + connector (K) — stop for calibration | — |
+| 8. Offers + connector (K) — stop for calibration | done; calibration waiting on you |
 | 9. Home (L) + polish + screenshots | — |
 
 ## Milestone 1 — done
@@ -232,6 +232,53 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   copy); recreated as `data/places.js` with approximate coordinates.
 - Tests: `v6Checkout.test.jsx`.
 
+## Milestone 8 — done (calibration waiting on the user)
+
+- Offers tab (`components/v6/offers/Offers.jsx`): all live offers on their
+  cards; filters card · category · expiring soon (≤ 7 days) · all / not
+  added / added; plain amounts ("Spend $75, get $10" — `describeOffer`
+  changed); Sync now; auto-sync on open after 6 h; Add all; per-card
+  auto-add toggles (on by default) + excluded merchants; auto-add puts a
+  merchant's offer on the card that earns most there (`planAutoAdd`).
+- Connected banks (`components/v6/offers/ConnectedBanks.jsx`, also in
+  Profile): banks from the connector, Connect / Reconnect / Disconnect,
+  last sync, "Coming soon" for uncalibrated banks, the claims shown before
+  connecting; offline → "start it with npm run dev:all".
+- `src/connector/` = copies of `connector/client/*` (spec §15.1) + `index.js`
+  (client with Firebase ID token / dev token, sync pipeline, prefs). Offers
+  keep `externalId` / `cardName` / `last4` through `normalizeOffer` (they
+  were dropped before, so "Add" couldn't have worked).
+- Connect-screen claims, checked against the connector code: what you type
+  goes straight to the bank page (`remoteLogin.input` → `insertText`, never
+  logged or stored); AES-256-GCM session per user per bank (`vault.js`);
+  adapters read offers + the last 4 digits the bank page shows, never full
+  numbers; nothing goes to third parties. Wording changed from "we never see
+  your password" (the connector relays keystrokes) to "we never store or log
+  your password".
+- Scripts: `npm run dev:all` (Vite + connector, `scripts/dev-all.mjs`),
+  `npm run connector`, `npm run calibrate -- amex|chase`; README section.
+- Connector suite: 13/13 pass with `CHROME_CHANNEL=chrome` (the
+  Playwright-bundled Chromium for 1.65 isn't installed; keys writes
+  CHROME_CHANNEL=chrome).
+- **Not done (needs you):** connector/.env + .env.local (secret token —
+  yours to create), and the Amex / Chase calibration logins. See the
+  final message / "Calibration" below.
+
+## Calibration — what to run (you do the login)
+
+1. `npm --prefix connector install && npm --prefix connector run keys`
+2. Copy `CONNECTOR_TOKEN` from `connector/.env` into a new `.env.local`
+   (see README → Bank connections).
+3. `npm run calibrate -- amex` → a Chrome window opens on Amex's sign-in
+   page. Sign in yourself, open **Offers**, scroll to the very bottom, then
+   press **Enter** in the terminal. It writes
+   `connector/calibration/amex.suggested.json`.
+4. Same for `npm run calibrate -- chase` (Chase Offers page).
+5. Tell me it's done — I read the suggested JSON + the raw captures in
+   `connector/data/calibration-raw/` (they stay on your Mac), fill the
+   `FILL_ME`s, save `calibration/amex.json` / `chase.json`, and finish the
+   adapters + tests.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -275,8 +322,7 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Next
 
-Milestone 8: Offers tab (all offers, filters card/category/expiring/
-added, "Spend $75, get $10", Add all, per-card auto-add with exclusions) +
-wire ConnectBankSheet / connectorClient to `connector/`, `npm run dev:all`,
-sync → mapSyncedOffers → Offers; prepare `npm run calibrate -- amex|chase`
-and STOP for the user's calibration run.
+Milestone 9: Home (score + ≈ $X a year over the fanned real cards on the
+backdrop, Your next move, Near-you strip when location is on, top offers,
+links into Wallet Lab and Explore) + polish + final screenshots. Then wait
+for the user's calibration run to finish the adapters.

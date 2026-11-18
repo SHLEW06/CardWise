@@ -1,0 +1,35 @@
+/* Offers + bank connection (§24). */
+.v5 .offers { display: grid; gap: 16px; }
+.v5 .offers-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.v5 .offers-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.v5 .offers-filters select { background: none; border: 0; color: var(--ink); font: inherit; outline: none; }
+.v5 .offers-filters option { background: #16130E; }
+.v5 .offer-list { padding: 4px 20px; }
+.v5 .offer-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; align-items: center; padding: 14px 0; }
+.v5 .offer-merchant { font-weight: 500; }
+.v5 .offer-terms { grid-column: 1; color: var(--gold); font-variant-numeric: tabular-nums; }
+.v5 .offer-row .t-caption { grid-column: 1; }
+.v5 .offer-row > .btn, .v5 .offer-row > .tag { grid-column: 2; grid-row: 1 / span 3; }
+.v5 .spin { animation: v6-spin 900ms linear infinite; }
+@keyframes v6-spin { to { transform: rotate(360deg); } }
+
+.v5 .banks { display: grid; gap: 12px; }
+.v5 .bank-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; align-items: center; padding: 12px 0; }
+.v5 .bank-name { font-weight: 500; }
+.v5 .bank-row .t-caption { grid-column: 1; }
+.v5 .bank-row > .btn, .v5 .bank-actions { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 14px; }
+.v5 .claims { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--ink-2); font-size: var(--fs-small); }
+.v5 code { font-size: .9em; padding: 1px 6px; border-radius: 3px; background: rgba(255, 255, 255, .08); }
+
+/* The live bank sign-in (ConnectBankSheet) */
+.cb-sheet { width: min(460px, calc(100vw - 32px)); max-height: 92vh; display: grid; gap: 12px; padding: 16px; border-radius: 4px; background: rgba(16, 14, 11, .96); border: 1px solid rgba(255, 255, 255, .08); color: #F5F3EE; font-family: var(--font-ui); }
+.cb-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.cb-title { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: -.02em; }
+.cb-sub { font-size: .8125rem; color: #B9B2A3; margin-top: 2px; }
+.cb-close { color: #B9B2A3; background: none; border: 0; font: inherit; cursor: pointer; }
+.cb-phone { position: relative; border-radius: 4px; overflow: hidden; background: #000; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+.cb-screen { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
+.cb-keys { position: absolute; opacity: 0; width: 1px; height: 1px; left: 0; bottom: 0; }
+.cb-loading { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,.02), rgba(255,255,255,.08), rgba(255,255,255,.02)); background-size: 200% 100%; animation: cb-shimmer 1.4s linear infinite; }
+@keyframes cb-shimmer { to { background-position: -200% 0; } }
+.cb-foot { margin: 0; font-size: .8125rem; color: #B9B2A3; }

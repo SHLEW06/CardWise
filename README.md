@@ -40,11 +40,42 @@ Build for production:
 ```bash
 npm run build        # outputs to dist/
 npm run preview      # preview the production build locally
-npm run test         # run vitest — currently 900 tests / 47 files
+npm run test         # run vitest
 ```
 
 The app runs **fully without any backend** — auth and persistence fall back to
 local browser storage until you wire up Firebase.
+
+### Bank connections (Offers tab)
+
+The connector in `connector/` signs into banks through a streamed browser
+(you type your own credentials into your bank's page; it keeps only an
+encrypted session). To run it next to Vite:
+
+```bash
+npm --prefix connector install
+npm --prefix connector run keys     # once: writes connector/.env (API token + vault key, CHROME_CHANNEL=chrome)
+```
+
+Then create `.env.local` in the app folder:
+
+```
+VITE_CONNECTOR_URL=http://127.0.0.1:8787
+VITE_CONNECTOR_TOKEN=<CONNECTOR_TOKEN from connector/.env>
+```
+
+and start both:
+
+```bash
+npm run dev:all      # Vite on :5173 + the connector on :8787
+```
+
+Teach it a bank once with your own account: `npm run calibrate -- amex`
+(and `-- chase`) — see `connector/README.md`.
+
+Other scripts: `npm run brands -- <nsi.min.json>` rebuilds the Checkout store
+list (see `docs/THIRD_PARTY.md`); `npm run art` rebuilds the card-photo
+manifest (Vite also does this live).
 
 ---
 

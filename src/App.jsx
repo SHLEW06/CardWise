@@ -9,7 +9,8 @@ import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
 import { HomeScreen } from "./components/v5/screens.jsx";
 import Profile from "./components/v6/Profile.jsx";
-import { OffersInterim } from "./components/v6/interim.jsx";
+import Offers from "./components/v6/offers/Offers.jsx";
+import ConnectedBanks from "./components/v6/offers/ConnectedBanks.jsx";
 import WalletLab from "./components/v6/lab/WalletLab.jsx";
 import { useAuth } from "./firebase/useAuth.js";
 import { loadV5Profile, saveV5Profile } from "./state/v5Profile.js";
@@ -241,7 +242,7 @@ export default function App() {
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
       {tab === "home" && <HomeScreen wallet={wallet} onOpenCard={openCard} onSetup={() => setScreen("survey")} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
-      {tab === "offers" && <OffersInterim offers={offers} wallet={wallet} />}
+      {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
       {tab === "profile" && (
@@ -250,6 +251,7 @@ export default function App() {
           onRestart={() => { setSurveyStep(null); setScreen("survey"); }}
           onProfileChange={applyV5}
           onOpenLab={() => setTab("lab")}
+          slots={{ banks: <ConnectedBanks compact /> }}
         />
       )}
 
