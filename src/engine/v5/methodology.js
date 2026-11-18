@@ -496,7 +496,8 @@ export function heldCardVerdicts(rawProfile) {
     const adds = all.N - without.N;          // what this card adds to their wallet
     const fee = cardFee(card, profile);
     if (adds >= 0 || !fee) return { cardId: id, action: "keep", adds, fee };
-    const downs = (card.downgradeOptionIds || []).filter((d) => BY_ID[d] && !held.includes(d))
+    /* A product change can't land on a card the issuer no longer offers. */
+    const downs = (card.downgradeOptionIds || []).filter((d) => BY_ID[d] && !held.includes(d) && BY_ID[d].availabilityStatus !== "closed")
       .map((d) => ({ to: d, n: walletValue([...held.filter((x) => x !== id), d], profile, { normalized: true }).N }))
       .sort((a, b) => b.n - a.n);
     if (downs.length && downs[0].n > all.N) return { cardId: id, action: "downgrade", to: downs[0].to, adds, fee, gain: downs[0].n - all.N };

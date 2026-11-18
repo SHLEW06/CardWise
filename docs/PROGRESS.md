@@ -12,7 +12,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 2. Design system v6 + five-tab shell + Profile | done |
 | 3. Engine (E, G, I) + METHODOLOGY.md + golden tests | done |
 | 4. Survey rebuild (D) | done |
-| 5. Wallet Lab (F) | — |
+| 5. Wallet Lab (F) | done |
 | 6. Explore + card detail (H) | — |
 | 7. Checkout (J) | — |
 | 8. Offers + connector (K) — stop for calibration | — |
@@ -161,6 +161,30 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   whole App (a missing `/>` in App.jsx slipped past unit tests once).
   v5 nine-step flow tests replaced; v5 saved answers still decode.
 
+## Milestone 5 — done
+
+- `components/v6/lab/WalletLab.jsx` + `engine/v5/lab.js`: Score dial for
+  the setup on screen, "≈ $X a year", best at budget, best with no fee
+  limit; fee-budget slider + typed field (re-optimizes); From my wallet /
+  From scratch; "Your spending" drawer (what-if, Reset, Save to my profile);
+  relevant slots only, one card can fill several (tags), plus "Also in this
+  setup" for cards that win no slot; tap a slot → ranked alternatives with
+  net change, fee change, what it replaces (replaces when the setup is
+  full), one-tap swap + toast ("+$370/yr — … took Dining from …"); sample
+  wallets (on demand: five constrained optimizer runs); panels Keep or
+  cancel (replaces KeeperAnalyzer; never to a closed card), When to apply
+  (5/24 pacing, 3-month spacing, Capital One 6 months, Amex Green → Gold →
+  Platinum family order, past-card bonus notes, Citi 48 months — replaces
+  CardTimeline / TimelineView / WarningsPanel), Credits you'd plan around
+  (replaces CreditRealismToggles), Saved setups (saveStrategy; also listed
+  in Profile), Portal vs direct (`components/v6/PortalCalculator.jsx`).
+- Old v4 wallet components (WalletBoard, WalletSlot, SlotDrawer, ScoreRing,
+  WalletCardPicker, WalletValueBreakdown, CoveredByChips, KeeperAnalyzer,
+  CardTimeline, SavedStrategies, CreditRealismToggles) stay in the repo but
+  are superseded by the v6 versions above, which read only engine/v5 — no
+  second set of numbers.
+- Tests: `v6Lab.test.jsx`.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -179,6 +203,9 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 - **Citi Custom Cash** $500/billing-cycle cap — from the brief; Citi's page
   renders client-side. The catalog also marks Custom Cash `closed`, but
   Citi's product page still exists — availability needs a check.
+- **Issuer pacing rules** in `engine/v5/lab.js` (3-month spacing, Capital
+  One ~6 months, Amex family order, Citi 48 months) are common practice /
+  issuer terms as known in 2026, not re-read this session.
 - **Lounge locations** (Centurion, Sapphire, Capital One lists in
   `data/loungeLocations.js`) — from 2026 knowledge, flagged `verify`.
 - **One Key Mastercard** earn rates — Wells Fargo's page blocked scripted
@@ -200,8 +227,8 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Next
 
-Milestone 5: Wallet Lab (Part F) — header (dial, now / best at budget / no
-limit), live fee-budget slider + typed field, spending drawer (what-if or
-save), slots with tap-for-alternatives + swap + diff toast, From my wallet /
-From scratch, sample wallets, Keep or cancel · When to apply · Saved setups
-· Portal vs direct panels.
+Milestone 6: Explore (search, category chips, filters, sort, tiles with
+"≈ $X a year to you", fit score, approval chip, availability; Compare 2–3)
+and the new card detail page replacing the dark modal (benefits you'd /
+wouldn't use with the split-credit opt-in, top-3 earning, wallet effect,
+points chip, See the math wired to v5 + test that it changes with answers).

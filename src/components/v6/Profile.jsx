@@ -5,7 +5,8 @@
    Sections whose feature arrives in a later milestone render the slot they
    will fill (`slots` prop) so the page structure is final now.
    ========================================================================== */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { loadStrategies } from "../../firebase/firestore.js";
 import { ChevronRight } from "lucide-react";
 import { BY_ID } from "../../data/cards/index.js";
 import { annualSpend } from "../../engine/profileDefaults.js";
@@ -34,7 +35,7 @@ export function answerSummaries(p) {
   ];
 }
 
-export default function Profile({ onEditStep, onRestart, onProfileChange, slots = {} }) {
+export default function Profile({ onEditStep, onRestart, onProfileChange, onOpenLab, slots = {} }) {
   const [profile, setProfile] = useState(loadV5Profile);
   const { user, loading, firebaseActive, signInWithGoogle, signOut } = useAuth();
   const save = (patch) => {
@@ -84,7 +85,7 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, slots 
 
       <Reveal i={5} className="panel profile-block">
         <h2 className="t-h2">Saved setups</h2>
-        {slots.saved || <p className="t-caption">Setups you save in Wallet Lab appear here.</p>}
+        {slots.saved || <SavedList onOpenLab={onOpenLab} />}
       </Reveal>
 
       <Reveal i={6} className="panel profile-block">
@@ -108,5 +109,21 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, slots 
         </div>
       </Reveal>
     </section>
+  );
+}
+
+function SavedList({ onOpenLab }) {
+  const [list, setList] = useState([]);
+  useEffect(() => { loadStrategies().then((l) => setList((l || []).filter((x) => x.kind === "setup"))).catch(() => {}); }, []);
+  if (!list.length) return <p className="t-caption">Setups you save in Wallet Lab appear here.</p>;
+  return (
+    <ul className="rows">
+      {list.map((x) => (
+        <li key={x.id} className="profile-row">
+          <span>{x.name} <span className="t-caption">· {x.cards.map((id) => cardDisplayName(BY_ID[id])).filter(Boolean).join(", ")}</span></span>
+          {onOpenLab && <button className="link" onClick={onOpenLab}>Open in Wallet Lab</button>}
+        </li>
+      ))}
+    </ul>
   );
 }

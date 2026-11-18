@@ -8,7 +8,8 @@ import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
 import { HomeScreen, FindScreen } from "./components/v5/screens.jsx";
 import Profile from "./components/v6/Profile.jsx";
-import { OffersInterim, LabInterim } from "./components/v6/interim.jsx";
+import { OffersInterim } from "./components/v6/interim.jsx";
+import WalletLab from "./components/v6/lab/WalletLab.jsx";
 import { useAuth } from "./firebase/useAuth.js";
 import { loadV5Profile, saveV5Profile } from "./state/v5Profile.js";
 
@@ -248,13 +249,14 @@ export default function App() {
         </div>
       )}
       {tab === "offers" && <OffersInterim offers={offers} wallet={wallet} />}
-      {tab === "lab" && <LabInterim profile={v5} onOpenCard={openCard} />}
+      {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
       {tab === "explore" && <FindScreen wallet={wallet} onOpenCard={openCard} />}
       {tab === "profile" && (
         <Profile
           onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
           onRestart={() => { setSurveyStep(null); setScreen("survey"); }}
           onProfileChange={applyV5}
+          onOpenLab={() => setTab("lab")}
         />
       )}
 
