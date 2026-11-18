@@ -124,3 +124,26 @@
   .v5 .survey-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .v5 .survey-next { width: 100%; }
 }
+
+/* v6 survey (§19) */
+.v5 .mode-choices .choice { min-height: 84px; }
+.v5 .mode-choices .choice > span { font-size: 1.125rem; }
+.v5 .spend-presets { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.v5 .spend-total { font-variant-numeric: tabular-nums; }
+.v5 .more-link { color: var(--gold); }
+.v5 .airline-group { display: grid; gap: 8px; margin-bottom: 12px; }
+.v5 .survey-foot-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; width: 100%; }
+.v5 .reveal-hero { display: flex; align-items: center; gap: clamp(24px, 5vw, 56px); flex-wrap: wrap; padding: 8px 0 16px; }
+.v5 .reveal-numbers { display: grid; gap: 10px; }
+.v5 .reveal-numbers p { margin: 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.v5 .reveal-unit { color: var(--ink-2); }
+.v5 .reveal-cards { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px 16px; }
+.v5 .reveal-cards li { display: grid; gap: 6px; }
+.v5 .reveal-card-name { font-weight: 500; font-size: var(--fs-small); margin-top: 6px; }
+
+/* Score dial (shared) */
+.v5 .dial { position: relative; flex: none; }
+.v5 .dial svg { display: block; }
+.v5 .dial-inner { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 2px; }
+.v5 .dial-num { font-family: var(--f-display); font-weight: 300; font-size: 3.25rem; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums lining-nums; }
+.v5 .dial-label { font-size: var(--fs-caption); color: var(--ink-2); letter-spacing: .04em; }

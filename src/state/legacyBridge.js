@@ -14,9 +14,10 @@ export function toLegacyProfile(raw) {
     lounge: p.travel.lounges === "yes" ? "yes" : p.travel.lounges === "sometimes" ? "sometimes" : "no",
     feeBudget: p.feeBudget === Infinity ? 9999 : p.feeBudget,
     spendAmounts: {
-      Groceries: m(a.groceries), Dining: m(a.dining), Gas: m(a.gas), Transit: m(a.transit),
-      Online: m(a.online), General: m(a.bills + a.other), Rent: m(a.rent),
-      Flights: m(a.flights), Hotels: m(a.hotels),
+      Groceries: m(a.groceries), Dining: m(a.dining), Gas: m(a.gas + a.ev), Transit: m(a.transit),
+      Online: m(a.online), Streaming: m(a.streaming), Drugstores: m(a.drugstores),
+      General: m(a.phone + a.other + a.warehouse), Rent: m(a.rent),
+      Flights: m(a.flights), Hotels: m(a.hotels + a.rentals),
     },
     currentWallet: p.cardsHeld.map((id) => ({ id })),
     hotelBrands: p.brands.hotels,

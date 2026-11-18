@@ -8,15 +8,13 @@ import "@testing-library/jest-dom/vitest";
 import Landing from "../components/v5/Landing.jsx";
 import Survey, { searchCards, searchAirports } from "../components/v5/survey/Survey.jsx";
 import { YouScreen } from "../components/v5/screens.jsx";
-import { answersToProfile, stepComplete, EMPTY_ANSWERS, STEPS } from "../state/surveyAnswers.js";
+import { answersToProfile, EMPTY_ANSWERS } from "../state/surveyAnswers.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
 import { loadV5Record, saveV5Profile } from "../state/v5Profile.js";
 
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
-const next = () => fireEvent.click(screen.getByRole("button", { name: /^(Start|Continue)$/ }));
-const radio = (name) => fireEvent.click(screen.getByRole("radio", { name: new RegExp(`^${name}`) }));
 
 describe("landing (§9.8)", () => {
   it("one headline ≤ 8 words, one button, the §15.4 privacy line", () => {
@@ -34,7 +32,7 @@ describe("landing (§9.8)", () => {
   });
 });
 
-describe("survey answers → profile", () => {
+describe("v5 saved answers still decode (answersToProfile)", () => {
   it("never defaults an airport; 0 trips drops airport and lounges", () => {
     expect(answersToProfile(EMPTY_ANSWERS).travel.homeAirport).toBeNull();
     const p = normalizeProfile(answersToProfile({ ...EMPTY_ANSWERS, trips: "0", homeAirport: "ATL", lounges: "yes" }));
@@ -50,14 +48,6 @@ describe("survey answers → profile", () => {
     expect(p.credit).toMatchObject({ score: 770, newCards24mo: 5 });
     expect(normalizeProfile(answersToProfile({ ...EMPTY_ANSWERS, fee: "any" })).feeBudget).toBe(Infinity);
   });
-  it("Continue rules", () => {
-    expect(stepComplete("cards", EMPTY_ANSWERS)).toBe(false);
-    expect(stepComplete("cards", { ...EMPTY_ANSWERS, noCards: true })).toBe(true);
-    expect(stepComplete("travel", { ...EMPTY_ANSWERS, trips: "0" })).toBe(true);
-    expect(stepComplete("travel", { ...EMPTY_ANSWERS, trips: "3-5" })).toBe(false);
-    expect(stepComplete("travel", { ...EMPTY_ANSWERS, trips: "3-5", homeAirport: "SEA", lounges: "no" })).toBe(true);
-    expect(stepComplete("brands", EMPTY_ANSWERS)).toBe(true);
-  });
   it("card search covers the whole catalog, closed cards included; airport search by code or city", () => {
     expect(searchCards("").length).toBe(24);
     expect(searchCards("attune").map((c) => c.id)).toContain("wf-attune");
@@ -67,87 +57,7 @@ describe("survey answers → profile", () => {
   });
 });
 
-describe("survey flow (§2)", () => {
-  it("has 9 steps, a progress bar, and Back on step 1 leaves the survey", () => {
-    const onExit = vi.fn();
-    render(<Survey onExit={onExit} />);
-    expect(STEPS).toHaveLength(9);
-    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
-    fireEvent.click(screen.getByRole("button", { name: /Back/ }));
-    expect(onExit).toHaveBeenCalled();
-  });
-
-  it("Continue waits for an answer; the choice shows the selected state", () => {
-    render(<Survey initialStep={2} />);
-    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
-    radio("Travel");
-    expect(screen.getByRole("radio", { name: /^Travel/ })).toHaveAttribute("aria-checked", "true");
-    expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
-  });
-
-  it("saves answers after every step", () => {
-    render(<Survey initialStep={2} />);
-    radio("Cash back");
-    next();
-    expect(loadV5Record().answers.wants).toBe("cash");
-    expect(loadV5Record().profile.wants).toBe("cash");
-    expect(loadV5Record().completedAt).toBeNull();
-  });
-
-  it("'Skip for now' finishes with a generic profile", () => {
-    const onDone = vi.fn();
-    render(<Survey initialStep={3} onDone={onDone} />);
-    fireEvent.click(screen.getByRole("button", { name: "Skip for now" }));
-    const [profile] = onDone.mock.calls[0];
-    expect(profile.travel.homeAirport).toBeNull();
-    expect(profile.feeBudget).toBe(100);
-    expect(loadV5Record().completedAt).toBeTruthy();
-  });
-
-  it("walks all nine steps and hands back the full profile", () => {
-    const onDone = vi.fn();
-    render(<Survey onDone={onDone} />);
-    next();                                                     // 1 welcome
-    fireEvent.change(screen.getByLabelText("Search cards"), { target: { value: "sapphire reserve" } });
-    fireEvent.click(screen.getByRole("button", { name: /Sapphire Reserve/ }));
-    expect(screen.getByText("Your cards (1)")).toBeInTheDocument();
-    next();                                                     // 2 cards
-    radio("Travel"); next();                                    // 3 wants
-    radio("Up to \\$700"); next();                              // 4 fee
-    radio("Heavy"); radio("No"); next();                        // 5 spend
-    radio("3–5");
-    fireEvent.change(screen.getByLabelText("Home airport"), { target: { value: "sea" } });
-    fireEvent.click(screen.getByRole("option", { name: /SEA/ }));
-    radio("Yes"); next();                                       // 6 travel
-    fireEvent.click(screen.getByRole("button", { name: "Hyatt" }));
-    fireEvent.click(screen.getByRole("button", { name: "Alaska" }));
-    next();                                                     // 7 brands
-    radio("740–799"); radio("1–2"); next();                     // 8 credit
-    expect(screen.getByRole("heading", { name: "Here's what your points can do." })).toBeInTheDocument();
-    expect(screen.getByText(/Your Chase points move 1:1 to Hyatt/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /See my best wallet/ }));   // 9
-    const [p] = onDone.mock.calls[0];
-    expect(p).toMatchObject({ cardsHeld: ["csr"], wants: "travel", feeBudget: 700, rent: 0 });
-    expect(p.travel).toMatchObject({ trips: 4, homeAirport: "SEA", lounges: "yes" });
-    expect(p.brands.hotels).toEqual(["hyatt"]);
-    expect(p.credit).toMatchObject({ score: 770, newCards24mo: 2 });
-  });
-
-  it("0 trips: no airport or lounge questions", () => {
-    render(<Survey initialStep={5} />);
-    radio("None");
-    expect(screen.queryByLabelText("Home airport")).toBeNull();
-    expect(screen.queryByText(/lounges matter/)).toBeNull();
-    expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
-  });
-
-  it("'I don't have any' clears picks and allows Continue", () => {
-    render(<Survey initialStep={1} />);
-    fireEvent.click(screen.getByRole("button", { name: "I don't have any" }));
-    expect(screen.getByRole("button", { name: "I don't have any" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled();
-  });
-});
+/* The v5 nine-step flow tests moved to v6Survey.ui.test.jsx (§19 replaced §2). */
 
 describe("You — flexible points slider (§4)", () => {
   it("shows a slider only for flexible points you earn, and saves your value", () => {

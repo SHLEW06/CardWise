@@ -1,43 +1,65 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Search, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Search, X, ChevronDown } from "lucide-react";
 import CardFace from "../CardFace.jsx";
 import Choice from "../Choice.jsx";
 import MoneySlider from "../MoneySlider.jsx";
 import Backdrop from "../../v6/Backdrop.jsx";
+import FeeBudget from "../../v6/FeeBudget.jsx";
+import PartnerPicker, { currenciesFor } from "../../v6/PartnerPicker.jsx";
+import ScoreDial from "../../v6/ScoreDial.jsx";
+import { Reveal, CountUp } from "../../v6/motion.jsx";
 import { CARDS, BY_ID } from "../../../data/cards.js";
 import { AIRPORTS } from "../../../data/airports.js";
 import {
-  MOST_HELD, WANTS, FEE_OPTIONS, SPEND_ROWS, SPEND_MAX, SPEND_STEP, RENT_MAX,
-  TRIP_OPTIONS, LOUNGE_OPTIONS, BRAND_GROUPS, SCORE_OPTIONS, NEW_CARD_OPTIONS,
+  MOST_HELD, SPEND_ROWS, SPEND_GROUPS, SPEND_MAX, SPEND_STEP, RENT_MAX, GAS_AT, WAREHOUSE_CLUBS, STORES,
+  FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS,
 } from "../../../data/surveyOptions.js";
-import { SPEND_PRESETS } from "../../../engine/profileDefaults.js";
+import { perkBrandsInCatalog } from "../../../data/creditBrands.js";
+import { SPEND_PRESETS, SCORE_BUCKETS } from "../../../engine/profileDefaults.js";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
-import { STEPS, EMPTY_ANSWERS, answersToProfile, stepComplete } from "../../../state/surveyAnswers.js";
+import { walletScore } from "../../../engine/v5/methodology.js";
+import { cardDisplayName } from "../../../data/cardNames.js";
+import { STEP_DEFS, stepsFor, draftFrom, MODES } from "../../../state/surveyAnswers.js";
 import { saveV5Profile } from "../../../state/v5Profile.js";
 
-/* The v5 survey (docs/REDESIGN_SPEC.md §2): one question per screen, progress
-   bar, Back always works, "Skip for now" on every step, answers saved after
-   every step. Selected state per §9.6 via <Choice>.
+/* The v6 survey (docs/REDESIGN_SPEC.md §19): Quick (2 min) or Thorough
+   (6 min); every question optional with a default; progress shown; Back
+   always works; saved after every step (Firestore when signed in,
+   localStorage otherwise). It edits the profile itself, so Profile can
+   reopen any one step with the saved answers in place.
 
-   Props: initialAnswers, initialStep, onExit() (Back on step 1),
-          onDone(profile, answers) */
-export default function Survey({ initialAnswers, initialStep = 0, initialStepId = null, editOnly = false, onExit, onDone }) {
-  const [step, setStep] = useState(() => (initialStepId && STEPS.includes(initialStepId) ? STEPS.indexOf(initialStepId) : initialStep));
-  const [a, setA] = useState(() => ({ ...EMPTY_ANSWERS, ...(initialAnswers || {}) }));
-  const set = (patch) => setA((prev) => ({ ...prev, ...patch }));
-  const id = STEPS[step];
-  const last = STEPS.length - 1;
+   Props: initialProfile, initialStepId, editOnly, initialMode,
+          onExit() (Back before step 1), onDone(profile, meta),
+          onOpenLab(profile) */
+export default function Survey({ initialProfile, initialStepId = null, editOnly = false, initialMode = null, onExit, onDone, onOpenLab }) {
+  const [mode, setMode] = useState(() => initialMode || (initialStepId || editOnly ? "thorough" : null));
+  const [d, setD] = useState(() => draftFrom(initialProfile));
+  const steps = mode ? stepsFor(mode) : [];
+  const [i, setI] = useState(() => {
+    if (!initialStepId || !STEP_DEFS.some((s) => s.id === initialStepId)) return 0;
+    return Math.max(0, stepsFor(initialMode || "thorough").indexOf(initialStepId));
+  });
+  const set = (patch) => setD((prev) => ({ ...prev, ...patch }));
+  const id = mode ? steps[i] : "mode";
+  const last = steps.length - 1;
   const headRef = useRef(null);
 
-  /* Move focus to the new question so keyboard / screen-reader users land on it. */
-  useEffect(() => { headRef.current?.focus({ preventScroll: true }); window.scrollTo?.({ top: 0 }); }, [step]);
+  useEffect(() => { headRef.current?.focus({ preventScroll: true }); window.scrollTo?.({ top: 0 }); }, [id]);
 
-  const persist = (answers, completed = false) => saveV5Profile(answersToProfile(answers), { answers, completed });
-  const finish = () => onDone?.(persist(a, true), a);
-  const next = () => { if (step === last || editOnly) return finish(); persist(a); setStep(step + 1); };
-  const back = () => (step === 0 || editOnly ? onExit?.() : setStep(step - 1));
-
-  const canContinue = stepComplete(id, a);
+  const persist = (completed = false) => saveV5Profile(d, { answers: { v: 6, mode }, completed });
+  const finish = () => onDone?.(persist(true), { mode });
+  const next = () => {
+    if (editOnly) return finish();
+    if (i === last) return finish();
+    persist();
+    setI(i + 1);
+  };
+  const back = () => {
+    if (editOnly) return onExit?.();
+    if (!mode) return onExit?.();
+    if (i === 0) return setMode(null);
+    setI(i - 1);
+  };
 
   return (
     <div className="survey">
@@ -45,115 +67,90 @@ export default function Survey({ initialAnswers, initialStep = 0, initialStepId 
       <div className="survey-top">
         <div className="survey-bar">
           <button className="survey-link" onClick={back}><ArrowLeft size={18} aria-hidden="true" /> Back</button>
-          <span className="t-caption">Step {step + 1} of {STEPS.length}</span>
-          {step < last && !editOnly ? <button className="survey-link" onClick={finish}>Skip for now</button> : <span />}
+          <span className="t-caption">{mode ? `Step ${i + 1} of ${steps.length}` : "About 2 or 6 minutes"}</span>
+          {mode && !editOnly && id !== "reveal" ? <button className="survey-link" onClick={() => { setI(last); persist(); }}>Skip to results</button> : <span />}
         </div>
-        <div className="survey-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1}>
-          <span style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+        <div className="survey-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={steps.length || 1} aria-valuenow={mode ? i + 1 : 0}>
+          <span style={{ width: `${mode ? ((i + 1) / steps.length) * 100 : 4}%` }} />
         </div>
       </div>
 
       <section key={id} className={`survey-step step-${id}`} aria-labelledby="survey-q">
-        <Step id={id} a={a} set={set} headRef={headRef} />
+        {id === "mode" ? (
+          <ModeStep headRef={headRef} onPick={(m) => { setMode(m); setI(0); }} />
+        ) : (
+          <Step id={id} d={d} set={set} mode={mode} headRef={headRef} />
+        )}
       </section>
 
-      <div className="survey-foot">
-        {id === "points" ? (
-          <button className="btn btn-signal survey-next" onClick={finish}>See my best wallet <ArrowRight size={18} aria-hidden="true" /></button>
-        ) : (
-          <button className="btn btn-ink survey-next" onClick={next} disabled={!canContinue}>
-            {editOnly ? "Save" : id === "welcome" ? "Start" : "Continue"}
-          </button>
-        )}
-      </div>
+      {id !== "mode" && (
+        <div className="survey-foot">
+          {id === "reveal" ? (
+            <div className="survey-foot-row">
+              <button className="btn btn-quiet" onClick={finish}>Go to Home</button>
+              <button className="btn btn-signal" onClick={() => { const p = persist(true); onDone?.(p, { mode, open: "lab" }); onOpenLab?.(p); }}>Open Wallet Lab <ArrowRight size={18} aria-hidden="true" /></button>
+            </div>
+          ) : (
+            <button className="btn btn-ink survey-next" onClick={next}>{editOnly ? "Save" : "Continue"}</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function Head({ headRef, title, sub }) {
+function Head({ headRef, title, sub, eyebrow }) {
   return (
     <header className="survey-head">
+      {eyebrow && <p className="t-eyebrow">{eyebrow}</p>}
       <h1 id="survey-q" className="t-h1" tabIndex={-1} ref={headRef}>{title}</h1>
       {sub && <p className="t-lead">{sub}</p>}
     </header>
   );
 }
 
-function Step({ id, a, set, headRef }) {
+function ModeStep({ headRef, onPick }) {
+  return (
+    <>
+      <Head headRef={headRef} title="Let's find your cards." sub="Every question is optional — skip anything and we'll use a sensible default. You can change any answer later from your profile." />
+      <div className="choice-stack mode-choices">
+        <Choice onSelect={() => onPick("quick")} sub="Cards, spending, travel, brands and your fee budget.">Quick · {MODES.quick.minutes} min</Choice>
+        <Choice onSelect={() => onPick("thorough")} sub="Adds credit, point values and your points explained — the sharpest answer.">Thorough · {MODES.thorough.minutes} min</Choice>
+      </div>
+    </>
+  );
+}
+
+function Step({ id, d, set, mode, headRef }) {
   switch (id) {
-    case "welcome":
-      return (
-        <>
-          <Head headRef={headRef} title="Let's find your cards."
-            sub="Tell us how you spend and travel. We'll pick the cards that pay you the most — benefits first." />
-          <p className="t-caption">About two minutes. You can change any answer later.</p>
-        </>
-      );
-    case "cards": return <CardsStep a={a} set={set} headRef={headRef} />;
-    case "wants":
-      return (
-        <>
-          <Head headRef={headRef} title="What do you want back?" />
-          <div className="choice-stack" role="radiogroup" aria-labelledby="survey-q">
-            {WANTS.map((o) => <Choice key={o.key} radio selected={a.wants === o.key} onSelect={() => set({ wants: o.key })} sub={o.sub}>{o.label}</Choice>)}
-          </div>
-        </>
-      );
+    case "cards": return <CardsStep d={d} set={set} headRef={headRef} />;
+    case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
+    case "travel": return <TravelStep d={d} set={set} mode={mode} headRef={headRef} />;
+    case "brands": return <BrandsStep d={d} set={set} headRef={headRef} />;
     case "fee":
       return (
         <>
-          <Head headRef={headRef} title="Yearly fees you're OK with"
-            sub="Some cards charge a yearly fee but give back more in benefits. What's the most you'd pay per year across all your cards?" />
-          <div className="choice-stack" role="radiogroup" aria-labelledby="survey-q">
-            {FEE_OPTIONS.map((o) => <Choice key={o.key} radio selected={a.fee === o.key} onSelect={() => set({ fee: o.key })} sub={o.sub}>{o.label}</Choice>)}
-          </div>
+          <Head headRef={headRef} title="Most you'd pay in yearly card fees, all cards combined."
+            sub="Some cards charge a yearly fee but give back more in benefits. We'll find the best setup within this." />
+          <FeeBudget value={d.feeBudget} onChange={(feeBudget) => set({ feeBudget })} />
         </>
       );
-    case "spend": return <SpendStep a={a} set={set} headRef={headRef} />;
-    case "travel": return <TravelStep a={a} set={set} headRef={headRef} />;
-    case "brands":
+    case "credit": return <CreditStep d={d} set={set} headRef={headRef} />;
+    case "points":
       return (
         <>
-          <Head headRef={headRef} title="Brands you like" sub="Pick any you use. We'll match cards and points to them." />
-          {BRAND_GROUPS.map((g) => (
-            <fieldset key={g.key} className="survey-group">
-              <legend className="t-h3">{g.label}</legend>
-              <div className="chip-wrap">
-                {g.options.map((o) => {
-                  const on = a.brands[g.key].includes(o.key);
-                  const toggle = () => set({ brands: { ...a.brands, [g.key]: on ? a.brands[g.key].filter((k) => k !== o.key) : [...a.brands[g.key], o.key] } });
-                  return <Choice key={o.key} pill selected={on} onSelect={toggle}>{o.label}</Choice>;
-                })}
-              </div>
-            </fieldset>
-          ))}
+          <Head headRef={headRef} title="Where would your points go?"
+            sub="Pick the airlines and hotels you'd actually use. We've started with the ones you picked. Points you wouldn't move count as cash." />
+          <PartnerPicker profile={d} currencies={currenciesFor(d, BY_ID)} onChange={(partnerPicks) => set({ partnerPicks })} />
         </>
       );
-    case "credit":
-      return (
-        <>
-          <Head headRef={headRef} title="Your credit" />
-          <fieldset className="survey-group">
-            <legend className="t-h3" id="q-score">Credit score</legend>
-            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-score">
-              {SCORE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={a.score === o.key} onSelect={() => set({ score: o.key })}>{o.label}</Choice>)}
-            </div>
-          </fieldset>
-          <fieldset className="survey-group">
-            <legend className="t-h3" id="q-new">New cards opened in the last 2 years</legend>
-            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-new">
-              {NEW_CARD_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={a.newCards === o.key} onSelect={() => set({ newCards: o.key })}>{o.label}</Choice>)}
-            </div>
-            <p className="t-caption">We ask because Chase usually declines anyone with 5 or more new cards in 24 months.</p>
-          </fieldset>
-        </>
-      );
-    case "points": return <PointsStep a={a} headRef={headRef} />;
+    case "yourPoints": return <YourPointsStep d={d} headRef={headRef} />;
+    case "reveal": return <RevealStep d={d} headRef={headRef} />;
     default: return null;
   }
 }
 
-/* ── Step 2: cards you already have ──────────────────────────────────── */
+/* ── Step 1: cards you have ──────────────────────────────────────────── */
 
 const ALIASES = {
   "American Express": "amex", "Capital One": "capone cap1", "Bank of America": "boa bofa", "Wells Fargo": "wf",
@@ -169,24 +166,25 @@ export function searchCards(q, cards = CARDS) {
   return cards.filter((c) => { const h = hay(c); return t.every((w) => h.includes(w)); }).slice(0, 48);
 }
 
-function CardsStep({ a, set, headRef }) {
+function CardsStep({ d, set, headRef }) {
   const [q, setQ] = useState("");
   const results = useMemo(() => searchCards(q), [q]);
-  const toggle = (cid) => set({ noCards: false, cardsHeld: a.cardsHeld.includes(cid) ? a.cardsHeld.filter((x) => x !== cid) : [...a.cardsHeld, cid] });
+  const held = d.cardsHeld;
+  const toggle = (cid) => set({ cardsHeld: held.includes(cid) ? held.filter((x) => x !== cid) : [...held, cid] });
   return (
     <>
-      <Head headRef={headRef} title="Which cards do you have?" sub="Pick every card you carry — older ones too." />
+      <Head headRef={headRef} eyebrow="Cards" title="Which cards do you have?" sub="Pick every card you carry — older ones too." />
       <div className="survey-search">
         <Search size={18} aria-hidden="true" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${CARDS.length} cards by name or bank`} aria-label="Search cards" />
       </div>
-      {a.cardsHeld.length > 0 && (
+      {held.length > 0 && (
         <div className="survey-tray" aria-label="Your cards">
-          <span className="t-h3">Your cards ({a.cardsHeld.length})</span>
+          <span className="t-h3">Your cards ({held.length})</span>
           <div className="chip-wrap">
-            {a.cardsHeld.map((cid) => (
+            {held.map((cid) => (
               <button key={cid} className="tray-chip" onClick={() => toggle(cid)} aria-label={`Remove ${BY_ID[cid]?.name}`}>
-                {BY_ID[cid]?.name} <X size={14} aria-hidden="true" />
+                {cardDisplayName(BY_ID[cid])} <X size={14} aria-hidden="true" />
               </button>
             ))}
           </div>
@@ -195,7 +193,7 @@ function CardsStep({ a, set, headRef }) {
       {!q && <p className="t-caption">Most-held cards. Search to see all {CARDS.length}.</p>}
       <ul className="survey-cards">
         {results.map((c) => {
-          const on = a.cardsHeld.includes(c.id);
+          const on = held.includes(c.id);
           return (
             <li key={c.id}>
               <button className="survey-card" aria-pressed={on} onClick={() => toggle(c.id)}>
@@ -209,47 +207,80 @@ function CardsStep({ a, set, headRef }) {
       </ul>
       {q && !results.length && <p className="t-caption">No card matches "{q}". Try the bank's name.</p>}
       <div className="survey-none">
-        <Choice selected={a.noCards} onSelect={() => set({ noCards: !a.noCards, cardsHeld: [] })}>I don't have any</Choice>
+        <Choice selected={!held.length} onSelect={() => set({ cardsHeld: [] })}>I don't have any</Choice>
       </div>
     </>
   );
 }
 
-/* ── Step 5: monthly spending ────────────────────────────────────────── */
+/* ── Step 2: spending ────────────────────────────────────────────────── */
 
-const money = (n) => `$${Number(n).toLocaleString("en-US")}`;
+const fmt = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 
-function SpendStep({ a, set, headRef }) {
-  const preset = (k) => set({ spendPreset: k, spend: { ...SPEND_PRESETS[k] } });
+function SpendStep({ d, set, mode, headRef }) {
+  const [more, setMore] = useState(mode === "thorough");
+  const rows = SPEND_ROWS.filter((r) => more || r.quick);
+  const setRow = (k, n) => set({ spend: { ...d.spend, [k]: n } });
+  const preset = (k) => set({ spend: { ...SPEND_PRESETS[k], flights: d.spend.flights, hotels: d.spend.hotels, rentals: d.spend.rentals, rent: d.spend.rent } });
+  const monthly = Object.values(d.spend).reduce((t, v) => t + v, 0);
   return (
     <>
-      <Head headRef={headRef} title="What do you spend each month?" sub="Rough numbers are fine." />
-      <div className="chip-wrap" role="radiogroup" aria-label="Spending level">
-        {[["light", "Light"], ["typical", "Typical"], ["heavy", "Heavy"]].map(([k, l]) => (
-          <Choice key={k} radio pill selected={a.spendPreset === k} onSelect={() => preset(k)}>{l}</Choice>
-        ))}
-      </div>
-      <div className="spend-rows">
-        {SPEND_ROWS.map((r) => (
-          <MoneySlider key={r.key} label={r.label} value={a.spend[r.key]} max={SPEND_MAX} step={SPEND_STEP} suffix="/mo" yearly
-            onChange={(n) => set({ spendPreset: null, spend: { ...a.spend, [r.key]: n } })} />
-        ))}
-      </div>
-      <fieldset className="survey-group">
-        <legend className="t-h3" id="q-rent">Do you pay rent?</legend>
-        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-rent">
-          <Choice radio pill selected={a.paysRent === false} onSelect={() => set({ paysRent: false })}>No</Choice>
-          <Choice radio pill selected={a.paysRent === true} onSelect={() => set({ paysRent: true })}>Yes</Choice>
+      <Head headRef={headRef} eyebrow="Spending" title="What do you spend each month?" sub="Rough numbers are fine. Drag, or type an amount." />
+      <div className="spend-presets">
+        <div className="chip-wrap" role="group" aria-label="Start from">
+          {[["light", "Light"], ["typical", "Typical"], ["heavy", "Heavy"]].map(([k, l]) => (
+            <Choice key={k} pill onSelect={() => preset(k)}>{l}</Choice>
+          ))}
         </div>
-        {a.paysRent && (
-          <MoneySlider label="Rent each month" value={a.rent} max={RENT_MAX} step={50} suffix="/mo" yearly onChange={(n) => set({ rent: n })} />
-        )}
+        <span className="t-caption spend-total">{fmt(monthly)} a month · {fmt(monthly * 12)} a year</span>
+      </div>
+      {SPEND_GROUPS.map((g) => {
+        const rs = rows.filter((r) => r.group === g.key);
+        if (!rs.length) return null;
+        return (
+          <fieldset key={g.key} className="survey-group">
+            <legend className="t-h3">{g.label}</legend>
+            <div className="spend-rows">
+              {rs.map((r) => (
+                <MoneySlider key={r.key} label={r.label} value={d.spend[r.key]} max={r.key === "rent" ? RENT_MAX : SPEND_MAX} step={r.key === "rent" ? 50 : SPEND_STEP} suffix="/mo" yearly hint={r.hint}
+                  onChange={(n) => setRow(r.key, n)} />
+              ))}
+            </div>
+          </fieldset>
+        );
+      })}
+      {!more && <button className="survey-link more-link" onClick={() => setMore(true)}><ChevronDown size={16} aria-hidden="true" /> More categories (EV, travel, rent, bills…)</button>}
+      <fieldset className="survey-group">
+        <legend className="t-h3" id="q-gas">Where do you buy gas?</legend>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-gas">
+          {GAS_AT.map((o) => <Choice key={o.key} radio pill selected={d.gasAt === o.key} onSelect={() => set({ gasAt: o.key })}>{o.label}</Choice>)}
+        </div>
       </fieldset>
+      {d.spend.warehouse > 0 && (
+        <fieldset className="survey-group">
+          <legend className="t-h3" id="q-club">Which warehouse club?</legend>
+          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-club">
+            {WAREHOUSE_CLUBS.map((o) => <Choice key={o.key} radio pill selected={d.warehouseClub === o.key} onSelect={() => set({ warehouseClub: o.key })}>{o.label}</Choice>)}
+          </div>
+          {d.warehouseClub === "costco" && <p className="t-caption">Costco takes only Visa in its stores.</p>}
+        </fieldset>
+      )}
+      {more && (
+        <fieldset className="survey-group">
+          <legend className="t-h3">Stores you shop at often</legend>
+          <div className="chip-wrap">
+            {STORES.map((o) => {
+              const on = d.brands.everyday.includes(o.key);
+              return <Choice key={o.key} pill selected={on} onSelect={() => set({ brands: { ...d.brands, everyday: on ? d.brands.everyday.filter((k) => k !== o.key) : [...d.brands.everyday, o.key] } })}>{o.label}</Choice>;
+            })}
+          </div>
+        </fieldset>
+      )}
     </>
   );
 }
 
-/* ── Step 6: travel ──────────────────────────────────────────────────── */
+/* ── Step 3: travel ──────────────────────────────────────────────────── */
 
 const AIRPORT_LIST = Object.values(AIRPORTS);
 export function searchAirports(q) {
@@ -258,18 +289,34 @@ export function searchAirports(q) {
   return AIRPORT_LIST.filter((ap) => ap.code.toLowerCase().startsWith(s) || norm(`${ap.city} ${ap.name}`).includes(s)).slice(0, 6);
 }
 
-function TravelStep({ a, set, headRef }) {
+function ToggleChips({ options, picked, onChange, label }) {
+  return (
+    <div className="chip-wrap" role="group" aria-label={label}>
+      {options.map((o) => {
+        const on = picked.includes(o.key);
+        return <Choice key={o.key} pill selected={on} onSelect={() => onChange(on ? picked.filter((k) => k !== o.key) : [...picked, o.key])}>{o.label}</Choice>;
+      })}
+    </div>
+  );
+}
+
+function TravelStep({ d, set, mode, headRef }) {
   const [q, setQ] = useState("");
+  const [allAirlines, setAllAirlines] = useState(mode === "thorough" || d.brands.airlines.some((k) => !AIRLINE_GROUPS[0].options.some((o) => o.key === k)));
   const matches = useMemo(() => searchAirports(q), [q]);
-  const flies = a.trips != null && a.trips !== "0";
-  const home = a.homeAirport ? AIRPORTS[a.homeAirport] : null;
+  const t = d.travel;
+  const setTravel = (patch) => set({ travel: { ...t, ...patch } });
+  const flies = t.trips > 0;
+  const home = t.homeAirport ? AIRPORTS[t.homeAirport] : null;
+  const setAirlines = (airlines) => set({ brands: { ...d.brands, airlines } });
+  const nights = t.hotelNights ?? (t.trips ? t.trips * 2 : 0);
   return (
     <>
-      <Head headRef={headRef} title="How do you travel?" />
+      <Head headRef={headRef} eyebrow="Travel" title="How do you travel?" />
       <fieldset className="survey-group">
-        <legend className="t-h3" id="q-trips">Round trips a year</legend>
+        <legend className="t-h3" id="q-trips">Round-trip flights a year</legend>
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-trips">
-          {TRIP_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={a.trips === o.key} onSelect={() => set({ trips: o.key })}>{o.label}</Choice>)}
+          {FLIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.trips === o.key} onSelect={() => setTravel({ trips: o.key, ...(o.key === 0 ? { lounges: "no" } : {}) })}>{o.label}</Choice>)}
         </div>
       </fieldset>
       {flies && (
@@ -278,7 +325,7 @@ function TravelStep({ a, set, headRef }) {
             <legend className="t-h3">Home airport</legend>
             {home ? (
               <div className="chip-wrap">
-                <button className="tray-chip" onClick={() => set({ homeAirport: null })} aria-label={`Change home airport ${home.code}`}>
+                <button className="tray-chip" onClick={() => setTravel({ homeAirport: null })} aria-label={`Change home airport ${home.code}`}>
                   {home.code} · {home.city} <X size={14} aria-hidden="true" />
                 </button>
               </div>
@@ -292,35 +339,115 @@ function TravelStep({ a, set, headRef }) {
                   <ul className="airport-list" role="listbox" aria-label="Airports">
                     {matches.map((ap) => (
                       <li key={ap.code}>
-                        <button role="option" aria-selected="false" onClick={() => { set({ homeAirport: ap.code }); setQ(""); }}>
+                        <button role="option" aria-selected="false" onClick={() => { setTravel({ homeAirport: ap.code }); setQ(""); }}>
                           <strong>{ap.code}</strong> {ap.city} · {ap.name}
                         </button>
                       </li>
                     ))}
                   </ul>
                 )}
+                {q && !matches.length && <p className="t-caption">We don't have "{q}" yet — skip it and we'll estimate lounge access.</p>}
               </div>
             )}
           </fieldset>
           <fieldset className="survey-group">
             <legend className="t-h3" id="q-lounge">Do airport lounges matter to you?</legend>
-            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-lounge">
-              {LOUNGE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={a.lounges === o.key} onSelect={() => set({ lounges: o.key })}>{o.label}</Choice>)}
+            <div className="choice-stack" role="radiogroup" aria-labelledby="q-lounge">
+              {LOUNGE_OPTIONS.map((o) => <Choice key={o.key} radio selected={t.lounges === o.key} sub={o.sub} onSelect={() => setTravel({ lounges: o.key })}>{o.label}</Choice>)}
             </div>
           </fieldset>
         </>
       )}
+      <fieldset className="survey-group">
+        <legend className="t-h3">Airlines you fly, or would</legend>
+        {AIRLINE_GROUPS.filter((g, gi) => allAirlines || gi === 0).map((g) => (
+          <div key={g.key} className="airline-group">
+            <span className="t-caption">{g.label}</span>
+            <ToggleChips options={g.options} picked={d.brands.airlines} onChange={setAirlines} label={g.label} />
+          </div>
+        ))}
+        {!allAirlines && <button className="survey-link more-link" onClick={() => setAllAirlines(true)}><ChevronDown size={16} aria-hidden="true" /> International airlines (Star Alliance, oneworld, SkyTeam)</button>}
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3" id="q-nights">Paid hotel nights a year</legend>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-nights">
+          {NIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={nights === o.key} onSelect={() => setTravel({ hotelNights: o.key })}>{o.label}</Choice>)}
+        </div>
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3">Hotel brands</legend>
+        <ToggleChips options={HOTEL_BRANDS} picked={d.brands.hotels} onChange={(hotels) => set({ brands: { ...d.brands, hotels } })} label="Hotel brands" />
+      </fieldset>
     </>
   );
 }
 
-/* ── Step 9: your points, explained ──────────────────────────────────── */
+/* ── Step 4: perk brands ─────────────────────────────────────────────── */
 
-function PointsStep({ a, headRef }) {
-  const r = useMemo(() => explainPoints(answersToProfile(a)), [a]);
+const PERK_GROUPS_IN_CATALOG = perkBrandsInCatalog(CARDS);
+
+function BrandsStep({ d, set, headRef }) {
+  const picked = d.brands.perks;
   return (
     <>
-      <Head headRef={headRef} title="Here's what your points can do." />
+      <Head headRef={headRef} eyebrow="Brands" title="Brands you already use: perks some cards pay for"
+        sub="Some cards give statement credits at these brands. Pick the ones you already use. These are card perks, not point redemptions." />
+      {PERK_GROUPS_IN_CATALOG.map((g) => (
+        <fieldset key={g.key} className="survey-group">
+          <legend className="t-h3">{g.label}</legend>
+          <ToggleChips options={g.brands} picked={picked} onChange={(perks) => set({ brands: { ...d.brands, perks } })} label={g.label} />
+        </fieldset>
+      ))}
+    </>
+  );
+}
+
+/* ── Step 6: credit profile ──────────────────────────────────────────── */
+
+const PAST = (issuer) => CARDS.filter((c) => c.issuer === issuer && c.cardType !== "business").map((c) => ({ key: c.id, label: c.name }));
+const PAST_AMEX = PAST("American Express");
+const PAST_CHASE = PAST("Chase");
+const scoreKey = (score) => (score == null ? "unsure" : Object.entries(SCORE_BUCKETS).find(([, v]) => v === score)?.[0] || "unsure");
+
+function CreditStep({ d, set, headRef }) {
+  const c = d.credit;
+  const setCredit = (patch) => set({ credit: { ...c, ...patch } });
+  return (
+    <>
+      <Head headRef={headRef} eyebrow="Credit" title="Your credit" sub="Used only to show how likely an approval is and when to apply. Nothing here is a credit check." />
+      <fieldset className="survey-group">
+        <legend className="t-h3" id="q-score">Credit score</legend>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-score">
+          {SCORE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={scoreKey(c.score) === o.key} onSelect={() => setCredit({ score: SCORE_BUCKETS[o.key] })}>{o.label}</Choice>)}
+        </div>
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3" id="q-new">Cards opened in the last 24 months</legend>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-new">
+          {NEW_CARD_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={Math.min(5, c.newCards24mo) === o.key} onSelect={() => setCredit({ newCards24mo: o.key })}>{o.label}</Choice>)}
+        </div>
+        <p className="t-caption">Chase usually declines anyone with 5 or more new cards in 24 months.</p>
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3">Amex cards you've ever had</legend>
+        <ToggleChips options={PAST_AMEX} picked={c.pastAmex} onChange={(pastAmex) => setCredit({ pastAmex })} label="Past Amex cards" />
+        <p className="t-caption">Amex welcome bonuses are usually once per card, per lifetime.</p>
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3">Chase cards you've ever had</legend>
+        <ToggleChips options={PAST_CHASE} picked={c.pastChase} onChange={(pastChase) => setCredit({ pastChase })} label="Past Chase cards" />
+      </fieldset>
+    </>
+  );
+}
+
+/* ── Step 8: your points ─────────────────────────────────────────────── */
+
+function YourPointsStep({ d, headRef }) {
+  const r = useMemo(() => explainPoints(d), [d]);
+  return (
+    <>
+      <Head headRef={headRef} eyebrow="Your points" title="Here's what your points can do." />
       {r.summary && <p className="t-lead">{r.summary}</p>}
       <ul className="points-list">
         {r.programs.map((p, i) => (
@@ -333,6 +460,38 @@ function PointsStep({ a, headRef }) {
             </div>
             <span className="points-value">{p.pctText}</span>
           </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/* ── Step 9: your best setup ─────────────────────────────────────────── */
+
+function RevealStep({ d, headRef }) {
+  const s = useMemo(() => walletScore(d), [d]);
+  const best = s.best;
+  const has = d.cardsHeld.length > 0;
+  return (
+    <>
+      <Head headRef={headRef} eyebrow="Your best setup"
+        title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
+        sub={`At your ${d.feeBudget === Infinity ? "unlimited" : fmt(d.feeBudget)} fee budget, with the answers you gave.`} />
+      <div className="reveal-hero">
+        {has && <ScoreDial score={s.score} caption="Wallet Score" />}
+        <div className="reveal-numbers">
+          {has && <p><span className="t-big"><CountUp value={s.current.net} /></span><span className="reveal-unit">a year now</span></p>}
+          <p><span className="t-big fill-gold"><CountUp value={best.value.net} /></span><span className="reveal-unit">a year with the best setup</span></p>
+          <p className="t-caption">After fees, with benefits you'd use. {fmt(best.value.N)} more than a simple 2% card.</p>
+        </div>
+      </div>
+      <ul className="reveal-cards">
+        {best.wallet.map((id, k) => (
+          <Reveal as="li" i={k} key={id}>
+            <CardFace card={BY_ID[id]} tilt />
+            <span className="reveal-card-name">{cardDisplayName(BY_ID[id])}</span>
+            <span className="t-caption">{d.cardsHeld.includes(id) ? "You have this" : BY_ID[id].annualFee ? `${fmt(BY_ID[id].annualFee)} a year` : "No yearly fee"}</span>
+          </Reveal>
         ))}
       </ul>
     </>

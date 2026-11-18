@@ -1,36 +1,44 @@
-/* Survey answers (raw choices) → v5 profile. Pure. docs/REDESIGN_SPEC.md §2. */
-import {
-  FEE_BUDGETS, TRIP_BUCKETS, SCORE_BUCKETS, NEW_CARD_BUCKETS, SPEND_PRESETS,
-} from "../engine/profileDefaults.js";
+/* Survey steps (v6: docs/REDESIGN_SPEC.md §19). The survey edits the v6
+   profile directly — there is no separate "answers" shape any more, so any
+   single step can be reopened from Profile with the saved values in place.
+   Every question is optional; skipping keeps the documented default
+   (engine/profileDefaults.js). Quick asks the ★ steps; Thorough asks all. */
+import { normalizeProfile, FEE_BUDGETS, TRIP_BUCKETS, SCORE_BUCKETS, NEW_CARD_BUCKETS } from "../engine/profileDefaults.js";
 
-export const STEPS = ["welcome", "cards", "wants", "fee", "spend", "travel", "brands", "credit", "points"];
+export const STEP_DEFS = [
+  { id: "cards", title: "Cards you have", star: true },
+  { id: "spend", title: "Spending", star: true },
+  { id: "travel", title: "Travel", star: true },
+  { id: "brands", title: "Brands you use", star: true },
+  { id: "fee", title: "Fee budget", star: true },
+  { id: "credit", title: "Credit", star: false },
+  { id: "points", title: "Point values", star: false },
+  { id: "yourPoints", title: "Your points", star: false },
+  { id: "reveal", title: "Your best setup", star: true },
+];
+export const STEPS = STEP_DEFS.map((s) => s.id);
+export const MODES = { quick: { label: "Quick", minutes: 2 }, thorough: { label: "Thorough", minutes: 6 } };
 
+/** Step ids asked in a mode ("mode" is the chooser before step 1). */
+export const stepsFor = (mode) => STEP_DEFS.filter((s) => mode === "thorough" || s.star).map((s) => s.id);
+
+/** Any saved profile → the survey's draft (normalized, so every field exists). */
+export const draftFrom = (profile) => normalizeProfile(profile || {});
+
+/* ── v5 compatibility: saved v5 answers (raw choices) still decode ── */
 export const EMPTY_ANSWERS = Object.freeze({
-  cardsHeld: [],
-  noCards: false,
-  wants: null,
-  fee: null,
-  spendPreset: "typical",
-  spend: { ...SPEND_PRESETS.typical },
-  paysRent: null,
-  rent: 1500,
-  trips: null,
-  homeAirport: null,          // never defaulted
-  lounges: null,
-  brands: { airlines: [], hotels: [], everyday: [] },
-  score: null,
-  newCards: null,
+  cardsHeld: [], noCards: false, wants: null, fee: null, spendPreset: "typical", spend: null,
+  paysRent: null, rent: 1500, trips: null, homeAirport: null, lounges: null,
+  brands: { airlines: [], hotels: [], everyday: [] }, score: null, newCards: null,
 });
-
 const flies = (a) => a.trips != null && a.trips !== "0";
-
-/** Raw answers → profile input for normalizeProfile. Unanswered → defaults. */
+/** v5 raw answers → profile input (used when an old saved record loads). */
 export function answersToProfile(a = EMPTY_ANSWERS) {
   return {
     cardsHeld: a.noCards ? [] : a.cardsHeld || [],
     wants: a.wants || undefined,
     feeBudget: a.fee == null ? undefined : FEE_BUDGETS[a.fee],
-    spend: a.spend,
+    ...(a.spend ? { spend: a.spend } : {}),
     rent: a.paysRent ? a.rent : 0,
     travel: {
       trips: a.trips == null ? 0 : TRIP_BUCKETS[a.trips],
@@ -43,17 +51,4 @@ export function answersToProfile(a = EMPTY_ANSWERS) {
       newCards24mo: a.newCards ? NEW_CARD_BUCKETS[a.newCards] : 0,
     },
   };
-}
-
-/** Can this step's Continue button be pressed? ("Skip for now" always can.) */
-export function stepComplete(step, a) {
-  switch (step) {
-    case "cards": return a.noCards || a.cardsHeld.length > 0;
-    case "wants": return !!a.wants;
-    case "fee": return a.fee != null;
-    case "spend": return a.paysRent != null;
-    case "travel": return a.trips != null && (!flies(a) || (!!a.homeAirport && !!a.lounges));
-    case "credit": return !!a.score && !!a.newCards;
-    default: return true;
-  }
 }

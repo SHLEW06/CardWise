@@ -11,7 +11,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 1. Housekeeping + spec §16–§24 + Part A | done |
 | 2. Design system v6 + five-tab shell + Profile | done |
 | 3. Engine (E, G, I) + METHODOLOGY.md + golden tests | done |
-| 4. Survey rebuild (D) | — |
+| 4. Survey rebuild (D) | done |
 | 5. Wallet Lab (F) | — |
 | 6. Explore + card detail (H) | — |
 | 7. Checkout (J) | — |
@@ -139,6 +139,28 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
   8. The Edit: $0 → $300 after opt-in with 6 nights
 - Search time: 7–150 ms in Node for the test shapes (no worker needed yet).
 
+## Milestone 4 — done
+
+- Survey rebuilt (`components/v5/survey/Survey.jsx`, `state/surveyAnswers.js`):
+  Quick (2 min: cards, spending, travel, brands, fee + reveal) or Thorough
+  (6 min: + credit, point values, Your points); progress "Step n of N";
+  every question optional (Continue always on; "Skip to results"); saved
+  after every step; the draft IS the v6 profile, so Profile reopens any one
+  step with saved answers ("Save" returns) — closes the M2 gap.
+- Steps: cards (whole catalog, photos, selected ring); spending (15 rows,
+  slider + typed $, yearly shown, presets, gas location, warehouse club,
+  stores); travel (round trips, airport typeahead, lounge Yes/Sometimes/No,
+  airlines grouped US · Star · oneworld · SkyTeam · others incl. Spirit /
+  Frontier / Breeze, hotel nights, 10 hotel brands); perk brands generated
+  from card credits with the exact header copy; fee budget ($0…$1,500 +
+  typed); credit (score band, cards in 24 months, past Amex / Chase cards);
+  point values (PartnerPicker, pre-selected from step 3); Your points; best
+  setup (Wallet Score dial, now vs best, optimal cards, Open Wallet Lab).
+- Tests: `v6Survey.ui.test.jsx` (incl. every transfer-partner airline and
+  every co-brand airline is askable), `appSmoke.ui.test.jsx` renders the
+  whole App (a missing `/>` in App.jsx slipped past unit tests once).
+  v5 nine-step flow tests replaced; v5 saved answers still decode.
+
 ## Facts I couldn't verify (left out or marked)
 
 - **Card art not on issuer sites (2026-11-18):** Chase Freedom Student
@@ -174,15 +196,12 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Known gaps to close in later milestones
 
-- M4: editing one survey step from Profile when no raw answers are stored
-  (e.g. a profile from a share link) starts from empty answers — the M4
-  survey must derive answers from the saved profile.
 - M9: Home still shows its own card fan; the backdrop hero card moves there.
 
 ## Next
 
-Milestone 4: survey rebuild (Part D) on the v6 profile shape — Quick /
-Thorough, 9 steps, brand chips from `perkBrandsInCatalog`, airlines grouped
-by alliance, hotel nights, lounge preference, fee budget with typed amount,
-point values (PartnerPicker), Your points, best-setup reveal; answers derived
-from the saved profile when editing a single step.
+Milestone 5: Wallet Lab (Part F) — header (dial, now / best at budget / no
+limit), live fee-budget slider + typed field, spending drawer (what-if or
+save), slots with tap-for-alternatives + swap + diff toast, From my wallet /
+From scratch, sample wallets, Keep or cancel · When to apply · Saved setups
+· Portal vs direct panels.

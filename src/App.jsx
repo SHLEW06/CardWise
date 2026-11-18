@@ -120,7 +120,6 @@ function withAnchors(profile) {
 
 export default function App() {
   const [screen, setScreen] = useState("hero"); // hero (landing) | survey | app
-  const [surveyAnswers, setSurveyAnswers] = useState(null);
   const [surveyStep, setSurveyStep] = useState(null);   // step id when editing one answer from Profile
   const [tab, setTab] = useState("home");   // home | checkout | offers | lab | explore | profile (§17)
   const [profile, setProfile] = useState(null);
@@ -139,7 +138,6 @@ export default function App() {
       const [p, w, vo, offs, rec] = await Promise.all([
         loadProfile(), loadWallet(), loadValOverrides(), loadOffers(), hydrateV5Record(),
       ]);
-      if (rec.answers) setSurveyAnswers(rec.answers);
       setV5(rec.profile);
 
       // URL hash takes priority (shareable link); a finished v5 survey next.
@@ -215,15 +213,14 @@ export default function App() {
     return (
       <div className="v5">
         <Survey
-          initialAnswers={surveyAnswers}
+          initialProfile={v5}
           initialStepId={surveyStep}
           editOnly={!!surveyStep}
-          onExit={() => { setScreen(profile ? "app" : "hero"); if (surveyStep) setTab("profile"); }}
-          onDone={(v5Profile, answers) => {
-            setSurveyAnswers(answers);
+          onExit={() => { setScreen(profile ? "app" : "hero"); if (surveyStep) setTab("profile"); setSurveyStep(null); }}
+          onDone={(v5Profile, meta = {}) => {
             applyV5(v5Profile);
             setScreen("app");
-            setTab(surveyStep ? "profile" : "home");
+            setTab(surveyStep ? "profile" : meta.open === "lab" ? "lab" : "home");
             setSurveyStep(null);
             saveProfile(toLegacyProfile(v5Profile));
           }}
