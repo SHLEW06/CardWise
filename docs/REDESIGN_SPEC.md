@@ -62,11 +62,19 @@ Target: ≤ 2 minutes.
 | 2 | **Cards you already have** | Searchable grid of real card faces | Search over the WHOLE catalog incl. product-change-only and discontinued cards (people still hold them). Default view: 24 most-held cards. Tap toggles; selected cards also appear in a "Your cards (n)" tray. "I don't have any" button. |
 | 3 | What do you want back? | Cash back · Travel · Both | Drives point valuation default (§4) |
 | 4 | **Annual fees you're OK with** (total, all cards) | $0 · Up to $100 · Up to $300 · Up to $700 · Whatever pays the most | This is the optimizer's fee budget (§3). Copy: "Some cards charge a yearly fee but give back more in benefits. What's the most you'd pay per year across all your cards?" |
-| 5 | Monthly spending | 6 rows: Groceries, Dining, Gas & transit, Online shopping, Bills & subscriptions, Everything else. Presets Light / Typical / Heavy + slider | Rent asked as a yes/no + amount only if yes |
+| 5 | Monthly spending | 6 rows: Groceries, Dining, Gas & transit, Online shopping, Bills & subscriptions, Everything else. Presets Light / Typical / Heavy + slider **plus a typeable dollar field on every row** (see below) | Rent asked as a yes/no + amount only if yes |
 | 6 | **Travel** | Home airport (searchable, IATA + city, required only if they fly), trips per year (0 / 1–2 / 3–5 / 6+), "Airport lounges matter to me" (No / Sometimes / Yes) | Never default an airport. If "0 trips", skip airport + lounge. |
 | 7 | **Brands you like** | Logo-less text chips, grouped: Airlines (Delta, United, American, Southwest, JetBlue, Alaska), Hotels (Marriott, Hilton, Hyatt, IHG), Everyday (Amazon, Costco, Target, Walmart, Whole Foods, Uber/Lyft, DoorDash, Apple) | Multi-select. Drives keeper cards (§3) and transfer partners (step 9) |
 | 8 | Credit | Score range (Not sure / <670 / 670–739 / 740–799 / 800+), "New cards opened in the last 2 years" (0 / 1–2 / 3–4 / 5+) | Second answer is for Chase 5/24 (§5) |
 | 9 | **Your points, explained** (result) | — | From cards held + brands liked: which programs they earn (e.g. Chase Ultimate Rewards), which transfer partners match their brands ("Your Chase points move 1:1 to Hyatt and United — both brands you picked"). Then "See my best wallet →" |
+
+**Spending inputs (step 5, and anywhere else a slider sets money):** each row
+is a slider *and* a number field, always in sync. The field shows `$` and a
+`/mo` suffix, uses `inputMode="numeric"` (number keypad on phones), accepts
+typed values beyond the slider's range (the slider pins at its max, the typed
+value is kept), strips commas/`$`, clamps at 0, and commits on blur or Enter.
+Dragging the slider updates the field live. Tab order: slider → field. Both
+are labelled for screen readers ("Groceries per month").
 
 Remove: QuickStart.jsx's 3-step flow and the 50-question SurveyFlow. Keep
 `surveyScoring.js` mapping but feed it the new, smaller answer set; anything the
@@ -366,6 +374,45 @@ Page rhythm (how Robinhood builds each page):
 Do NOT copy: Robinhood's logo, feather mark, neon brand color as our identity,
 their videos/images, or page copy. Replicate the *structure, rhythm, restraint
 and motion quality*, not the brand.
+
+### 9.9 Type, final (2026-11-18 — overrides 9.2 and the fonts row in 9.8)
+
+The free Google fonts read as "nice template", not luxury. Use:
+
+| Role | Font | Notes |
+|---|---|---|
+| Display (page titles, big numbers, section and item titles ≥ 22px) | **PP Editorial New** (Pangram Pangram), Ultralight/Regular + Italic | high-contrast editorial serif; use the italic for one emphasized word per headline at most |
+| UI + body | **PP Neue Montreal** (Pangram Pangram), Book/Medium | tight editorial grotesk |
+| Fallback stack | `"PP Editorial New", "Instrument Serif", Georgia, serif` / `"PP Neue Montreal", Geist, system-ui, sans-serif` | site must still look right before the files exist |
+| Upgrade path at launch | Canela (Commercial Type) for display | |
+
+Licensing: Pangram Pangram fonts are free to try for personal use, not for a
+commercial project; buy the web licenses before any public launch. The files
+are email-gated: Shunji downloads them and drops the .woff2 files into
+`public/fonts/` (gitignored until licensed). Load with `font-display: swap`
+and preload the two most-used weights.
+
+Rules: display at weight 300–400 with letter-spacing −0.02em, never bold;
+sans for anything under 20px; numbers in display use `tabular-nums`;
+sentence case; no font-weight above 500 anywhere.
+
+### 9.10 Example: survey step 9 "Your points, explained"
+
+Today it's three white boxes with bold sans titles, a tautology ("Delta
+SkyMiles Gold earns Delta SkyMiles"), and the card name as grey caption text.
+Rebuild as an editorial list:
+- Page title in Editorial New: "Here's what your points can do."
+- One row per program, separated by hairlines (no boxes): real card face
+  (96px wide, left) · program name in Editorial New 28px · one sentence that
+  says something useful · value on the right in `--gold-deep`, "≈ 1.5% back"
+  in display numerals.
+- Sentences must be specific to their answers, never restate the card name:
+  - Chase UR on Freedom only: "Worth about 1.5% today. Add a Sapphire Preferred
+    and the same points move to Hyatt and United — both brands you picked."
+  - Delta SkyMiles: "Best used for Delta flights from ATL, your home airport."
+  - Cash back: "Paid as cash. Nothing to plan or transfer."
+- Transfer partners that match brands they picked are named; others aren't listed.
+- Rows animate in with the §9.4 stagger; one primary button "See my best wallet".
 
 ### 9.7 Anti-AI checklist (review every screen against it)
 
