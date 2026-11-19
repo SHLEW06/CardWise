@@ -5,6 +5,7 @@
    Username: demo  Password: demo-pass   (anything else fails)
    ========================================================================== */
 
+import { pathToFileURL } from "node:url";
 import http from "node:http";
 import { randomBytes } from "node:crypto";
 
@@ -67,7 +68,7 @@ export function createMockBank() {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const mb = createMockBank();
   mb.listen(Number(process.env.MOCKBANK_PORT || 8799)).then((p) => console.log(`mock bank on http://127.0.0.1:${p}/login  (demo / demo-pass)`));
 }

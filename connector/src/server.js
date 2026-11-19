@@ -12,6 +12,7 @@
    DELETE /v1/connections/:bankId        forget a bank (deletes its session)
    ========================================================================== */
 
+import { pathToFileURL } from "node:url";
 import http from "node:http";
 import { WebSocketServer } from "ws";
 import { loadConfig } from "./config.js";
@@ -146,7 +147,7 @@ export function createConnector(cfg = loadConfig(), deps = {}) {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const cfg = loadConfig();
   const c = createConnector(cfg);
   c.listen().then((port) => {

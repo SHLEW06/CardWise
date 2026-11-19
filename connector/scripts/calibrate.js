@@ -16,6 +16,7 @@
         app is connected right away.
    ========================================================================== */
 
+import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -146,4 +147,4 @@ async function main() {
   await browser.close();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error(e.message); process.exit(1); });
