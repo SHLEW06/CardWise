@@ -59,11 +59,12 @@ export function mapSyncedOffers(results, ctx) {
   return out;
 }
 
-/** Which banks need attention after a sync (expired or not calibrated). */
+/** Which banks need attention after a sync (expired, not calibrated, or an
+    extension bank whose offers page hasn't been opened yet). */
 export function syncProblems(results) {
   return (results || []).filter((r) => r.error).map((r) => ({
     bank: r.bank,
-    action: r.error === "SESSION_EXPIRED" ? "reconnect" : r.error === "CALIBRATION_REQUIRED" ? "not_supported_yet" : "retry",
+    action: r.error === "SESSION_EXPIRED" ? "reconnect" : r.error === "CALIBRATION_REQUIRED" ? "not_supported_yet" : r.error === "WAITING_FOR_EXTENSION" ? "open_offers_page" : "retry",
     message: r.message,
   }));
 }

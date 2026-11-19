@@ -22,7 +22,7 @@ function mockClient(over = {}) {
     banks: vi.fn(async () => [{ id: "amex", name: "American Express", calibrated: true }, { id: "chase", name: "Chase", calibrated: false }]),
     connections: vi.fn(async () => [{ bankId: "amex" }]),
     sync: vi.fn(async () => [{ bank: "amex", offers: [{ source: "amex", merchant: "Nike", rawText: "Spend $100 or more, get $20 back", expires: "2099-02-01", status: "available", externalId: "x1", cardName: "Gold Card", syncedAt: "2026-11-18" }] }]),
-    addOffers: vi.fn(async () => ({ results: [] })),
+    addOffers: vi.fn(async (bank, list) => ({ bank, results: list.map((o) => ({ ...o, ok: true })) })),
     disconnect: vi.fn(async () => ({})),
     ...over,
   };

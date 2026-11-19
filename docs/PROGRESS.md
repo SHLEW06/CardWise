@@ -15,7 +15,7 @@ After a context reset: re-read the brief, then this file, then continue at
 | 5. Wallet Lab (F) | done |
 | 6. Explore + card detail (H) | done |
 | 7. Checkout (J) | done |
-| 8. Offers + connector (K) — stop for calibration | done; calibration outputs not found yet (see Review fixes) |
+| 8. Offers + connector (K) — stop for calibration | done; Amex/Chase moved to the Chrome extension; calibration waits on your HAR (see "Chrome extension") |
 | 9. Home (L) + polish + screenshots | done |
 
 ## Milestone 1 — done
@@ -266,18 +266,9 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 ## Calibration — what to run (you do the login)
 
-1. `npm --prefix connector install && npm --prefix connector run keys`
-2. Copy `CONNECTOR_TOKEN` from `connector/.env` into a new `.env.local`
-   (see README → Bank connections).
-3. `npm run calibrate -- amex` → a Chrome window opens on Amex's sign-in
-   page. Sign in yourself, open **Offers**, scroll to the very bottom, then
-   press **Enter** in the terminal. It writes
-   `connector/calibration/amex.suggested.json`.
-4. Same for `npm run calibrate -- chase` (Chase Offers page).
-5. Tell me it's done — I read the suggested JSON + the raw captures in
-   `connector/data/calibration-raw/` (they stay on your Mac), fill the
-   `FILL_ME`s, save `calibration/amex.json` / `chase.json`, and finish the
-   adapters + tests.
+Superseded for Amex/Chase by the HAR flow below ("Chrome extension + HAR
+calibration"). Browser calibration (`npm run calibrate -- <bank>`) remains
+for banks that allow automated sign-in.
 
 ## Milestone 9 — done
 
@@ -414,12 +405,111 @@ Formulas, constants and deviations: `docs/METHODOLOGY.md`.
 
 - M9: Home still shows its own card fan; the backdrop hero card moves there.
 
+## Chrome extension + HAR calibration (2026-11-18)
+
+Finding (yours): Amex sign-in works in normal Chrome but not in the
+Playwright-launched window — the bank blocks automated browsers. We don't
+hide automation; Amex and Chase now sync through a Chrome extension in your
+own browser. Spec §15.5 + §24.
+
+- **Committed first:** `pathToFileURL` main-module checks (calibrate,
+  connector server, mock bank) — the `file://${argv[1]}` comparison never
+  matched with spaces in the path.
+- **What the earlier runs captured:** both `connector/data/calibration-raw/amex-*`
+  runs contain only Amex sign-in traffic (identity modules, passkey
+  challenge, analytics) and the login page HTML — no offers endpoint. Not
+  usable for calibration; left in place (gitignored, yours to delete).
+- **HAR calibration:** `npm run calibrate -- amex --har connector/data/amex.har`
+  (`connector/scripts/har.js` + `calibrate.js`). Offline; no `connector/.env`
+  needed. Kept per response: scrubbed URL + scrubbed JSON only — never headers,
+  cookies, Set-Cookie, Authorization, request bodies; credential-like query
+  params / JSON keys → "[removed]" (keys starting `offer` kept: offer ids),
+  JWTs + e-mails removed, card numbers → last 4, other sites' responses
+  dropped. Then `findOfferArrays` (now also finds card name / last-4 fields)
+  → `calibration/<bank>.suggested.json`. Add buttons: probed in the saved
+  page (`--html`, or `<bank>.html` next to the HAR) with scripts and network
+  off; the probe now also suggests `merchantSelector` and the tile attribute
+  holding the offer id. No HTML → `FILL_ME`. `connector/data/`, `*.har` and
+  suggestions are gitignored (connector/.gitignore + root).
+- **Connector modes:** `mode: "extension"` (amex, chase) / `"server"`
+  (mock bank; `MOCKBANK_MODE=extension` for tests) in `/v1/banks` (+ offersUrl).
+  New `POST /v1/extension/offers` (re-sanitized, merged per card, expired
+  dropped, stored in the encrypted vault), `GET /v1/extension/pending`. For
+  extension banks `/v1/sync` returns the stored offers
+  (`WAITING_FOR_EXTENSION` before the first one), `/v1/offers/add` queues
+  (deduped; cleared once the page shows them added; 14-day TTL),
+  `/v1/connect` → 409 `USE_EXTENSION`.
+- **Extension (`extension/`, MV3):** permissions `storage` only; content
+  scripts on `global.americanexpress.com/offers*`,
+  `secure.chase.com/web/auth/dashboard*` (active only on the merchantOffers
+  route) + dev mock bank; sign-in URLs excluded; off when a password field is
+  present. `intercept.js` (page world) copies JSON responses the page
+  loads, forwards only the calibration's URL pattern; `main.js` reads with the
+  calibration, `sanitizeRaw` (offer fields + last 4), sends via the service
+  worker. Linking: the app's `extensionBridge.js` ↔ `bridge.js` on app
+  origins → Firebase ID token (dev token in dev) + API (allowlist) in
+  `chrome.storage.session`; offers read before linking wait in memory.
+  Service worker checks every message by sender origin (a bank page can only
+  send for its own bank; only app origins can link). Panel: offers with
+  checkboxes (queued ones pre-ticked), Add selected, progress, Stop; 1.5–3 s
+  before every click, pause while the tab is hidden, quit on leaving the page,
+  stop on first error. Auto-add: popup switch, off by default. Popup: linked
+  state, per-bank last sync / count / problem, claims.
+- **Claims (extension):** identical in popup and app (test-checked). I
+  reworded one: "stored encrypted (AES-256)" was only true of the connector's
+  copy — the app also keeps synced offers in Firestore/localStorage — so it
+  now reads "Offers are sent only to your own CardWise account — never to
+  anyone else."
+- **App:** Connected banks shows each bank's mode ("Chrome extension" /
+  "Sign in here"); Amex/Chase: "Sync with the CardWise Chrome extension",
+  install sheet (load-unpacked steps) or "Open <bank> offers", last sync +
+  waiting-to-add count; claims for each mode. Offers: Add for extension banks
+  queues and says to open the bank's offers page; server-bank adds are marked
+  added only when the connector reports ok (previously all were marked).
+  `App.jsx` links the extension on open and when the signed-in user changes.
+- **Tests:** extension unit 15 (`npm run test:extension`); connector
+  +9 (`har.test.js` 2, `extensionApi.test.js` 3, `extension.e2e.test.js` 4 —
+  the real unpacked extension in Chrome for Testing from Playwright's cache,
+  against the mock bank: inert on sign-in, link from the app, offers into the
+  vault and back from /v1/sync, other user isolated, pre-ticked queue, Add
+  at human pace with progress, Stop, auto-add via popup); app +6
+  (`v6Extension.ui.test.jsx`). `npm run test:all` runs all three.
+- **Not done (needs you):** Amex/Chase calibration. No `connector/data/amex.har`
+  exists yet, so `calibration/amex.json` and the Amex adapter tests from a real
+  capture aren't written — nothing was guessed. Steps below.
+- **Before other people use it:** the §15.5 endpoints must exist on the
+  Firebase backend (the extension already allows
+  `us-central1-credit-card-optimizer-19762.cloudfunctions.net`); remove the
+  mock-bank match patterns; icons; Chrome Web Store listing.
+
+### Calibration — what to run now (Amex, then Chase)
+
+1. Load the extension (`chrome://extensions` → Developer mode → Load
+   unpacked → `cardwise/extension`).
+2. In your normal Chrome: sign in to Amex, open
+   https://global.americanexpress.com/offers/eligible.
+3. DevTools (⌥⌘I) → Network → tick "Preserve log" → reload → scroll to the
+   bottom of the offers list (switch cards in the card picker if you have
+   several, scrolling each).
+4. Export HAR (⬇ icon in the Network toolbar) → save as
+   `connector/data/amex.har`. Then ⌘S → "Webpage, HTML Only" →
+   `connector/data/amex.html`.
+5. `npm run calibrate -- amex --har connector/data/amex.har`
+6. Tell me it's done. I read `connector/calibration/amex.suggested.json` and
+   the sanitized `connector/data/calibration-raw/amex-har-*/`, write
+   `calibration/amex.json`, add adapter tests from it, run
+   `npm run extension:calibrations`, and you reload the extension. Delete
+   `amex.har` afterwards (it holds your session cookies).
+7. Same for Chase: offers page
+   https://secure.chase.com/web/auth/dashboard#/dashboard/merchantOffers/offer-hub
+   → `connector/data/chase.har` / `chase.html`.
+
 ## Next
 
-Waiting on the user: run the calibration steps above (Amex, Chase). Then:
-read `connector/calibration/*.suggested.json` + the raw captures, write
-`calibration/amex.json` / `chase.json`, add adapter tests, re-run the
-connector suite, and wire the first real sync into Offers.
+Waiting on you: the Amex (then Chase) HAR + saved page, steps just above.
+Then: `calibration/amex.json` / `chase.json` from the sanitized capture,
+adapter tests from it, regenerate `extension/lib/calibrations.js`, first real
+sync through the extension. Later: the §15.5 endpoints on Firebase Functions.
 Possible follow-ups (not in the brief): generate the backdrop photos from
 `docs/BACKGROUNDS.md`; licensed PP fonts into `public/fonts/`; re-verify the
 items in "Facts I couldn't verify".

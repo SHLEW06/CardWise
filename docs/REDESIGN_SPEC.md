@@ -498,9 +498,13 @@ so the default advice text is "check the airline/hotel price before you book in
 a portal".
 
 
-## 15. Bank connections, offers and "near me" (chosen 2026-11-18)
+## 15. Bank connections, offers and "near me" (chosen 2026-11-18; Amex/Chase changed to the Chrome extension later on 2026-11-18 — §15.5)
 
-**Decision:** copy MaxRewards' in-app bank sign-in, run by our own connector.
+**Decision:** copy MaxRewards' in-app bank sign-in, run by our own connector,
+for banks that allow it. **Amex and Chase use the CardWise Chrome extension
+instead (§15.5)** — Amex sign-in works in a normal Chrome but not in a
+Playwright-launched one (the bank blocks automated browsers), and we don't
+try to hide automation.
 Code: `connector/` (tested: 13 tests incl. full login → sync → add on a mock
 bank; see `connector/README.md`). The app-side pieces are in `connector/client/`.
 
@@ -558,6 +562,47 @@ Firebase auth on; connector behind HTTPS; vault key in a secrets manager;
 no request-body logging; written security note; privacy page copy:
 "Your bank login happens on your bank's own page. CardWise stores only an
 encrypted session to read your offers — never your password or card numbers."
+For extension banks: the backend endpoints of §15.5 move to Firebase
+Functions (same contract, Firebase ID token required), and the extension's
+mock-bank match patterns are removed before a Chrome Web Store listing.
+
+### 15.5 Chrome extension sync (Amex, Chase — 2026-11-18)
+Each bank has a **mode**, reported by the connector's `/v1/banks`:
+`extension` (Amex, Chase) or `server` (banks that allow automated sign-in;
+the mock bank by default). Code: `extension/` (Manifest V3).
+- **Where it runs.** Content scripts only on the issuers' offers pages
+  (`global.americanexpress.com/offers*`, `secure.chase.com/web/auth/dashboard*`
+  active only on the `merchantOffers` route), sign-in URLs excluded in the
+  manifest, and it switches off on any page with a password field. Only
+  permission: `storage`. The person opens the page themselves.
+- **Reading.** Same calibration file and semantics as the connector
+  (`connector/calibration/<bank>.json` → generated `extension/lib/calibrations.js`;
+  network mode reads the JSON the page itself loaded, DOM mode reads tiles).
+  Only offer fields + the last 4 digits the page shows leave the page;
+  13–19 digit runs are masked.
+- **Sending.** The app links the extension (bridge script on the app's own
+  origins → service worker) with the person's Firebase ID token (dev: the
+  connector dev token) and the API to use (allowlist: localhost connector in
+  dev, the CardWise Firebase backend in production). Token kept in
+  `chrome.storage.session` only. `POST /v1/extension/offers` re-sanitizes and
+  stores offers in that person's encrypted vault record; `/v1/sync` returns
+  them, so the Offers tab gets them through the same `mapSyncedOffers` path.
+- **Adding.** In the app, Add / auto-add for an extension bank **queues** the
+  offers (`/v1/offers/add` → `{mode:"extension", queued}`). On the offers
+  page the panel pre-ticks queued offers; "Add selected" clicks the bank's own
+  Add button one at a time, 1.5–3 s before each click, only while the tab is
+  visible and the person stays on the page, with progress and Stop; first
+  error stops. Auto-add (popup switch, off by default) starts that by itself.
+- **Popup:** linked or not, each bank's last sync / offer count / problem,
+  the auto-add switch, and the extension claims (the app shows the same list,
+  test-checked).
+- **Calibration** for these banks comes from a HAR the person exports in
+  their own Chrome: `npm run calibrate -- amex --har connector/data/amex.har`
+  (offline; cookies, headers, request bodies, tokens, e-mails removed before
+  anything is kept; optional saved page HTML for the Add buttons).
+- **App:** Connected banks shows the mode per bank; extension banks say "Sync
+  with the CardWise Chrome extension" with an install sheet (load-unpacked
+  steps while in development) or "Open <bank> offers" once installed.
 
 ---
 
@@ -706,7 +751,12 @@ it responds to survey answers).
 brands from name-suggestion-index (BSD-3-Clause) under our curated overrides,
 lazy prefix index (< 20 ms); geolocation only on tap, never stored or sent to
 our servers. **Offers** — all synced offers, filters, Add all, per-card
-auto-add with exclusions; Connect a bank via the connector (`npm run
-dev:all`), encrypted sessions, calibration for Amex/Chase by the user.
+auto-add with exclusions. Each bank syncs in one mode, shown in Connected
+banks: **Amex and Chase through the CardWise Chrome extension** on the offers
+page the person opens (Add queues offers the extension clicks there, at
+1.5–3 s per click, with progress and Stop — §15.5); other banks through the
+connector's streamed sign-in (`npm run dev:all`, encrypted sessions).
+Calibration for Amex/Chase comes from a HAR the person exports from their own
+Chrome (`npm run calibrate -- amex --har …`).
 **Home** — score + "≈ $X a year" over fanned card photos, one next move,
 near-you strip, top offers, links. No dense panels.

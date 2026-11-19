@@ -31,3 +31,8 @@ vite.config.js.timestamp-*
 
 # review screenshots (contain personal-use card art)
 screenshots/
+
+# bank captures: HARs hold session cookies; calibration-raw holds account data
+connector/data/
+*.har
+connector/calibration/*.suggested.json

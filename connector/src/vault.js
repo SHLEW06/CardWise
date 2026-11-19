@@ -70,7 +70,7 @@ export class Vault {
     return readdirSync(d).filter((f) => f.endsWith(".enc")).map((f) => {
       const bankId = f.slice(0, -4);
       let meta = {};
-      try { const r = this.load(userId, bankId); meta = { connectedAt: r.connectedAt, lastSyncAt: r.lastSyncAt || null }; } catch { meta = { error: "unreadable" }; }
+      try { const r = this.load(userId, bankId); meta = { connectedAt: r.connectedAt, lastSyncAt: r.lastSyncAt || null, mode: r.mode || "server", ...(r.offers ? { offers: r.offers.length } : {}), ...(r.pending ? { pending: r.pending.length } : {}) }; } catch { meta = { error: "unreadable" }; }
       return { bankId, ...meta, fileUpdatedAt: statSync(join(d, f)).mtime.toISOString() };
     });
   }

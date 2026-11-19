@@ -1,0 +1,17 @@
+:root { color-scheme: dark; }
+body { margin: 0; width: 340px; background: #0e0d0b; color: #f3efe6; font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { padding: 14px 16px 16px; }
+header { display: flex; align-items: baseline; justify-content: space-between; }
+h1 { margin: 0; font-size: 18px; font-weight: 400; letter-spacing: .01em; }
+h2 { margin: 16px 0 6px; font-size: 12px; font-weight: 500; color: #b9b2a3; text-transform: uppercase; letter-spacing: .06em; }
+#version { color: #8c8678; font-size: 11px; }
+#link { margin: 8px 0 0; color: #d8d2c4; }
+ul { margin: 0; padding: 0; list-style: none; }
+#banks li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.08); }
+#banks li:first-child { border-top: 0; }
+#banks .name { font-weight: 500; }
+#banks .meta { grid-column: 1 / -1; color: #b9b2a3; }
+a { color: #e9d9b4; }
+.switch { display: flex; gap: 8px; margin-top: 12px; color: #d8d2c4; }
+.claims li { padding: 4px 0 4px 14px; position: relative; color: #d8d2c4; }
+.claims li::before { content: ""; position: absolute; left: 0; top: 11px; width: 5px; height: 5px; border-radius: 50%; background: #e9d9b4; }

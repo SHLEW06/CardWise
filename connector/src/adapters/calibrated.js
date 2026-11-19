@@ -90,7 +90,7 @@ function domExtract({ tile, fields, card }) {
   });
 }
 
-export function createCalibratedAdapter({ id, name, loginUrl, offersUrl, loadCalibration }) {
+export function createCalibratedAdapter({ id, name, loginUrl, offersUrl, loadCalibration, mode = "server" }) {
   const calib = () => {
     const c = loadCalibration();
     if (!c) throw new CalibrationRequired(id);
@@ -98,7 +98,7 @@ export function createCalibratedAdapter({ id, name, loginUrl, offersUrl, loadCal
   };
 
   return {
-    id, name, loginUrl, offersUrl,
+    id, name, loginUrl, offersUrl, mode,
     get calibrated() { try { return !!loadCalibration(); } catch { return false; } },
 
     async isLoggedIn(page) {

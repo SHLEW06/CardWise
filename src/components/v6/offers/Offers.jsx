@@ -3,7 +3,8 @@
    Filters: card · category · expiring soon · added / not added. Amounts in
    plain words ("Spend $75, get $10"). "Add all" and per-card auto-add (on by
    default; the person chooses) with an excluded-merchant list. Offers arrive
-   only by syncing a connected bank — never typed in.
+   only by syncing a connected bank — never typed in. Amex and Chase sync
+   through the CardWise Chrome extension (Add queues them for it).
    ========================================================================== */
 import React, { useEffect, useMemo, useState } from "react";
 import { RefreshCw, X, Check } from "lucide-react";
@@ -17,6 +18,7 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 
 const SOON_DAYS = 7;
+export const BANK_SHORT = { amex: "Amex", chase: "Chase", mockbank: "Mock Bank" };
 
 export function categoryOf(offer) {
   const s = matchStore(offer.merchant, 0.6);
@@ -43,14 +45,26 @@ export default function Offers({ offers = [], setOffers, profile, client = conne
     && (status === "all" || (status === "added" ? o.status === "added" : o.status === "available")));
   shown.sort((a, b) => (daysUntilExpiry(a) ?? 999) - (daysUntilExpiry(b) ?? 999));
 
-  const markAdded = (ids) => setOffers?.(offers.map((o) => (ids.includes(o.id) ? setOfferStatus(o, "added") : o)));
+  const markAdded = (ids) => ids.length && setOffers?.(offers.map((o) => (ids.includes(o.id) ? setOfferStatus(o, "added") : o)));
+  /* Server banks click Add right away and report each result; extension
+     banks (Amex, Chase) queue the choice — the extension adds them while the
+     person has that bank's offers page open. */
   const add = async (plan) => {
     if (!plan.length) return;
     setBusy("add");
     try {
-      for (const [bank, list] of Object.entries(byBank(plan))) await client.addOffers(bank, list);
-      markAdded(plan.map((p) => p.offer.id));
-      setNote(`Added ${plan.length} offer${plan.length === 1 ? "" : "s"}.`);
+      const done = []; const queued = {};
+      for (const [bank, list] of Object.entries(byBank(plan))) {
+        const r = await client.addOffers(bank, list);
+        if (r?.mode === "extension") { if (r.queued ?? list.length) queued[bank] = r.queued ?? list.length; continue; }
+        const ok = (r?.results || []).filter((x) => x.ok);
+        for (const p of plan) if (p.offer.source === bank && ok.some((x) => (x.externalId && x.externalId === p.offer.externalId) || (!x.externalId && x.merchant === p.offer.merchant))) done.push(p.offer.id);
+      }
+      markAdded(done);
+      const parts = [];
+      if (done.length) parts.push(`Added ${done.length} offer${done.length === 1 ? "" : "s"}.`);
+      for (const [bank, n] of Object.entries(queued)) parts.push(`${n} ${BANK_SHORT[bank] || bank} offer${n === 1 ? "" : "s"} ready to add — open your ${BANK_SHORT[bank] || bank} offers page and the CardWise extension adds ${n === 1 ? "it" : "them"} there.`);
+      if (parts.length) setNote(parts.join(" "));
     } catch (e) {
       setNote(e.code === "OFFLINE" ? "Connect a bank (below) to add offers from here." : `Couldn't add: ${e.message}`);
     } finally { setBusy(null); }
@@ -59,7 +73,7 @@ export default function Offers({ offers = [], setOffers, profile, client = conne
     setBusy("sync");
     try {
       const r = await syncAll(offers, wallet, { client, save: setOffers });
-      setNote(`Synced ${r.added} offer${r.added === 1 ? "" : "s"}${r.errors.length ? ` · ${r.errors.map((e) => `${e.bank}: ${e.error === "SESSION_EXPIRED" ? "reconnect needed" : e.error}`).join(", ")}` : ""}.`);
+      setNote(`Synced ${r.added} offer${r.added === 1 ? "" : "s"}${r.errors.length ? ` · ${r.errors.map((e) => `${BANK_SHORT[e.bank] || e.bank}: ${e.error === "SESSION_EXPIRED" ? "reconnect needed" : e.error === "WAITING_FOR_EXTENSION" ? "open its offers page with the Chrome extension" : e.error}`).join(", ")}` : ""}.`);
       await add(planAutoAdd(r.offers, prefs, profile));
     } catch (e) {
       setNote(e.code === "OFFLINE" ? "The connector isn't running — see Connected banks below." : `Sync failed: ${e.message}`);

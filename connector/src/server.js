@@ -10,6 +10,13 @@
    POST   /v1/sync      {bankId}|{all:true}  → {results:[{bank, offers, syncedAt}|{bank,error}]}
    POST   /v1/offers/add {bankId, offers:[{externalId, merchant}]}
    DELETE /v1/connections/:bankId        forget a bank (deletes its session)
+
+   Banks in "extension" mode (Amex, Chase) never sign in here. The CardWise
+   Chrome extension reads offers on the page the person opened and sends them:
+   POST   /v1/extension/offers {bankId, offers:[raw]}  store (encrypted vault)
+   GET    /v1/extension/pending?bankId=…               offers the app chose to add
+   For those banks /v1/sync returns what the extension last sent, and
+   /v1/offers/add queues the offers for the extension instead of clicking.
    ========================================================================== */
 
 import { pathToFileURL } from "node:url";
@@ -22,6 +29,7 @@ import { makeAuthenticator } from "./auth.js";
 import { RemoteLogin } from "./remoteLogin.js";
 import { syncOffers, addOffers } from "./sync.js";
 import { closeBrowser } from "./browser.js";
+import { mergeExtensionOffers, queueAdds, reconcilePending } from "./extensionStore.js";
 
 export function createConnector(cfg = loadConfig(), deps = {}) {
   const vault = deps.vault || new Vault(cfg);
@@ -58,7 +66,7 @@ export function createConnector(cfg = loadConfig(), deps = {}) {
       const user = await authenticate(req);
 
       if (req.method === "GET" && url.pathname === "/v1/banks") {
-        return send(res, 200, { banks: Object.values(adapters).map((a) => ({ id: a.id, name: a.name, calibrated: a.calibrated })) });
+        return send(res, 200, { banks: Object.values(adapters).map((a) => ({ id: a.id, name: a.name, calibrated: a.calibrated, mode: a.mode || "server", ...(a.mode === "extension" ? { offersUrl: a.offersUrl } : {}) })) });
       }
       if (req.method === "GET" && url.pathname === "/v1/connections") {
         return send(res, 200, { connections: vault.list(user.vaultUser) });
@@ -66,6 +74,7 @@ export function createConnector(cfg = loadConfig(), deps = {}) {
       if (req.method === "POST" && url.pathname === "/v1/connect") {
         const { bankId } = await readJson(req);
         const adapter = adapterOr404(bankId);
+        if (adapter.mode === "extension") throw Object.assign(new Error(`${adapter.name} syncs through the CardWise Chrome extension`), { status: 409, code: "USE_EXTENSION" });
         const login = new RemoteLogin({ cfg, vault, adapter, user });
         await login.start();
         logins.set(login.id, login);
@@ -77,7 +86,14 @@ export function createConnector(cfg = loadConfig(), deps = {}) {
         const ids = body.all ? vault.list(user.vaultUser).map((c) => c.bankId) : [body.bankId];
         const results = [];
         for (const id of ids) {
-          try { results.push(await syncOffers({ cfg, vault, adapter: adapterOr404(id), user })); }
+          try {
+            const adapter = adapterOr404(id);
+            if (adapter.mode === "extension") {
+              const rec = vault.load(user.vaultUser, id);
+              results.push(rec?.offers ? { bank: id, mode: "extension", offers: rec.offers, syncedAt: rec.lastSyncAt, pending: (rec.pending || []).length }
+                : { bank: id, mode: "extension", error: "WAITING_FOR_EXTENSION", message: `Open your ${adapter.name} offers page with the CardWise extension installed` });
+            } else results.push(await syncOffers({ cfg, vault, adapter, user }));
+          }
           catch (e) { results.push({ bank: id, error: e.code || "SYNC_FAILED", message: e.message }); }
         }
         return send(res, 200, { results });
@@ -85,7 +101,32 @@ export function createConnector(cfg = loadConfig(), deps = {}) {
       if (req.method === "POST" && url.pathname === "/v1/offers/add") {
         const { bankId, offers } = await readJson(req);
         if (!Array.isArray(offers) || !offers.length || offers.length > 100) throw Object.assign(new Error("offers must be a non-empty array (max 100)"), { status: 400 });
-        return send(res, 200, await addOffers({ cfg, vault, adapter: adapterOr404(bankId), user, offers }));
+        const adapter = adapterOr404(bankId);
+        if (adapter.mode === "extension") {
+          const rec = vault.load(user.vaultUser, bankId) || { bankId, mode: "extension", offers: [], connectedAt: null, lastSyncAt: null };
+          const pending = queueAdds(rec.pending, offers);
+          vault.save(user.vaultUser, bankId, { ...rec, pending });
+          return send(res, 200, { bank: bankId, mode: "extension", queued: pending.length - (rec.pending || []).length, pending: pending.length, results: [] });
+        }
+        return send(res, 200, await addOffers({ cfg, vault, adapter, user, offers }));
+      }
+      if (req.method === "POST" && url.pathname === "/v1/extension/offers") {
+        const { bankId, offers } = await readJson(req);
+        const adapter = adapterOr404(bankId);
+        if (adapter.mode !== "extension") throw Object.assign(new Error(`${adapter.name} doesn't sync through the extension`), { status: 409, code: "WRONG_MODE" });
+        const rec = vault.load(user.vaultUser, bankId) || { bankId, mode: "extension", offers: [], pending: [] };
+        const merged = mergeExtensionOffers(rec.offers, offers, { bankId });
+        const now = new Date().toISOString();
+        const pending = reconcilePending(rec.pending, merged);
+        vault.save(user.vaultUser, bankId, { ...rec, bankId, mode: "extension", offers: merged, pending, connectedAt: rec.connectedAt || now, lastSyncAt: now });
+        return send(res, 200, { bank: bankId, stored: merged.length, pending: pending.length, syncedAt: now });
+      }
+      if (req.method === "GET" && url.pathname === "/v1/extension/pending") {
+        const bankId = url.searchParams.get("bankId");
+        const adapter = adapterOr404(bankId);
+        if (adapter.mode !== "extension") throw Object.assign(new Error("Not an extension bank"), { status: 409, code: "WRONG_MODE" });
+        const rec = vault.load(user.vaultUser, bankId);
+        return send(res, 200, { bank: bankId, pending: rec?.pending || [] });
       }
       const del = url.pathname.match(/^\/v1\/connections\/([\w-]+)$/);
       if (req.method === "DELETE" && del) {

@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "CardWise",
+  "version": "0.1.0",
+  "description": "Syncs card-linked offers from the bank offers pages you open, and adds the ones you choose.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://us-central1-credit-card-optimizer-19762.cloudfunctions.net/*"
+  ],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "CardWise", "default_popup": "popup/popup.html" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://global.americanexpress.com/offers*",
+        "https://secure.chase.com/web/auth/dashboard*",
+        "http://127.0.0.1/offers*",
+        "http://localhost/offers*"
+      ],
+      "exclude_globs": ["*login*", "*logon*", "*signin*", "*sign-in*", "*logout*"],
+      "js": ["content/intercept.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://global.americanexpress.com/offers*",
+        "https://secure.chase.com/web/auth/dashboard*",
+        "http://127.0.0.1/offers*",
+        "http://localhost/offers*"
+      ],
+      "exclude_globs": ["*login*", "*logon*", "*signin*", "*sign-in*", "*logout*"],
+      "js": ["content/loader.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/*",
+        "http://localhost:4173/*",
+        "http://127.0.0.1:4173/*",
+        "https://credit-card-optimizer-19762.web.app/*",
+        "https://credit-card-optimizer-19762.firebaseapp.com/*"
+      ],
+      "js": ["content/bridge.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/main.js", "content/panel.js", "lib/*.js"],
+      "matches": [
+        "https://global.americanexpress.com/*",
+        "https://secure.chase.com/*",
+        "http://127.0.0.1/*",
+        "http://localhost/*"
+      ]
+    }
+  ]
+}

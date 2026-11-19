@@ -24,7 +24,7 @@ cd connector
 npm install
 npx playwright install chromium     # or use your installed Chrome (CHROME_CHANNEL=chrome, the default in .env)
 npm run keys                        # writes .env with a random API token + vault key (back it up: lose it = reconnect everything)
-npm test                            # 13 tests incl. a full login → sync → add flow against a mock bank
+npm test                            # incl. a full login → sync → add flow against a mock bank, HAR calibration, and the real extension on the mock bank
 npm start                           # http://127.0.0.1:8787
 ```
 
@@ -35,23 +35,45 @@ VITE_CONNECTOR_URL=http://127.0.0.1:8787
 VITE_CONNECTOR_TOKEN=<CONNECTOR_TOKEN from connector/.env>   # dev mode only
 ```
 
-## Teach it Amex and Chase (once, with your own account)
+## Two sync modes
 
-Amex and Chase ship **uncalibrated** — the connector says so instead of guessing.
+| Mode | Banks | How |
+|---|---|---|
+| `extension` | Amex, Chase | They block automated browsers at sign-in. The person opens the offers page in their own Chrome; the **CardWise Chrome extension** (`../extension/`) reads offers there and POSTs them here; Add queues offers that the extension clicks while they're on the page. The connector never signs in to these banks. |
+| `server` | banks that allow it (and the mock bank) | Streamed remote sign-in + encrypted session, as below. |
+
+`GET /v1/banks` returns each bank's `mode`. `MOCKBANK_MODE=extension` puts the
+mock bank in extension mode (used by `test/extension.e2e.test.js`).
+
+## Teach it Amex and Chase (once, with your own account) — HAR
+
+Amex and Chase ship **uncalibrated** — the connector and extension say so
+instead of guessing. Export a HAR from your normal Chrome while on the offers
+page (DevTools → Network → reload → scroll the list → Export HAR; step by
+step in `../extension/README.md`), save it as `data/amex.har`, optionally the
+page as `data/amex.html`, then from the project root:
 
 ```bash
-npm run calibrate -- amex
+npm run calibrate -- amex --har connector/data/amex.har     # --html <file> if the page isn't next to the HAR
 ```
 
-1. A Chrome window opens on the Amex sign-in page. Sign in yourself.
-2. Open the Offers page, scroll to the bottom, press Enter in the terminal.
-3. Review `calibration/amex.suggested.json` (it found the offer list in the
-   page's own data and the "Add" buttons), fill any `FILL_ME`, save as
-   `calibration/amex.json`. Your session is saved too, so you're connected.
+The HAR is read offline. Before anything is kept, cookies, Set-Cookie,
+Authorization and all other headers, request bodies (the sign-in POST),
+credential-like query parameters and JSON keys, JWTs, e-mail addresses and
+card numbers (cut to last 4) are removed, and responses from other sites
+(analytics, ads) are dropped (`scripts/har.js`). The sanitized JSON goes to
+`data/calibration-raw/` and the suggestion to `calibration/amex.suggested.json`
+(Add buttons come from the saved page if present, else `FILL_ME`). Review it,
+fill any `FILL_ME`, save as `calibration/amex.json`, run
+`npm run extension:calibrations` (root) and reload the extension. Then delete
+the HAR — it still holds your session cookies. Repeat for `chase`.
 
-Raw captures go to `data/calibration-raw/` — they contain your account data,
-stay on your machine and are gitignored. Repeat for `chase`. When a bank
-redesigns its site, re-run calibrate and update that one JSON file.
+Browser mode (`npm run calibrate -- <bank>` without `--har`) still exists for
+banks that allow automated sign-in: a Chrome window opens, you sign in, open
+the offers page, scroll, press Enter.
+
+Raw captures stay on your machine (`data/` is gitignored). When a bank
+redesigns its site, export a new HAR and update that one JSON file.
 
 ## Per-user sign-in (before anyone else uses it)
 
@@ -89,6 +111,13 @@ home connections — that is the main reason MaxRewards' syncs break.
 | POST | `/v1/sync` | `{bankId}` or `{all:true}` | `{results:[{bank,offers,syncedAt}\|{bank,error}]}` |
 | POST | `/v1/offers/add` | `{bankId, offers:[{externalId,merchant}]}` | `{results}` |
 | DELETE | `/v1/connections/:bankId` | — | forgets that bank |
+| POST | `/v1/extension/offers` | `{bankId, offers:[raw]}` (extension banks) | `{stored, pending, syncedAt}` — sanitized, encrypted in the vault |
+| GET | `/v1/extension/pending?bankId=` | — | `{pending}` offers the app chose to add |
+
+For extension banks, `/v1/sync` returns what the extension last sent
+(`WAITING_FOR_EXTENSION` until then), `/v1/offers/add` queues instead of
+clicking (`{mode:"extension", queued}`), and `/v1/connect` answers 409
+`USE_EXTENSION`.
 
 ## App-side files (in `client/`)
 

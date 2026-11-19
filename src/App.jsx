@@ -10,6 +10,7 @@ import { toLegacyProfile } from "./state/legacyBridge.js";
 import Home from "./components/v6/Home.jsx";
 import Profile from "./components/v6/Profile.jsx";
 import Offers from "./components/v6/offers/Offers.jsx";
+import { extensionBridge } from "./connector/index.js";
 import ConnectedBanks from "./components/v6/offers/ConnectedBanks.jsx";
 import WalletLab from "./components/v6/lab/WalletLab.jsx";
 import { useAuth } from "./firebase/useAuth.js";
@@ -133,6 +134,9 @@ export default function App() {
   const [valOverrides, setValOverrides] = useState({});
   const [offers, setOffers] = useState([]);
   const { user } = useAuth();
+  /* Link the CardWise Chrome extension (if installed) to whoever is signed in:
+     on open, and again whenever the signed-in person changes (§15.5). */
+  useEffect(() => { extensionBridge()?.sendAuth(); }, [user?.uid]);
 
   // hydrate from storage + URL hash
   useEffect(() => {

@@ -39,6 +39,7 @@ export function loadConfig(env = process.env, { requireSecrets = true } = {}) {
     viewport: { width: 430, height: 860 },            // phone-shaped, like the "virtual phone" login
     loginTimeoutMs: Number(env.CONNECTOR_LOGIN_TIMEOUT_MS || 10 * 60 * 1000),
     mockbankUrl: env.MOCKBANK_URL || "http://127.0.0.1:8799",
+    mockbankMode: env.MOCKBANK_MODE || "server",   // "extension" to test the Chrome extension path
   };
   if (requireSecrets) {
     if (!cfg.token || cfg.token.length < 24) throw new Error("CONNECTOR_TOKEN missing or too short (run: npm run keys)");

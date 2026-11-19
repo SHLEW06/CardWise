@@ -70,8 +70,19 @@ and start both:
 npm run dev:all      # Vite on :5173 + the connector on :8787
 ```
 
-Teach it a bank once with your own account: `npm run calibrate -- amex`
-(and `-- chase`) — see `connector/README.md`.
+**Amex and Chase sync through the CardWise Chrome extension** (they block
+automated sign-ins): load `extension/` unpacked in Chrome (steps in
+`extension/README.md`), open the app so it links itself, then open your
+bank's offers page. Connected banks (Offers tab, Profile) shows which mode
+each bank uses.
+
+Teach it a bank once with your own account, from a HAR you export in your
+own Chrome: `npm run calibrate -- amex --har connector/data/amex.har` (and
+`chase`) — see `connector/README.md`.
+
+Tests: `npm test` (app), `npm run test:extension`, `npm run test:connector`
+(needs Chrome; the extension e2e uses Playwright's cached Chrome for Testing),
+or `npm run test:all`.
 
 Other scripts: `npm run brands -- <nsi.min.json>` rebuilds the Checkout store
 list (see `docs/THIRD_PARTY.md`); `npm run art` rebuilds the card-photo

@@ -9,6 +9,13 @@
                       earns most at that merchant — many issuers allow one
                       card per offer), skipping excluded merchants
    The connector runs next to Vite in dev: `npm run dev:all`.
+
+   Two ways a bank syncs (the connector's /v1/banks says which, as `mode`):
+     extension  Amex, Chase — the person opens the bank's offers page in their
+                own Chrome; the CardWise extension reads it and sends offers to
+                their account. "Add" queues offers that the extension adds
+                while they're on that page.
+     server     banks that allow it — sign in through the streamed browser.
    ========================================================================== */
 
 import { createConnectorClient, ConnectorError } from "./connectorClient.js";
@@ -17,6 +24,7 @@ import { mergeOffers, normalizeOffer } from "../engine/offers/offerModel.js";
 import { CARDS } from "../data/cards/index.js";
 import { getFirebase } from "../firebase/config.js";
 import { matchStore, rankPurchase } from "../engine/v5/checkout.js";
+import { createExtensionBridge } from "./extensionBridge.js";
 
 const env = (typeof import.meta !== "undefined" && import.meta.env) || {};
 export const CONNECTOR_URL = env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787";
@@ -40,6 +48,25 @@ export { ConnectorError };
    adapters read offers and the last 4 digits the bank page shows to match
    offers to your cards — never full card numbers; nothing is sent anywhere
    but your own connector. */
+/* What the Chrome extension promises — identical to extension/lib/claims.js
+   (a test checks they match; the reasons each is true are listed there). */
+export const EXTENSION_CLAIMS = [
+  "You sign in to your bank yourself, in your own browser. The extension never runs on the sign-in page and never sees your password.",
+  "It reads offers only on the bank's offers page you open, and only while you're on it.",
+  "We read the offer details and the last 4 digits the bank shows, to match offers to your cards — never full card numbers.",
+  "Offers are sent only to your own CardWise account — never to anyone else.",
+  "Adding offers clicks the bank's own Add button, one at a time, only for offers you choose — and you can stop it anytime.",
+  "We never sell your data.",
+];
+
+/* Load-unpacked steps while the extension isn't in the Chrome Web Store. */
+export const EXTENSION_INSTALL_STEPS = [
+  "Open chrome://extensions in Chrome.",
+  "Turn on Developer mode (top right).",
+  "Click \"Load unpacked\" and choose the extension folder in this project (cardwise/extension).",
+  "Come back here and reload — CardWise links the extension to your account by itself.",
+];
+
 export const CONNECT_CLAIMS = [
   "You sign in on your bank's own page. What you type goes straight to the bank — we never store or log your password.",
   "Your connection is saved as an encrypted session (AES-256), separate for each bank and each person.",
@@ -101,6 +128,22 @@ export function planAutoAdd(offers, prefs, profile, { all = false } = {}) {
 /** Group offers to add by bank source, as the connector expects. */
 export function byBank(plan) {
   const out = {};
-  for (const { offer } of plan) (out[offer.source] ||= []).push({ externalId: offer.externalId, merchant: offer.merchant });
+  for (const { offer } of plan) (out[offer.source] ||= []).push({ externalId: offer.externalId, merchant: offer.merchant, ...(offer.last4 ? { last4: offer.last4 } : {}) });
   return out;
+}
+
+/** What the extension needs to send offers to this person's account. */
+export async function authForExtension() {
+  const fb = getFirebase();
+  const u = fb?.auth?.currentUser;
+  if (u && !u.isAnonymous) return { token: await u.getIdToken(), kind: "firebase", apiBase: CONNECTOR_URL };
+  if (env.VITE_CONNECTOR_TOKEN) return { token: env.VITE_CONNECTOR_TOKEN, kind: "dev", user: "me", apiBase: CONNECTOR_URL };
+  return null;
+}
+
+let bridge = null;
+/** One bridge to the extension for the whole app (started on first use). */
+export function extensionBridge() {
+  if (!bridge && typeof window !== "undefined") bridge = createExtensionBridge({ getAuth: () => authForExtension() });
+  return bridge;
 }
