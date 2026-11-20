@@ -799,5 +799,77 @@ Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-
   shows; Card detail, Checkout, Explore, Home and "Your points" now use it,
   and a test fails if a screen formats its own.
 
-## Next (v7)
-Screenshots + the report, then stop.
+## v7 report (2026-11-20) — stopped here
+
+**Commits:** 06f53b8 restyle · e203c5e A · 0d789e3 B · 9c2019e C ·
+cb94581 D · e1c2ce0 E · 53287fc F · 7d9d527 G (+ this report).
+**Tests:** 77 files / 1,438 tests pass; build OK. (Under the post-crash
+load spikes the optimizer speed tests and two slow UI tests timed out once
+each; all pass on re-run.)
+
+**Screenshots** (gitignored), `screenshots/v7/final/`:
+- desktop 1440, every tab: `home`, `checkout`, `offers`, `lab`, `explore`,
+  `profile`;
+- desktop + phone (390): `styletile`, survey steps (`survey_Spending`,
+  `survey_Travel_…` with the strategy helper + lounge compare + bag
+  questions, `survey_Card_perks`, `survey_Fee_budget_…` with the ladder),
+  `labladder` (fee ladder beside the budget), `labcompare` (swap drawer),
+  `detail_altitude_connect` ("Why this card?" with the math open),
+  `travel` (Flights & hotels); desktop `travelhotel`.
+
+**Golden profiles, before v7 → after** (`npm run golden`):
+Before (048297c):
+```
+1 student $0: N +$36 · net $228 · fees $0 · discover-student, discover-student-chrome
+2 Costco family: N +$377 · net $761 · fees $95 · costco-citi, usb-altitude-go, bcp, freedom-flex
+3 foodie $400: N +$931 · net $1485 · fees $325 · amex-gold, wf-autograph
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1334 · net $1934 · fees $805 · delta-reserve, robinhood-gold, usb-altitude-connect, freedom-flex, usb-altitude-go, bcp
+5 ATL Delta, lounges no: N +$1145 · net $1745 · fees $305 · delta-gold, robinhood-gold, usb-altitude-connect, freedom-flex, usb-altitude-go, bcp
+Owner-like, from scratch: N +$2183 · net $2831 · fees $990 · hyatt, marriott-brilliant, delta-gold, marriott-boundless, freedom-flex, usb-altitude-go
+Owner-like, from wallet: N +$1144 · net $1793 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$819 · net $1468 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+After:
+```
+1 student $0: N +$0 · net $192 · fees $0 · discover-student
+2 Costco family: N +$265 · net $649 · fees $95 · costco-citi, bcp
+3 foodie $400: N +$893 · net $1447 · fees $325 · amex-gold
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1179 · net $1779 · fees $710 · delta-reserve, robinhood-gold, discover-it
+5 ATL Delta, lounges no: N +$914 · net $1514 · fees $210 · delta-gold, robinhood-gold, discover-it
+Owner-like, from scratch: N +$2143 · net $2792 · fees $990 · hyatt, delta-gold, marriott-brilliant, marriott-boundless, freedom-flex
+Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$854 · net $1503 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+Changes, with reasons (METHODOLOGY §5b, §7): the application hurdle drops
+narrow no-fee cards that add less than ~$100 a year (Altitude Go, Altitude
+Connect, Freedom Flex in the Delta profiles; the second student card);
+Delta at 1.15¢ and TakeOff 15 barely move the Delta lineups; Marriott at
+0.8¢ keeps the Marriott pair in the owner-like scratch setup.
+
+**The owner's recommendation** (profile from the brief: ATL, Delta + Hyatt +
+Marriott, some international, Amex Gold, Delta Gold, Freedom Unlimited +
+Flex, Robinhood Gold, $1,000 budget):
+- Held wallet: $1,503 a year (Score 40 → 55 with the plan).
+- From my wallet: **add Chase World of Hyatt** (+$319 a year vs a $75
+  application cost — Yes). Amex Gold: switch to Green (with no dining-perk
+  brands picked its credits count $0; picking Resy / Dunkin' / Uber in Card
+  perks changes that).
+- **Altitude Connect:** beside your cards +$144 ($62 earning at 4% on hotels
+  / flights / gas + $81 Priority Pass, 4 visits × $35 × 58% at ATL) − $75 =
+  +$69 (Yes on its own); in the plan with World of Hyatt it carries the 5/24
+  slot cost too (−$14) → **doesn't make the cut**. Its 5x Travel Center
+  bookings aren't counted (portal lanes on hold).
+- **Blue Cash Preferred:** +$5 (6% groceries is +$82 over the Gold, then
+  the $95 fee) − $75 → **No**.
+
+**On hold (owner):** portal earning lanes, automatic portal prices, the
+premium-cabin markup. The owner is collecting travel-portal data; the
+Flights & hotels ranker already takes typed portal prices per portal.
+
+**Unverified:** see Part A / B / F lists above (Amex pages, Venture X
+travel credit, Altitude Connect visit count, base-earn rates, Cash+ choice
+categories, macOS location on a real Mac).

@@ -81,5 +81,9 @@
 
 @media (max-width: 900px) {
   .v5 .lab-budget.has-ladder { grid-template-columns: 1fr; }
-  .v5 .slot-index { top: 56px; }
+  .v5 .slot-index { top: 56px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .v5 .slot-chip { flex: none; }
+  .v5 .cmp-head { min-width: 96px; }
+  .v5 .cmp-photo { width: 72px; }
+  .v5 .cmp th, .v5 .cmp td { padding: 8px 6px; }
 }
