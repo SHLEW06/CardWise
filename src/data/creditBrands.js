@@ -50,6 +50,8 @@ export const PERK_BRANDS = [
   { key: "nyt", label: "The New York Times", group: "streaming", pattern: /digital entertainment|new york times/i },
   { key: "wsj", label: "The Wall Street Journal", group: "streaming", pattern: /digital entertainment|wall street journal/i },
   { key: "clear", label: "CLEAR+", group: "travel", pattern: /\bclear\b/i },
+  /* v7 A5: asked as a travel extra (not a brand credit — see isBrandCredit). */
+  { key: "globalentry", label: "TSA PreCheck / Global Entry", group: "travel", pattern: /global entry|tsa|precheck|nexus/i },
   { key: "loungebuddy", label: "LoungeBuddy", group: "travel", pattern: /loungebuddy/i },
   { key: "avis", label: "Avis / Budget", group: "travel", pattern: /avis|budget/i },
   { key: "turo", label: "Turo", group: "travel", pattern: /\bturo\b/i },
@@ -98,6 +100,13 @@ export function brandsForCredit(credit) {
   return ALL.filter((b) => b.pattern.test(name)).map((b) => b.key);
 }
 
+/** "Would use if a card paid for it" picks (v7 A5b). */
+export const maybePerks = (profile) => new Set(profile?.brands?.perksMaybe || []);
+export const creditMaybe = (credit, profile) => {
+  const maybe = maybePerks(profile);
+  return brandsForCredit(credit).some((k) => maybe.has(k));
+};
+
 /** The person's perk picks, including v5 aliases. */
 export function pickedPerks(profile) {
   const out = new Set(profile?.brands?.perks || []);
@@ -114,6 +123,6 @@ export const creditPicked = (credit, profile) => {
     catalog pays for, grouped (§19 step 4). */
 export function perkBrandsInCatalog(cards) {
   const used = new Set();
-  for (const c of cards) for (const cr of c.credits || []) if (isBrandCredit(cr)) for (const k of brandsForCredit(cr)) used.add(k);
+  for (const c of cards) for (const cr of c.credits || []) if (isBrandCredit(cr) || (cr.kind === "membership" && TRAVEL_MEMBERSHIP.test(cr.name))) for (const k of brandsForCredit(cr)) used.add(k);
   return PERK_GROUPS.map((g) => ({ ...g, brands: ALL.filter((b) => b.group === g.key && used.has(b.key)) })).filter((g) => g.brands.length);
 }

@@ -17,13 +17,14 @@ math" is built from.
 
 | Symbol | What | Where it comes from |
 |---|---|---|
-| `s_c` | Spend per category per year (monthly answer × 12) | Survey step 2 (defaults: `SPEND_PRESETS.typical`) |
+| `s_c` | Spend per category per year — stored yearly (`spendYear`); each row is entered monthly or yearly (v7 A1; flights, hotels, vacation rentals default to yearly) | Survey step 2 (defaults: `SPEND_PRESETS.typical` × 12) |
 | `H` | Cards held | Step 1 |
 | `B` | Fee budget (all cards combined) | Step 5 |
-| `λ` | Lounge preference: Yes 1 · Sometimes ½ · No 0 | Step 3 |
+| `λ` | Lounges: most trips 1 · a few visits a year ½ · decide later ½ (until decided) · not at all 0 | Step 3 |
+| — | Cabin (economy / premium / business-first / mixed), how they book (direct / portal / whichever pays more), airline perks they'd use, bags per trip × share of trips with bags (v7 A2) | Step 3 |
 | — | Airlines + hotels picked; round trips/yr `T`; paid hotel nights/yr `n`; home airport | Step 3 (nights default `2T`; airport never defaulted) |
-| — | Perk brands picked | Step 4 (`data/creditBrands.js`) |
-| — | Credit score, cards opened in 24 months | Step 6 |
+| — | Perk brands: already pay for / use (`brands.perks`), would use if a card paid (`brands.perksMaybe`) | Step 4 (`data/creditBrands.js`) |
+| — | Credit score, cards opened in 24 months, big loan coming up (none / 12–24 months / within 12) | Step 6 |
 | `v_x(W)` | Value of one point of currency `x` in wallet `W` | §1 below |
 
 Categories: dining · groceries · warehouse clubs · gas (split by where they
@@ -114,19 +115,19 @@ category, then card id (deterministic).
 
 | Benefit | Usage |
 |---|---|
-| **Brand credits** (Uber, Dunkin', Resy, lululemon, Oura, Walmart+ …) | $0 unless one of the credit's brands was picked. Picked: annual **0.9** · semiannual **0.75** · quarterly **0.6** · monthly **0.5**; promo codes × 0.5. *Changed from v5's flat 0.8 picked / 0.2 unpicked: the cadence factors capture that monthly drips get forgotten; unpicked brands now count nothing.* |
+| **Brand credits** (Uber, Dunkin', Resy, lululemon, Oura, Walmart+ …) | $0 unless one of the credit's brands was picked. Picked: annual **0.9** · semiannual **0.75** · quarterly **0.6** · monthly **0.5**; promo codes × 0.5. **v7:** "Would use if a card paid for it" counts at **½** of that (`INTERESTED_FACTOR`, a modeling default: some adopted perks never get used). One brand counts **once per wallet** (dedupe key = the credit's first brand), so a new card isn't credited for an Uber credit the person already gets. *Changed from v5's flat 0.8 picked / 0.2 unpicked: the cadence factors capture that monthly drips get forgotten; unpicked brands now count nothing.* |
 | General credits (restaurants-anywhere, lifestyle, Bilt Cash) | by cadence, as above |
 | Broad travel credit (Sapphire Reserve $300) | 0.95 if they fly (0.6 if not) |
 | Portal / airline annual credits | v5 trip-based factors (portal 0.15 / 0.5 / 0.8; airline 0.1 / 0.5 / 0.75); an airline- or hotel-specific credit is $0 unless that brand was picked |
 | **Split travel credits** (two halves, quarterly pieces, minimum stays: The Edit, Fine Hotels + Resorts, Hilton Aspire resort + flight, IHG F&B …) | **$0 by default.** Count only if the brand/program was picked AND ≥ 4 paid hotel nights (≥ 2 trips for airline ones) AND they tapped "I'd plan around this" — then **0.6**. Shown behind "Why this counts as $0". |
 | Free night certificates | `pointCap × v_program × P(use)`; `P = 0.85` if the brand was picked and `n > 0`, else 0. Caps: Marriott 35k, Ritz 85k, Hyatt Cat 1–4 = 18k, IHG 40k; uncapped Hilton nights valued at an 80k-point redemption. Spend-gated certificates count only if the allocation in §2 puts that much on the card. |
-| Companion certificates | picked airline and ≥ 2 trips: `0.6 × face × min(1, T/3)` |
+| Companion certificates | picked airline and ≥ 2 trips: `0.6 × face × min(1, T/3)`; $0 if they answered airline perks without "Companion fare" |
 | **Lounges** | `visits = 2T × λ`, per network: `visits × $35 × coverage(network, home airport)`, capped at that network's own visit / pass limit (read only from its label — e.g. Altitude Connect Priority Pass 4 visits, Delta Reserve 15 and Platinum 10 Sky Club visits, Strata Elite / AA Globe 4 Admirals passes; a Priority Pass *membership* never inherits another network's pass count) and at $469 (Priority Pass Select retail). Chase Sapphire Lounges left Priority Pass on Aug 15 2026: only cards that list them (Sapphire Reserve, Ritz-Carlton) count them. Airline clubs only for a picked airline. Coverage: where we know a network's lounges at that airport (`LOUNGE_SITES`; ATL so far), coverage = practicality: 1 if one is in a concourse they fly from; if all are in the international concourses, `intlShare + (1 − intlShare) × 0.4` (airside detour; 0.1 if behind another checkpoint), with `intlShare` from the survey ("How many of those trips are international?" None 0 / Some 0.3 / Most 0.8; default 0). Otherwise: Centurion / Sapphire / Capital One lounges by airport list (to verify); Priority Pass by airport size, ½ at a fortress hub (one airline ≥ 60%); airline clubs 1 at a hub, 0.8 where dominant, else 0.3–0.6; unknown airport 0.5. Wallet: best network + 15% of each other one, capped. |
-| Checked bags | picked airline: $35 × bags × 2T, once per airline |
+| Checked bags | picked airline: $35 × min(card's free bags, bags per trip) × 2 ways × T × share of trips with bags, once per airline. Not asked → 1 bag every trip (v6). $0 if they answered airline perks without "Free checked bags". |
 | Elite status | picked brand: $50–150 by tier |
 | Anniversary points | points × `v` |
 | Protections | cell phone $20; trip delay/cancellation $25 and primary rental $15 if they fly — once each per wallet |
-| Global Entry / TSA, CLEAR | once per wallet |
+| Global Entry / TSA, CLEAR | **v7:** asked under "Travel extras" — counted (0.9 of face) only if picked, ½ of that if "would use"; once per wallet |
 
 ## 4. Fees `F(W)`
 
@@ -204,6 +205,28 @@ a 3% card = $388 net; Sapphire Reserve 8x at 1.6¢ = 12.8% →
 `P* = 388 / 0.872 ≈ $445`. Pay with points at the "up to" value: points =
 `P / upTo`; compared with keeping them at `v`; flagged "Points Boost only
 applies to select bookings".
+
+## 6b. Fee ladder and loyalty strategies (v7 Part A)
+
+**Fee ladder** (`plans.js feeLadder`): `W*(B)` for B = $0, $250, $500,
+$1,000, $1,500. Per rung: net `E + U − F`, the cards, total fees, and the
+extra net per extra fee dollar over the rung below,
+`(net_B − net_prev) / (F_B − F_prev)`. **Returns flatten** at the first rung
+whose next rung adds less than **$50 a year** (`FLAT_GAIN`, modeling
+default). The same ladder is in the survey ("Whatever gives me the most
+back") and Wallet Lab.
+
+**Loyalty strategies** (`plans.js loyaltyStrategies`): candidate airlines =
+the home airport's hub airlines (strongest first, `airports.js
+hubAirlines`), then any picked; fallback United / American / Delta.
+Candidate hotels = picked programs, then Hyatt, Marriott, Hilton, IHG (top
+3). Each (airline × hotel) pair — plus "several programs" (hub airline + the
+two strongest hotel options) when the person stays ≥ 10 nights or flies
+abroad (≥ "Some") — is run through `W*(B)` with exactly those programs
+picked; ranked by `N`, identical wallets dropped, top 3 shown (the
+several-programs one always shown when it applies). The flexible currencies
+that feed each strategy are listed with their ratio (Chase → Hyatt 1:1 only
+with the Sapphire Reserve, 4:3 with Preferred / Ink).
 
 ## 7. Golden profiles (tests)
 

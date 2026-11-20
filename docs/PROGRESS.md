@@ -531,7 +531,8 @@ rendered-face setting for launch.
 |---|---|
 | 0. Style tile | done; reviewed 2026-11-20 ("go" + 3 changes, done in 048297c) |
 | Restyle | done — app on §9.11 |
-| A–G | in progress, in order |
+| A. Survey | done |
+| B–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -595,5 +596,43 @@ rendered-face setting for launch.
   right after the crash/reboot; the same file passed 46/46 earlier in the
   session. Build OK.
 
+## Part A — survey changes (2026-11-20)
+
+- **A1 spend:** every row has Monthly / Yearly; Yearly is where you type a
+  total for the year. Stored yearly (`profile.spendYear`); `spend` stays as
+  the monthly view (yearly ÷ 12) for older readers, and an older writer that
+  edits monthly still wins (normalizeProfile checks the two agree within $1).
+  Flights, hotels, vacation rentals default to yearly. Rentals row renamed
+  "Vacation rentals (Airbnb, Vrbo)" with the FHR / The Edit note.
+- **A2 travel:** cabin, how you book, airline perks (bags → bags per trip
+  and share of trips with bags; boarding; companion; upgrades). Bags and
+  companion values use the answers; priority boarding and upgrades are
+  recorded, not valued (no verified $ value). Cabin + booking are stored for
+  portal lanes / cabin markup — **on hold** per the owner's decision.
+- **A3 hotels:** "Not sure — help me choose" added; Independent kept.
+- **A4 strategy helper** (`engine/v5/plans.js`): hub airlines × hotel
+  programs (+ a several-programs option) through the optimizer; 2–3 named
+  strategies with net value and the flexible points that feed them; "Use
+  this strategy" picks the programs.
+- **A5 perks:** three sections — already use / would use if a card paid
+  (½ value, `INTERESTED_FACTOR`) / your cards already give you (from
+  cardsHeld). One brand's perk counts once per wallet. TSA PreCheck /
+  Global Entry is now a "Travel extras" pick (was automatic for flyers).
+- **A6 lounges:** Not at all / A few visits / Most trips / Decide later
+  (valued like a few visits; shows the best wallet with and without lounges
+  side by side) + a one-line network explainer.
+- **A7 fee ladder** (`<FeeLadder>`): $0–$1,500 rungs, chart of net against
+  fees with "returns flatten" marked, table with cards and extra net per
+  extra fee dollar; picking a rung sets the budget.
+- **A8 big loans:** in the credit step; feeds Part C.
+- Tests: `v7PartA.test.jsx` (21) + updated survey tests. Full suite 1,393 /
+  1,393. METHODOLOGY: inputs, §3 rows, new §6b.
+
+### Unverified / found (Part A)
+- Venture X has no Global Entry / TSA credit in our data (Capital One lists
+  one) — for the Part B audit.
+- Bilt's partner list here has no American Airlines (the brief's example
+  says Bilt → American) — for the Part B audit.
+
 ## Next (v7)
-Parts A → G in order, committing after each.
+Parts B → G in order, committing after each.

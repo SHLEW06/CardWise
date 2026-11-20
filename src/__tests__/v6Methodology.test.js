@@ -178,7 +178,7 @@ describe("benefits U(W)", () => {
     expect(v(P({ travel: { trips: 4, lounges: "yes", homeAirport: "BDL" } }))).toBeLessThan(v(yes));
   });
   it("lounge access, Global Entry and CLEAR count once per wallet; a second lounge network adds a little", () => {
-    const p = P({ travel: { trips: 6, lounges: "yes", homeAirport: "LGA" }, brands: { perks: ["clear"] } });
+    const p = P({ travel: { trips: 6, lounges: "yes", homeAirport: "LGA" }, brands: { perks: ["clear", "globalentry"] } });
     const one = walletValue(["csr"], p);
     const two = walletValue(["csr", "venture-x"], p);
     const ge = two.benefits.filter((b) => /Global Entry/.test(b.label));

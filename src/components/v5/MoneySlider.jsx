@@ -38,7 +38,7 @@ export default function MoneySlider({ label, value = 0, onChange, max = 2000, st
           inputMode="numeric"
           enterKeyHint="done"
           autoComplete="off"
-          aria-label={`${label}${suffix === "/mo" ? " per month" : ""}, in dollars`}
+          aria-label={`${label}${suffix === "/mo" ? " per month" : suffix === "/yr" ? ", yearly total" : ""}, in dollars`}
           value={draft}
           onFocus={(e) => { setEditing(true); e.target.select?.(); }}
           onChange={(e) => setDraft(e.target.value)}
@@ -56,7 +56,7 @@ export default function MoneySlider({ label, value = 0, onChange, max = 2000, st
         step={step}
         value={Math.min(value, max)}
         onChange={(e) => onChange?.(Number(e.target.value))}
-        aria-valuetext={`$${fmt(value)}${suffix === "/mo" ? " a month" : ""}`}
+        aria-valuetext={`$${fmt(value)}${suffix === "/mo" ? " a month" : suffix === "/yr" ? " a year" : ""}`}
         style={{ "--fill": `${(Math.min(value, max) / max) * 100}%` }}
       />
       {(yearly || hint) && (

@@ -13,9 +13,13 @@ import { AIRPORTS } from "../../../data/airports.js";
 import {
   MOST_HELD, SPEND_ROWS, SPEND_GROUPS, SPEND_MAX, SPEND_STEP, RENT_MAX, GAS_AT, WAREHOUSE_CLUBS, STORES,
   FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
+  LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS,
 } from "../../../data/surveyOptions.js";
-import { perkBrandsInCatalog } from "../../../data/creditBrands.js";
-import { SPEND_PRESETS, SCORE_BUCKETS } from "../../../engine/profileDefaults.js";
+import { perkBrandsInCatalog, brandsForCredit, isBrandCredit, PERK_BY_KEY } from "../../../data/creditBrands.js";
+import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
+import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend } from "../../../engine/profileDefaults.js";
+import { loyaltyStrategies, applyStrategy } from "../../../engine/v5/plans.js";
+import { optimalWallet } from "../../../engine/v5/methodology.js";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
 import { walletScore } from "../../../engine/v5/methodology.js";
 import { applyTimeline, monthLabel } from "../../../engine/v5/lab.js";
@@ -127,13 +131,13 @@ function Step({ id, d, set, mode, headRef }) {
     case "cards": return <CardsStep d={d} set={set} headRef={headRef} />;
     case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "travel": return <TravelStep d={d} set={set} mode={mode} headRef={headRef} />;
-    case "brands": return <BrandsStep d={d} set={set} headRef={headRef} />;
+    case "brands": return <PerksStep d={d} set={set} headRef={headRef} />;
     case "fee":
       return (
         <>
           <Head headRef={headRef} title="Most you'd pay in yearly card fees, all cards combined."
             sub="Some cards charge a yearly fee but give back more in benefits. We'll find the best setup within this." />
-          <FeeBudget value={d.feeBudget} onChange={(feeBudget) => set({ feeBudget })} />
+          <FeeBudget value={d.feeBudget} onChange={(feeBudget) => set({ feeBudget })} profile={d} />
           <fieldset className="survey-group">
             <legend className="t-h3">Memberships you already pay for <span className="t-caption">(optional)</span></legend>
             <p className="t-caption">Some cards only work with a paid membership. If you already have it, it won't count against your fee budget.</p>
@@ -226,12 +230,16 @@ const fmt = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 function SpendStep({ d, set, mode, headRef }) {
   const [more, setMore] = useState(mode === "thorough");
   const rows = SPEND_ROWS.filter((r) => more || r.quick);
-  const setRow = (k, n) => set({ spend: { ...d.spend, [k]: n } });
-  const preset = (k) => set({ spend: { ...SPEND_PRESETS[k], flights: d.spend.flights, hotels: d.spend.hotels, rentals: d.spend.rentals, rent: d.spend.rent } });
-  const monthly = Object.values(d.spend).reduce((t, v) => t + v, 0);
+  /* Presets fill everyday rows only; travel rows and rent keep their answers. */
+  const preset = (k) => {
+    const { flights, hotels, rentals, rent, ...everyday } = SPEND_PRESETS[k];
+    set(withMonthlySpend(d, everyday));
+  };
+  const yearly = Object.values(d.spendYear || {}).reduce((t, v) => t + v, 0);
+  const monthly = yearly / 12;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Spending" title="What do you spend each month?" sub="Rough numbers are fine. Drag, or type an amount." />
+      <Head headRef={headRef} eyebrow="Spending" title="What do you spend?" sub="Rough numbers are fine. Each row can be monthly or yearly — use Yearly to type a total for the year if your costs vary." />
       <div className="spend-presets">
         <div className="chip-wrap" role="group" aria-label="Start from">
           {[["light", "Light"], ["typical", "Typical"], ["heavy", "Heavy"]].map(([k, l]) => (
@@ -247,10 +255,7 @@ function SpendStep({ d, set, mode, headRef }) {
           <fieldset key={g.key} className="survey-group">
             <legend className="t-h3">{g.label}</legend>
             <div className="spend-rows">
-              {rs.map((r) => (
-                <MoneySlider key={r.key} label={r.label} value={d.spend[r.key]} max={r.key === "rent" ? RENT_MAX : SPEND_MAX} step={r.key === "rent" ? 50 : SPEND_STEP} suffix="/mo" yearly hint={r.hint}
-                  onChange={(n) => setRow(r.key, n)} />
-              ))}
+              {rs.map((r) => <SpendRow key={r.key} row={r} d={d} set={set} />)}
             </div>
           </fieldset>
         );
@@ -283,6 +288,30 @@ function SpendStep({ d, set, mode, headRef }) {
         </fieldset>
       )}
     </>
+  );
+}
+
+/** One spend row: Monthly / Yearly toggle, a typed $ field in that unit,
+    and a slider. Stored yearly either way (v7 A1). */
+export function SpendRow({ row, d, set }) {
+  const k = row.key;
+  const unit = d.spendUnits?.[k] || "month";
+  const y = d.spendYear?.[k] ?? (d.spend[k] || 0) * 12;
+  const shown = unit === "year" ? Math.round(y) : Math.round(y / 12);
+  const max = (k === "rent" ? RENT_MAX : SPEND_MAX) * (unit === "year" ? 12 : 1);
+  const step = unit === "year" ? (k === "rent" ? 600 : 100) : k === "rent" ? 50 : SPEND_STEP;
+  const other = unit === "year" ? `≈ ${fmt(y / 12)} a month` : `${fmt(y)} a year`;
+  return (
+    <div className="spend-unit-row" data-row={k}>
+      <MoneySlider label={row.label} value={shown} max={max} step={step} suffix={unit === "year" ? "/yr" : "/mo"}
+        hint={row.hint ? `${other} · ${row.hint}` : other}
+        onChange={(n) => set(withSpendYear(d, k, unit === "year" ? n : n * 12))} />
+      <div className="unit-seg" role="radiogroup" aria-label={`${row.label}: monthly or yearly`}>
+        {[["month", "Monthly"], ["year", "Yearly"]].map(([u, l]) => (
+          <button key={u} type="button" role="radio" aria-checked={unit === u} onClick={() => set({ spendUnits: { ...d.spendUnits, [k]: u } })}>{l}</button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -364,10 +393,26 @@ function TravelStep({ d, set, mode, headRef }) {
             <p className="t-caption">Some airports keep their lounges in the international terminal.</p>
           </fieldset>
           <fieldset className="survey-group">
-            <legend className="t-h3" id="q-lounge">Do airport lounges matter to you?</legend>
+            <legend className="t-h3" id="q-cabin">Cabin you usually fly</legend>
+            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-cabin">
+              {CABIN_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.cabin === o.key} onSelect={() => setTravel({ cabin: o.key })}>{o.label}</Choice>)}
+            </div>
+          </fieldset>
+          <fieldset className="survey-group">
+            <legend className="t-h3" id="q-book">How you book flights and hotels</legend>
+            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-book">
+              {BOOKING_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.booking === o.key} onSelect={() => setTravel({ booking: o.key })}>{o.label}</Choice>)}
+            </div>
+            <p className="t-caption">A card's travel site can earn more points, but premium cabins there often cost more than booking direct.</p>
+          </fieldset>
+          <AirlinePerks t={t} setTravel={setTravel} />
+          <fieldset className="survey-group">
+            <legend className="t-h3" id="q-lounge">How much do airport lounges matter?</legend>
+            <p className="network-note">{LOUNGE_NETWORKS_NOTE}</p>
             <div className="choice-stack" role="radiogroup" aria-labelledby="q-lounge">
               {LOUNGE_OPTIONS.map((o) => <Choice key={o.key} radio selected={t.lounges === o.key} sub={o.sub} onSelect={() => setTravel({ lounges: o.key })}>{o.label}</Choice>)}
             </div>
+            {t.lounges === "later" && <LoungeCompare d={d} />}
           </fieldset>
         </>
       )}
@@ -390,27 +435,160 @@ function TravelStep({ d, set, mode, headRef }) {
       <fieldset className="survey-group">
         <legend className="t-h3">Hotel brands</legend>
         <ToggleChips options={HOTEL_BRANDS} picked={d.brands.hotels} onChange={(hotels) => set({ brands: { ...d.brands, hotels } })} label="Hotel brands" />
+        <p className="t-caption">"Independent / whatever's cheapest" means no hotel loyalty: we pick the best value per stay.</p>
       </fieldset>
+      <StrategyHelper d={d} set={set} open={d.brands.hotels.includes("unsure")} />
     </>
   );
 }
 
-/* ── Step 4: perk brands ─────────────────────────────────────────────── */
+/* v7 A2: airline perks you'd use; bags asks how many and how often. */
+function AirlinePerks({ t, setTravel }) {
+  const picked = t.airlinePerks || [];
+  const bags = t.bags || { perTrip: 1, share: 1 };
+  return (
+    <fieldset className="survey-group">
+      <legend className="t-h3">Airline perks you'd use</legend>
+      <ToggleChips options={AIRLINE_PERK_OPTIONS} picked={picked} label="Airline perks you'd use"
+        onChange={(airlinePerks) => setTravel({ airlinePerks, ...(airlinePerks.includes("bags") && !t.bags ? { bags } : {}) })} />
+      {picked.includes("bags") && (
+        <div className="sub-q">
+          <span className="t-caption" id="q-bags">Bags you check per trip</span>
+          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-bags">
+            {BAGS_PER_TRIP.map((o) => <Choice key={o.key} radio pill selected={bags.perTrip === o.key} onSelect={() => setTravel({ bags: { ...bags, perTrip: o.key } })}>{o.label}</Choice>)}
+          </div>
+          <span className="t-caption" id="q-bagtrips">Trips where you check a bag</span>
+          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-bagtrips">
+            {TRIPS_WITH_BAGS.map((o) => <Choice key={o.key} radio pill selected={bags.share === o.key} onSelect={() => setTravel({ bags: { ...bags, share: o.key } })}>{o.label}</Choice>)}
+          </div>
+        </div>
+      )}
+    </fieldset>
+  );
+}
+
+/* v7 A6 "Decide later": the best wallet with lounge access and without it. */
+function LoungeCompare({ d }) {
+  const two = useMemo(() => [
+    { key: "yes", title: "With lounges (most trips)", r: optimalWallet({ ...d, travel: { ...d.travel, lounges: "yes" } }) },
+    { key: "no", title: "Without lounges", r: optimalWallet({ ...d, travel: { ...d.travel, lounges: "no" } }) },
+  ], [d]);
+  return (
+    <div className="compare-two" data-testid="lounge-compare">
+      {two.map(({ key, title, r }) => (
+        <div key={key}>
+          <span className="t-eyebrow">{title}</span>
+          <span className="t-h3">{fmt(r.value.net)} a year</span>
+          <div className="compare-faces">{r.wallet.map((id) => <CardFace key={id} card={BY_ID[id]} />)}</div>
+          <span className="t-caption">{r.wallet.map((id) => cardDisplayName(BY_ID[id])).join(", ")} · {fmt(r.value.F)} in fees</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* v7 A4: loyalty strategy helper — 2–3 named airline + hotel strategies
+   with their net value; "Use this" picks those programs. */
+export function StrategyHelper({ d, set, open: startOpen = false }) {
+  const [open, setOpen] = useState(startOpen);
+  useEffect(() => { if (startOpen) setOpen(true); }, [startOpen]);
+  const list = useMemo(() => (open ? loyaltyStrategies(d) : []), [open, d]);
+  if (!open) {
+    return (
+      <div className="helper-cta">
+        <button type="button" className="btn btn-quiet btn-small" onClick={() => setOpen(true)}>Not sure which airline or hotel program? Help me pick</button>
+      </div>
+    );
+  }
+  const isOn = (st) => st.airlines.every((a) => d.brands.airlines.includes(a)) && st.hotels.every((h) => d.brands.hotels.includes(h)) && !d.brands.hotels.includes("unsure");
+  return (
+    <section className="helper" aria-labelledby="helper-h" data-testid="strategy-helper">
+      <div>
+        <h2 className="t-h3" id="helper-h">Pick a loyalty strategy</h2>
+        <p className="t-caption">From your home airport, trips and hotel nights: one airline and one hotel program (or a few, if you travel a lot), and the flexible points that feed them. Each is valued at your fee budget.</p>
+      </div>
+      <ul className="helper-list">
+        {list.map((st) => (
+          <li key={st.key} className={`strategy${isOn(st) ? " is-on" : ""}`}>
+            <span className="strategy-name">{st.label}</span>
+            <span className="strategy-net t-value">{fmt(st.net)} a year</span>
+            <p className="t-caption">{st.sentence}</p>
+            <div className="strategy-cards">{st.wallet.map((id) => <span key={id} className="tag">{cardDisplayName(BY_ID[id])}</span>)}</div>
+            <button type="button" className="btn btn-quiet btn-small" aria-pressed={isOn(st)} onClick={() => set(applyStrategy(d, st))}>{isOn(st) ? "Using this" : "Use this strategy"}</button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/* ── Step 4: perks (v7 A5) — three sections, still card perks ──────── */
 
 const PERK_GROUPS_IN_CATALOG = perkBrandsInCatalog(CARDS);
 
-function BrandsStep({ d, set, headRef }) {
-  const picked = d.brands.perks;
+/** Perks the cards they hold already pay for (brand credits + Global Entry). */
+export function perksFromHeld(cardsHeld) {
+  const out = [];
+  for (const id of cardsHeld) {
+    const c = BY_ID[id];
+    for (const cr of c?.credits || []) {
+      const travel = cr.kind === "membership" && TRAVEL_MEMBERSHIP.test(cr.name);
+      if (!isBrandCredit(cr) && !travel) continue;
+      const brands = brandsForCredit(cr);
+      if (!brands.length) continue;
+      out.push({ cardId: id, credit: cr.name, annual: cr.annual, brands, label: PERK_BY_KEY[brands[0]]?.label || cr.name });
+    }
+  }
+  return out;
+}
+
+function PerksStep({ d, set, headRef }) {
+  const use = d.brands.perks;
+  const maybe = d.brands.perksMaybe || [];
+  const have = useMemo(() => perksFromHeld(d.cardsHeld), [d.cardsHeld]);
+  const setUse = (perks) => set({ brands: { ...d.brands, perks, perksMaybe: maybe.filter((k) => !perks.includes(k)) } });
+  const setMaybe = (perksMaybe) => set({ brands: { ...d.brands, perksMaybe, perks: use.filter((k) => !perksMaybe.includes(k)) } });
   return (
     <>
-      <Head headRef={headRef} eyebrow="Brands" title="Brands you already use: perks some cards pay for"
-        sub="Some cards give statement credits at these brands. Pick the ones you already use. These are card perks, not point redemptions." />
-      {PERK_GROUPS_IN_CATALOG.map((g) => (
-        <fieldset key={g.key} className="survey-group">
-          <legend className="t-h3">{g.label}</legend>
-          <ToggleChips options={g.brands} picked={picked} onChange={(perks) => set({ brands: { ...d.brands, perks } })} label={g.label} />
-        </fieldset>
-      ))}
+      <Head headRef={headRef} eyebrow="Card perks" title="Perks some cards pay for"
+        sub="Statement credits and memberships cards include. These are card perks, not point redemptions." />
+      <section className="perk-section" aria-labelledby="perks-a">
+        <h2 className="t-h3" id="perks-a">Already pay for or use</h2>
+        <p className="t-caption">Counted at full value when a card pays for them.</p>
+        {PERK_GROUPS_IN_CATALOG.map((g) => (
+          <fieldset key={g.key} className="survey-group">
+            <legend className="t-caption">{g.label}</legend>
+            <ToggleChips options={g.brands} picked={use} onChange={setUse} label={`${g.label}: already use`} />
+          </fieldset>
+        ))}
+      </section>
+      <section className="perk-section" aria-labelledby="perks-b">
+        <h2 className="t-h3" id="perks-b">Would use if a card paid for it</h2>
+        <p className="t-caption">Things you don't pay for today but would use if they came free. Counted at half value, since some never get used.</p>
+        {PERK_GROUPS_IN_CATALOG.map((g) => (
+          <fieldset key={g.key} className="survey-group">
+            <legend className="t-caption">{g.label}</legend>
+            <ToggleChips options={g.brands.filter((b) => !use.includes(b.key))} picked={maybe} onChange={setMaybe} label={`${g.label}: would use`} />
+          </fieldset>
+        ))}
+      </section>
+      <section className="perk-section" aria-labelledby="perks-c">
+        <h2 className="t-h3" id="perks-c">Your cards already give you</h2>
+        {have.length ? (
+          <>
+            <p className="t-caption">A new card isn't credited for a perk you already get.</p>
+            <ul className="have-list">
+              {have.map((h) => (
+                <li key={`${h.cardId}-${h.credit}`}>
+                  <span>{h.label}</span>
+                  <span className="t-caption">{fmt(h.annual)} a year</span>
+                  <span className="t-caption">{cardDisplayName(BY_ID[h.cardId])} · {h.credit}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : <p className="t-caption">{d.cardsHeld.length ? "None of your cards pay for these perks." : "Add your cards in step 1 to see the perks they already include."}</p>}
+      </section>
     </>
   );
 }
@@ -440,6 +618,13 @@ function CreditStep({ d, set, headRef }) {
           {NEW_CARD_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={Math.min(5, c.newCards24mo) === o.key} onSelect={() => setCredit({ newCards24mo: o.key })}>{o.label}</Choice>)}
         </div>
         <p className="t-caption">Chase usually declines anyone with 5 or more new cards in 24 months.</p>
+      </fieldset>
+      <fieldset className="survey-group">
+        <legend className="t-h3" id="q-loan">Planning a mortgage, car loan or other big loan in the next 24 months?</legend>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-loan">
+          {LOAN_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={(c.loan || "none") === o.key} onSelect={() => setCredit({ loan: o.key })}>{o.label}</Choice>)}
+        </div>
+        <p className="t-caption">A new card's hard inquiry and younger average account age can nudge a loan rate up. Within 12 months, we hold new cards until after the loan.</p>
       </fieldset>
       <fieldset className="survey-group">
         <legend className="t-h3">Amex cards you've ever had</legend>

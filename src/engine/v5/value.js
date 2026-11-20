@@ -17,13 +17,13 @@ import {
   CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP,
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
-  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS,
+  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS, INTERESTED_FACTOR,
 } from "../../data/benefitUsage.js";
 import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
 import { pctBack, BANK_CURRENCIES } from "./valuation.js";
 import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
-import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, PERK_BY_KEY } from "../../data/creditBrands.js";
+import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -309,16 +309,19 @@ export function creditUsage(card, credit, profile) {
   const cad = credit.cadence || "annual";
   if (isBrandCredit(credit)) {
     const brands = brandsForCredit(credit);
-    if (!creditPicked(credit, profile)) {
-      const label = PERK_BY_KEY[brands[0]]?.label || "that brand";
-      return { factor: 0, reason: `You didn't pick ${label}`, brands };
-    }
     const f = (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * (credit.kind === "promo" ? PROMO_FACTOR : 1);
-    return { factor: f, reason: null, brands };
+    if (creditPicked(credit, profile)) return { factor: f, reason: null, brands, perk: "use" };
+    /* v7 A5b: "would use if a card paid for it" counts at a lower factor. */
+    if (creditMaybe(credit, profile)) return { factor: f * INTERESTED_FACTOR, reason: null, brands, perk: "maybe" };
+    const label = PERK_BY_KEY[brands[0]]?.label || "that brand";
+    return { factor: 0, reason: `You didn't pick ${label}`, brands };
   }
   if (isGeneralCredit(credit)) return { factor: BRAND_CREDIT_CADENCE[cad] ?? 0.9, reason: null, brands: [] };
   if (credit.kind === "membership" && TRAVEL_MEMBERSHIP.test(credit.name)) {
-    return trips > 0 ? { factor: 0.9, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You don't fly", dedupe: "globalEntry" };
+    /* v7 A5: TSA PreCheck / Global Entry / NEXUS is a "Travel extras" pick. */
+    if (!trips) return { factor: 0, reason: "You don't fly", dedupe: "globalEntry" };
+    const pick = profile.brands.perks.includes("globalentry") ? 1 : profile.brands.perksMaybe.includes("globalentry") ? INTERESTED_FACTOR : 0;
+    return pick ? { factor: 0.9 * pick, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You didn't pick TSA PreCheck / Global Entry", dedupe: "globalEntry" };
   }
   if (isSplitCredit(credit)) {
     const brand = travelBrandOf(card, credit);
@@ -347,6 +350,19 @@ export function creditUsage(card, credit, profile) {
   }
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
+}
+
+/** Free checked bags $ a year (v7 A2): fee × min(card's bags, bags per trip)
+    × 2 ways × trips × share of trips with bags. Not asked → 1 bag, every trip. */
+export function bagValue(card, profile) {
+  const b = card.checkedBagBenefits;
+  if (!b) return 0;
+  const free = b.bags || 1;
+  const ans = profile.travel.bags;
+  const perks = profile.travel.airlinePerks;
+  if (perks && !perks.includes("bags")) return 0;
+  const used = ans ? Math.min(free, ans.perTrip) * ans.share : free;
+  return BAG_FEE * used * profile.travel.trips * 2;
 }
 
 /** Lounge value per network for this card: { [networkKey]: $ }. */
@@ -442,7 +458,10 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     const u = creditUsage(card, c, profile);
     const id = creditId(card, c);
     const value = Math.round(c.annual * u.factor);
-    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", dedupe: u.dedupe || (brandsForCredit(c).includes("clear") ? "clear" : null), split: !!u.split });
+    /* v7 A5c: one brand's perk counts once per wallet (a new card isn't
+       credited for an Uber credit the person already gets). */
+    const perkKey = u.brands?.length ? `perk:${u.brands[0]}` : null;
+    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", dedupe: u.dedupe || (brandsForCredit(c).includes("clear") ? "clear" : perkKey), split: !!u.split, perk: u.perk || null });
     else unused.push({ id, label: c.name, face: c.annual, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
 
@@ -456,12 +475,14 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     else unused.push({ id, label: n.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : !nights ? "You don't stay in hotels" : `Needs $${n.spend.toLocaleString("en-US")} a year on this card` });
   }
 
+  const perks = profile.travel.airlinePerks;     // null = not asked (v6 behaviour)
   for (const cc of card.companionCertificates || []) {
     const face = cc.estValue || 0;
-    const ok = pickedCardBrand && trips >= 2 && reachable(cc.spend);
+    const wantsCompanion = !perks || perks.includes("companion");
+    const ok = pickedCardBrand && trips >= 2 && reachable(cc.spend) && wantsCompanion;
     const id = `${card.id}#companion-${slug(cc.name)}`;
     if (ok) items.push({ id, label: cc.name, face, value: Math.round(face * COMPANION_P_USE * Math.min(1, trips / 3)), kind: "companion" });
-    else unused.push({ id, label: cc.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : trips < 2 ? "Needs 2+ trips a year" : `Needs $${(cc.spend || 0).toLocaleString("en-US")} a year on this card` });
+    else unused.push({ id, label: cc.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : trips < 2 ? "Needs 2+ trips a year" : !wantsCompanion ? "You didn't pick companion fares" : `Needs $${(cc.spend || 0).toLocaleString("en-US")} a year on this card` });
   }
 
   const networks = loungeNetworks(card, profile);
@@ -471,7 +492,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
 
   const bags = card.checkedBagBenefits;
   if (bags && brand && AIRLINE_CURRENCIES.has(brand)) {
-    const v = BAG_FEE * (bags.bags || 1) * trips * 2;
+    const v = bagValue(card, profile);
     /* Two cards from the same airline don't waive two sets of bag fees. */
     if (pickedCardBrand && v > 0) items.push({ id: `${card.id}#bags`, label: `Free checked bag${(bags.bags || 1) > 1 ? "s" : ""}`, face: v, value: Math.round(v), kind: "bags", dedupe: `bags:${brand}` });
     else unused.push({ id: `${card.id}#bags`, label: "Free checked bags", face: 0, reason: pickedCardBrand ? "You don't fly" : `You didn't pick ${brand}` });

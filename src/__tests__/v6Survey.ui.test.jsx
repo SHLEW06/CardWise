@@ -10,6 +10,7 @@ import { STEP_DEFS, stepsFor } from "../state/surveyAnswers.js";
 import { loadV5Record, saveV5Profile, loadV5Profile } from "../state/v5Profile.js";
 import { AIRLINE_KEYS, TRANSFER_AIRLINES, HOTEL_BRANDS, SPEND_ROWS } from "../data/surveyOptions.js";
 import { CARDS } from "../data/cards/index.js";
+import { defaultSpendUnit } from "../engine/profileDefaults.js";
 import { LOYALTY } from "../data/programs.js";
 
 afterEach(cleanup);
@@ -67,7 +68,11 @@ describe("1 · cards", () => {
 describe("2 · spending", () => {
   it("every row has a slider and a typed $ field; yearly shown; Costco separate from groceries", () => {
     render(<Survey initialMode="thorough" initialStepId="spend" editOnly={false} />);
-    for (const r of SPEND_ROWS) expect(screen.getByLabelText(`${r.label} per month, in dollars`)).toHaveAttribute("inputmode", "numeric");
+    /* v7 A1: flights, hotels and vacation rentals default to yearly. */
+    for (const r of SPEND_ROWS) {
+      const name = defaultSpendUnit(r.key) === "year" ? `${r.label}, yearly total, in dollars` : `${r.label} per month, in dollars`;
+      expect(screen.getByLabelText(name)).toHaveAttribute("inputmode", "numeric");
+    }
     expect(screen.getByText(/Warehouse clubs don't count as groceries/)).toBeInTheDocument();
     const dining = screen.getByLabelText("Dining out per month, in dollars");
     fireEvent.focus(dining);
@@ -78,6 +83,25 @@ describe("2 · spending", () => {
     cont();
     expect(loadV5Profile()).toMatchObject({ gasAt: "costco" });
     expect(loadV5Profile().spend.dining).toBe(4000);
+    expect(loadV5Profile().spendYear.dining).toBe(48000);
+  });
+  it("v7: any row switches Monthly / Yearly; a typed yearly total is stored yearly", () => {
+    render(<Survey initialMode="thorough" initialStepId="spend" />);
+    expect(screen.getByText("Vacation rentals (Airbnb, Vrbo)")).toBeInTheDocument();
+    expect(screen.getByText(/Not Fine Hotels \+ Resorts or The Edit/)).toBeInTheDocument();
+    const seg = screen.getByRole("radiogroup", { name: "Groceries (supermarkets): monthly or yearly" });
+    fireEvent.click(within(seg).getByRole("radio", { name: "Yearly" }));
+    const f = screen.getByLabelText("Groceries (supermarkets), yearly total, in dollars");
+    fireEvent.focus(f);
+    fireEvent.change(f, { target: { value: "7,250" } });
+    fireEvent.blur(f);
+    expect(screen.getByText(/≈ \$604 a month/)).toBeInTheDocument();
+    cont();
+    const p = loadV5Profile();
+    expect(p.spendYear.groceries).toBe(7250);
+    expect(p.spend.groceries).toBeCloseTo(7250 / 12, 6);
+    expect(p.spendUnits.groceries).toBe("year");
+    expect(p.spendUnits.flights).toBe("year");
   });
   it("Quick shows the main rows with 'More categories'", () => {
     render(<Survey initialMode="quick" />);
@@ -89,13 +113,15 @@ describe("2 · spending", () => {
 });
 
 describe("3 · travel", () => {
-  it("home airport typeahead works by code or city; lounge Yes / Sometimes / No", () => {
+  it("home airport typeahead works by code or city; how much lounges matter", () => {
     render(<Survey initialMode="quick" initialStepId="travel" />);
     fireEvent.click(screen.getByRole("radio", { name: "3–5" }));
     fireEvent.change(screen.getByLabelText("Home airport"), { target: { value: "atlanta" } });
     fireEvent.click(screen.getByRole("option", { name: /ATL/ }));
     expect(screen.getByRole("button", { name: /Change home airport ATL/ })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: /^Yes/ }));
+    expect(screen.getByText(/Priority Pass is a network of independent lounges/)).toBeInTheDocument();
+    for (const n of ["Not at all", "A few visits a year are nice", "I'd use them most trips", /^Decide later/]) expect(screen.getByRole("radio", { name: n })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "I'd use them most trips" }));
     fireEvent.click(screen.getByRole("button", { name: "Delta" }));
     fireEvent.click(screen.getByRole("radio", { name: "4–9" }));
     fireEvent.click(screen.getByRole("button", { name: "Hyatt" }));
@@ -117,14 +143,22 @@ describe("3 · travel", () => {
 });
 
 describe("4 · brands (perks)", () => {
-  it("says plainly these are card perks, groups the chips, and saves picks", () => {
-    render(<Survey initialMode="quick" initialStepId="brands" />);
-    expect(screen.getByText("Some cards give statement credits at these brands. Pick the ones you already use. These are card perks, not point redemptions.")).toBeInTheDocument();
-    for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras"]) expect(screen.getByText(g)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Dunkin'" }));
-    fireEvent.click(screen.getByRole("button", { name: "Resy" }));
+  it("says plainly these are card perks; three sections: already use, would use, your cards give", () => {
+    saveV5Profile({ cardsHeld: ["amex-gold"] });
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={loadV5Profile()} />);
+    expect(screen.getByText(/These are card perks, not point redemptions/)).toBeInTheDocument();
+    for (const h of ["Already pay for or use", "Would use if a card paid for it", "Your cards already give you"]) expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
+    for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras"]) expect(screen.getAllByText(g).length).toBeGreaterThanOrEqual(2);
+    const use = screen.getByRole("group", { name: "Food & delivery: already use" });
+    fireEvent.click(within(use).getByRole("button", { name: "Dunkin'" }));
+    fireEvent.click(within(use).getByRole("button", { name: "Resy" }));
+    const maybe = screen.getByRole("group", { name: "Travel extras: would use" });
+    fireEvent.click(within(maybe).getByRole("button", { name: "TSA PreCheck / Global Entry" }));
+    /* Amex Gold already pays Uber Cash: listed under "Your cards already give you". */
+    expect(screen.getAllByText(/Uber/).length).toBeGreaterThan(0);
     cont();
     expect(loadV5Profile().brands.perks).toEqual(["dunkin", "resy"]);
+    expect(loadV5Profile().brands.perksMaybe).toEqual(["globalentry"]);
   });
 });
 

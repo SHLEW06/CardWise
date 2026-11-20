@@ -1,0 +1,69 @@
+/* ============================================================================
+   v7 Part A — survey additions (spend units, travel details, strategy
+   helper, three-part perks, lounges, fee ladder). Ink & Stone (§9.11).
+   ========================================================================== */
+
+.v5 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ── Fee ladder (A7 / D5) ── */
+.v5 .ladder { display: grid; gap: 14px; }
+.v5 .ladder-chart { position: relative; margin: 0; max-width: 620px; }
+.v5 .ladder-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.v5 .ladder-grid { stroke: var(--hair); stroke-width: 1; }
+.v5 .ladder-axis { fill: var(--ink-3); font-size: 11px; font-family: var(--f-ui); }
+.v5 .ladder-line { fill: none; stroke: var(--ink-2); stroke-width: 2; stroke-linejoin: round; }
+.v5 .ladder-pt { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.v5 .ladder-pt.is-on { fill: var(--ink); }
+.v5 .ladder-hit { cursor: pointer; outline: none; }
+.v5 .ladder-hit:focus-visible .ladder-pt { stroke: var(--bronze); }
+.v5 .ladder-flat { stroke: var(--bronze); stroke-width: 1; stroke-dasharray: 3 4; }
+.v5 .ladder-flat-label { fill: var(--bronze); font-size: 11px; font-family: var(--f-ui); }
+.v5 .ladder-tip {
+  position: absolute; transform: translate(-50%, calc(-100% - 14px)); pointer-events: none; display: grid; gap: 2px;
+  padding: 8px 10px; background: var(--raised); border: 1px solid var(--hair-strong); border-radius: var(--r);
+  font-size: var(--fs-caption); white-space: nowrap; color: var(--ink-2);
+}
+.v5 .ladder-tip strong { color: var(--ink); font-weight: 500; }
+.v5 .ladder-table td { vertical-align: middle; }
+.v5 .ladder-table tr.is-on td { color: var(--ink); }
+.v5 .ladder-table th:nth-child(2) { text-align: left; }
+.v5 .ladder-table td.ladder-cards { color: var(--ink-2); font-size: var(--fs-caption); max-width: 26em; text-align: left; }
+.v5 .ladder-tag { margin-left: 8px; color: var(--bronze); box-shadow: inset 0 0 0 1px rgba(176, 141, 87, .45); }
+.v5 .ladder-table .choice-pill { min-height: 32px; padding: 0 12px; font-size: var(--fs-small); }
+
+/* ── Spend rows with Monthly / Yearly ── */
+.v5 .spend-unit-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--hair); }
+.v5 .spend-unit-row .money-row { display: contents; }
+.v5 .unit-seg { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--r); box-shadow: inset 0 0 0 1px var(--hair-strong); }
+.v5 .unit-seg button { min-height: 32px; padding: 0 10px; border-radius: 2px; font-size: var(--fs-caption); color: var(--ink-2); }
+.v5 .unit-seg button[aria-checked="true"] { background: var(--ink); color: var(--night); font-weight: 500; }
+.v5 .spend-unit-row .money-range, .v5 .spend-unit-row .money-hint { grid-column: 1 / -1; }
+
+/* ── Strategy helper, lounge compare, perks sections ── */
+.v5 .helper { display: grid; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r); }
+.v5 .helper-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.v5 .strategy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: start; padding: 16px; border: 1px solid var(--hair-strong); border-radius: var(--r); background: var(--paper); }
+.v5 .strategy.is-on { border-color: var(--ink); }
+.v5 .strategy-name { font-weight: 500; font-size: 1.0625rem; }
+.v5 .strategy-net { font-size: 1.125rem; text-align: right; }
+.v5 .strategy p { grid-column: 1 / -1; margin: 0; }
+.v5 .strategy-cards { display: flex; flex-wrap: wrap; gap: 6px; grid-column: 1 / -1; }
+.v5 .strategy .btn { grid-column: 1 / -1; justify-self: start; }
+
+.v5 .compare-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.v5 .compare-two > div { display: grid; gap: 8px; align-content: start; padding: 16px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r); }
+.v5 .compare-faces { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+
+.v5 .perk-section { display: grid; gap: 12px; padding-top: 20px; border-top: 1px solid var(--hair); }
+.v5 .perk-section:first-of-type { border-top: 0; padding-top: 0; }
+.v5 .have-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.v5 .have-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 10px 0; border-top: 1px solid var(--hair); }
+.v5 .have-list li:last-child { border-bottom: 1px solid var(--hair); }
+
+.v5 .sub-q { display: grid; gap: 10px; padding: 14px 0 0; }
+.v5 .network-note { color: var(--ink-2); font-size: var(--fs-small); max-width: 46em; }
+
+@media (max-width: 700px) {
+  .v5 .compare-two { grid-template-columns: 1fr; }
+  .v5 .spend-unit-row { grid-template-columns: minmax(0, 1fr) auto; }
+}

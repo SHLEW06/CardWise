@@ -30,7 +30,7 @@ export const SPEND_ROWS = [
   { key: "transit", label: "Rideshare and transit", group: "travel" },
   { key: "flights", label: "Flights", group: "travel" },
   { key: "hotels", label: "Hotels", group: "travel" },
-  { key: "rentals", label: "Vacation rentals", group: "travel" },
+  { key: "rentals", label: "Vacation rentals (Airbnb, Vrbo)", group: "travel", hint: "Not Fine Hotels + Resorts or The Edit: those are hotel programs, counted under hotels and card credits." },
   { key: "rent", label: "Rent", group: "home", hint: "Most cards can't pay rent without a fee." },
   { key: "phone", label: "Phone, internet and utilities", group: "home" },
   { key: "other", label: "Everything else", group: "home", quick: true },
@@ -62,11 +62,32 @@ export const NIGHT_OPTIONS = [
 export const INTL_OPTIONS = [
   { key: 0, label: "None" }, { key: 0.3, label: "Some" }, { key: 0.8, label: "Most" },
 ];
+/* v7 A6: how much lounges matter. "later" = show two sample wallets, with
+   and without lounge access, side by side. */
 export const LOUNGE_OPTIONS = [
-  { key: "yes", label: "Yes", sub: "I'd pay for lounge access." },
-  { key: "sometimes", label: "Sometimes", sub: "Nice if it's included." },
-  { key: "no", label: "No", sub: "I don't use lounges." },
+  { key: "no", label: "Not at all" },
+  { key: "sometimes", label: "A few visits a year are nice" },
+  { key: "yes", label: "I'd use them most trips" },
+  { key: "later", label: "Decide later", sub: "We'll show a wallet with lounges and one without." },
 ];
+export const LOUNGE_NETWORKS_NOTE = "Priority Pass is a network of independent lounges in most big airports. Centurion Lounges are Amex's own (Platinum). Delta Sky Clubs are Delta's (Delta Reserve, Platinum when flying Delta). Capital One Lounges are Capital One's own (Venture X), in a handful of airports.";
+
+/* v7 A2: travel details. */
+export const CABIN_OPTIONS = [
+  { key: "economy", label: "Economy" }, { key: "premium", label: "Premium economy" },
+  { key: "business", label: "Business or first" }, { key: "mixed", label: "A mix" },
+];
+export const BOOKING_OPTIONS = [
+  { key: "direct", label: "Direct with the airline or hotel" },
+  { key: "portal", label: "Through a card's travel site" },
+  { key: "best", label: "Whichever pays more" },
+];
+export const AIRLINE_PERK_OPTIONS = [
+  { key: "bags", label: "Free checked bags" }, { key: "boarding", label: "Priority boarding" },
+  { key: "companion", label: "Companion fare" }, { key: "upgrades", label: "Upgrades" },
+];
+export const BAGS_PER_TRIP = [{ key: 1, label: "1 bag" }, { key: 2, label: "2 bags" }, { key: 3, label: "3 or more" }];
+export const TRIPS_WITH_BAGS = [{ key: 0.25, label: "A few" }, { key: 0.5, label: "About half" }, { key: 1, label: "Every trip" }];
 
 /* Airlines, grouped by alliance, then others. Keys are loyalty-program keys
    (programs.js LOYALTY) — several airlines share Avios. `program` false =
@@ -100,6 +121,7 @@ export const HOTEL_BRANDS = [
   { key: "marriott", label: "Marriott" }, { key: "hilton", label: "Hilton" }, { key: "hyatt", label: "Hyatt" }, { key: "ihg", label: "IHG" },
   { key: "wyndham", label: "Wyndham" }, { key: "choice", label: "Choice" }, { key: "bestwestern", label: "Best Western", program: false },
   { key: "accor", label: "Accor" }, { key: "sonesta", label: "Sonesta", program: false }, { key: "independent", label: "Independent / whatever's cheapest", program: false },
+  { key: "unsure", label: "Not sure — help me choose", program: false },
 ];
 
 /* ── Step 5: memberships you already pay for (optional) — a card that needs
@@ -114,6 +136,10 @@ export const SCORE_OPTIONS = [
   { key: "unsure", label: "Not sure" }, { key: "none", label: "No credit yet" }, { key: "<580", label: "Below 580" },
   { key: "580-669", label: "580–669" }, { key: "670-739", label: "670–739" },
   { key: "740-799", label: "740–799" }, { key: "800+", label: "800+" },
+];
+/* v7 A8: a big loan coming up (feeds the application hurdle, Part C). */
+export const LOAN_OPTIONS = [
+  { key: "none", label: "No" }, { key: "12-24", label: "In 12–24 months" }, { key: "12", label: "Within 12 months" },
 ];
 export const NEW_CARD_OPTIONS = [0, 1, 2, 3, 4, 5].map((n) => ({ key: n, label: n === 5 ? "5 or more" : String(n) }));
 

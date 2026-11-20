@@ -83,7 +83,7 @@ export const COMPANION_USAGE = ({ trips, pickedCardBrand }) =>
 
 /* ── Lounges ── */
 export const LOUNGE_VISIT_VALUE = 35;           // $ per visit
-export const LOUNGE_INTEREST = { no: 0, sometimes: 0.5, yes: 1 };
+export const LOUNGE_INTEREST = { no: 0, sometimes: 0.5, yes: 1, later: 0.5 };   // v7: "Decide later" = a few visits a year until decided
 /* A lounge benefit is never worth more than buying the access retail.
    Priority Pass Select: $469/yr — Citi values the membership at this on the
    Strata Elite page (Nov 2026). Used as the cap for every network until a
@@ -117,6 +117,14 @@ export const STATUS_VALUE = [
    brands; the brief's cadence factors are used as given (annual 0.9 ≥ 0.8,
    monthly 0.5 is the harder-to-use drip). Unpicked → $0 (was 0.2). */
 export const BRAND_CREDIT_CADENCE = { annual: 0.9, "4yr": 0.9, semiannual: 0.75, quarterly: 0.6, monthly: 0.5 };
+/* v7 Part A5b: perks the person would use IF a card paid for them, but
+   doesn't pay for today ("Would use if a card paid for it"). They count at
+   half the "already pay for" factor: some of these never get adopted.
+   Modeling default (METHODOLOGY §2.3). */
+export const INTERESTED_FACTOR = 0.5;
+/* v7 Part A2: when the person said how many bags they check, bag value is
+   BAG_FEE × min(card's free bags, bags per trip) × 2 ways × trips × share of
+   trips with bags. Not asked → every trip, one bag (v6 behaviour). */
 /* Promo codes are discounts on purchases you'd have to choose to make. */
 export const PROMO_FACTOR = 0.5;
 

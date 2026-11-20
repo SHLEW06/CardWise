@@ -46,6 +46,23 @@ export const TRAVEL_SPEND_PER_TRIP = { flights: 350, hotels: 300 };
 export const HOTEL_NIGHT_COST = 150;
 export const DEFAULT_NIGHTS_PER_TRIP = 2;
 
+/* v7 Part A1: spend is stored as YEARLY dollars (`spendYear`); `spend`
+   stays as the monthly view (= yearly ÷ 12, unrounded) for older readers.
+   Each row remembers how the person entered it (`spendUnits`): flights,
+   hotels and vacation rentals default to yearly. */
+export const YEARLY_BY_DEFAULT = ["flights", "hotels", "rentals"];
+export const defaultSpendUnit = (k) => (YEARLY_BY_DEFAULT.includes(k) ? "year" : "month");
+
+/* v7 Part A2: travel details. */
+export const CABINS = ["economy", "premium", "business", "mixed"];
+export const BOOKING = ["direct", "portal", "best"];
+export const AIRLINE_PERKS = ["bags", "boarding", "companion", "upgrades"];
+/* Part A6: "Decide later" lounges are valued like "a few visits a year"
+   until the person decides (LOUNGE_INTEREST in benefitUsage.js). */
+export const LOUNGE_ANSWERS = ["no", "sometimes", "yes", "later"];
+/* Part A8: a big loan coming up. */
+export const LOAN_ANSWERS = ["none", "12-24", "12"];
+
 /* Default card cap for the optimizer (§22: ≤ 6 by default, adjustable). */
 export const DEFAULT_MAX_CARDS = 6;
 /* v5 only: how many NEW cards the old heuristic recommended at most. */
@@ -64,9 +81,13 @@ export const DEFAULT_PROFILE = Object.freeze({
     hotelNights: null,                 // paid nights per year; null → trips × 2
     lounges: "no",                     // "no" | "sometimes" | "yes"
     intlShare: 0,                      // share of trips that are international (0 | 0.3 | 0.8); lounge practicality
+    cabin: "economy",                  // v7: "economy" | "premium" | "business" | "mixed"
+    booking: "direct",                 // v7: "direct" | "portal" | "best" (whichever pays more)
+    bags: null,                        // v7: { perTrip, share } — bags per trip, share of trips with bags; null = not asked
+    airlinePerks: null,                // v7: ["bags","boarding","companion","upgrades"]; null = not asked
   },
-  brands: { airlines: [], hotels: [], everyday: [], perks: [] },
-  credit: { score: SCORE_BUCKETS.unsure, noHistory: false, newCards24mo: 0, pastAmex: [], pastChase: [] },
+  brands: { airlines: [], hotels: [], everyday: [], perks: [], perksMaybe: [] },   // perksMaybe: "would use if a card paid for it" (v7 A5b)
+  credit: { score: SCORE_BUCKETS.unsure, noHistory: false, newCards24mo: 0, pastAmex: [], pastChase: [], loan: "none" },
   partnerPicks: {},                    // { chase: ["aeroplan", "united"] } — Part E; missing currency → from brands
   planAround: [],                      // credit ids the person opted into ("I'd plan around this")
   memberships: [],                     // paid memberships they already have: robinhood-gold, costco, sams, amazon-prime, walmart-plus
@@ -119,7 +140,13 @@ export function normalizeProfile(p = {}) {
   travel.trips = num(travel.trips);
   travel.hotelNights = travel.hotelNights == null ? null : num(travel.hotelNights);
   travel.intlShare = Math.max(0, Math.min(1, Number(travel.intlShare) || 0));
-  if (!(travel.lounges in { no: 1, sometimes: 1, yes: 1 })) travel.lounges = "no";
+  if (!LOUNGE_ANSWERS.includes(travel.lounges)) travel.lounges = "no";
+  if (!CABINS.includes(travel.cabin)) travel.cabin = "economy";
+  if (!BOOKING.includes(travel.booking)) travel.booking = "direct";
+  travel.bags = travel.bags && typeof travel.bags === "object"
+    ? { perTrip: Math.min(4, num(travel.bags.perTrip)), share: Math.max(0, Math.min(1, Number(travel.bags.share) || 0)) }
+    : null;
+  travel.airlinePerks = Array.isArray(travel.airlinePerks) ? travel.airlinePerks.filter((k) => AIRLINE_PERKS.includes(k)) : null;
   /* No flights → no airport lounge question. */
   if (travel.trips === 0) travel.lounges = "no";
 
@@ -130,6 +157,18 @@ export function normalizeProfile(p = {}) {
   const v5Shape = p.spend && ("gasTransit" in p.spend || "bills" in p.spend);
   const spend = {};
   for (const k of SPEND_CATEGORIES) spend[k] = num(migrated[k], v5Shape ? 0 : d.spend[k]);
+  /* Yearly is the stored truth. A row whose monthly value was edited by an
+     older writer (it no longer matches yearly ÷ 12 within $1) takes the
+     monthly edit. */
+  const spendYear = {};
+  for (const k of SPEND_CATEGORIES) {
+    const y = p.spendYear?.[k];
+    const m = p.spend?.[k] != null ? spend[k] : null;
+    spendYear[k] = Number.isFinite(Number(y)) && (m == null || Math.abs(m * 12 - Number(y)) <= 12) ? num(y) : spend[k] * 12;
+    spend[k] = spendYear[k] / 12;
+  }
+  const spendUnits = {};
+  for (const k of SPEND_CATEGORIES) spendUnits[k] = ["month", "year"].includes(p.spendUnits?.[k]) ? p.spendUnits[k] : defaultSpendUnit(k);
 
   const partnerPicks = {};
   for (const [cur, xs] of Object.entries(p.partnerPicks || {})) if (Array.isArray(xs)) partnerPicks[cur] = lower(xs);
@@ -138,7 +177,9 @@ export function normalizeProfile(p = {}) {
     cardsHeld: Array.from(new Set(p.cardsHeld || [])),
     wants,
     feeBudget,
-    spend,
+    spend,                             // monthly view (yearly ÷ 12)
+    spendYear,                         // v7: yearly $, the stored truth
+    spendUnits,
     rent: spend.rent,                  // v5 alias
     gasAt: ["regular", "costco", "both"].includes(p.gasAt) ? p.gasAt : d.gasAt,
     warehouseClub: ["costco", "sams", "bjs"].includes(p.warehouseClub) ? p.warehouseClub : d.warehouseClub,
@@ -148,6 +189,7 @@ export function normalizeProfile(p = {}) {
       hotels: lower(p.brands?.hotels),
       everyday: lower(p.brands?.everyday),
       perks: lower(p.brands?.perks),
+      perksMaybe: lower(p.brands?.perksMaybe).filter((k) => !lower(p.brands?.perks).includes(k)),
     },
     credit: {
       score: Number(p.credit?.score) || null,
@@ -155,6 +197,7 @@ export function normalizeProfile(p = {}) {
       newCards24mo: num(p.credit?.newCards24mo),
       pastAmex: lower(p.credit?.pastAmex),
       pastChase: lower(p.credit?.pastChase),
+      loan: LOAN_ANSWERS.includes(p.credit?.loan) ? p.credit.loan : "none",
     },
     partnerPicks,
     planAround: Array.isArray(p.planAround) ? [...p.planAround] : [],
@@ -171,12 +214,24 @@ export function normalizeProfile(p = {}) {
 export const hotelNights = (profile) =>
   profile.travel.hotelNights != null ? profile.travel.hotelNights : profile.travel.trips * DEFAULT_NIGHTS_PER_TRIP;
 
-/** Annual dollars per category the engine values (monthly × 12). Flights
+/** Set one spend row from a YEARLY amount (keeps spend/spendYear in step). */
+export function withSpendYear(profile, key, yearly) {
+  const y = Math.max(0, Number(yearly) || 0);
+  return { ...profile, spendYear: { ...(profile.spendYear || {}), [key]: y }, spend: { ...(profile.spend || {}), [key]: y / 12 } };
+}
+/** Replace all rows from MONTHLY amounts (presets, older screens). */
+export function withMonthlySpend(profile, monthly) {
+  const spendYear = { ...(profile.spendYear || {}) };
+  for (const [k, v] of Object.entries(monthly)) spendYear[k] = (Number(v) || 0) * 12;
+  return { ...profile, spend: { ...(profile.spend || {}), ...monthly }, spendYear };
+}
+
+/** Annual dollars per category the engine values (yearly as stored). Flights
     and hotels fall back to what trips imply when the rows are 0. */
 export function annualSpend(profile) {
-  const s = profile.spend;
+  const y = profile.spendYear;
   const out = {};
-  for (const k of SPEND_CATEGORIES) out[k] = (s[k] || 0) * 12;
+  for (const k of SPEND_CATEGORIES) out[k] = y ? y[k] || 0 : (profile.spend[k] || 0) * 12;
   if (!out.flights) out.flights = profile.travel.trips * TRAVEL_SPEND_PER_TRIP.flights;
   if (!out.hotels) out.hotels = profile.travel.hotelNights != null ? profile.travel.hotelNights * HOTEL_NIGHT_COST : profile.travel.trips * TRAVEL_SPEND_PER_TRIP.hotels;
   return out;

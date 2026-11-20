@@ -504,7 +504,7 @@ export function sampleWallets(rawProfile) {
   const maxN = optimalWallet(profile, { budget: profile.feeBudget }).value.N;
   const loungeIds = CARDS.filter((c) => rolesFor(c).includes("Lounge card") && c.cardType !== "business").map((c) => c.id);
   const loungeFees = loungeIds.map((id) => cardFee(BY_ID[id], profile)).filter((f) => f > 0);
-  const hotelBrand = profile.brands.hotels[0] || null;
+  const hotelBrand = profile.brands.hotels.find((h) => HOTEL_CURRENCIES.has(h)) || null;   // not "independent" / "unsure"
   const runs = [
     { key: "lounge", label: "Lounge & credits", opts: { mustOneOf: loungeIds, budget: Math.max(profile.feeBudget, Math.min(...loungeFees)), profile: { ...profile, travel: { ...profile.travel, lounges: profile.travel.trips ? "yes" : profile.travel.lounges } } } },
     { key: "cash", label: "Simple cash back", opts: { filter: (c) => CASH_LIKE.has(c.pointCurrency), maxCards: 3 } },
