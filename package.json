@@ -17,6 +17,7 @@
     "art": "node scripts/build-card-art-manifest.mjs",
     "art:missing": "node scripts/build-card-art-manifest.mjs --missing",
     "art:fetch": "node scripts/fetch-card-art.mjs",
+    "fonts": "node scripts/fetch-fonts.mjs",
     "connector": "npm --prefix connector start",
     "dev:all": "node scripts/dev-all.mjs",
     "calibrate": "npm --prefix connector run calibrate --",

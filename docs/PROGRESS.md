@@ -513,3 +513,60 @@ sync through the extension. Later: the §15.5 endpoints on Firebase Functions.
 Possible follow-ups (not in the brief): generate the backdrop photos from
 `docs/BACKGROUNDS.md`; licensed PP fonts into `public/fonts/`; re-verify the
 items in "Facts I couldn't verify".
+
+---
+
+# v7 — feedback round 1
+
+Brief: `docs/CLAUDE_CODE_V7_PROMPT.md`, with Shunji's overrides of
+2026-11-20 (recorded in REDESIGN_SPEC §9.11): direction D "Ink & Stone";
+Boska / Switzer / Archivo Expanded; newcomers first; at most one new card per
+6 months; welcome bonuses never in scores (own section only); **on hold:**
+Part B5 cabin markup and Part E automatic portal pricing (portal calculator
+keeps typed prices; portal earning lanes off unless data is entered);
+desktop first (1280–1600px); issuer card photos for now + source URLs + a
+rendered-face setting for launch.
+
+| Part | State |
+|---|---|
+| 0. Style tile | done — **waiting for review** (stop point) |
+| A–G | not started (after "go") |
+
+## Part 0 — style tile (2026-11-20)
+
+- Spec §9.11 written. Dev-only route `/styletile` (`main.jsx` mounts it only
+  under `import.meta.env.DEV`; verified the production bundle has no trace
+  of it).
+- Tokens `src/styles/v7/tokens.css` (scoped to `.ink-stone`, so the app is
+  unchanged); components + tile layout `src/styles/v7/styletile.css`.
+- New components for the restyle: `FocalImage` (photo slot + SVG stand-in),
+  `Dial`, `Num` (Boska lining figures with the plain zero), `CardPhoto`
+  (issuer photo / our rendered face).
+- Fonts: `npm run fonts` → `public/fonts/` (gitignored). Measured from the
+  files: Boska's default figures are old-style (we turn on lining), its
+  proportional zero is dotted (Num swaps in the plain tabular zero); Switzer's
+  figures are tabular by default; Google's Archivo file is pinned at width 125.
+- `focal-<slot>` images are now picked up by the art-manifest script; brief
+  for the home photo/render in `docs/BACKGROUNDS.md` → focal-home.
+- The tile shows: Home hero composed, palette with computed contrast, the
+  three faces and the type scale, big numbers ($1,080 · 23 · 4.8%), a
+  tabular table, the focal image, issuer photos vs rendered faces (csr,
+  amex-gold), buttons, list-row panel, chips, input with Monthly/Yearly,
+  Score dial, and a "What you're missing" hint with "Show the math".
+- Dropped from the brief's draft on purpose: glass blur, facet lattice,
+  card sheen, metallic number gradients (texture lives only in the focal
+  image).
+- Tests: 69 files / 1,368 tests pass; build OK.
+- Screenshots (gitignored): `screenshots/v7/styletile-{1280,1440,1600}-*.png`,
+  phone check `styletile-390-*.png`.
+
+### Unverified (v7)
+- Fontshare FFL licence text not re-read this session (Boska, Switzer).
+- Rendered faces use `cardMaterials.js`; cards with issuer art (e.g. Amex
+  Gold) have no material entry yet, so their rendered face falls back to the
+  issuer's default colour. Needs a material per card before the launch
+  setting is switched on.
+
+## Next (v7)
+Waiting on review of `/styletile`. On "go": restyle the app to §9.11, then
+Parts A → G in order, committing after each.

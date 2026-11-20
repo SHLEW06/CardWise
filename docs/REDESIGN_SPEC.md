@@ -414,6 +414,82 @@ Rebuild as an editorial list:
 - Transfer partners that match brands they picked are named; others aren't listed.
 - Rows animate in with the §9.4 stagger; one primary button "See my best wallet".
 
+### 9.11 Direction v7: "Ink & Stone" (2026-11-20; review only, overrides §18 when approved)
+
+Chosen 2026-11-20 over the brief's "Sapphire night" draft (direction D). The
+style tile is at `/styletile` (dev only, `src/components/v7/StyleTile.jsx`);
+nothing in the app uses it until it's approved.
+
+**Audience.** Newcomers first: plain words, guided defaults, and "What you're
+missing" hints (a bronze rule, one sentence with the $ amount, "Show the
+math" opens the numbers). Depth for points-savvy people is one click away,
+never on the first layer. **Desktop first**: polished at 1280–1600px; phone
+must work but isn't polished.
+
+**Palette** (tokens in `src/styles/v7/tokens.css`, scoped to `.ink-stone`;
+ratios are WCAG, computed on the tile):
+
+| Token | Value | Use | Contrast |
+|---|---|---|---|
+| `--bg` | `#070B16` | deep ink navy page | |
+| `--surface` | `#0E1830` | panels (visibly lighter than the page) | |
+| `--raised` | `#13213A` | inputs, hover rows, menus | |
+| `--line` | `#1E2F50` | 1px borders and dividers | |
+| `--text` | `#F1EBDD` | warm ivory, primary text | 16.5 on bg · 13.5 on raised |
+| `--text-2` | `#B9B4A8` | secondary text | 9.5 · 7.8 |
+| `--text-3` | `#9A968C` | captions, labels | 6.7 · 5.5 |
+| `--bronze` | `#B08D57` | the ONE accent: Score dial, focus ring, "What you're missing" | 6.4 · 5.2 |
+| `--good` / `--bad` | `#8FB59B` / `#D59C86` | better / worse, muted | ≥ 6.8 |
+
+No gold, no second accent. Selected choice controls are ivory fill with ink
+text and a check (§9.6 rule, recoloured).
+
+**Surfaces.** Flat fills with a 1px `--line`. No glass blur, glows, lattices,
+sheen or gradients on panels. Corners 0–4px; only primary buttons are pills
+(ivory on ink). Card pictures keep a real card radius and one soft shadow.
+
+**Focal image — the only texture.** One art-directed image per hero: a
+tightly cropped navy card with a bronze metal edge on warm stone, crossed by
+diagonal window light (light from the upper right, soft mullion shadows).
+`<FocalImage slot="home">` (`src/components/v7/FocalImage.jsx`) shows
+`public/backgrounds/focal-<slot>.(avif|webp|jpg|png)` when present
+(gitignored; listed by the art-manifest script), else an SVG stand-in of the
+same scene. Photo/render brief: `docs/BACKGROUNDS.md` → "focal-home".
+
+**Type** (free for commercial use; self-hosted in `public/fonts/`, gitignored;
+`npm run fonts` fetches them; licences in `docs/THIRD_PARTY.md`):
+
+| Role | Face | Notes |
+|---|---|---|
+| Display: page titles, big numbers | **Boska** 300/400 (Fontshare, ITF FFL) | −0.015em; hero 48→116px |
+| UI + body | **Switzer** 400/500 (Fontshare, ITF FFL) | body 17px; its figures are tabular by default — tables and money in UI |
+| Labels | **Archivo Expanded** 400 (Google Fonts, OFL; width 125) | 11–12px uppercase, +0.12em |
+
+Fallbacks: `"Iowan Old Style", Charter, Georgia, serif` and `-apple-system,
+"Helvetica Neue", "Segoe UI", sans-serif`. Never Inter, Geist, Instrument
+Serif, Playfair, Fraunces, Space Grotesk, DM Sans/Serif, Satoshi, Manrope,
+Cormorant or Poppins. Nothing heavier than 500.
+
+**Numbers.** Big numbers use Boska with proportional **lining** figures
+(Boska's default figures are old-style). Measured from the font files: the
+lining zero is 0.58 as wide as it is tall (a book-serif proportion; the old
+"tall, condensed" look came from Instrument Serif). Boska's proportional zero
+has a dot inside, so `<Num>` (`src/components/v7/Num.jsx`) switches runs of
+zeros to its plain tabular zero, which is no wider. Table numbers: Switzer.
+
+**Card pictures.** Issuer photos for now, with each image's source URL on
+record; a setting switches every card to our own rendered face
+(`<CardPhoto mode="issuer|rendered">`, `src/components/v7/CardPhoto.jsx`)
+for public launch. The tile shows both.
+
+**Product rules that shape screens** (decided 2026-11-20, apply in Parts A–G):
+at most one new card every 6 months, with When to apply sequencing the rest;
+welcome bonuses never count in scores or recommendations and appear only in a
+separate "Welcome bonuses" section that never changes rankings; automatic
+portal pricing and the cabin markup are on hold (the portal calculator keeps
+prices the person types; portal earning lanes stay off unless data is
+entered).
+
 ### 9.7 Anti-AI checklist (review every screen against it)
 
 No emoji · no sparkle icons · no gradient text or backgrounds · no glow ·

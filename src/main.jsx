@@ -21,8 +21,16 @@ import "./styles/v6/checkout.css";
 import "./styles/v6/offers.css";
 import "./styles/v6/home.css";
 
+/* v7 Part 0: the "Ink & Stone" style tile lives at /styletile in dev only
+   (REDESIGN_SPEC §9.11). In a production build the condition is false at
+   compile time, so the tile and its CSS are never bundled. */
+const isStyleTile = import.meta.env.DEV && window.location.pathname.replace(/\/+$/, "") === "/styletile";
+const Root = isStyleTile ? React.lazy(() => import("./components/v7/StyleTile.jsx")) : App;
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <React.Suspense fallback={null}>
+      <Root />
+    </React.Suspense>
   </React.StrictMode>
 );

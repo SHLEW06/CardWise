@@ -25,3 +25,27 @@
 /* Nothing heavier than 500, anywhere (including <b>/<strong> and headings). */
 b, strong, h1, h2, h3, h4, h5, h6, th { font-weight: 500; }
 code, kbd, pre, samp { font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+
+/* ── v7 "Ink & Stone" type (REDESIGN_SPEC §9.11) ───────────────────────────
+   Free for commercial use, self-hosted from public/fonts/ (`npm run fonts`):
+     Boska (Fontshare, FFL)          display — page titles, big numbers
+     Switzer (Fontshare, FFL)        UI + body, tabular figures in tables
+     Archivo Expanded (Google, OFL)  small uppercase labels
+   Not applied to the app yet: only the /styletile route reads these until the
+   restyle is approved. Fallbacks are non-condensed and never Inter, Geist,
+   Instrument Serif, Playfair, Fraunces, Space Grotesk, DM Sans/Serif,
+   Satoshi, Manrope, Cormorant or Poppins. */
+@font-face { font-family: "Boska"; src: url("/fonts/Boska-Light.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: "Boska"; src: url("/fonts/Boska-LightItalic.woff2") format("woff2"); font-weight: 300; font-style: italic; font-display: swap; }
+@font-face { font-family: "Boska"; src: url("/fonts/Boska-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Boska"; src: url("/fonts/Boska-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Switzer"; src: url("/fonts/Switzer-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Switzer"; src: url("/fonts/Switzer-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Switzer"; src: url("/fonts/Switzer-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Archivo Expanded"; src: url("/fonts/ArchivoExpanded-Latin.woff2") format("woff2"); font-weight: 400 500; font-style: normal; font-display: swap; }
+
+:root {
+  --font-v7-display: "Boska", "Iowan Old Style", "Charter", "Georgia", serif;
+  --font-v7-ui: "Switzer", -apple-system, "Helvetica Neue", "Segoe UI", sans-serif;
+  --font-v7-label: "Archivo Expanded", "Switzer", -apple-system, "Helvetica Neue", sans-serif;
+}

@@ -20,7 +20,8 @@ public/cards/*
 # generated from public/cards/ by scripts/build-card-art-manifest.mjs (pre-dev/build/test)
 src/data/cardArtManifest.js
 
-# licensed fonts (Pangram Pangram) — not committed until licensed
+# fonts: fetched by `npm run fonts` (Boska, Switzer, Archivo Expanded — free
+# for commercial use, see docs/THIRD_PARTY.md); kept out of git by the v6/v7 rule
 public/fonts/
 
 # generated photo backgrounds — personal use only until licensed

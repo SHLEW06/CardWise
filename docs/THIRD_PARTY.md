@@ -27,3 +27,18 @@
 Checkout → Near me asks the public Overpass API for nearby store names
 (© OpenStreetMap contributors, ODbL). Only the coordinates the person chose
 to share (or a mall's center) are sent, from their browser.
+
+## Fonts (v7, REDESIGN_SPEC §9.11)
+
+Self-hosted from `public/fonts/` (gitignored; `npm run fonts` downloads them).
+All are free for commercial use, including the web:
+
+| Face | Source | Licence |
+|---|---|---|
+| Boska (display) | Fontshare, Indian Type Foundry — https://www.fontshare.com/fonts/boska | ITF Free Font License (FFL) |
+| Switzer (UI/body) | Fontshare, Indian Type Foundry — https://www.fontshare.com/fonts/switzer | ITF Free Font License (FFL) |
+| Archivo, Expanded width (labels) | Google Fonts, Omnibus-Type — https://fonts.google.com/specimen/Archivo | SIL Open Font License 1.1 |
+
+Fontshare offers both faces as free for personal and commercial use under
+the FFL. The licence text itself wasn't re-read in this session: read it on
+fontshare.com before public launch (listed in PROGRESS → v7 → unverified).

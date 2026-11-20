@@ -111,3 +111,36 @@ licensed.
   an object would stand, faint ivory reflection on the surface below, deep
   black surroundings, cinematic, film grain, 16:10, photorealistic, no
   objects, no text."*
+
+---
+
+# v7 focal images (REDESIGN_SPEC §9.11)
+
+v7 drops the full-screen backdrops for **one art-directed focal image per
+hero**, the only texture on the page. `<FocalImage slot="…">` loads
+`public/backgrounds/focal-<slot>.(avif|webp|jpg|png)` when it exists
+(gitignored); until then it draws an SVG stand-in of the same scene.
+
+## focal-home
+- **Frame:** 4:5 portrait master, 2000×2500, AVIF q≈55 / WebP q≈70,
+  ≤ 450 KB. Shown at up to ~580×725 CSS px beside the headline (desktop) and
+  cropped toward 4:3 on phones, so keep the card's chip corner and the
+  bronze edge inside the middle 80%.
+- **Subject:** a blank navy metal card (no logos, numbers or text), tightly
+  cropped so it runs off the right and bottom edges, lying at about −15° on
+  warm stone (limestone or travertine, matte, faint natural veining).
+- **Edge:** brushed bronze metal edge, about 1 mm, catching the light along
+  the top long side; the face is deep navy close to `#0B1530`, satin.
+- **Light:** late-afternoon window light from the upper right, falling in a
+  diagonal band with two soft mullion shadows; the rest of the stone in warm
+  shade. A soft cast shadow down-left of the card. No glow, no bokeh, no
+  lens flare.
+- **Palette:** stone `#5E5447` → `#241F1A` in shade, light `#E8D9BC`, bronze
+  `#B08D57` highlights `#D2B07A`, navy `#0B1530`.
+- **Prompt:** *"Overhead product photograph, tightly cropped: a blank deep navy
+  metal credit card with a thin brushed bronze edge, no logos or text, lying
+  at a slight angle on warm matte limestone. Late-afternoon window light falls
+  diagonally from the upper right in a soft band with two window-mullion
+  shadows; the rest of the stone is in warm shade. Soft cast shadow, fine
+  stone texture, shallow depth of field, natural film grain, quiet luxury
+  editorial mood, 4:5, photorealistic."*

@@ -25,7 +25,10 @@ const BACKGROUNDS_DIR = resolve(ROOT, "public/backgrounds");
 /* v6 §18 Backdrop slots; a photo public/backgrounds/<slot>.avif|webp wins over
    the procedural scene. */
 export const BACKDROP_SLOTS = ["home", "checkout", "offers", "lab", "explore", "survey", "card"];
-const BG_RANK = { ".avif": 0, ".webp": 1, ".jpg": 2 };
+/* v7 §9.11 focal images: public/backgrounds/focal-<slot>.avif|webp|jpg|png
+   (one art-directed photo or render per hero; CSS/SVG stand-in until then). */
+export const isFocalSlot = (slot) => /^focal-[a-z0-9-]+$/.test(slot);
+const BG_RANK = { ".avif": 0, ".webp": 1, ".jpg": 2, ".png": 3 };
 
 export function scanBackgrounds(dir = BACKGROUNDS_DIR) {
   if (!existsSync(dir)) return {};
@@ -33,7 +36,7 @@ export function scanBackgrounds(dir = BACKGROUNDS_DIR) {
   for (const file of readdirSync(dir)) {
     const ext = extname(file).toLowerCase();
     const slot = basename(file, extname(file)).toLowerCase();
-    if (!(ext in BG_RANK) || !BACKDROP_SLOTS.includes(slot)) continue;
+    if (!(ext in BG_RANK) || !(BACKDROP_SLOTS.includes(slot) || isFocalSlot(slot))) continue;
     if (!out[slot] || BG_RANK[ext] < BG_RANK[extname(out[slot])]) out[slot] = `/backgrounds/${file}`;
   }
   return out;
