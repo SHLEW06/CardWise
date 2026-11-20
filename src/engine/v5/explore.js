@@ -30,6 +30,8 @@ export const isLuxury = (c) => (c.annualFee || 0) >= PREMIUM_FEE && (hasFullLoun
 export const CATEGORY_CHIPS = [
   { key: "foryou", label: "For you" },
   { key: "luxury", label: "Luxury & lounge", test: (c) => isLuxury(c) },
+  { key: "lounge", label: "Lounge access", test: (c) => hasLounge(c) },
+  { key: "travel", label: "Travel", test: (c) => r(c, "Travel") >= 2 || r(c, "Flights") >= 2 || r(c, "Hotels") >= 2 || Object.keys(c.portalMultipliers || {}).length > 0 },
   { key: "budgetLounge", label: "Lounge on a budget", test: (c) => !isLuxury(c) && hasLounge(c) && (c.annualFee || 0) < PREMIUM_FEE },
   { key: "points", label: "Travel points", test: (c) => BANK_CURRENCIES.has(c.pointCurrency) && (transfersAlone(c) || ["amex", "bilt"].includes(c.pointCurrency)) },
   { key: "cash", label: "Cash back", test: (c) => CASH_LIKE.has(c.pointCurrency) },
@@ -84,7 +86,7 @@ const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").tr
  */
 export function exploreRows(rawProfile, opts = {}) {
   const p = normalizeProfile(rawProfile);
-  const { q = "", chip = "foryou", feeMax = Infinity, approval = null, availability = "any", issuer = "", sort = "value" } = opts;
+  const { q = "", chip = "foryou", feeMax = Infinity, cardType = "any", approval = null, availability = "any", issuer = "", sort = "value" } = opts;
   const type = opts.type || (chip === "business" ? "business" : "personal");
   const fits = cardFits(p);
   const held = new Set(p.cardsHeld);
@@ -97,6 +99,8 @@ export function exploreRows(rawProfile, opts = {}) {
     const av = availabilityOf(c);
     if (availability === "any" ? av.key === "closed" && !held.has(c.id) : av.key !== availability) continue;
     if ((c.annualFee || 0) > feeMax) continue;
+    /* v7b G1: card type (personal / business / student / secured). */
+    if (cardType !== "any" && (cardType === "personal" ? ["business", "student", "secured"].includes(c.cardType) : c.cardType !== cardType)) continue;
     if (issuer && c.issuer !== issuer) continue;
     if (chipDef?.test && !chipDef.test(c, p)) continue;
     if (terms.length) {

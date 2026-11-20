@@ -19,6 +19,7 @@ import { Reveal } from "./motion.jsx";
 import FeeBudget from "./FeeBudget.jsx";
 import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
 import { useCardArtMode, setCardArtMode } from "../../state/cardArtMode.js";
+import { RedemptionCalc, AirportFit } from "../v7/Tools.jsx";
 import { VALUE_MODES, MODE_LABEL, band, CO_BRAND_DISCOUNTS } from "../../data/valueModes.js";
 import { modeSensitivity } from "../../engine/v5/plans.js";
 
@@ -82,6 +83,18 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, onOpen
         <p className="t-caption">Pick the airlines and hotels you'd actually move points to. Every "≈ % back" in the app uses this.</p>
         <ValueMode profile={profile} save={save} />
         {slots.pointValues || <PartnerPicker profile={profile} currencies={currenciesFor(profile, BY_ID)} onChange={(partnerPicks) => save({ partnerPicks })} />}
+      </Reveal>
+
+      <Reveal i={4} className="panel profile-block" id="airport-fit">
+        <h2 className="t-h2">Airport fit</h2>
+        <p className="t-caption">How your home airports shape which airlines and lounges your cards should cover.</p>
+        <AirportFit profile={profile} />
+      </Reveal>
+
+      <Reveal i={4} className="panel profile-block" id="redemptions">
+        <h2 className="t-h2">Price a redemption</h2>
+        <p className="t-caption">Is an award a good use of your points? Compare what this booking gets per point with what your points are worth to you.</p>
+        <RedemptionCalc profile={profile} />
       </Reveal>
 
       <Reveal i={4} className="panel profile-block">

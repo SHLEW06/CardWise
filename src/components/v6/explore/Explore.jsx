@@ -27,6 +27,7 @@ export default function Explore({ profile: raw, onOpenCard }) {
   const [q, setQ] = useState("");
   const [chip, setChip] = useState("foryou");
   const [feeKey, setFeeKey] = useState("any");
+  const [cardType, setCardType] = useState("any");
   const [approval, setApproval] = useState(null);
   const [availability, setAvailability] = useState("any");
   const [issuer, setIssuer] = useState("");
@@ -36,7 +37,7 @@ export default function Explore({ profile: raw, onOpenCard }) {
   const [comparing, setComparing] = useState(false);
   const dq = useDeferredValue(q);
   const feeMax = FEE_FILTERS.find((f) => f.key === feeKey).max;
-  const rows = useMemo(() => exploreRows(profile, { q: dq, chip, feeMax, approval, availability, issuer, sort }), [profile, dq, chip, feeMax, approval, availability, issuer, sort]);
+  const rows = useMemo(() => exploreRows(profile, { q: dq, chip, feeMax, cardType, approval, availability, issuer, sort }), [profile, dq, chip, feeMax, cardType, approval, availability, issuer, sort]);
   const togglePick = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : p.length >= 3 ? p : [...p, id]));
 
   return (
@@ -69,6 +70,11 @@ export default function Explore({ profile: raw, onOpenCard }) {
         <div className="panel explore-filters">
           <fieldset className="survey-group"><legend className="t-h3">Yearly fee</legend>
             <div className="chip-wrap" role="radiogroup" aria-label="Yearly fee">{FEE_FILTERS.map((f) => <Choice key={f.key} radio pill selected={feeKey === f.key} onSelect={() => setFeeKey(f.key)}>{f.label}</Choice>)}</div>
+          </fieldset>
+          <fieldset className="survey-group"><legend className="t-h3">Type</legend>
+            <div className="chip-wrap" role="radiogroup" aria-label="Card type">
+              {[["any", "Any"], ["personal", "Personal"], ["business", "Business"], ["student", "Student"], ["secured", "Secured"]].map(([k, l]) => <Choice key={k} radio pill selected={cardType === k} onSelect={() => setCardType(k)}>{l}</Choice>)}
+            </div>
           </fieldset>
           <fieldset className="survey-group"><legend className="t-h3">Approval</legend>
             <div className="chip-wrap" role="radiogroup" aria-label="Approval">
