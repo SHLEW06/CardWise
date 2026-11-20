@@ -7,7 +7,7 @@
 import { BY_ID, CARDS } from "../../data/cards/index.js";
 import { normalizeProfile, hotelNights } from "../profileDefaults.js";
 import { cardFee, loungeBreakdown, bagValue, directBase, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "./value.js";
-import { cardPointValue } from "./pointValues.js";
+import { cardPointValue, currencyValue, convertsTo, partnerShortName, FLEX_CURRENCIES } from "./pointValues.js";
 import { FREE_NIGHT_P_USE, STATUS_VALUE } from "../../data/benefitUsage.js";
 import { UNCAPPED_FREE_NIGHT_POINTS } from "../../data/benefitUsage.js";
 import { programCpp } from "../../data/valueModes.js";
@@ -140,8 +140,23 @@ export function explainCard(cardId, baseWallet, rawProfile, walletValue) {
      same on both sides). Lane deltas above are the per-category view. */
   const earned = after.E - before.E;
   const benefitTotal = after.U - before.U;
+  /* v7b 2.4: ecosystem credit — points this card lets the wallet move to
+     partners the person would use (its own, or ones it unlocks). */
+  const ecosystem = [];
+  const after2 = [...base, cardId];
+  for (const cur of FLEX_CURRENCIES) {
+    const earns = (w) => w.some((id) => BY_ID[id]?.pointCurrency === cur || convertsTo(BY_ID[id], w) === cur);
+    if (!earns(after2)) continue;
+    const before = earns(base) ? currencyValue(cur, profile, base).cpp : 1;
+    const v = currencyValue(cur, profile, after2);
+    if (v.cpp > before + 0.005 && v.partners.length) {
+      const names = v.partners.map((x) => partnerShortName(x.key));
+      ecosystem.push({ currency: cur, before, after: v.cpp, partners: names,
+        text: `Opens transfers to ${names.slice(0, 3).join(", ")}${names.length > 3 ? " and more" : ""}, which you'd use: ≈ ${Math.round(v.cpp * 100) / 100}¢ a point instead of ${Math.round(before * 100) / 100}¢.` });
+    }
+  }
   return {
-    cardId, held, lanes, benefits, lounge, fee, hurdle,
+    cardId, held, lanes, benefits, lounge, fee, hurdle, ecosystem,
     earned, benefitTotal, gain, net: gain - hurdle.total,
     verdict: held ? null : worthVerdict(gain, hurdle.total),
     cpp: cardPointValue(card, profile, [...baseWallet, cardId]).cpp,

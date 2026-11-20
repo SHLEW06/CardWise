@@ -41,6 +41,7 @@ export default function WhyThisCard({ cardId, wallet = [], profile, open: startO
         <div>
           <p className="t-eyebrow v7-hint-label">{label}</p>
           <p className="why-sentence">{whySentence(e)}</p>
+          {e.ecosystem.map((x) => <p key={x.currency} className="t-caption why-eco" data-testid="why-ecosystem">{x.text}</p>)}
           {e.verdict && <p className="t-caption">Worth applying? <strong className={`why-verdict is-${e.verdict.toLowerCase()}`}>{e.verdict}</strong> — gains {money(e.gain)} a year against a {money(e.hurdle.total)} application cost.</p>}
         </div>
         <button type="button" className="v7-btn-quiet" aria-expanded={open} onClick={() => setOpen((o) => !o)}>

@@ -87,6 +87,18 @@ html, body { background: #0B1222 !important; }
 .v5 .show-all { min-height: 40px; padding: 0 12px; border-radius: var(--r-chip); color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--hair-strong); text-underline-offset: 4px; }
 .v5 .show-all:hover { color: var(--ink); text-decoration-color: var(--bronze); }
 
+/* ── Points step (v7b Part 2) ── */
+.v5 .partner-block.is-locked .choice { opacity: .62; }
+.v5 .partner-block.is-locked .choice[aria-pressed="true"] { opacity: .85; }
+.v5 .points-more { display: grid; gap: 10px; padding-top: 32px; }
+.v5 .could-add { background: rgba(26, 39, 66, .45); border-radius: var(--r); padding: 0 16px; }
+.v5 .could-add > summary { cursor: pointer; list-style: none; padding: 14px 0; }
+.v5 .could-add > summary::-webkit-details-marker { display: none; }
+.v5 .could-add[open] { padding-bottom: 16px; }
+.v5 .could-table, .v5 .portal-list { max-width: 760px; }
+.v5 .portal-list td { text-align: left !important; }
+.v5 .why-eco { color: var(--ink-2); }
+
 /* ── Rhythm: sections 96–128px apart ── */
 .v5 .home-below { gap: clamp(64px, 7vw, 112px); }
 .v5 .lab { gap: clamp(48px, 6vw, 96px); }

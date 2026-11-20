@@ -889,7 +889,8 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 | Part | State |
 |---|---|
 | 1. Look and feel | done |
-| 2–6, golden | in progress |
+| 2. Points step | done |
+| 3–6, golden | in progress |
 
 ## Part 1 — premium navy (2026-11-20)
 
@@ -904,3 +905,20 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 - `<ChipList>`: about 6 per group + "Show all (N)" (survey chip groups,
   partner picker; hotels show all so "Not sure" is always visible).
 - Screenshots: `screenshots/v7b/styletile-{1280,1440,1600}.png`.
+
+## Part 2 — points step (2026-11-20)
+
+- `PartnerPicker` rebuilt: (1) every flexible currency held, incl. cash
+  cards that convert (test: Amex Gold → Amex points shows beside Chase —
+  the repo's own data already listed MR, so the owner's missing-MR case is
+  covered by the regression test rather than reproduced); (2) locked
+  transfers — header stays at cash value, partners dimmed, "Unlocks with
+  Sapphire Preferred / Reserve", each partner's value with Preferred and
+  with Reserve (Hyatt 1.24¢ / 1.65¢); (3) "Programs you could add" for every
+  other flexible currency (collapsed: partners, ratios, values); (4) every
+  travel portal with the person's cards there and the best card for it.
+- Ecosystem credit: the optimizer already prices a currency by the wallet
+  that unlocks it and the person's picks across programs; "Why this card?"
+  now says "Opens transfers to X, which you'd use: ≈ Y¢ a point instead of
+  1¢" (`explainCard().ecosystem`).
+- Tests: `v7bPart2.test.jsx` (6).
