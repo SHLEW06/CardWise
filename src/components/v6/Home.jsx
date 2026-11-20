@@ -5,6 +5,7 @@
    granted; the top offers to add; links into Wallet Lab and Explore.
    No dense panels.
    ========================================================================== */
+import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
@@ -136,7 +137,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
               {near.map((n) => (
                 <li key={n.store.key} className="glass near-chip">
                   <span className="near-name">{n.store.name}</span>
-                  <span className="t-caption">{n.best ? `${cardDisplayName(BY_ID[n.best.cardId])} · ≈ ${(Math.round(n.best.pct * 10) / 10)}% back` : ""}</span>
+                  <span className="t-caption">{n.best ? `${cardDisplayName(BY_ID[n.best.cardId])} · ${formatPctBack(n.best.pct)}` : ""}</span>
                   {n.offer && <span className="tag tag-gold">{n.offer}</span>}
                 </li>
               ))}

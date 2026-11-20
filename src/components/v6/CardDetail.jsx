@@ -8,6 +8,7 @@
    (The v4 ValueBreakdown ran the legacy engine; bridging the profile still
    gave a second set of numbers for the same card, so it was replaced.)
    ========================================================================== */
+import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, ChevronDown, Utensils, Plane, BedDouble, Armchair, Luggage, Car, ShieldCheck, Star, Gift, Ticket, Tv, ShoppingBag } from "lucide-react";
@@ -26,7 +27,7 @@ import { cardDisplayName } from "../../data/cardNames.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
-const pct = (p) => `≈ ${(Math.round(p * 10) / 10).toString()}% back`;
+const pct = (p) => formatPctBack(p);   // v7 G: one formatter
 export const BUCKET_LABEL = {
   dining: "dining", groceries: "groceries", warehouse: "warehouse clubs", gas: "gas", gasCostco: "gas at Costco", ev: "EV charging",
   transit: "rides and transit", flights: "flights", hotels: "hotels", rentals: "vacation rentals", streaming: "streaming",

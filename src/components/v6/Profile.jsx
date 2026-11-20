@@ -5,6 +5,8 @@
    Sections whose feature arrives in a later milestone render the slot they
    will fill (`slots` prop) so the page structure is final now.
    ========================================================================== */
+import { PERK_BY_KEY } from "../../data/creditBrands.js";
+const LOUNGE_WORDS = { no: "not at all", sometimes: "a few visits a year", yes: "most trips", later: "decide later" };
 import React, { useEffect, useMemo, useState } from "react";
 import { loadStrategies } from "../../firebase/firestore.js";
 import { ChevronRight } from "lucide-react";
@@ -31,8 +33,8 @@ export function answerSummaries(p) {
   return [
     { step: "cards", title: "Cards you have", value: list(p.cardsHeld.map((id) => cardDisplayName(BY_ID[id])).filter(Boolean), "No cards yet") },
     { step: "spend", title: "Spending", value: `${money(yearly / 12)} a month · ${money(yearly)} a year` },
-    { step: "travel", title: "Travel", value: p.travel.trips ? `${p.travel.trips} trips a year${p.travel.homeAirport ? ` from ${p.travel.homeAirport}` : ""} · lounges: ${p.travel.lounges}` : "You don't fly" },
-    { step: "brands", title: "Brands you use", value: list([...p.brands.airlines, ...p.brands.hotels, ...p.brands.everyday].map(cap)) },
+    { step: "travel", title: "Travel", value: p.travel.trips ? `${p.travel.trips} trips a year${p.travel.homeAirport ? ` from ${p.travel.homeAirport}` : ""}${p.brands.airlines.length ? ` · ${list(p.brands.airlines.map(cap))}` : ""}${p.brands.hotels.length ? ` · ${list(p.brands.hotels.map(cap))}` : ""} · lounges: ${LOUNGE_WORDS[p.travel.lounges] || p.travel.lounges}` : "You don't fly" },
+    { step: "brands", title: "Card perks", value: p.brands.perks.length || p.brands.perksMaybe.length ? `${list(p.brands.perks.map((k) => PERK_BY_KEY[k]?.label || cap(k)), "none")} · would use: ${list(p.brands.perksMaybe.map((k) => PERK_BY_KEY[k]?.label || cap(k)), "none")}` : "None picked" },
     { step: "fee", title: "Fee budget", value: p.feeBudget === Infinity ? "No limit" : `${money(p.feeBudget)} a year, all cards` },
     { step: "credit", title: "Credit", value: `${p.credit.score ? `About ${p.credit.score}` : "Score not given"} · ${p.credit.newCards24mo} new cards in 2 years` },
   ];

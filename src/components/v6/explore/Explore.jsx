@@ -5,6 +5,7 @@
    "≈ $X a year to you" · fit · approval · availability, and Compare 2–3
    (replaces CardComparison, DiscoverHome, GoalShelf).
    ========================================================================== */
+import { formatPctBack } from "../../../engine/v5/valuation.js";
 import CompareTable from "../../v7/CompareTable.jsx";
 import React, { useDeferredValue, useMemo, useState } from "react";
 import { Search, X, SlidersHorizontal } from "lucide-react";
@@ -19,7 +20,7 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { BUCKET_LABEL } from "../CardDetail.jsx";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
-const pct = (p) => `≈ ${(Math.round(p * 10) / 10).toString()}% back`;
+const pct = (p) => formatPctBack(p);   // v7 G: one formatter
 
 export default function Explore({ profile: raw, onOpenCard }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);

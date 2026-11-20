@@ -537,7 +537,7 @@ rendered-face setting for launch.
 | D. Wallet Lab | done |
 | E. Flights & hotels | done (automatic portal prices + cabin markup on hold) |
 | F. Near me | done |
-| G. Small fixes | in progress |
+| G. Small fixes | done |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -789,5 +789,15 @@ Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-
   home airport gets malls and outlets from OpenStreetMap within 40 km
   (cached per session).
 
+## Part G — small fixes (2026-11-20)
+
+- Number styling: display numbers go through `<Num>` (Boska lining figures,
+  plain zero) — hero, big numbers, dial (restyle commit); test.
+- Survey labels: step 4 is "Card perks"; mode descriptions say what's asked;
+  Profile's summaries show perks (use / would use) and lounges in words.
+- One "% back" function: `pctBack` / `backPct` compute, `formatPctBack`
+  shows; Card detail, Checkout, Explore, Home and "Your points" now use it,
+  and a test fails if a screen formats its own.
+
 ## Next (v7)
-Part G, then screenshots + the report.
+Screenshots + the report, then stop.

@@ -9,7 +9,7 @@ export const STEP_DEFS = [
   { id: "cards", title: "Cards you have", star: true },
   { id: "spend", title: "Spending", star: true },
   { id: "travel", title: "Travel", star: true },
-  { id: "brands", title: "Brands you use", star: true },
+  { id: "brands", title: "Card perks", star: true },
   { id: "fee", title: "Fee budget", star: true },
   { id: "credit", title: "Credit", star: false },
   { id: "points", title: "Point values", star: false },

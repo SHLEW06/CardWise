@@ -7,6 +7,7 @@
    picked"). Pure; plain words only.
    ========================================================================== */
 
+import { formatPctBack } from "./valuation.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { PROGRAMS, LOYALTY } from "../../data/programs.js";
 import { VAL_META } from "../../data/valuations.js";
@@ -40,7 +41,7 @@ export const CHASE_NOTE = "Freedom points are worth 1¢ on their own. Add a Sapp
 
 const pctText = (pct) => {
   const r = Math.round(pct * 10) / 10;
-  return `≈ ${Number.isInteger(r) ? r : r.toFixed(1)}% back`;
+  return formatPctBack(r);   // v7 G: one formatter
 };
 
 /** Spend-weighted % back the person gets from these cards, where they are

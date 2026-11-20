@@ -5,6 +5,7 @@
    Location: asked only on tap, kept in memory for this tab, sent only to
    OpenStreetMap's public places service to find stores — never to CardWise.
    ========================================================================== */
+import { formatPctBack } from "../../../engine/v5/valuation.js";
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, MapPin, Zap, Store, Globe } from "lucide-react";
 import CardFace from "../../v5/CardFace.jsx";
@@ -22,7 +23,7 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 
 const money = (n) => `$${(Math.round(n * 100) / 100).toFixed(2).replace(/\.00$/, "")}`;
-const pct = (p) => `≈ ${(Math.round(p * 10) / 10).toString()}% back`;
+const pct = (p) => formatPctBack(p);   // v7 G: one formatter
 const MODES = [["search", "Search"], ["near", "Near me"], ["category", "Best by category"], ["travel", "Flights & hotels"]];
 const QUICK = ["Walmart", "Target", "Amazon", "Nike", "lululemon", "Costco", "Starbucks", "Whole Foods", "Shell", "CVS"];
 

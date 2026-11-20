@@ -119,8 +119,8 @@ function ModeStep({ headRef, onPick }) {
     <>
       <Head headRef={headRef} title="Let's find your cards." sub="Every question is optional — skip anything and we'll use a sensible default. You can change any answer later from your profile." />
       <div className="choice-stack mode-choices">
-        <Choice onSelect={() => onPick("quick")} sub="Cards, spending, travel, brands and your fee budget.">Quick · {MODES.quick.minutes} min</Choice>
-        <Choice onSelect={() => onPick("thorough")} sub="Adds credit, point values and your points explained — the sharpest answer.">Thorough · {MODES.thorough.minutes} min</Choice>
+        <Choice onSelect={() => onPick("quick")} sub="Your cards, spending, travel, card perks and fee budget.">Quick · {MODES.quick.minutes} min</Choice>
+        <Choice onSelect={() => onPick("thorough")} sub="Also asks about your credit and where your points would go — the sharpest answer.">Thorough · {MODES.thorough.minutes} min</Choice>
       </div>
     </>
   );
