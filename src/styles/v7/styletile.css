@@ -72,9 +72,11 @@
 .ink-stone .v7-seg button:hover { color: var(--text); }
 .ink-stone .v7-seg button.is-on { background: var(--text); color: var(--bg); font-weight: 500; }
 
-/* "What you're missing" hint: a bronze rule, plain sentence, math on click. */
-.ink-stone .v7-hint { border-left: 2px solid var(--bronze); padding: 4px 0 4px 18px; display: grid; gap: 14px; max-width: 40em; }
-.ink-stone .v7-hint-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: end; }
+/* "What you're missing" hint: a plain block — bronze label, one sentence,
+   "Show the math" link. No left-border accents anywhere (v7 review). */
+.ink-stone .v7-hint { display: grid; gap: 10px; max-width: 40em; }
+.ink-stone .v7-hint-row { display: grid; gap: 4px; }
+.ink-stone .v7-hint .v7-btn-quiet { justify-self: start; height: auto; padding: 4px 0; color: var(--text); text-decoration-color: var(--line-strong); }
 .ink-stone .v7-hint-label { color: var(--bronze); margin-bottom: 4px; }
 
 .ink-stone .v7-math, .ink-stone .v7-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }

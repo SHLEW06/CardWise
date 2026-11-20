@@ -445,7 +445,9 @@ No gold, no second accent. Selected choice controls are ivory fill with ink
 text and a check (§9.6 rule, recoloured).
 
 **Surfaces.** Flat fills with a 1px `--line`. No glass blur, glows, lattices,
-sheen or gradients on panels. Corners 0–4px; only primary buttons are pills
+sheen or gradients on panels. **No left-border accent bars anywhere** (review
+2026-11-20): a hint is a plain block — bronze label, one sentence, a "Show the
+math" link. Corners 0–4px; only primary buttons are pills
 (ivory on ink). Card pictures keep a real card radius and one soft shadow.
 
 **Focal image — the only texture.** One art-directed image per hero: a
@@ -480,7 +482,10 @@ zeros to its plain tabular zero, which is no wider. Table numbers: Switzer.
 **Card pictures.** Issuer photos for now, with each image's source URL on
 record; a setting switches every card to our own rendered face
 (`<CardPhoto mode="issuer|rendered">`, `src/components/v7/CardPhoto.jsx`)
-for public launch. The tile shows both.
+for public launch. The tile shows both. Every card with a photo has a recorded
+face colour (`PHOTO_MATERIALS` in `src/data/cardMaterials.js`, sampled from
+the photo), and every photo's source URL is listed in
+`docs/CARD_ART_SOURCES.md` (`npm run art:sources`).
 
 **Product rules that shape screens** (decided 2026-11-20, apply in Parts A–G):
 at most one new card every 6 months, with When to apply sequencing the rest;

@@ -41,9 +41,9 @@ export function FocalStandIn({ title = "A navy card with a bronze edge on warm s
     <svg className="focal-svg" viewBox="0 0 1000 1250" preserveAspectRatio="xMidYMid slice" role="img" aria-label={title}>
       <defs>
         <linearGradient id={`${id}-stone`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#5E5447" />
-          <stop offset=".5" stopColor="#40382F" />
-          <stop offset="1" stopColor="#241F1A" />
+          <stop offset="0" stopColor="#6B5A45" />
+          <stop offset=".5" stopColor="#4A3D2F" />
+          <stop offset="1" stopColor="#2B221A" />
         </linearGradient>
         <linearGradient id={`${id}-face`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#101D3C" />
@@ -51,10 +51,10 @@ export function FocalStandIn({ title = "A navy card with a bronze edge on warm s
           <stop offset="1" stopColor="#060B1A" />
         </linearGradient>
         <linearGradient id={`${id}-edge`} x1="0" y1="0" x2="1" y2=".35">
-          <stop offset="0" stopColor="#6A5030" />
-          <stop offset=".38" stopColor="#D2B07A" />
-          <stop offset=".52" stopColor="#8E6D40" />
-          <stop offset="1" stopColor="#3C2D19" />
+          <stop offset="0" stopColor="#7A5D36" />
+          <stop offset=".34" stopColor="#E6C892" />
+          <stop offset=".5" stopColor="#A9824B" />
+          <stop offset="1" stopColor="#4A3820" />
         </linearGradient>
         <radialGradient id={`${id}-vignette`} cx=".62" cy=".42" r=".85">
           <stop offset=".55" stopColor="#000" stopOpacity="0" />
@@ -70,6 +70,11 @@ export function FocalStandIn({ title = "A navy card with a bronze edge on warm s
           <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" stitchTiles="stitch" />
           <feColorMatrix type="saturate" values="0" />
         </filter>
+        <clipPath id={`${id}-rim`}>
+          <path clipRule="evenodd" transform={`rotate(${ROT} ${CX} ${CY})`}
+            d={`M${card.x + 34} ${card.y}h${W - 68}a34 34 0 0 1 34 34v${H - 68}a34 34 0 0 1 -34 34h-${W - 68}a34 34 0 0 1 -34 -34v-${H - 68}a34 34 0 0 1 34 -34z
+                M${card.x + 35} ${card.y + 6}h${W - 70}a29 29 0 0 1 29 29v${H - 70}a29 29 0 0 1 -29 29h-${W - 70}a29 29 0 0 1 -29 -29v-${H - 70}a29 29 0 0 1 29 -29z`} />
+        </clipPath>
         <clipPath id={`${id}-card`}>
           <rect {...card} rx="34" transform={`rotate(${ROT} ${CX} ${CY})`} />
         </clipPath>
@@ -78,7 +83,7 @@ export function FocalStandIn({ title = "A navy card with a bronze edge on warm s
       {/* Stone in shade */}
       <rect width="1000" height="1250" fill={u("stone")} />
       {/* Window light on the stone */}
-      <g opacity=".5" filter={u("soft")}><Panes /></g>
+      <g opacity=".64" filter={u("soft")}><Panes fill="#F6E4C2" /></g>
       {/* Stone mottling + grain (texture lives here only) */}
       <rect width="1000" height="1250" filter={u("mottle")} opacity=".32" style={{ mixBlendMode: "soft-light" }} />
       <rect width="1000" height="1250" filter={u("grain")} opacity=".14" style={{ mixBlendMode: "overlay" }} />
@@ -94,6 +99,11 @@ export function FocalStandIn({ title = "A navy card with a bronze edge on warm s
         {/* A quiet engraved chip, bronze on navy */}
         <rect x={card.x + 86} y={card.y + 196} width="104" height="80" rx="12" fill="none" stroke="#B08D57" strokeOpacity=".55" strokeWidth="2" />
         <path d={`M${card.x + 86} ${card.y + 236}h104M${card.x + 138} ${card.y + 196}v80`} stroke="#B08D57" strokeOpacity=".35" strokeWidth="1.5" />
+      </g>
+
+      {/* Where the window light crosses the bronze rim, the metal catches it */}
+      <g clipPath={u("rim")}>
+        <g opacity=".7" filter={u("soft")} style={{ mixBlendMode: "screen" }}><Panes fill="#FFE7B8" /></g>
       </g>
 
       {/* The same light falling across the card */}
