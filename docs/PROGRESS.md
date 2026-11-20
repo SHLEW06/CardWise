@@ -890,7 +890,8 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 |---|---|
 | 1. Look and feel | done |
 | 2. Points step | done |
-| 3–6, golden | in progress |
+| 3. Survey: where people fly | done |
+| 4–6, golden | in progress |
 
 ## Part 1 — premium navy (2026-11-20)
 
@@ -922,3 +923,34 @@ tile screenshots are in `screenshots/v7b/` for the end review.
   now says "Opens transfers to X, which you'd use: ≈ Y¢ a point instead of
   1¢" (`explainCard().ecosystem`).
 - Tests: `v7bPart2.test.jsx` (6).
+
+## Part 3 — where people fly (2026-11-20)
+
+- Travel step rebuilt: home airports (metros count once) with trips and "I
+  fly for work"; destinations per airport (chips + search) with trips;
+  "Leave from" on long international routes; inferred airlines shown as
+  "Airlines you'd likely fly: …" with "Best value: let CardWise decide"
+  (default) or "I'll choose"; cabin; checked bags per trip; hotels with the
+  footprint pick and why; lounges three ways + networks.
+- Engine: `data/routes.js`, `engine/v5/routes.js`, `data/hotelFootprint.js`,
+  `engine/v5/hotelPick.js`; profile `travel.airports`, `tripsByAirline`,
+  `workPrograms`, `brands.airlinesPicked / hotelsPicked / hotelPick`.
+  Bags, companion fares and airline clubs use trips on that airline.
+- Niche / portal-tied credits (Renowned Hotels, JSX, Avis, Turo, Blacklane,
+  StubHub, LoungeBuddy …) count $0 unless picked — this is what kept United
+  Quest in the golden wallet.
+- Robinhood: "Cash you'd keep at Robinhood" (fee step); offset = cash ×
+  max(0, 3.6% − 4.2%) = $0 today; rates sourced, editable.
+- "Lounge & credits" sample + "Compare premium lounge cards" in Wallet Lab.
+- "Best points for where you fly" ranking in the points step.
+- Old profiles: a saved home airport + trips opens as the first airport row,
+  keeping their airline picks.
+- Tests: `v7bPart3.test.jsx` (14) + rewritten travel tests.
+
+### Unverified (v7b Part 3)
+- Route data (nonstop carriers per destination) — compiled from the owner's
+  examples and mid-2026 knowledge, not checked against live route maps.
+- Hotel footprint scores — modeling defaults.
+- Robinhood Gold page shows 3.6% in the text and 3.25% in an image's alt
+  text; 3.6% used. The 4.2% "typical HYSA" is the median of Bankrate's
+  best-rates list (a top-rates list, not an all-bank average).

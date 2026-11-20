@@ -10,7 +10,7 @@ import { AIRPORTS } from "../../data/airports.js";
 import { PROGRAMS, LOYALTY } from "../../data/programs.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { AIRLINE_CURRENCIES, HOTEL_CURRENCIES } from "./value.js";
-import { isUnlocked, FLEX_CURRENCIES } from "./pointValues.js";
+import { isUnlocked, FLEX_CURRENCIES, partnerOptions } from "./pointValues.js";
 import { transferRatio } from "../transferValue.js";
 
 /* ── A7: fee ladder ──────────────────────────────────────────────────────── */
@@ -116,7 +116,7 @@ export function loyaltyStrategies(rawProfile, { max = 3 } = {}) {
     combos.push({ airlines: [airlines[0]], hotels: hotels.slice(0, 2) });
   }
   const runs = combos.map((c) => {
-    const p = { ...profile, brands: { ...profile.brands, airlines: c.airlines, hotels: c.hotels }, partnerPicks: {} };
+    const p = { ...profile, travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: "manual" }, brands: { ...profile.brands, airlines: c.airlines, airlinesPicked: c.airlines, hotels: c.hotels, hotelsPicked: c.hotels }, partnerPicks: {} };
     const r = optimalWallet(p, { tag: `strategy:${[...c.airlines, ...c.hotels].join("+")}` });
     const programs = [...c.airlines, ...c.hotels];
     const feed = feeders(r.wallet, programs);
@@ -147,6 +147,32 @@ export function loyaltyStrategies(rawProfile, { max = 3 } = {}) {
   return top;
 }
 
+/* ── v7b 3: flexible points ranked by where they fly ─────────────────────── */
+
+/**
+ * Each flexible currency scored by the trips it can pay for: Σ over the
+ * airline programs they'd fly (trips on it × the best value one point gets
+ * there, once the currency's transfers are unlocked). Hotels are shown on
+ * their own, so a hotel-heavy currency doesn't outrank the airline they
+ * actually fly. → [{ cur, name, score, reach: [{ program, trips, cpp }] }]
+ */
+export function rankCurrencies(rawProfile) {
+  const profile = normalizeProfile(rawProfile);
+  const trips = Object.keys(profile.travel.tripsByAirline || {}).length
+    ? profile.travel.tripsByAirline
+    : Object.fromEntries(profile.brands.airlines.map((a) => [a, profile.travel.trips || 1]));
+  const UNLOCK = { chase: "csr", citi: "citi-strata-elite", c1: "venture-x", wf: "wf-autograph-journey" };
+  return FLEX_CURRENCIES.map((cur) => {
+    const wallet = [...profile.cardsHeld, ...(UNLOCK[cur] ? [UNLOCK[cur]] : [])];
+    const opts = partnerOptions(cur, wallet, profile);
+    const reach = Object.entries(trips).map(([program, n]) => {
+      const o = opts.find((x) => x.key === program && x.effectiveCpp != null);
+      return o ? { program, trips: n, cpp: o.effectiveCpp } : null;
+    }).filter(Boolean);
+    return { cur, name: PROGRAMS[cur].short || PROGRAMS[cur].name, score: reach.reduce((t, r) => t + r.trips * r.cpp, 0), reach };
+  }).sort((a, b) => b.score - a.score || (a.cur < b.cur ? -1 : 1));
+}
+
 /* ── B1: when the valuation mode changes the answer ──────────────────────── */
 
 /**
@@ -175,11 +201,12 @@ export function modeSensitivity(rawProfile, cardName = (id) => BY_ID[id]?.name |
 export function applyStrategy(rawProfile, strategy) {
   const profile = normalizeProfile(rawProfile);
   const airlines = [...new Set([...strategy.airlines, ...profile.brands.airlines])];
-  const keepHotels = profile.brands.hotels.filter((k) => !["unsure", "independent"].includes(k));
+  const keepHotels = profile.brands.hotelsPicked.filter((k) => !["unsure", "independent"].includes(k));
   const hotels = [...new Set([...strategy.hotels, ...keepHotels])];
   const partnerPicks = { ...profile.partnerPicks };
   /* Explicit partner lists get the new programs; currencies still on the
      default (their survey brands) pick them up from `brands`. */
   for (const f of strategy.feeders) if (Array.isArray(partnerPicks[f.cur])) partnerPicks[f.cur] = [...new Set([...partnerPicks[f.cur], ...f.feeds])];
-  return { brands: { ...profile.brands, airlines, hotels }, partnerPicks };
+  /* A strategy is a manual pick: it replaces "Best value" and "Not sure". */
+  return { travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: "manual" }, brands: { ...profile.brands, airlines, airlinesPicked: airlines, hotels, hotelsPicked: hotels }, partnerPicks };
 }

@@ -56,6 +56,7 @@ export const PERK_BRANDS = [
   { key: "avis", label: "Avis / Budget", group: "travel", pattern: /avis|budget/i },
   { key: "turo", label: "Turo", group: "travel", pattern: /\bturo\b/i },
   { key: "jsx", label: "JSX", group: "travel", pattern: /\bjsx\b/i },
+  { key: "renowned", label: "Renowned Hotels (via Chase Travel)", group: "travel", pattern: /renowned hotels/i },
 ];
 
 /* Splurge credits name several merchants; American Airlines is an airline
@@ -80,12 +81,19 @@ export const PERK_BY_KEY = Object.fromEntries(ALL.map((b) => [b.key, b]));
 /* v5 "Everyday" picks that were really perk brands. */
 export const LEGACY_PERK_ALIASES = { "uber/lyft": ["uber", "lyft"], doordash: ["doordash"], walmart: ["walmart+"] };
 
+/* v7b 4.4: niche or portal-tied credits — whatever their kind (JSX is
+   typed as an airline credit, Renowned Hotels as a portal credit) — count
+   $0 unless the person picked them. */
+export const NICHE_CREDIT = /renowned hotels|\bjsx\b|avis|budget|\bturo\b|blacklane|stubhub|viagogo|loungebuddy|1stdibs|live nation/i;
+export const isNicheCredit = (credit) => NICHE_CREDIT.test(String(credit?.name || ""));
+
 /** Kinds of credit that are brand-bound (the rest are travel or broad). */
 export const BRAND_CREDIT_KINDS = new Set(["merchant", "dining", "promo", "membership"]);
 const TRAVEL_MEMBERSHIP = /global entry|tsa|precheck|nexus/i;
 
 /** Is this credit tied to brands (as opposed to travel or a general credit)? */
 export function isBrandCredit(credit) {
+  if (isNicheCredit(credit)) return true;
   if (!BRAND_CREDIT_KINDS.has(credit.kind)) return false;
   if (credit.kind === "membership" && TRAVEL_MEMBERSHIP.test(credit.name)) return false;
   return !GENERAL_CREDITS.some((re) => re.test(credit.name));

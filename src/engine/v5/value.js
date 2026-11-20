@@ -18,6 +18,7 @@ import {
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
   FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS, INTERESTED_FACTOR,
+  LOUNGE_BUNDLE_FACTOR, WORK_STATUS_FACTOR, WORK_LOUNGE_FACTOR,
 } from "../../data/benefitUsage.js";
 import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
 import { pctBack, BANK_CURRENCIES } from "./valuation.js";
@@ -375,6 +376,13 @@ export function directBase(profile, bucket, wallet = []) {
 }
 const currencyValueFor = (k, profile, wallet) => cardPointValue({ id: `__${k}`, pointCurrency: k }, profile, wallet).cpp;
 
+/** v7b: trips on one airline — from where they fly when known (an ATL
+    Delta flyer has 0 United trips), else every trip. */
+export function airlineTrips(profile, airline) {
+  const t = profile.travel.tripsByAirline || {};
+  return Object.keys(t).length ? t[airline] || 0 : profile.travel.trips;
+}
+
 /** Free checked bags $ a year (v7 A2): fee × min(card's bags, bags per trip)
     × 2 ways × trips × share of trips with bags. Not asked → 1 bag, every trip. */
 export function bagValue(card, profile) {
@@ -385,7 +393,8 @@ export function bagValue(card, profile) {
   const perks = profile.travel.airlinePerks;
   if (perks && !perks.includes("bags")) return 0;
   const used = ans ? Math.min(free, ans.perTrip) * ans.share : free;
-  return BAG_FEE * used * profile.travel.trips * 2;
+  /* v7b 4.5: bags per trip × trips on THAT airline × the bag fee. */
+  return BAG_FEE * used * airlineTrips(profile, cardBrand(card)) * 2;
 }
 
 /** Lounge value per network for this card: { [networkKey]: $ }. */
@@ -394,11 +403,16 @@ export function loungeNetworks(card, profile) {
   if (!l || !Array.isArray(l.networks)) return {};
   const interest = LOUNGE_INTEREST[profile.travel.lounges] ?? 0;
   if (!interest) return {};
-  let visits = profile.travel.trips * 2 * interest;
+  const chosen = profile.travel.loungeNetworks || [];        // v7b: [] = whichever is best value
+  const bundle = profile.travel.lounges === "bundle" ? LOUNGE_BUNDLE_FACTOR : 1;
   const out = {};
   for (const n of l.networks) {
     const air = AIRLINE_LOUNGES.find((a) => a.pattern.test(n));
     if (air && !profile.brands.airlines.includes(air.airline)) continue;
+    const nk = networkKey(n);
+    if (chosen.length && !chosen.includes(air ? "airline" : nk)) continue;
+    /* An airline's own clubs only on trips with that airline. */
+    let visits = air ? airlineTrips(profile, air.airline) * 2 * interest * ((profile.travel.workPrograms || []).includes(air.airline) ? WORK_LOUNGE_FACTOR : 1) : profile.travel.trips * 2 * interest;
     /* A visit limit is read only from that network's own label ("15 visits",
        "4 passes a year"). "Priority Pass" contains the word "Pass" but is a
        membership — it must not inherit another network's pass count (it did
@@ -407,7 +421,7 @@ export function loungeNetworks(card, profile) {
     const limit = /(\d+)\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i.exec(n);
     if (limit) v = Math.min(v, Number(limit[1]));
     const key = networkKey(n) || n;
-    const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare);
+    const val = v * LOUNGE_VISIT_VALUE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare) * bundle;
     out[key] = Math.max(out[key] || 0, Math.min(val, LOUNGE_RETAIL_CAP));
   }
   return out;
@@ -421,7 +435,6 @@ export function loungeBreakdown(card, profile) {
   if (!l || !Array.isArray(l.networks)) return [];
   const code = profile.travel.homeAirport;
   const interest = LOUNGE_INTEREST[profile.travel.lounges] ?? 0;
-  const wanted = profile.travel.trips * 2 * interest;
   const site = code ? LOUNGE_SITES[code] : null;
   const vals = loungeNetworks(card, profile);
   return l.networks.map((n) => {
@@ -429,6 +442,8 @@ export function loungeBreakdown(card, profile) {
     const air = AIRLINE_LOUNGES.find((a) => a.pattern.test(n));
     const skipped = air && !profile.brands.airlines.includes(air.airline);
     const limit = /(\d+)\s+(?:[A-Za-z-]+\s+){0,2}(?:passes|visits)\b/i.exec(n);
+    /* Same visits as loungeNetworks: an airline's clubs only on its trips. */
+    const wanted = (air ? airlineTrips(profile, air.airline) * ((profile.travel.workPrograms || []).includes(air.airline) ? WORK_LOUNGE_FACTOR : 1) : profile.travel.trips) * 2 * interest;
     const visits = limit ? Math.min(wanted, Number(limit[1])) : wanted;
     return {
       network: n, key, visits, limit: limit ? Number(limit[1]) : null,
@@ -452,7 +467,8 @@ function statusValue(status, profile) {
   if (!status?.program || !status?.tier) return 0;
   const programs = String(status.program).split(/[+/]/);
   if (!programs.some((p) => pickedBrand(profile, p))) return 0;
-  return STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0;
+  const work = programs.some((p) => (profile.travel.workPrograms || []).includes(p)) ? WORK_STATUS_FACTOR : 1;
+  return Math.round((STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0) * work);
 }
 
 /** Protections this card carries (keys from benefitUsage PROTECTIONS). */
@@ -502,9 +518,10 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   for (const cc of card.companionCertificates || []) {
     const face = cc.estValue || 0;
     const wantsCompanion = !perks || perks.includes("companion");
-    const ok = pickedCardBrand && trips >= 2 && reachable(cc.spend) && wantsCompanion;
+    const onAirline = airlineTrips(profile, brand);
+    const ok = pickedCardBrand && onAirline >= 2 && reachable(cc.spend) && wantsCompanion;
     const id = `${card.id}#companion-${slug(cc.name)}`;
-    if (ok) items.push({ id, label: cc.name, face, value: Math.round(face * COMPANION_P_USE * Math.min(1, trips / 3)), kind: "companion" });
+    if (ok) items.push({ id, label: cc.name, face, value: Math.round(face * COMPANION_P_USE * Math.min(1, onAirline / 3)), kind: "companion" });
     else unused.push({ id, label: cc.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : trips < 2 ? "Needs 2+ trips a year" : !wantsCompanion ? "You didn't pick companion fares" : `Needs $${(cc.spend || 0).toLocaleString("en-US")} a year on this card` });
   }
 
@@ -561,7 +578,20 @@ export function membershipCost(card, profile) {
   if (!sub) return null;
   const key = MEMBERSHIP_KEY[sub.name] || null;
   const paid = paysMembership(profile, key);
-  return { name: sub.name, key, annual: sub.annual || 0, paid, counted: paid ? 0 : sub.annual || 0 };
+  const annual = sub.annual || 0;
+  /* v7b 3.10: Robinhood Gold is offset ONLY by the extra interest on cash
+     they'd keep there over a typical high-yield savings account
+     (cash × max(0, Gold APY − HYSA APY)). With Gold at 3.6% and a typical
+     HYSA at 4.2% (Nov 2026) that's $0. */
+  const offset = key === "robinhood-gold" && !paid ? Math.min(annual, robinhoodInterestEdge(profile)) : 0;
+  return { name: sub.name, key, annual, paid, offset: Math.round(offset), counted: paid ? 0 : Math.round(annual - offset) };
+}
+/** $ a year of extra interest from cash kept at Robinhood vs a typical HYSA. */
+export function robinhoodInterestEdge(profile) {
+  const cash = profile?.robinhoodCash || 0;
+  const r = profile?.rates || {};
+  const edge = ((r.robinhoodGoldApy ?? 0) - (r.hysaApy ?? 0)) / 100;
+  return Math.max(0, cash * edge);
 }
 export function cardFee(card, profile) {
   return (card.annualFee || 0) + (membershipCost(card, profile)?.counted || 0);

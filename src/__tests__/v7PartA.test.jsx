@@ -143,24 +143,24 @@ describe("A8 · big loans", () => {
 });
 
 describe("Part A screens", () => {
-  it("travel: cabin, booking, airline perks with bag questions; saves them", () => {
-    render(<Survey initialMode="quick" initialStepId="travel" />);
-    fireEvent.click(screen.getByRole("radio", { name: "6–10" }));
+  it("travel: cabin, booking, checked bags per trip; saves them (v7b)", () => {
+    saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 8 }] } });
+    render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
     fireEvent.click(screen.getByRole("radio", { name: "Business or first" }));
     fireEvent.click(screen.getByRole("radio", { name: "Whichever pays more" }));
-    fireEvent.click(screen.getByRole("button", { name: "Free checked bags" }));
-    fireEvent.click(screen.getByRole("radio", { name: "2 bags" }));
-    fireEvent.click(screen.getByRole("radio", { name: "About half" }));
+    fireEvent.click(within(screen.getByRole("radiogroup", { name: "Checked bags per trip" })).getByRole("radio", { name: "2" }));
     cont();
-    expect(loadV5Profile().travel).toMatchObject({ trips: 8, cabin: "business", booking: "best", airlinePerks: ["bags"], bags: { perTrip: 2, share: 0.5 } });
+    expect(loadV5Profile().travel).toMatchObject({ trips: 8, cabin: "business", booking: "best", airlinePerks: ["bags"], bags: { perTrip: 2, share: 1 } });
   });
-  it("lounges: 'Decide later' shows a wallet with lounges and one without", () => {
-    saveV5Profile({ travel: { trips: 8, homeAirport: "ATL" } });
+  it("lounges: three answers; the networks follow-up defaults to best value", () => {
+    saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 8 }] } });
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("radio", { name: /^Decide later/ }));
-    const box = screen.getByTestId("lounge-compare");
-    expect(within(box).getByText("With lounges (most trips)")).toBeInTheDocument();
-    expect(within(box).getByText("Without lounges")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: /^I'd love it if my card included it/ }));
+    const nets = screen.getByRole("group", { name: "Lounge networks" });
+    expect(within(nets).getByRole("button", { name: "Whichever is best value" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(nets).getByRole("button", { name: "Priority Pass" }));
+    cont();
+    expect(loadV5Profile().travel).toMatchObject({ lounges: "bundle", loungeNetworks: ["prioritypass"] });
   });
   it("hotels: 'Not sure — help me choose' opens the strategy helper; using one picks the programs", () => {
     saveV5Profile(ME);

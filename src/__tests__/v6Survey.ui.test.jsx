@@ -113,20 +113,20 @@ describe("2 · spending", () => {
 });
 
 describe("3 · travel", () => {
-  it("home airport typeahead works by code or city; how much lounges matter", () => {
+  it("v7b: home airports by code or city, trips each; airlines inferred; lounges three ways", () => {
     render(<Survey initialMode="quick" initialStepId="travel" />);
-    fireEvent.click(screen.getByRole("radio", { name: "3–5" }));
-    fireEvent.change(screen.getByLabelText("Home airport"), { target: { value: "atlanta" } });
-    fireEvent.click(screen.getByRole("option", { name: /ATL/ }));
-    expect(screen.getByRole("button", { name: /Change home airport ATL/ })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Add a home airport"), { target: { value: "atlanta" } });
+    fireEvent.click(screen.getByRole("option", { name: /ATL · Atlanta/ }));
+    expect(screen.getByLabelText("Round trips a year from ATL")).toHaveValue("4");
+    expect(screen.getByTestId("airlines-inferred")).toHaveTextContent("Airlines you'd likely fly: Delta (most trips)");
     expect(screen.getByText(/Priority Pass is a network of independent lounges/)).toBeInTheDocument();
-    for (const n of ["Not at all", "A few visits a year are nice", "I'd use them most trips", /^Decide later/]) expect(screen.getByRole("radio", { name: n })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("radio", { name: "I'd use them most trips" }));
-    fireEvent.click(screen.getByRole("button", { name: "Delta" }));
+    for (const n of ["I'd pay extra for lounge access", /^I'd love it if my card included it/, "Don't care"]) expect(screen.getByRole("radio", { name: n })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "I'd pay extra for lounge access" }));
     fireEvent.click(screen.getByRole("radio", { name: "4–9" }));
     fireEvent.click(screen.getByRole("button", { name: "Hyatt" }));
     cont();
-    expect(loadV5Profile().travel).toMatchObject({ trips: 4, homeAirport: "ATL", lounges: "yes", hotelNights: 6 });
+    expect(loadV5Profile().travel).toMatchObject({ trips: 4, homeAirport: "ATL", lounges: "yes", hotelNights: 6, airlineChoice: "auto" });
+    expect(loadV5Profile().travel.airports[0]).toMatchObject({ code: "ATL", trips: 4 });
     expect(loadV5Profile().brands).toMatchObject({ airlines: ["delta"], hotels: ["hyatt"] });
   });
   it("airlines: US carriers, every transfer partner and every co-brand, grouped by alliance", () => {
@@ -134,7 +134,9 @@ describe("3 · travel", () => {
     const airPartners = TRANSFER_AIRLINES.filter((k) => LOYALTY[k]?.kind === "air");
     for (const k of airPartners) expect(AIRLINE_KEYS, k).toContain(k);
     for (const c of CARDS) if (LOYALTY[c.pointCurrency]?.kind === "air") expect(AIRLINE_KEYS, c.id).toContain(c.pointCurrency);
-    render(<Survey initialMode="thorough" initialStepId="travel" />);
+    saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 4 }] } });
+    render(<Survey initialMode="thorough" initialStepId="travel" initialProfile={loadV5Profile()} />);
+    fireEvent.click(screen.getByRole("radio", { name: "I'll choose" }));                 // v7b: airlines are inferred unless they choose
     for (const g of ["US airlines", "Star Alliance", "oneworld", "SkyTeam", "Other airlines"]) expect(screen.getByText(g)).toBeInTheDocument();
   });
   it("hotel brands include the big chains and 'whatever's cheapest'", () => {
@@ -215,7 +217,7 @@ describe("editing one step from Profile", () => {
     saveV5Profile({ cardsHeld: ["csr"], feeBudget: 750, travel: { trips: 4, homeAirport: "SEA", lounges: "yes" } });
     const onDone = vi.fn();
     render(<Survey initialProfile={loadV5Profile()} initialStepId="travel" editOnly onDone={onDone} />);
-    expect(screen.getByRole("button", { name: /Change home airport SEA/ })).toBeInTheDocument();
+    expect(screen.getByLabelText("Round trips a year from SEA")).toHaveValue("4");   // v7b: the old answer becomes the first airport row
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     const [p] = onDone.mock.calls[0];
     expect(p).toMatchObject({ cardsHeld: ["csr"], feeBudget: 750 });

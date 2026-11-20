@@ -3,6 +3,7 @@
    single step can be reopened from Profile with the saved values in place.
    Every question is optional; skipping keeps the documented default
    (engine/profileDefaults.js). Quick asks the ★ steps; Thorough asks all. */
+import { AIRPORT_METRO } from "../data/routes.js";
 import { normalizeProfile, FEE_BUDGETS, TRIP_BUCKETS, SCORE_BUCKETS, NEW_CARD_BUCKETS } from "../engine/profileDefaults.js";
 
 export const STEP_DEFS = [
@@ -23,7 +24,16 @@ export const MODES = { quick: { label: "Quick", minutes: 2 }, thorough: { label:
 export const stepsFor = (mode) => STEP_DEFS.filter((s) => mode === "thorough" || s.star).map((s) => s.id);
 
 /** Any saved profile → the survey's draft (normalized, so every field exists). */
-export const draftFrom = (profile) => normalizeProfile(profile || {});
+export function draftFrom(profile) {
+  const p = normalizeProfile(profile || {});
+  /* v7b: a profile saved before home airports had one airport and a trip
+     count. Show it as the first airport row, keeping the airlines they
+     picked ("I'll choose") until they switch to "Best value". */
+  if (!p.travel.airports.length && p.travel.homeAirport && p.travel.trips > 0) {
+    return normalizeProfile({ ...p, travel: { ...p.travel, airports: [{ code: AIRPORT_METRO[p.travel.homeAirport] || p.travel.homeAirport, trips: p.travel.trips, work: false, destinations: [] }], airlineChoice: "manual" } });
+  }
+  return p;
+}
 
 /* ── v5 compatibility: saved v5 answers (raw choices) still decode ── */
 export const EMPTY_ANSWERS = Object.freeze({

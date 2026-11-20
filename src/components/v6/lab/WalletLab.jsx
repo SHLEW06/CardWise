@@ -289,7 +289,9 @@ function SpendDrawer({ draft, setDraft, onClose }) {
 /* ── sample wallets ─────────────────────────────────────────────────────── */
 function Samples({ profile, onLoad }) {
   const samples = useMemo(() => sampleWallets(profile), [profile]);
+  const [premium, setPremium] = useState(null);
   return (
+    <>
     <ul className="samples">
       {samples.map((s) => (
         <li key={s.key}>
@@ -300,9 +302,20 @@ function Samples({ profile, onLoad }) {
             <span className="sample-name">{s.label}</span>
             <span className="t-caption">{money(s.value.net)} a year · {s.ofMax ?? 0}% of your best</span>
           </button>
+          {s.key === "lounge" && !premium && <button className="link" onClick={() => setPremium(sampleWallets(profile, { loungeOptions: true }).find((x) => x.key === "lounge").options)}>Compare premium lounge cards</button>}
         </li>
       ))}
     </ul>
+    {premium && (
+      <table className="v7-table premium-lounge" data-testid="premium-lounge">
+        <caption className="t-caption">Lounge & credits: the best setup built around each premium lounge card, a year after fees.</caption>
+        <thead><tr><th scope="col">Built around</th><th scope="col">Net a year</th><th scope="col"><span className="sr-only">Load</span></th></tr></thead>
+        <tbody>{premium.map((o) => (
+          <tr key={o.cardId}><td>{cardDisplayName(BY_ID[o.cardId])}</td><td className="num-ui">{money(o.net)}</td><td><button className="link" onClick={() => onLoad({ wallet: o.wallet, label: cardDisplayName(BY_ID[o.cardId]), ofMax: null })}>Load</button></td></tr>
+        ))}</tbody>
+      </table>
+    )}
+    </>
   );
 }
 

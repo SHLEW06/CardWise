@@ -21,6 +21,7 @@ import { cardDisplayName } from "../../data/cardNames.js";
 import { ratioText } from "../../engine/v5/pointsExplained.js";
 import { currencyValue, partnerOptions, partnerPicksFor, partnerShortName, isUnlocked, convertsTo, FLEX_CURRENCIES, PARTNER_VALUATIONS_SOURCE } from "../../engine/v5/pointValues.js";
 import { PORTAL_BY_ISSUER } from "../../engine/v5/breakeven.js";
+import { rankCurrencies } from "../../engine/v5/plans.js";
 
 const NAMES = { chase: "Chase points", amex: "Amex points", c1: "Capital One miles", citi: "Citi points", bilt: "Bilt points", wf: "Wells Fargo points" };
 const ONE = { chase: "Chase point", amex: "Amex point", c1: "Capital One mile", citi: "Citi point", bilt: "Bilt point", wf: "Wells Fargo point" };
@@ -153,8 +154,19 @@ export default function PartnerPicker({ profile, currencies, onChange }) {
     const next = now.includes(key) ? now.filter((k) => k !== key) : [...now, key];
     onChange?.({ ...profile.partnerPicks, [cur]: next });
   };
+  const ranked = rankCurrencies(profile).filter((r) => r.score > 0);
   return (
     <div className="partner-picker">
+      {ranked.length > 0 && (
+        <section className="points-rank" data-testid="points-rank">
+          <h3 className="t-h3">Best points for where you fly</h3>
+          <ol className="rank-list">
+            {ranked.slice(0, 3).map((r) => (
+              <li key={r.cur}><span className="rank-name">{NAMES[r.cur] || r.name}</span><span className="t-caption"> — {r.reach.map((x) => `${partnerShortName(x.program)} (${x.trips} trip${x.trips === 1 ? "" : "s"}) at ≈ ${cents(x.cpp)} a point`).join(", ")}</span></li>
+            ))}
+          </ol>
+        </section>
+      )}
       {held.length ? held.map((cur) => <HeldCurrency key={cur} cur={cur} profile={profile} onToggle={toggle} />)
         : <p className="t-caption">None of your cards earn points that move to airlines or hotels.</p>}
       <section className="points-more">

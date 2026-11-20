@@ -557,14 +557,23 @@ export function slotsFor(value, rawProfile) {
 
 /* ── sample wallets (Part F) ─────────────────────────────────────────────── */
 
-export function sampleWallets(rawProfile) {
+/* The premium lounge cards the "Lounge & credits" sample prices one by one. */
+export const LOUNGE_OPTION_IDS = ["csr", "amex-plat", "ritz", "venture-x", "citi-strata-elite", "delta-reserve"];
+
+export function sampleWallets(rawProfile, opts = {}) {
   const profile = normalizeProfile(rawProfile);
   const maxN = optimalWallet(profile, { budget: profile.feeBudget }).value.N;
-  const loungeIds = CARDS.filter((c) => rolesFor(c).includes("Lounge card") && c.cardType !== "business").map((c) => c.id);
+  /* v7b: "Lounge & credits" = a premium lounge card that also carries real
+     credits ($395+ fee, $300+ of credits: Sapphire Reserve, Platinum,
+     Ritz-Carlton, Venture X, Strata Elite …) — not a hotel card that happens
+     to include Priority Pass. */
+  const loungeIds = CARDS.filter((c) => rolesFor(c).includes("Lounge card") && c.cardType !== "business"
+    && (c.annualFee || 0) >= 395 && (c.credits || []).reduce((t, x) => t + (x.annual || 0), 0) >= 300
+    && (!HOTEL_CURRENCIES.has(c.pointCurrency) || c.id === "ritz")).map((c) => c.id);
   const loungeFees = loungeIds.map((id) => cardFee(BY_ID[id], profile)).filter((f) => f > 0);
   const hotelBrand = profile.brands.hotels.find((h) => HOTEL_CURRENCIES.has(h)) || null;   // not "independent" / "unsure"
   const runs = [
-    { key: "lounge", label: "Lounge & credits", opts: { mustOneOf: loungeIds, budget: Math.max(profile.feeBudget, Math.min(...loungeFees)), profile: { ...profile, travel: { ...profile.travel, lounges: profile.travel.trips ? "yes" : profile.travel.lounges } } } },
+    { key: "lounge", label: "Lounge & credits", opts: { mustOneOf: loungeIds, budget: Math.max(profile.feeBudget, Math.min(...loungeFees)), profile: { ...profile, travel: { ...profile.travel, lounges: profile.travel.lounges === "bundle" ? "bundle" : profile.travel.trips ? "yes" : profile.travel.lounges } } } },
     { key: "cash", label: "Simple cash back", opts: { filter: (c) => CASH_LIKE.has(c.pointCurrency), maxCards: 3 } },
     { key: "points", label: "Points traveler", opts: { filter: (c) => BANK_CURRENCIES.has(c.pointCurrency), require: (set) => set.some((c) => BANK_CURRENCIES.has(c.pointCurrency) && isUnlocked(c.pointCurrency, set.map((x) => x.id))) } },
     hotelBrand && { key: "hotel", label: `Hotel loyalist (${hotelBrand[0].toUpperCase()}${hotelBrand.slice(1)})`, opts: { mustOneOf: CARDS.filter((c) => c.pointCurrency === hotelBrand && c.cardType !== "business").map((c) => c.id), budget: Math.max(profile.feeBudget, 95) } },
@@ -574,7 +583,18 @@ export function sampleWallets(rawProfile) {
     const p = r.opts.profile || profile;
     const res = optimalWallet(p, { ...r.opts, profile: undefined, tag: `sample:${r.key}` });
     const v = walletValue(res.wallet, profile);
-    return { key: r.key, label: r.label, wallet: res.wallet, value: v, feasible: res.feasible, ofMax: maxN > 0 ? Math.max(0, Math.round((100 * v.N) / maxN)) : null };
+    const out = { key: r.key, label: r.label, wallet: res.wallet, value: v, feasible: res.feasible, ofMax: maxN > 0 ? Math.max(0, Math.round((100 * v.N) / maxN)) : null };
+    /* v7b: the lounge sample also prices each premium lounge card on its own
+       (Sapphire Reserve, Platinum, Ritz-Carlton, Venture X, Strata Elite),
+       so each is a real option with its net value. */
+    if (r.key === "lounge" && opts.loungeOptions) {
+      out.options = LOUNGE_OPTION_IDS.filter((id) => r.opts.mustOneOf.includes(id) && eligibility(BY_ID[id], profile).ok).map((id) => {
+        const o = optimalWallet(p, { ...r.opts, mustOneOf: [id], profile: undefined, tag: `sample:lounge:${id}` });
+        const ov = walletValue(o.wallet, profile);
+        return { cardId: id, wallet: o.wallet, net: ov.net, N: ov.N, feasible: o.feasible };
+      }).filter((o) => o.feasible).sort((a, b) => b.N - a.N);
+    }
+    return out;
   });
 }
 

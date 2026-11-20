@@ -76,6 +76,50 @@ Example: Sapphire Reserve 3x dining with picks Virgin (1.5), Hyatt (1.65 at
 1:1), Aeroplan (1.45) → `v = 1.533¢` → ≈ 4.6% back, which beats Robinhood
 Gold's 3% cash. At `v = 1.0¢` (nothing picked) the two tie at 3%.
 
+## 0. Where people fly (v7b Part 3)
+
+**Inputs.** Home airports — a metro counts once (NYC = JFK/LGA/EWR; DC, Chicago,
+Bay Area, LA, Dallas likewise) — each with round trips a year, an "I fly for
+work" flag, and destinations with trips (data: `data/routes.js`, compiled
+2026-11-20 from the owner's examples and airlines' published nonstop networks,
+**not re-verified against live route maps**). `T` = Σ trips; the home airport
+for lounges is the first airport (a metro's main one); the international share
+comes from the destinations.
+
+**Airline inference** (`engine/v5/routes.js`): domestic trips → the home
+airport's hub airline (in a multi-hub metro or at a non-hub airport, the
+program they already fly most — "Best value: let CardWise decide", the
+default); international → carriers flying it nonstop from that home airport,
+credited to a program (Korean Air → Delta, EVA / ANA → United, JAL →
+American), else the hub airline connecting; long routes leave from the home
+airport they choose, defaulting to the one with the most nonstop options.
+Result per program: trips (`tripsByAirline`), carriers, reasons, work. With
+"I'll choose", their own airline picks are used instead.
+
+**Per-airline trips** drive everything airline-specific: free bags =
+bags per trip × trips on that airline × $35 × 2; companion fares need 2+
+trips on that airline; an airline's clubs count only its trips. Work: that
+program's elite status × 1.5 and its clubs' visits × 1.25 (modeling
+defaults).
+
+**Hotels** (`engine/v5/hotelPick.js`): "Independent" / "Not sure" adds the
+program with the best Σ nights × presence (`data/hotelFootprint.js`,
+modeling default, unverified) × % back booking direct (base points × value),
+and says why. Their own picks are kept as answered (`hotelsPicked`).
+
+**Lounges** — "I'd pay extra" (visits on most trips, full value) / "I'd love
+it if my card included it" (most trips × $35 × coverage × **0.6**, a bundle
+factor) / "Don't care" (0); optional networks (default: whichever is best).
+
+**Robinhood Gold** ($5/month, $60/yr): offset only by cash kept there ×
+max(0, Gold APY − typical HYSA APY) — 3.6% (robinhood.com/us/en/gold, read
+2026-11-20) vs 4.2% (median of Bankrate's best-HYSA list, Nov 20 2026) → $0
+today. Both rates are profile settings.
+
+**Flexible points ranked by where they fly** (`plans.js rankCurrencies`): Σ
+over airline programs of trips × the best value one point gets there
+(transfers unlocked). Hotels are shown separately.
+
 ## 1b. Valuation modes, co-brand discounts, direct base earn (v7 Part B)
 
 **Modes** (`data/valueModes.js`, Profile → Point values): Conservative ·
@@ -342,6 +386,15 @@ card's "up to" value (Chase Points Boost) and is flagged "select bookings".
 | 6 | Sapphire Reserve vs Robinhood Gold, 3x dining | ties at 1.0¢; Chase ahead at 1.2¢ |
 | 7 | Non-traveler holding Platinum, no brands | cancel or downgrade |
 | 8 | Split hotel credit | $0 default; $300 (0.6 × $500 The Edit) after opt-in with 6 nights |
+
+**v7b golden profiles** (`v7bPart3.test.jsx`): *Route-based airlines* — ATL
+4 (+ Seoul 1), NYC 2 (Taipei 1, Tokyo 1), BDL 1: Delta 5 trips (domestic +
+Seoul via Delta / Korean Air), United 2 (Taipei and Tokyo from EWR); Amex
+points rank first; United Quest stays out (2 EWR trips don't justify it —
+after niche credits like Renowned Hotels and JSX count $0 unless picked).
+*Lounge middle answer* — the same profile with "I'd love it if my card
+included it": Sapphire Reserve and Platinum are priced as real "Lounge &
+credits" options with net value (Venture X nets most for this profile).
 
 **v7 Part C changes** (application hurdle): golden 2 — beside Robinhood
 Gold's 3%, the Costco Visa adds only Costco gas at 5% vs 3% (≈ $72 a year),

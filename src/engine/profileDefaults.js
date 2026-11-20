@@ -9,6 +9,10 @@
    the user types one.
    ========================================================================== */
 
+import { inferAirlines, intlShareOf, mainAirport } from "./v5/routes.js";
+import { pickHotelProgram } from "./v5/hotelPick.js";
+import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
+
 /* v5 survey fee buckets (kept so saved v5 answers still decode). */
 export const FEE_BUDGETS = { "0": 0, "100": 100, "250": 250, "300": 300, "500": 500, "700": 700, "750": 750, "1000": 1000, "1500": 1500, any: Infinity };
 
@@ -59,7 +63,17 @@ export const BOOKING = ["direct", "portal", "best"];
 export const AIRLINE_PERKS = ["bags", "boarding", "companion", "upgrades"];
 /* Part A6: "Decide later" lounges are valued like "a few visits a year"
    until the person decides (LOUNGE_INTEREST in benefitUsage.js). */
-export const LOUNGE_ANSWERS = ["no", "sometimes", "yes", "later"];
+export const LOUNGE_ANSWERS = ["no", "sometimes", "yes", "later", "bundle"];   // v7b: yes = "I'd pay extra", bundle = "I'd love it if my card included it", no = "Don't care"
+export const LOUNGE_NETWORK_KEYS = ["sapphire", "centurion", "prioritypass", "airline", "capitalone"];
+/* v7b 3.10: cash kept at Robinhood offsets Robinhood Gold's subscription
+   only by the extra interest over a typical high-yield savings account.
+   Sources (read 2026-11-20): Robinhood Gold 3.6% APY on eligible brokerage
+   cash, $5/month — robinhood.com/us/en/gold; typical online high-yield
+   savings ≈ 4.20% APY (median of Bankrate's Nov 20 2026 list,
+   bankrate.com/banking/savings/best-high-yield-interests-savings-accounts).
+   Both configurable in the profile. */
+export const ROBINHOOD_GOLD_APY = 3.6;
+export const TYPICAL_HYSA_APY = 4.2;
 /* Part A8: a big loan coming up. */
 export const LOAN_ANSWERS = ["none", "12-24", "12"];
 
@@ -147,6 +161,37 @@ export function normalizeProfile(p = {}) {
     ? { perTrip: Math.min(4, num(travel.bags.perTrip)), share: Math.max(0, Math.min(1, Number(travel.bags.share) || 0)) }
     : null;
   travel.airlinePerks = Array.isArray(travel.airlinePerks) ? travel.airlinePerks.filter((k) => AIRLINE_PERKS.includes(k)) : null;
+  /* v7b Part 3: home airports (metros count once), each with trips, work
+     flag and destinations. When given, they decide trips, the home airport,
+     the international share and (on "Best value") the airlines. */
+  travel.airports = Array.isArray(travel.airports) ? travel.airports.map((a) => ({
+    code: String(a?.code || "").toUpperCase(),
+    trips: num(a?.trips),
+    work: !!a?.work,
+    destinations: Array.isArray(a?.destinations) ? a.destinations.filter((x) => DESTINATIONS[x?.key]).map((x) => ({ key: x.key, trips: num(x.trips), ...(x.from ? { from: String(x.from).toUpperCase() } : {}) })) : [],
+  })).filter((a) => a.code) : [];
+  /* "Best value: let CardWise decide" is the default for anyone who skips —
+     unless an older profile already named its airlines. */
+  const hadAirlines = (p.brands?.airlinesPicked ?? p.brands?.airlines ?? []).length > 0;
+  travel.airlineChoice = ["auto", "manual"].includes(travel.airlineChoice) ? travel.airlineChoice : (travel.airports.length || !hadAirlines ? "auto" : "manual");
+  travel.hotelChoice = ["auto", "manual"].includes(travel.hotelChoice) ? travel.hotelChoice : "manual";
+  travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
+  travel.tripsByAirline = {};
+  travel.workPrograms = [];
+  travel.inferred = null;
+  if (travel.airports.length) {
+    travel.trips = travel.airports.reduce((t, a) => t + a.trips, 0);
+    /* A metro's main airport for lounges — unless the saved home airport is
+       inside that metro already (EWR stays EWR). */
+    const first = travel.airports[0].code;
+    travel.homeAirport = METRO_AIRPORTS[first]?.airports.includes(travel.homeAirport) ? travel.homeAirport : mainAirport(first);
+    /* Destinations decide the international share once any are given. */
+    if (travel.airports.some((a) => a.destinations.length)) travel.intlShare = intlShareOf(travel.airports);
+    const inf = inferAirlines(travel.airports);
+    travel.tripsByAirline = inf.byProgram;
+    travel.workPrograms = inf.rows.filter((r) => r.work).map((r) => r.program);
+    travel.inferred = { text: inf.text, programs: inf.rows.map((r) => r.program), rows: inf.rows };
+  }
   /* No flights → no airport lounge question. */
   if (travel.trips === 0) travel.lounges = "no";
 
@@ -184,13 +229,23 @@ export function normalizeProfile(p = {}) {
     gasAt: ["regular", "costco", "both"].includes(p.gasAt) ? p.gasAt : d.gasAt,
     warehouseClub: ["costco", "sams", "bjs"].includes(p.warehouseClub) ? p.warehouseClub : d.warehouseClub,
     travel,
-    brands: {
-      airlines: lower(p.brands?.airlines),
-      hotels: lower(p.brands?.hotels),
+    brands: (() => {
+      /* v7b: what the person picked (raw) vs what the engine values. Airlines
+         on "Best value" come from where they fly; hotels on "Independent /
+         not sure" also get the program with the best footprint. */
+      const airlinesPicked = lower(p.brands?.airlinesPicked ?? p.brands?.airlines);
+      const hotelsPicked = lower(p.brands?.hotelsPicked ?? p.brands?.hotels);
+      const airlines = travel.airlineChoice === "auto" && travel.inferred ? [...travel.inferred.programs] : airlinesPicked;
+      const wantsPick = hotelsPicked.some((h) => h === "independent" || h === "unsure") || travel.hotelChoice === "auto";
+      const nights = travel.hotelNights != null ? travel.hotelNights : travel.trips * DEFAULT_NIGHTS_PER_TRIP;
+      const pick = wantsPick ? pickHotelProgram({ airports: travel.airports.length ? travel.airports : [{ code: travel.homeAirport || "X", trips: travel.trips || 1, destinations: [] }], nights, mode: p.valueMode || "typical" }) : null;
+      const hotels = [...new Set([...hotelsPicked, ...(pick ? [pick.program] : [])])];
+      return { airlines, airlinesPicked, hotels, hotelsPicked, hotelPick: pick ? { program: pick.program, why: pick.why } : null,
       everyday: lower(p.brands?.everyday),
       perks: lower(p.brands?.perks),
       perksMaybe: lower(p.brands?.perksMaybe).filter((k) => !lower(p.brands?.perks).includes(k)),
-    },
+      };
+    })(),
     credit: {
       score: Number(p.credit?.score) || null,
       noHistory: p.credit?.noHistory === true,
@@ -209,6 +264,12 @@ export function normalizeProfile(p = {}) {
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
     valueMode: ["conservative", "typical", "optimistic"].includes(p.valueMode) ? p.valueMode : "typical",   // v7 B1
     bonusOffsetsHurdle: !!p.bonusOffsetsHurdle,   // v7 C1: count a welcome bonus against the application hurdle
+    /* v7b 3.10: cash they'd keep at Robinhood, and the two rates (editable). */
+    robinhoodCash: num(p.robinhoodCash),
+    rates: {
+      robinhoodGoldApy: Number.isFinite(Number(p.rates?.robinhoodGoldApy)) && p.rates?.robinhoodGoldApy !== null && p.rates?.robinhoodGoldApy !== "" ? Number(p.rates.robinhoodGoldApy) : ROBINHOOD_GOLD_APY,
+      hysaApy: Number.isFinite(Number(p.rates?.hysaApy)) && p.rates?.hysaApy !== null && p.rates?.hysaApy !== "" ? Number(p.rates.hysaApy) : TYPICAL_HYSA_APY,
+    },
   };
 }
 

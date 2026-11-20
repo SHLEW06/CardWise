@@ -18,7 +18,9 @@ import {
 } from "../../../data/surveyOptions.js";
 import { perkBrandsInCatalog, brandsForCredit, isBrandCredit, PERK_BY_KEY } from "../../../data/creditBrands.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
-import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend } from "../../../engine/profileDefaults.js";
+import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
+import { METRO_AIRPORTS, AIRPORT_METRO, DESTINATIONS, DESTINATION_LIST } from "../../../data/routes.js";
+import { homeName, defaultFrom } from "../../../engine/v5/routes.js";
 import { loyaltyStrategies, applyStrategy } from "../../../engine/v5/plans.js";
 import { optimalWallet } from "../../../engine/v5/methodology.js";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
@@ -143,6 +145,11 @@ function Step({ id, d, set, mode, headRef }) {
             <legend className="t-h3">Memberships you already pay for <span className="t-caption">(optional)</span></legend>
             <p className="t-caption">Some cards only work with a paid membership. If you already have it, it won't count against your fee budget.</p>
             <ToggleChips options={MEMBERSHIPS} picked={d.memberships} onChange={(memberships) => set({ memberships })} label="Memberships you already pay for" />
+          </fieldset>
+          <fieldset className="survey-group" data-testid="robinhood-cash">
+            <legend className="t-h3">Cash you'd keep at Robinhood <span className="t-caption">(optional)</span></legend>
+            <p className="t-caption">Robinhood's Gold card needs a Gold membership ($5 a month). The only thing that offsets it is extra interest on cash you'd keep there, compared with a typical high-yield savings account (Gold {normalizeProfile(d).rates.robinhoodGoldApy}% vs about {normalizeProfile(d).rates.hysaApy}% elsewhere, November 2026).</p>
+            <MoneySlider label="Cash at Robinhood" value={d.robinhoodCash || 0} max={100000} step={1000} onChange={(robinhoodCash) => set({ robinhoodCash })} />
           </fieldset>
         </>
       );
@@ -336,67 +343,169 @@ function ToggleChips({ options, picked, onChange, label, limit }) {
   );
 }
 
-function TravelStep({ d, set, mode, headRef }) {
+/* v7b Part 3: where people fly, not which brands they like. Home airports
+   (metros count once) with trips and "I fly for work"; destinations per
+   airport; airlines inferred from routes and hubs ("Best value: let CardWise
+   decide" by default, editable); cabin + bags; hotels with footprint pick;
+   lounges as a three-way question with a networks follow-up. */
+const HOME_OPTIONS = [
+  ...Object.entries(METRO_AIRPORTS).map(([code, m]) => ({ code, label: m.name, search: `${code} ${m.name} ${m.airports.join(" ")}` })),
+  ...Object.values(AIRPORTS).filter((ap) => !AIRPORT_METRO[ap.code]).map((ap) => ({ code: ap.code, label: `${ap.code} · ${ap.city}`, search: `${ap.code} ${ap.city} ${ap.name}` })),
+];
+export function searchHomes(q) {
+  const s = norm(q);
+  if (!s) return [];
+  return HOME_OPTIONS.filter((o) => o.code.toLowerCase().startsWith(s) || norm(o.search).includes(s)).slice(0, 6);
+}
+const CABINS_3 = CABIN_OPTIONS.filter((c) => c.key !== "mixed");
+const BAG_COUNTS = [{ key: 0, label: "None" }, { key: 1, label: "1" }, { key: 2, label: "2" }, { key: 3, label: "3+" }];
+export const LOUNGE_3 = [
+  { key: "yes", label: "I'd pay extra for lounge access" },
+  { key: "bundle", label: "I'd love it if my card included it", sub: "Counted as part of a premium card's bundle, at a reduced value." },
+  { key: "no", label: "Don't care" },
+];
+export const LOUNGE_NETWORKS = [
+  { key: "sapphire", label: "Sapphire Lounges" }, { key: "centurion", label: "Centurion Lounges" },
+  { key: "prioritypass", label: "Priority Pass" }, { key: "airline", label: "Airline clubs" }, { key: "capitalone", label: "Capital One Lounges" },
+];
+
+function Stepper({ value, onChange, label, min = 0, max = 60 }) {
+  return (
+    <span className="stepper">
+      <button type="button" aria-label={`Fewer: ${label}`} onClick={() => onChange(Math.max(min, value - 1))}>−</button>
+      <input inputMode="numeric" aria-label={label} value={value} onChange={(e) => { const n = parseInt(e.target.value.replace(/\D/g, ""), 10); onChange(Number.isFinite(n) ? Math.min(max, n) : 0); }} />
+      <button type="button" aria-label={`More: ${label}`} onClick={() => onChange(Math.min(max, value + 1))}>+</button>
+    </span>
+  );
+}
+
+function HomeSearch({ onPick, placeholder = "City, airport or metro (e.g. NYC)" }) {
   const [q, setQ] = useState("");
-  const [allAirlines, setAllAirlines] = useState(mode === "thorough" || d.brands.airlines.some((k) => !AIRLINE_GROUPS[0].options.some((o) => o.key === k)));
-  const matches = useMemo(() => searchAirports(q), [q]);
+  const matches = useMemo(() => searchHomes(q), [q]);
+  return (
+    <div className="airport-search">
+      <div className="survey-search">
+        <Search size={18} aria-hidden="true" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} aria-label="Add a home airport" />
+      </div>
+      {matches.length > 0 && (
+        <ul className="airport-list" role="listbox" aria-label="Airports">
+          {matches.map((o) => (
+            <li key={o.code}><button role="option" aria-selected="false" onClick={() => { onPick(o.code); setQ(""); }}>{o.label}</button></li>
+          ))}
+        </ul>
+      )}
+      {q && !matches.length && <p className="t-caption">We don't have "{q}" yet — try the nearest big airport.</p>}
+    </div>
+  );
+}
+
+function DestinationRow({ a, airports, onChange }) {
+  const [q, setQ] = useState("");
+  const dests = a.destinations || [];
+  const has = (k) => dests.some((x) => x.key === k);
+  const toggle = (k) => onChange(has(k) ? dests.filter((x) => x.key !== k) : [...dests, { key: k, trips: 1 }]);
+  const setDest = (k, patch) => onChange(dests.map((x) => (x.key === k ? { ...x, ...patch } : x)));
+  const s = norm(q);
+  const options = DESTINATION_LIST.filter((d) => !s || norm(`${d.name} ${d.country}`).includes(s));
+  return (
+    <div className="dest-block">
+      <span className="t-caption" id={`dest-${a.code}`}>Where do you go from {homeName(a.code)}? Trips not given a place count as around the US.</span>
+      <div className="survey-search dest-search">
+        <Search size={16} aria-hidden="true" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="City or country" aria-label={`Search destinations from ${a.code}`} />
+      </div>
+      <ChipList options={options} label={`Destinations from ${a.code}`} isPicked={(d) => has(d.key)}
+        render={(d) => <Choice key={d.key} pill selected={has(d.key)} onSelect={() => toggle(d.key)}>{d.name}{d.intl ? "" : " (US)"}</Choice>} />
+      {dests.length > 0 && (
+        <ul className="dest-list">
+          {dests.map((x) => {
+            const d = DESTINATIONS[x.key];
+            const ask = d.long && airports.length > 1;
+            const suggested = ask ? defaultFrom(airports, x.key) : null;
+            return (
+              <li key={x.key} className="dest-row">
+                <span className="dest-name">{d.name}<span className="t-caption"> · {d.intl ? "international" : "domestic"}</span></span>
+                <Stepper label={`Trips a year to ${d.name} from ${a.code}`} value={x.trips} onChange={(n) => setDest(x.key, { trips: n })} />
+                {ask && (
+                  <label className="field dest-from">
+                    <span className="t-caption">Leave from</span>
+                    <select aria-label={`Leave for ${d.name} from`} value={x.from || suggested || a.code} onChange={(e) => setDest(x.key, { from: e.target.value })}>
+                      {airports.map((h) => <option key={h.code} value={h.code}>{homeName(h.code)}{h.code === suggested ? " (most nonstop options)" : ""}</option>)}
+                    </select>
+                  </label>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function TravelStep({ d, set, mode, headRef }) {
+  const n = useMemo(() => normalizeProfile(d), [d]);
   const t = d.travel;
+  const airports = t.airports || [];
   const setTravel = (patch) => set({ travel: { ...t, ...patch } });
-  const flies = t.trips > 0;
-  const home = t.homeAirport ? AIRPORTS[t.homeAirport] : null;
-  const setAirlines = (airlines) => set({ brands: { ...d.brands, airlines } });
-  const nights = t.hotelNights ?? (t.trips ? t.trips * 2 : 0);
+  const setAirports = (list) => setTravel({ airports: list });
+  const flies = airports.length > 0 && airports.some((a) => a.trips > 0);
+  const auto = (t.airlineChoice || "auto") === "auto";
+  const hotelsPicked = d.brands.hotelsPicked ?? d.brands.hotels;
+  const setHotels = (hotelsPicked) => set({ brands: { ...d.brands, hotelsPicked, hotels: hotelsPicked } });
+  const nights = t.hotelNights ?? (n.travel.trips ? n.travel.trips * 2 : 0);
+  const bagCount = t.bags ? t.bags.perTrip : null;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Travel" title="How do you travel?" />
+      <Head headRef={headRef} eyebrow="Travel" title="Where do you fly?" sub="Your home airports and where you go. We work out which airlines you'd likely fly — you can change it." />
       <fieldset className="survey-group">
-        <legend className="t-h3" id="q-trips">Round-trip flights a year</legend>
-        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-trips">
-          {FLIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.trips === o.key} onSelect={() => setTravel({ trips: o.key, ...(o.key === 0 ? { lounges: "no" } : {}) })}>{o.label}</Choice>)}
-        </div>
+        <legend className="t-h3">Home airports, with trips a year from each</legend>
+        <ul className="home-list">
+          {airports.map((a, i) => (
+            <li key={a.code} className="home-row">
+              <div className="home-row-head">
+                <span className="home-code">{homeName(a.code)}</span>
+                <Stepper label={`Round trips a year from ${a.code}`} value={a.trips} onChange={(v) => setAirports(airports.map((x, k) => (k === i ? { ...x, trips: v } : x)))} />
+                <Choice pill selected={!!a.work} onSelect={() => setAirports(airports.map((x, k) => (k === i ? { ...x, work: !x.work } : x)))}>I fly for work</Choice>
+                <button type="button" className="link" onClick={() => setAirports(airports.filter((_, k) => k !== i))} aria-label={`Remove ${a.code}`}>Remove</button>
+              </div>
+              <DestinationRow a={a} airports={airports} onChange={(destinations) => setAirports(airports.map((x, k) => (k === i ? { ...x, destinations } : x)))} />
+            </li>
+          ))}
+        </ul>
+        <HomeSearch onPick={(code) => { if (!airports.some((a) => a.code === code)) setAirports([...airports, { code, trips: airports.length ? 1 : 4, work: false, destinations: [] }]); }}
+          placeholder={airports.length ? "Add another home airport" : "City, airport or metro (e.g. ATL, NYC)"} />
+        {!airports.length && <Choice selected={t.trips === 0 && !airports.length} onSelect={() => setTravel({ trips: 0, airports: [], lounges: "no" })}>I don't fly</Choice>}
       </fieldset>
+
       {flies && (
         <>
-          <fieldset className="survey-group">
-            <legend className="t-h3">Home airport</legend>
-            {home ? (
-              <div className="chip-wrap">
-                <button className="tray-chip" onClick={() => setTravel({ homeAirport: null })} aria-label={`Change home airport ${home.code}`}>
-                  {home.code} · {home.city} <X size={14} aria-hidden="true" />
-                </button>
-              </div>
-            ) : (
-              <div className="airport-search">
-                <div className="survey-search">
-                  <Search size={18} aria-hidden="true" />
-                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="City or airport code" aria-label="Home airport" />
-                </div>
-                {matches.length > 0 && (
-                  <ul className="airport-list" role="listbox" aria-label="Airports">
-                    {matches.map((ap) => (
-                      <li key={ap.code}>
-                        <button role="option" aria-selected="false" onClick={() => { setTravel({ homeAirport: ap.code }); setQ(""); }}>
-                          <strong>{ap.code}</strong> {ap.city} · {ap.name}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {q && !matches.length && <p className="t-caption">We don't have "{q}" yet — skip it and we'll estimate lounge access.</p>}
-              </div>
-            )}
-          </fieldset>
-          <fieldset className="survey-group">
-            <legend className="t-h3" id="q-intl">How many of those trips are international?</legend>
-            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-intl">
-              {INTL_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={(t.intlShare || 0) === o.key} onSelect={() => setTravel({ intlShare: o.key })}>{o.label}</Choice>)}
+          <fieldset className="survey-group" data-testid="airlines-inferred">
+            <legend className="t-h3">Airlines</legend>
+            {n.travel.inferred?.text && <p className="inferred-line">{n.travel.inferred.text}</p>}
+            <div className="chip-wrap" role="radiogroup" aria-label="Which airlines to value">
+              <Choice radio pill selected={auto} onSelect={() => setTravel({ airlineChoice: "auto" })}>Best value: let CardWise decide</Choice>
+              <Choice radio pill selected={!auto} onSelect={() => { set({ travel: { ...t, airlineChoice: "manual" }, brands: { ...d.brands, airlinesPicked: d.brands.airlinesPicked?.length ? d.brands.airlinesPicked : n.brands.airlines } }); }}>I'll choose</Choice>
             </div>
-            <p className="t-caption">Some airports keep their lounges in the international terminal.</p>
+            <p className="t-caption">Your choice matters most where several airlines have hubs (like New York); elsewhere the routes decide.</p>
+            {!auto && AIRLINE_GROUPS.map((g) => (
+              <div key={g.key} className="airline-group">
+                <span className="t-caption">{g.label}</span>
+                <ToggleChips options={g.options} picked={d.brands.airlinesPicked || []} onChange={(airlinesPicked) => set({ brands: { ...d.brands, airlinesPicked, airlines: airlinesPicked } })} label={g.label} />
+              </div>
+            ))}
           </fieldset>
           <fieldset className="survey-group">
             <legend className="t-h3" id="q-cabin">Cabin you usually fly</legend>
             <div className="chip-wrap" role="radiogroup" aria-labelledby="q-cabin">
-              {CABIN_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.cabin === o.key} onSelect={() => setTravel({ cabin: o.key })}>{o.label}</Choice>)}
+              {CABINS_3.map((o) => <Choice key={o.key} radio pill selected={t.cabin === o.key} onSelect={() => setTravel({ cabin: o.key })}>{o.label}</Choice>)}
+            </div>
+          </fieldset>
+          <fieldset className="survey-group">
+            <legend className="t-h3" id="q-bags">Checked bags per trip</legend>
+            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-bags">
+              {BAG_COUNTS.map((o) => <Choice key={o.key} radio pill selected={bagCount === o.key} onSelect={() => setTravel({ bags: { perTrip: o.key, share: o.key ? 1 : 0 }, airlinePerks: [...new Set([...(t.airlinePerks || []).filter((k) => k !== "bags"), ...(o.key ? ["bags"] : [])])] })}>{o.label}</Choice>)}
             </div>
           </fieldset>
           <fieldset className="survey-group">
@@ -404,29 +513,28 @@ function TravelStep({ d, set, mode, headRef }) {
             <div className="chip-wrap" role="radiogroup" aria-labelledby="q-book">
               {BOOKING_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={t.booking === o.key} onSelect={() => setTravel({ booking: o.key })}>{o.label}</Choice>)}
             </div>
-            <p className="t-caption">A card's travel site can earn more points, but premium cabins there often cost more than booking direct.</p>
           </fieldset>
-          <AirlinePerks t={t} setTravel={setTravel} />
           <fieldset className="survey-group">
-            <legend className="t-h3" id="q-lounge">How much do airport lounges matter?</legend>
+            <legend className="t-h3" id="q-lounge">Airport lounges</legend>
             <p className="network-note">{LOUNGE_NETWORKS_NOTE}</p>
             <div className="choice-stack" role="radiogroup" aria-labelledby="q-lounge">
-              {LOUNGE_OPTIONS.map((o) => <Choice key={o.key} radio selected={t.lounges === o.key} sub={o.sub} onSelect={() => setTravel({ lounges: o.key })}>{o.label}</Choice>)}
+              {LOUNGE_3.map((o) => <Choice key={o.key} radio selected={(t.lounges === "sometimes" || t.lounges === "later" ? "bundle" : t.lounges) === o.key} sub={o.sub} onSelect={() => setTravel({ lounges: o.key })}>{o.label}</Choice>)}
             </div>
-            {t.lounges === "later" && <LoungeCompare d={d} />}
+            {t.lounges && t.lounges !== "no" && (
+              <div className="sub-q">
+                <span className="t-caption">Which lounges matter?</span>
+                <div className="chip-wrap" role="group" aria-label="Lounge networks">
+                  <Choice pill selected={!(t.loungeNetworks || []).length} onSelect={() => setTravel({ loungeNetworks: [] })}>Whichever is best value</Choice>
+                  {LOUNGE_NETWORKS.map((o) => {
+                    const on = (t.loungeNetworks || []).includes(o.key);
+                    return <Choice key={o.key} pill selected={on} onSelect={() => setTravel({ loungeNetworks: on ? t.loungeNetworks.filter((k) => k !== o.key) : [...(t.loungeNetworks || []), o.key] })}>{o.label}</Choice>;
+                  })}
+                </div>
+              </div>
+            )}
           </fieldset>
         </>
       )}
-      <fieldset className="survey-group">
-        <legend className="t-h3">Airlines you fly, or would</legend>
-        {AIRLINE_GROUPS.filter((g, gi) => allAirlines || gi === 0).map((g) => (
-          <div key={g.key} className="airline-group">
-            <span className="t-caption">{g.label}</span>
-            <ToggleChips options={g.options} picked={d.brands.airlines} onChange={setAirlines} label={g.label} />
-          </div>
-        ))}
-        {!allAirlines && <button className="survey-link more-link" onClick={() => setAllAirlines(true)}><ChevronDown size={16} aria-hidden="true" /> International airlines (Star Alliance, oneworld, SkyTeam)</button>}
-      </fieldset>
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-nights">Paid hotel nights a year</legend>
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-nights">
@@ -434,11 +542,12 @@ function TravelStep({ d, set, mode, headRef }) {
         </div>
       </fieldset>
       <fieldset className="survey-group">
-        <legend className="t-h3">Hotel brands</legend>
-        <ToggleChips options={HOTEL_BRANDS} picked={d.brands.hotels} onChange={(hotels) => set({ brands: { ...d.brands, hotels } })} label="Hotel brands" limit={HOTEL_BRANDS.length} />
-        <p className="t-caption">"Independent / whatever's cheapest" means no hotel loyalty: we pick the best value per stay.</p>
+        <legend className="t-h3">Hotels</legend>
+        <ToggleChips options={HOTEL_BRANDS} picked={hotelsPicked} onChange={setHotels} label="Hotel brands" limit={HOTEL_BRANDS.length} />
+        <p className="t-caption">"Independent / whatever's cheapest" or "Not sure": we pick the hotel program that's strongest where you go.</p>
+        {n.brands.hotelPick && <p className="inferred-line" data-testid="hotel-pick">{n.brands.hotelPick.why}</p>}
       </fieldset>
-      <StrategyHelper d={d} set={set} open={d.brands.hotels.includes("unsure")} />
+      <StrategyHelper d={d} set={set} open={hotelsPicked.includes("unsure")} />
     </>
   );
 }
