@@ -16,7 +16,7 @@ import {
   FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
   LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS,
 } from "../../../data/surveyOptions.js";
-import { perkBrandsInCatalog, brandsForCredit, isBrandCredit, PERK_BY_KEY } from "../../../data/creditBrands.js";
+import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor } from "../../../data/perkChips.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 import { METRO_AIRPORTS, AIRPORT_METRO, DESTINATIONS, DESTINATION_LIST } from "../../../data/routes.js";
@@ -135,6 +135,7 @@ function Step({ id, d, set, mode, headRef }) {
     case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "travel": return <TravelStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "brands": return <PerksStep d={d} set={set} headRef={headRef} />;
+    case "perksMaybe": return <PerksMaybeStep d={d} set={set} headRef={headRef} />;
     case "fee":
       return (
         <>
@@ -632,55 +633,52 @@ export function StrategyHelper({ d, set, open: startOpen = false }) {
   );
 }
 
-/* ── Step 4: perks (v7 A5) — three sections, still card perks ──────── */
+/* ── Steps 4a / 4b: card perks (v7b Part 4) ─────────────────────────── */
 
-const PERK_GROUPS_IN_CATALOG = perkBrandsInCatalog(CARDS);
+/* Chips actually paid by some card in the catalog, grouped; named exactly. */
+const USED_CHIPS = new Set(CARDS.flatMap((c) => (c.credits || []).flatMap(perkChipsFor)));
+export const PERK_CHIP_GROUPS = PERK_GROUPS.filter((g) => !g.hidden)
+  .map((g) => ({ ...g, chips: PERK_CHIPS.filter((c) => c.group === g.key && USED_CHIPS.has(c.key)) }))
+  .filter((g) => g.chips.length);
 
-/** Perks the cards they hold already pay for (brand credits + Global Entry). */
+/** Perks the cards they hold already pay for (one row per credit). */
 export function perksFromHeld(cardsHeld) {
   const out = [];
   for (const id of cardsHeld) {
     const c = BY_ID[id];
     for (const cr of c?.credits || []) {
-      const travel = cr.kind === "membership" && TRAVEL_MEMBERSHIP.test(cr.name);
-      if (!isBrandCredit(cr) && !travel) continue;
-      const brands = brandsForCredit(cr);
-      if (!brands.length) continue;
-      out.push({ cardId: id, credit: cr.name, annual: cr.annual, brands, label: PERK_BY_KEY[brands[0]]?.label || cr.name });
+      const chips = perkChipsFor(cr).filter((k) => CHIP_BY_KEY[k]);
+      if (!chips.length) continue;
+      out.push({ cardId: id, credit: cr.name, annual: cr.annual, chips, label: CHIP_BY_KEY[chips[0]].label });
     }
   }
   return out;
 }
 
+function PerkGroups({ picked, onChange, exclude = [], suffix }) {
+  return PERK_CHIP_GROUPS.map((g) => {
+    const chips = g.chips.filter((c) => !exclude.includes(c.key)).map((c) => ({ key: c.key, label: c.label }));
+    if (!chips.length) return null;
+    return (
+      <fieldset key={g.key} className="survey-group">
+        <legend className="t-caption">{g.label}</legend>
+        <ToggleChips options={chips} picked={picked} onChange={onChange} label={`${g.label}: ${suffix}`} />
+      </fieldset>
+    );
+  });
+}
+
 function PerksStep({ d, set, headRef }) {
   const use = d.brands.perks;
-  const maybe = d.brands.perksMaybe || [];
   const have = useMemo(() => perksFromHeld(d.cardsHeld), [d.cardsHeld]);
-  const setUse = (perks) => set({ brands: { ...d.brands, perks, perksMaybe: maybe.filter((k) => !perks.includes(k)) } });
-  const setMaybe = (perksMaybe) => set({ brands: { ...d.brands, perksMaybe, perks: use.filter((k) => !perksMaybe.includes(k)) } });
+  const setUse = (perks) => set({ brands: { ...d.brands, perks, perksMaybe: (d.brands.perksMaybe || []).filter((k) => !perks.includes(k)) } });
   return (
     <>
-      <Head headRef={headRef} eyebrow="Card perks" title="Perks some cards pay for"
-        sub="Statement credits and memberships cards include. These are card perks, not point redemptions." />
+      <Head headRef={headRef} eyebrow="Card perks" title="Perks you already pay for or use"
+        sub="Statement credits and memberships some cards include, named the way the card names them. These are card perks, not point redemptions. Counted at full value." />
       <section className="perk-section" aria-labelledby="perks-a">
-        <h2 className="t-h3" id="perks-a">Already pay for or use</h2>
-        <p className="t-caption">Counted at full value when a card pays for them.</p>
-        {PERK_GROUPS_IN_CATALOG.map((g) => (
-          <fieldset key={g.key} className="survey-group">
-            <legend className="t-caption">{g.label}</legend>
-            <ToggleChips options={g.brands} picked={use} onChange={setUse} label={`${g.label}: already use`} />
-          </fieldset>
-        ))}
-      </section>
-      <section className="perk-section" aria-labelledby="perks-b">
-        <h2 className="t-h3" id="perks-b">Would use if a card paid for it</h2>
-        <p className="t-caption">Things you don't pay for today but would use if they came free. Counted at half value, since some never get used.</p>
-        {PERK_GROUPS_IN_CATALOG.map((g) => (
-          <fieldset key={g.key} className="survey-group">
-            <legend className="t-caption">{g.label}</legend>
-            <ToggleChips options={g.brands.filter((b) => !use.includes(b.key))} picked={maybe} onChange={setMaybe} label={`${g.label}: would use`} />
-          </fieldset>
-        ))}
+        <h2 className="sr-only" id="perks-a">Already pay for or use</h2>
+        <PerkGroups picked={use} onChange={setUse} suffix="already use" />
       </section>
       <section className="perk-section" aria-labelledby="perks-c">
         <h2 className="t-h3" id="perks-c">Your cards already give you</h2>
@@ -699,6 +697,18 @@ function PerksStep({ d, set, headRef }) {
           </>
         ) : <p className="t-caption">{d.cardsHeld.length ? "None of your cards pay for these perks." : "Add your cards in step 1 to see the perks they already include."}</p>}
       </section>
+    </>
+  );
+}
+
+function PerksMaybeStep({ d, set, headRef }) {
+  const maybe = d.brands.perksMaybe || [];
+  const setMaybe = (perksMaybe) => set({ brands: { ...d.brands, perksMaybe, perks: d.brands.perks.filter((k) => !perksMaybe.includes(k)) } });
+  return (
+    <>
+      <Head headRef={headRef} eyebrow="Card perks" title="Would you use these if a card included them?"
+        sub="Premium cards bundle many perks; you don't buy them one at a time. Pick the ones you'd actually use if they came with a card — they count at about half their value." />
+      <PerkGroups picked={maybe} onChange={setMaybe} exclude={d.brands.perks} suffix="would use" />
     </>
   );
 }

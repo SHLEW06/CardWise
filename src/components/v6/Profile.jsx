@@ -5,7 +5,7 @@
    Sections whose feature arrives in a later milestone render the slot they
    will fill (`slots` prop) so the page structure is final now.
    ========================================================================== */
-import { PERK_BY_KEY } from "../../data/creditBrands.js";
+import { CHIP_BY_KEY as PERK_BY_KEY } from "../../data/perkChips.js";
 const LOUNGE_WORDS = { no: "not at all", sometimes: "a few visits a year", yes: "most trips", later: "decide later" };
 import React, { useEffect, useMemo, useState } from "react";
 import { loadStrategies } from "../../firebase/firestore.js";

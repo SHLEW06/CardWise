@@ -20,22 +20,22 @@ const cont = () => fireEvent.click(screen.getByRole("button", { name: "Continue"
 const heading = () => screen.getByRole("heading", { level: 1 }).textContent;
 
 describe("steps (§19)", () => {
-  it("nine steps; Quick asks the starred five + the reveal; Thorough asks all", () => {
-    expect(STEP_DEFS.map((s) => s.id)).toEqual(["cards", "spend", "travel", "brands", "fee", "credit", "points", "yourPoints", "reveal"]);
-    expect(stepsFor("quick")).toEqual(["cards", "spend", "travel", "brands", "fee", "reveal"]);
-    expect(stepsFor("thorough")).toHaveLength(9);
+  it("ten steps (v7b: perks in two); Quick asks the starred six + the reveal; Thorough asks all", () => {
+    expect(STEP_DEFS.map((s) => s.id)).toEqual(["cards", "spend", "travel", "brands", "perksMaybe", "fee", "credit", "points", "yourPoints", "reveal"]);
+    expect(stepsFor("quick")).toEqual(["cards", "spend", "travel", "brands", "perksMaybe", "fee", "reveal"]);
+    expect(stepsFor("thorough")).toHaveLength(10);
   });
   it("starts with Quick (2 min) or Thorough (6 min) and shows progress", () => {
     render(<Survey />);
     fireEvent.click(screen.getByRole("button", { name: /^Quick · 2 min/ }));
-    expect(screen.getByText("Step 1 of 6")).toBeInTheDocument();
+    expect(screen.getByText("Step 1 of 7")).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
     expect(heading()).toBe("Which cards do you have?");
   });
   it("every question is optional: Continue is always enabled, defaults fill the gaps", () => {
     const onDone = vi.fn();
     render(<Survey initialMode="quick" onDone={onDone} />);
-    for (let k = 0; k < 5; k++) { expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled(); cont(); }
+    for (let k = 0; k < 6; k++) { expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled(); cont(); }
     expect(heading()).toMatch(/wallet/);
     fireEvent.click(screen.getByRole("button", { name: "Go to Home" }));
     const [p] = onDone.mock.calls[0];
@@ -145,19 +145,24 @@ describe("3 · travel", () => {
 });
 
 describe("4 · brands (perks)", () => {
-  it("says plainly these are card perks; three sections: already use, would use, your cards give", () => {
+  it("v7b: Step A (already use, full value) then Step B (would use, bundles explained); perks named exactly", () => {
     saveV5Profile({ cardsHeld: ["amex-gold"] });
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={loadV5Profile()} />);
+    expect(heading()).toBe("Perks you already pay for or use");
     expect(screen.getByText(/These are card perks, not point redemptions/)).toBeInTheDocument();
-    for (const h of ["Already pay for or use", "Would use if a card paid for it", "Your cards already give you"]) expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
-    for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras"]) expect(screen.getAllByText(g).length).toBeGreaterThanOrEqual(2);
-    const use = screen.getByRole("group", { name: "Food & delivery: already use" });
-    fireEvent.click(within(use).getByRole("button", { name: "Dunkin'" }));
-    fireEvent.click(within(use).getByRole("button", { name: "Resy" }));
-    const maybe = screen.getByRole("group", { name: "Travel extras: would use" });
-    fireEvent.click(within(maybe).getByRole("button", { name: "TSA PreCheck / Global Entry" }));
-    /* Amex Gold already pays Uber Cash: listed under "Your cards already give you". */
-    expect(screen.getAllByText(/Uber/).length).toBeGreaterThan(0);
+    for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras", "Travel credits"]) expect(screen.getByText(g)).toBeInTheDocument();
+    const food = screen.getByRole("group", { name: "Food & delivery: already use" });
+    fireEvent.click(within(food).getByRole("button", { name: "Dunkin' credit" }));
+    fireEvent.click(within(food).getByRole("button", { name: "Resy dining credit" }));
+    expect(screen.getByRole("heading", { name: "Your cards already give you" })).toBeInTheDocument();
+    expect(screen.getAllByText("Uber Cash (Uber rides + Uber Eats)").length).toBeGreaterThan(0);   // Amex Gold pays it
+    cont();
+    expect(heading()).toBe("Would you use these if a card included them?");
+    expect(screen.getByText(/Premium cards bundle many perks; you don't buy them one at a time/)).toBeInTheDocument();
+    const food2 = screen.getByRole("group", { name: "Food & delivery: would use" });
+    expect(within(food2).queryByRole("button", { name: "Dunkin' credit" })).toBeNull();          // Step A picks aren't asked again
+    const travel = screen.getByRole("group", { name: "Travel extras: would use" });
+    fireEvent.click(within(travel).getByRole("button", { name: "TSA PreCheck / Global Entry fee credit" }));
     cont();
     expect(loadV5Profile().brands.perks).toEqual(["dunkin", "resy"]);
     expect(loadV5Profile().brands.perksMaybe).toEqual(["globalentry"]);

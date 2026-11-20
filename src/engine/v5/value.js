@@ -26,6 +26,7 @@ import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
 import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
+import { perkChipsFor } from "../../data/perkChips.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -334,21 +335,29 @@ export function creditUsage(card, credit, profile) {
     const why = !brandOk ? `You didn't pick ${brand}` : !enough ? (credit.kind === "airline" ? "Needs 2+ trips a year" : "Needs 4+ paid hotel nights a year") : "Split credit — $0 unless you plan around it";
     return { factor: 0, reason: why, split: true, planned, canPlan: brandOk && enough };
   }
-  if (credit.kind === "broad") return { factor: trips > 0 ? 0.95 : 0.6, reason: null };
+  /* v7b 4: a travel-credit chip picked in Step A ("already use") raises the
+     credit to full use; Step B ("would use") to half; unpicked keeps the
+     trip-based estimate. A credit tied to an airline or hotel they don't
+     use stays $0 either way. */
+  const chips = perkChipsFor(credit);
+  const chipFloor = chips.some((k) => profile.brands.perks.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9)
+    : chips.some((k) => profile.brands.perksMaybe.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * INTERESTED_FACTOR : 0;
+  const lift = (u) => (u.factor > 0 || chipFloor > 0 ? { ...u, factor: Math.max(u.factor, chipFloor), reason: Math.max(u.factor, chipFloor) > 0 ? null : u.reason } : u);
+  if (credit.kind === "broad") return lift({ factor: trips > 0 ? 0.95 : 0.6, reason: null });
   if (credit.kind === "hotel") {
     const brand = travelBrandOf(card, credit);
-    return brand && !pickedBrand(profile, brand) ? { factor: 0, reason: `You didn't pick ${brand}` } : { factor: nights >= 2 ? 0.8 : 0, reason: nights >= 2 ? null : "You rarely stay in hotels" };
+    return brand && !pickedBrand(profile, brand) ? { factor: 0, reason: `You didn't pick ${brand}` } : lift({ factor: nights >= 2 ? 0.8 : 0, reason: nights >= 2 ? null : "You rarely stay in hotels" });
   }
   if (credit.kind === "airline") {
     const brand = travelBrandOf(card, credit);
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
     if (!trips) return { factor: 0, reason: "You don't fly" };
-    return { factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null };
+    return lift({ factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null });
   }
   if (credit.kind === "portal") {
     const brand = travelBrandOf(card, credit);
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
-    return { factor: CREDIT_USAGE.portal({ trips }), reason: trips ? null : "You don't travel" };
+    return lift({ factor: CREDIT_USAGE.portal({ trips }), reason: trips ? null : "You don't travel" });
   }
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };

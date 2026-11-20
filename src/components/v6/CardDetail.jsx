@@ -17,7 +17,8 @@ import Choice from "../v5/Choice.jsx";
 import Backdrop from "./Backdrop.jsx";
 import { Reveal, CountUp } from "./motion.jsx";
 import { cardDetail, approvalChip, availabilityOf } from "../../engine/v5/explore.js";
-import { optimalWallet } from "../../engine/v5/methodology.js";
+import { optimalWallet, walletValue } from "../../engine/v5/methodology.js";
+import { explainCard } from "../../engine/v5/apply.js";
 import { pointsChip } from "../../engine/v5/pointValues.js";
 import { loungeCoverage } from "../../engine/airportFit.js";
 import { LOUNGE_SITES, networkKey } from "../../data/loungeLocations.js";
@@ -50,14 +51,17 @@ function iconFor(item) {
   return Ticket;
 }
 
-function whyLine(d) {
-  const top = d.topEarning[0];
-  const ben = [...d.used].filter((b) => b.kind !== "protection").sort((a, b) => b.value - a.value)[0];
-  const parts = [];
-  if (top) parts.push(`${pct(top.pct)} on ${BUCKET_LABEL[top.bucket]}`);
-  if (ben) parts.push(`the ${ben.label.replace(/\s*\(.*$/, "").replace(/^\$[\d,]+\s+/, "")} you'd use`);
-  if (!parts.length) return "It earns about the same as a simple card for how you spend.";
-  return `Mostly its ${parts.join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
+/* v7b 4.6: name the REAL biggest value drivers — what the card adds in
+   their wallet, by dollars: each spend lane's gain over what had it, and
+   each benefit counted (explainCard). */
+export function whyLine(d, e) {
+  const short = (label) => label.replace(/\s*\(.*$/, "").replace(/^\$[\d,]+\s+/, "");
+  const drivers = [
+    ...(e?.lanes || []).filter((l) => l.delta > 0).map((l) => ({ value: l.delta, text: `${pct(l.pct)} on ${BUCKET_LABEL[l.bucket]}` })),
+    ...(e?.benefits || []).filter((b) => b.kind !== "protection" && b.value > 0).map((b) => ({ value: b.value, text: `the ${short(b.label)}` })),
+  ].sort((a, b) => b.value - a.value).slice(0, 2);
+  if (!drivers.length) return "It earns about the same as a simple card for how you spend.";
+  return `Mostly ${drivers.map((x, i) => (i === 0 ? `its ${x.text} (${money(x.value)})` : `${x.text} (${money(x.value)})`)).join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
 }
 
 /** One line on break-even for a card they hold. */
@@ -77,6 +81,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
   const [open, setOpen] = useState(null);
   const bestN = useMemo(() => optimalWallet(profile).value.N, [profile]);
   const d = useMemo(() => cardDetail(cardId, profile, bestN), [cardId, profile, bestN]);
+  const e = useMemo(() => explainCard(cardId, context || profile.cardsHeld, profile, walletValue), [cardId, context, profile]);
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
     window.addEventListener("keydown", onKey);
@@ -113,7 +118,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             ) : (
               <>
                 <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} display /></span><span className="detail-unit"> a year to you</span></p>
-                <p className="t-lead">{value > 0 ? whyLine(d) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
+                <p className="t-lead" data-testid="why-line">{value > 0 ? whyLine(d, e) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
               </>
             )}
             <div className="detail-tags">

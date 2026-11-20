@@ -891,7 +891,9 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 | 1. Look and feel | done |
 | 2. Points step | done |
 | 3. Survey: where people fly | done |
-| 4–6, golden | in progress |
+| 4. Perks: two steps | done |
+| 5. Wallet Lab, 6. Checkout | **not started** |
+| Acceptance run + report | **not started** |
 
 ## Part 1 — premium navy (2026-11-20)
 
@@ -954,3 +956,30 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 - Robinhood Gold page shows 3.6% in the text and 3.25% in an image's alt
   text; 3.6% used. The 4.2% "typical HYSA" is the median of Bankrate's
   best-rates list (a top-rates list, not an all-bank average).
+
+## Part 4 — perks in two steps (2026-11-20)
+
+- `data/perkChips.js`: one chip per distinct perk, named as the card names
+  it (Uber Cash (Uber rides + Uber Eats), Uber One membership, Resy dining
+  credit, Airline flight credit (tickets) vs Airline incidental credit (bags,
+  seats, upgrades), TSA PreCheck / Global Entry fee credit, CLEAR+
+  membership …); test: every credit in the catalog maps to a chip.
+- Survey: Step A "Perks you already pay for or use" (full value) + "Your
+  cards already give you"; new Step B "Would you use these if a card
+  included them?" (bundles explained; ½ value, monthly drips lower).
+- Travel-credit chips lift those credits to full (A) or half (B) use.
+- Niche / portal-tied credits $0 unless picked (Part 3 commit).
+- Card detail "Mostly its…" names the real biggest drivers from "Why this
+  card?" (lane gains and benefits, in $).
+- Tests: `v7bPart4.test.js` (incl. golden perk tiers) + survey tests.
+
+## Next (v7b) — stopped here (usage limit)
+- Part 5 Wallet Lab: swap drawer with every eligible card, fee filter, sort,
+  pinned current card, per-row slot change / wallet change / fee change;
+  "Other cards that could fill this slot" in card detail; "All your
+  benefits" list with Overlap / Surplus / Not used; Costco-slot explanation;
+  Robinhood offset line in the card's math. Golden: negative slot change.
+- Part 6 Checkout: 10 quick picks + full A–Z store list with category filter.
+- Acceptance checklist run, screenshots/acceptance/, docs/ACCEPTANCE_REPORT.md.
+- Decision questions for the owner (collected so far): see the session
+  summary.
