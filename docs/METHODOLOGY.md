@@ -319,6 +319,20 @@ the setup), credits used, lounges, fee, what each adds to the setup, and
 the application cost — delta = candidate − current, coloured better /
 worse.
 
+**v7b swap drawer** (`alternativesForSlot`): every eligible card that fits the
+budget and card limit, sorted by net change for the whole wallet. Each row:
+*change in this slot* (spending slots: its % there − the current card's %,
+× the slot's yearly spend — negative when it's worse; lounge / keeper slots:
+that slot's benefit − the current card's), *net change for the wallet*
+(add alongside), *fee change*. The current card is pinned with its own %,
+fee and what it adds. Golden: Costco Visa in the Costco slot beside
+Robinhood Gold, no Costco gas → −1% → −$36 a year on $3,600 at Costco.
+
+**All your benefits** (`allBenefits`): every benefit of every card, biggest
+value first, with *Overlap* (the same benefit from 2+ cards — only the best
+counts), *Surplus* (counted at under 60% of face) and *Not used* (you said you
+don't need it, with the reason).
+
 **One % function** (v7 G): every "≈ % back" is `pctBack(rate, cpp)` or
 `backPct(value, dollars)` (valuation.js), shown with `formatPctBack`.
 

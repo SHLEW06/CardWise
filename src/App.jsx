@@ -208,7 +208,8 @@ export default function App() {
   /* v7 D1: any card opens its full detail; Wallet Lab passes the setup it's
      judged against. */
   const [modalWallet, setModalWallet] = useState(null);
-  const openCard = (id, wallet = null) => { setModalWallet(Array.isArray(wallet) ? wallet : null); setModalCard(id); };
+  const [modalSlot, setModalSlot] = useState(null);
+  const openCard = (id, wallet = null, slotKey = null) => { setModalWallet(Array.isArray(wallet) ? wallet : null); setModalSlot(slotKey); setModalCard(id); };
 
   // ----- render -----
   if (!ready) {
@@ -266,6 +267,8 @@ export default function App() {
           cardId={modalCard}
           profile={v5}
           wallet={modalWallet}
+          slotKey={modalSlot}
+          onOpenCard={(id) => openCard(id, modalWallet, modalSlot)}
           onClose={() => setModalCard(null)}
           onToggleOwn={toggleWallet}
           onProfileChange={(p) => applyV5(saveV5Profile(p))}

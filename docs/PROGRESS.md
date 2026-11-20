@@ -892,7 +892,8 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 | 2. Points step | done |
 | 3. Survey: where people fly | done |
 | 4. Perks: two steps | done |
-| 5. Wallet Lab, 6. Checkout | **not started** |
+| 5. Wallet Lab | done |
+| 6. Checkout | **not started** |
 | Acceptance run + report | **not started** |
 
 ## Part 1 — premium navy (2026-11-20)
@@ -973,12 +974,20 @@ tile screenshots are in `screenshots/v7b/` for the end review.
   card?" (lane gains and benefits, in $).
 - Tests: `v7bPart4.test.js` (incl. golden perk tiers) + survey tests.
 
-## Next (v7b) — stopped here (usage limit)
-- Part 5 Wallet Lab: swap drawer with every eligible card, fee filter, sort,
-  pinned current card, per-row slot change / wallet change / fee change;
-  "Other cards that could fill this slot" in card detail; "All your
-  benefits" list with Overlap / Surplus / Not used; Costco-slot explanation;
-  Robinhood offset line in the card's math. Golden: negative slot change.
+## Part 5 — Wallet Lab (2026-11-20)
+
+- Swap drawer: every eligible card (scrollable), fee filter, Best for you /
+  A–Z, current card pinned with its own numbers; each row shows change in
+  this slot (negative when worse), net change for the wallet, fee change.
+- Card detail opened from a slot: "Other cards that could fill this slot".
+- "All your benefits" near the top of the Lab: source card, value, Overlap /
+  Surplus / Not used.
+- Costco slot explains why the Costco Visa ranks where it does.
+- Robinhood Gold's membership and interest offset as its own line in "Why
+  this card?".
+- Tests: `v7bPart5.test.jsx` (8) incl. golden negative slot change.
+
+## Next (v7b)
 - Part 6 Checkout: 10 quick picks + full A–Z store list with category filter.
 - Acceptance checklist run, screenshots/acceptance/, docs/ACCEPTANCE_REPORT.md.
 - Decision questions for the owner (collected so far): see the session

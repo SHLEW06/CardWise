@@ -26,6 +26,8 @@ import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
+import { alternativesForSlot } from "../../engine/v5/lab.js";
+import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
@@ -74,7 +76,7 @@ export function breakEvenLine(own) {
 
 /* `wallet`: the setup the card is judged against (Wallet Lab passes its
    setup); default = the cards they hold. */
-export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null }) {
+export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null, slotKey = null, onOpenCard }) {
   const profile = normalizeProfile(raw);
   const [math, setMath] = useState(false);
   const [showUnused, setShowUnused] = useState(false);
@@ -131,6 +133,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             )}
           </Reveal>
 
+          {slotKey && context && <OtherForSlot cardId={c.id} slotKey={slotKey} setup={context} profile={profile} onOpenCard={onOpenCard} />}
           <Reveal i={2} className="panel detail-block detail-why">
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
@@ -274,5 +277,26 @@ export function TheMath({ d }) {
       </dl>
       <p className="t-caption">Method: docs/METHODOLOGY.md. Point values from your partner picks.</p>
     </div>
+  );
+}
+
+/* v7b 5.2: other cards that could fill the slot this card was opened from. */
+function OtherForSlot({ cardId, slotKey, setup, profile, onOpenCard }) {
+  const label = SLOT_DEFS.find((d) => d.key === slotKey)?.label || "this slot";
+  const base = setup.includes(cardId) ? setup : [...setup, cardId];
+  const r = useMemo(() => alternativesForSlot(base, slotKey, profile, { limit: 6 }), [base.join(), slotKey, profile]);
+  if (!r.alternatives.length) return null;
+  return (
+    <Reveal i={2} className="panel detail-block" data-testid="other-for-slot">
+      <h2 className="t-h2">Other cards that could fill {label.toLowerCase()}</h2>
+      <ul className="rows">
+        {r.alternatives.map((a) => (
+          <li key={a.cardId} className="plan-row">
+            <button className="link" onClick={() => onOpenCard?.(a.cardId)}>{cardDisplayName(BY_ID[a.cardId])}</button>
+            <span className="t-caption">{a.delta >= 0 ? "+" : "−"}${Math.abs(Math.round(a.delta)).toLocaleString("en-US")} a year for your wallet · {a.fee ? `$${a.fee} fee` : "no fee"}</span>
+          </li>
+        ))}
+      </ul>
+    </Reveal>
   );
 }

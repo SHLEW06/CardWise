@@ -6,7 +6,7 @@
 
 import { BY_ID, CARDS } from "../../data/cards/index.js";
 import { normalizeProfile, hotelNights } from "../profileDefaults.js";
-import { cardFee, loungeBreakdown, bagValue, directBase, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "./value.js";
+import { cardFee, loungeBreakdown, bagValue, directBase, membershipCost, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "./value.js";
 import { cardPointValue, currencyValue, convertsTo, partnerShortName, FLEX_CURRENCIES } from "./pointValues.js";
 import { FREE_NIGHT_P_USE, STATUS_VALUE } from "../../data/benefitUsage.js";
 import { UNCAPPED_FREE_NIGHT_POINTS } from "../../data/benefitUsage.js";
@@ -155,8 +155,12 @@ export function explainCard(cardId, baseWallet, rawProfile, walletValue) {
         text: `Opens transfers to ${names.slice(0, 3).join(", ")}${names.length > 3 ? " and more" : ""}, which you'd use: ≈ ${Math.round(v.cpp * 100) / 100}¢ a point instead of ${Math.round(before * 100) / 100}¢.` });
     }
   }
+  /* v7b 5.5: a required membership (Robinhood Gold) as its own line, with
+     the interest offset that's allowed against it. */
+  const membership = membershipCost(card, profile);
   return {
-    cardId, held, lanes, benefits, lounge, fee, hurdle, ecosystem,
+    cardId, held, lanes, benefits, lounge, fee, hurdle, ecosystem, membership,
+    rates: profile.rates, robinhoodCash: profile.robinhoodCash,
     earned, benefitTotal, gain, net: gain - hurdle.total,
     verdict: held ? null : worthVerdict(gain, hurdle.total),
     cpp: cardPointValue(card, profile, [...baseWallet, cardId]).cpp,

@@ -90,7 +90,13 @@ export default function WhyThisCard({ cardId, wallet = [], profile, open: startO
             <tbody>
               <tr><td>Earning it adds</td><td className="num-ui">{signed(e.earned)}</td></tr>
               <tr><td>Benefits it adds</td><td className="num-ui">{signed(e.benefitTotal)}</td></tr>
-              <tr><td>Yearly fee</td><td className="num-ui">{e.fee ? `−${money(e.fee)}` : "$0"}</td></tr>
+              <tr><td>Yearly fee{e.membership && !e.membership.paid ? ` (incl. ${e.membership.name} membership)` : ""}</td><td className="num-ui">{e.fee ? `−${money(e.fee)}` : "$0"}</td></tr>
+              {e.membership && (
+                <tr data-testid="membership-line">
+                  <td>{e.membership.name} membership {money(e.membership.annual)} a year{e.membership.paid ? " — you already pay it, so it isn't counted" : `, less extra interest on ${money(e.robinhoodCash || 0)} kept there (${e.rates.robinhoodGoldApy}% vs ${e.rates.hysaApy}% at a typical high-yield savings account): ${money(e.membership.offset)}`}</td>
+                  <td className="num-ui">{e.membership.paid ? "$0" : `−${money(e.membership.counted)}`}</td>
+                </tr>
+              )}
               <tr><td>Adds to your wallet</td><td className="num-ui">{signed(e.gain)}</td></tr>
               {e.hurdle.parts.map((h) => <tr key={h.label}><td>{h.label}</td><td className="num-ui">{h.value >= 0 ? `−${money(h.value)}` : `+${money(-h.value)}`}</td></tr>)}
               <tr className="is-total"><td>Net a year</td><td className="num-ui">{signed(e.net)}</td></tr>

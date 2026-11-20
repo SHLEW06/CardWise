@@ -12,7 +12,7 @@ import { normalizeProfile } from "../profileDefaults.js";
 import { walletValue, slotsFor, eligibility, isChase, SLOT_DEFS } from "./methodology.js";
 import { cardFee, lanesFor, buckets, rolesFor, benefitBreakdown, earnRate } from "./value.js";
 import { pctBack } from "./valuation.js";
-import { applicationHurdle } from "./apply.js";
+import { applicationHurdle, airlineKeeperValue } from "./apply.js";
 import { cardPointValue } from "./pointValues.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 
@@ -35,7 +35,7 @@ function slotPct(card, slotKey, profile, wallet) {
  * it); the result must fit the fee budget and the card limit.
  * → [{ cardId, setup, N, delta, feeDelta, displaced, pct }] best first
  */
-export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCards, limit = 6, catalog = CARDS } = {}) {
+export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCards, limit = Infinity, catalog = CARDS } = {}) {
   const profile = normalizeProfile(rawProfile);
   const B = budget ?? profile.feeBudget;
   const max = maxCards ?? profile.maxCards;
@@ -59,6 +59,33 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
     const v = walletValue(next, profile, { normalized: true });
     return { setup: next, N: v.N, net: v.net, delta: v.N - before.N, feeDelta: v.F - before.F, displaced, pct: def?.buckets ? slotPct(c, slotKey, profile, next) : null };
   };
+  /* v7b 5.1: what each card does IN THIS SLOT vs the card there now — a
+     rate difference × the slot's spend for spending slots; the slot's own
+     benefit (lounge, free night, airline keeper) otherwise. Can be negative:
+     a card that's worse here never shows only a positive number. */
+  const slot = slots.find((s) => s.key === slotKey) || null;
+  const curPct = def?.buckets && current ? slotPct(BY_ID[current], slotKey, profile, setup) : def?.buckets ? 0 : null;
+  const slotBenefit = (c, wallet) => {
+    if (!c) return 0;
+    if (slotKey === "airlineKeeper") return airlineKeeperValue(c, profile)?.net ?? 0;
+    const kind = slotKey === "lounge" ? "lounge" : slotKey === "hotelKeeper" ? "freeNight" : null;
+    if (!kind) return 0;
+    return benefitBreakdown(c, profile, { wallet }).items.filter((i) => i.kind === kind).reduce((t, i) => t + i.value, 0);
+  };
+  const curBenefit = current ? slotBenefit(BY_ID[current], setup) : 0;
+  const slotChangeOf = (c, wallet) => {
+    if (def?.buckets) {
+      const pct = slotPct(c, slotKey, profile, wallet) - (curPct || 0);
+      return { pct, usd: (pct * (slot?.dollars || 0)) / 100, dollars: slot?.dollars || 0 };
+    }
+    if (slotKey === "rotating") return null;
+    return { pct: null, usd: slotBenefit(c, wallet) - curBenefit };
+  };
+  /* The card there now, pinned with its own numbers. */
+  const pinned = current ? {
+    cardId: current, pct: curPct, benefit: def?.buckets ? null : curBenefit, fee: cardFee(BY_ID[current], profile),
+    adds: before.N - walletValue(setup.filter((id) => id !== current), profile, { normalized: true }).N,
+  } : null;
   const out = [];
   for (const c of catalog) {
     if (setup.includes(c.id) || !eligibility(c, profile).ok || !relevant(c)) continue;
@@ -70,10 +97,57 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
     const pick = add || replace;
     if (!pick) continue;
     const hurdle = applicationHurdle(c, profile, pick.setup).total;
-    out.push({ cardId: c.id, ...pick, mode: add ? "add" : "replace", add, replace, hurdle });
+    out.push({ cardId: c.id, ...pick, mode: add ? "add" : "replace", add, replace, hurdle, slotChange: slotChangeOf(c, pick.setup), fee: cardFee(c, profile) });
   }
+  /* Sorted by net change for the whole wallet (the default "best for you"). */
   out.sort((a, b) => b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
-  return { current, before, alternatives: out.slice(0, limit) };
+  return { current, before, pinned, slot, alternatives: out.slice(0, limit) };
+}
+
+/* ── v7b 5.3: every benefit the wallet gives ─────────────────────────────── */
+
+/* A benefit counts as "surplus" when you'd use less than this share of it. */
+export const SURPLUS_BELOW = 0.6;
+
+/**
+ * Every benefit of every card in the setup, biggest value first:
+ *   { cardId, label, value, face, flags: ["Overlap"|"Surplus"|"Not used"], reason }
+ * Overlap: the same benefit from 2+ cards (only the best one counts).
+ * Surplus: counted, but you'd use less than 60% of its face value.
+ * Not used: you said you don't need it (with the reason).
+ */
+export function allBenefits(value) {
+  const counted = new Map(value.benefits.map((b) => [b.id, b]));
+  const rows = [];
+  for (const pc of value.perCard) {
+    for (const it of pc.items) {
+      const c = counted.get(it.id);
+      const overlap = !c || (c.dedupedFrom && c.dedupedFrom.length > 1 && c.cardId !== pc.cardId);
+      const v = c && c.cardId === pc.cardId ? c.value : 0;
+      const flags = [];
+      if (it.dedupe && (overlap || (c?.dedupedFrom?.length > 1))) flags.push("Overlap");
+      if (v > 0 && it.face && v < SURPLUS_BELOW * it.face) flags.push("Surplus");
+      rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: overlap && v === 0 ? "Another card already gives you this" : null });
+    }
+    for (const u of pc.unused || []) rows.push({ cardId: pc.cardId, label: u.label, value: 0, face: u.face || 0, flags: ["Not used"], reason: u.reason });
+  }
+  return rows.sort((a, b) => b.value - a.value || (a.flags.includes("Not used") ? 1 : 0) - (b.flags.includes("Not used") ? 1 : 0) || b.face - a.face);
+}
+
+/* ── v7b 5.4: why the Costco Visa ranks where it does ──────────────────── */
+export function costcoSlotNote(setup, rawProfile) {
+  const profile = normalizeProfile(rawProfile);
+  const v = walletValue(setup, profile, { normalized: true });
+  const rows = v.earning.byBucket.warehouse || [];
+  const lead = [...rows].sort((a, b) => b.dollars - a.dollars)[0];
+  if (!lead) return null;
+  const costco = BY_ID["costco-citi"];
+  const costcoPct = pctBack(earnRate(costco, "warehouse", profile), 1);
+  const gas = buckets(profile);
+  const leadName = cardDisplayName(BY_ID[lead.cardId]);
+  if (lead.cardId === "costco-citi") return `The Costco Visa leads here: ${costcoPct}% at Costco beats your other cards there, and it pays 5% on Costco gas.`;
+  const gasLine = (gas.gasCostco || 0) > 0 ? ` It would win on gas at Costco (5%, $${Math.round(gas.gasCostco).toLocaleString("en-US")} a year of yours).` : " It wins only on gas at Costco (5%), and you don't buy gas there.";
+  return `${leadName} earns ${Math.round(lead.pct * 10) / 10}% at Costco, more than the Costco Visa's ${costcoPct}% — a card that earns ${Math.round(lead.pct)}% everywhere beats it in the store.${gasLine}`;
 }
 
 /* ── D3: side-by-side compare (FIFA-style) ──────────────────────────────── */
