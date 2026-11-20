@@ -535,7 +535,8 @@ rendered-face setting for launch.
 | B. Valuations + audit | done (B5 portal lanes on hold) |
 | C. Optimizer additions | done |
 | D. Wallet Lab | done |
-| E–G | in progress, in order |
+| E. Flights & hotels | done (automatic portal prices + cabin markup on hold) |
+| F–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -754,5 +755,19 @@ Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-
   beside the budget control; the spending drawer uses the Monthly / Yearly
   rows.
 
+## Part E — Checkout → Flights & hotels (2026-11-20)
+
+- `<TravelRanker>` replaces the two-price calculator in Checkout (the Lab
+  keeps the calculator): one direct price + cabin (or hotel brand + nights)
+  → every portal the cards can use, ranked by room: earn rate × point value,
+  "worth it under" breakeven, an optional typed price per portal with a
+  verdict, pay-with-points where a card has an "up to" value.
+- Hotel direct booking: card earn + program base points + elite perks,
+  i.e. what a portal booking gives up.
+- **On hold, per the owner:** portal price defaults and the cabin markup.
+  The owner is collecting real portal prices; once they're in, the default
+  price per portal can come from that data instead of "type it".
+- Tests: `v7PartE.test.jsx` (4) + Checkout test updated.
+
 ## Next (v7)
-Parts E → G in order, committing after each.
+Parts F → G in order, committing after each.

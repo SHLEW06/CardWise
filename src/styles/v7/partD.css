@@ -63,6 +63,16 @@
 .v5 .swap-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .v5 .timeline-name.link { justify-self: start; font-size: inherit; font-weight: 500; color: var(--ink); }
 
+/* ── Part E: Flights & hotels ranker ── */
+.v5 .travel-ranker { display: grid; gap: 16px; }
+.v5 .direct-row { display: grid; gap: 4px; padding: 14px 0; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+.v5 .direct-row p { margin: 0; }
+.v5 .ranker-table td { vertical-align: middle; }
+.v5 .ranker-table td:first-child { text-align: left; }
+.v5 .ranker-price { height: 38px; max-width: 130px; margin-left: auto; }
+.v5 .ranker-price input { text-align: right; }
+.v5 .ranker-pwp { display: block; max-width: 22em; margin-left: auto; text-align: right; }
+
 @media (max-width: 900px) {
   .v5 .lab-budget.has-ladder { grid-template-columns: 1fr; }
   .v5 .slot-index { top: 56px; }

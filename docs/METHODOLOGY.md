@@ -317,6 +317,19 @@ several-programs one always shown when it applies). The flexible currencies
 that feed each strategy are listed with their ratio (Chase → Hyatt 1:1 only
 with the Sapphire Reserve, 4:3 with Preferred / Ink).
 
+## 6c. Every portal, ranked (v7 Part E)
+
+`breakeven.js rankPortals`: for one direct price, every travel portal the
+wallet earns extra in (Chase, Amex, Capital One, Citi, Bilt, Robinhood, US
+Bank Travel Center — grouped by the card's issuer), its best card's
+`e_P × v`, and `P* = (net_D − L) ÷ (1 − e_P × v)`. Hotels booked direct
+with a picked program: `L` = base points (Hyatt 5/$ etc.) × the program's
+value (mode) + elite perks ($15 a stay per 3 nights, picked brand only).
+**Portal prices are only what the person types** — automatic portal pricing
+and the premium-cabin markup are on hold (owner, 2026-11-20); without a
+price each portal shows "worth it under P*". Pay with points uses the
+card's "up to" value (Chase Points Boost) and is flagged "select bookings".
+
 ## 7. Golden profiles (tests)
 
 | # | Profile | Asserted |

@@ -66,6 +66,66 @@ export function bestPortal(kind, walletIds, profile) {
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 
+/* ── v7 Part E: every portal the person can use, ranked ────────────────── */
+
+/* Portals by issuer (the card's own travel site). */
+export const PORTAL_BY_ISSUER = {
+  Chase: "Chase Travel", "American Express": "Amex Travel", "Capital One": "Capital One Travel", Citi: "Citi Travel",
+  Bilt: "Bilt Travel", Robinhood: "Robinhood Travel", "US Bank": "US Bank Travel Center", "Wells Fargo": "Wells Fargo travel",
+};
+const portalOf = (card) => PORTAL_BY_ISSUER[card.issuer] || PORTAL_NAME[card.pointCurrency] || `${card.issuer} travel`;
+
+/**
+ * Rank every travel portal the person's cards earn extra in, for one trip.
+ * input: { kind: "flight"|"hotel", direct, cabin?, brand?, nights?, prices?: { [portal]: $ } }
+ * Portal prices: what the person typed for that portal (automatic portal
+ * pricing and the premium-cabin markup are on hold — owner, 2026-11-20).
+ * Without a typed price each portal shows its breakeven: book there if its
+ * price is under P* = (net_D − L) ÷ (1 − e_P × v).
+ * → { direct: { cardId, pct, net, programBase, perks }, L, rows: [{ portal,
+ *     cardId, multiplier, cpp, pct, breakeven, price, net, verdict,
+ *     payWithPoints }], best }
+ */
+export function rankPortals(input, rawProfile, walletIds) {
+  const profile = normalizeProfile(rawProfile);
+  const wallet = walletIds || profile.cardsHeld;
+  const { kind = "flight", direct: D = 0, brand = null, nights = 1, prices = {} } = input;
+  const d = bestDirect(kind, wallet, profile, brand);
+  const netD = D * (1 - d.pct / 100);
+  /* Booking direct with a picked hotel program also earns its base points and
+     elite perks — what a portal booking gives up (L). */
+  let L = 0, programBase = null, perks = 0;
+  if (kind === "hotel" && brand && HOTEL_BASE_EARN[brand]) {
+    const v = cardPointValue({ id: `__${brand}`, pointCurrency: brand }, { ...profile, brands: { ...profile.brands, hotels: [...new Set([...profile.brands.hotels, brand])] } }, wallet).cpp;
+    programBase = { program: brand, perDollar: HOTEL_BASE_EARN[brand], cpp: v, value: (D * HOTEL_BASE_EARN[brand] * v) / 100 };
+    perks = profile.brands.hotels.includes(brand) ? ELITE_PERK_PER_STAY * Math.max(1, Math.ceil(nights / 3)) : 0;
+    L = programBase.value + perks;
+  }
+  const keys = PORTAL_KEYS[kind];
+  const byPortal = {};
+  for (const id of wallet) {
+    const card = BY_ID[id];
+    const pm = card?.portalMultipliers || {};
+    const mult = Math.max(0, ...keys.map((k) => pm[k] || 0));
+    if (!mult) continue;
+    const v = cardPointValue(card, profile, wallet);
+    const pct = mult * v.cpp;
+    const portal = portalOf(card);
+    if (!byPortal[portal] || pct > byPortal[portal].pct) byPortal[portal] = { portal, cardId: id, multiplier: mult, cpp: v.cpp, pct, upTo: v.upTo };
+  }
+  const rows = Object.values(byPortal).map((p) => {
+    const breakeven = (netD - L) / (1 - p.pct / 100);
+    const typed = prices[p.portal];
+    const price = Number.isFinite(typed) && typed > 0 ? typed : null;
+    const net = price == null ? null : price * (1 - p.pct / 100) + L;   // effective cost incl. what booking there gives up
+    const verdict = price == null ? null : price < breakeven ? "portal" : "direct";
+    const payWithPoints = p.upTo ? { upTo: p.upTo, points: Math.ceil(((price ?? D) * 100) / p.upTo), keepValue: (Math.ceil(((price ?? D) * 100) / p.upTo) * p.cpp) / 100, note: "Points Boost only applies to select bookings." } : null;
+    return { ...p, breakeven, price, net, verdict, payWithPoints };
+  }).sort((a, b) => b.breakeven - a.breakeven);
+  const best = rows.find((r) => r.verdict === "portal") || null;
+  return { direct: { ...d, net: netD, programBase, perks }, L, rows, best };
+}
+
 /** The formula on its own: direct price D at r_D % back, portal multiplier
     e_P at v ¢ per point, loyalty lost L → { netDirect, breakeven }. */
 export function breakevenPrice({ D, rD, eP, v, L = 0 }) {

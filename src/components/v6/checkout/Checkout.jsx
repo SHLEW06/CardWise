@@ -10,7 +10,7 @@ import { Search, X, MapPin, Zap, Store, Globe } from "lucide-react";
 import CardFace from "../../v5/CardFace.jsx";
 import Choice from "../../v5/Choice.jsx";
 import { parseMoney } from "../../v5/MoneySlider.jsx";
-import PortalCalculator from "../PortalCalculator.jsx";
+import TravelRanker from "../../v7/TravelRanker.jsx";
 import { Reveal } from "../motion.jsx";
 import { searchStores, rankPurchase, bestByCategory, loadGeneratedBrands, matchStore, storeCount, BUCKET_WORDS } from "../../../engine/v5/checkout.js";
 import { queryNearbyStores, distanceMeters } from "../../../connector/nearby.js";
@@ -46,8 +46,8 @@ export default function Checkout({ profile: raw, offers = [], onOpenCard, onMark
       {mode === "travel" && (
         <Reveal className="panel">
           <h2 className="t-h2">Flights & hotels</h2>
-          <p className="t-caption">Type the airline's or hotel's own price and the travel portal's price. We'll tell you which is the better deal with your cards.</p>
-          <PortalCalculator profile={profile} wallet={profile.cardsHeld} />
+          <p className="t-caption">Type the airline's or hotel's own price. We rank every travel portal your cards can use and show the most each one is worth paying there.</p>
+          <TravelRanker profile={profile} onOpenCard={onOpenCard} />
         </Reveal>
       )}
     </section>

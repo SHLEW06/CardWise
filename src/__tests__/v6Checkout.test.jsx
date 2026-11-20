@@ -102,9 +102,11 @@ describe("Checkout screen", () => {
       expect(PLACES.map((p) => p.name)).toContain(m);
     }
   });
-  it("Flights & hotels is the portal calculator", () => {
-    render(<Checkout profile={P} initialMode="travel" />);
-    fireEvent.change(screen.getByLabelText("Airline's price in dollars"), { target: { value: "400" } });
-    expect(screen.getByText(/net direct/)).toBeInTheDocument();
+  it("Flights & hotels ranks every portal the cards can use (v7 E)", () => {
+    render(<Checkout profile={{ ...P, cardsHeld: ["csr", "venture-x", "robinhood-gold"] }} initialMode="travel" />);
+    fireEvent.change(screen.getByLabelText("Airline's own price in dollars"), { target: { value: "400" } });
+    const ranker = screen.getByTestId("travel-ranker");
+    for (const portal of ["Chase Travel", "Capital One Travel", "Robinhood Travel"]) expect(ranker.textContent).toContain(portal);
+    expect(ranker.textContent).toMatch(/Booking direct.+after rewards/);
   });
 });
