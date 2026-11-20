@@ -5,6 +5,7 @@
    "≈ $X a year to you" · fit · approval · availability, and Compare 2–3
    (replaces CardComparison, DiscoverHome, GoalShelf).
    ========================================================================== */
+import CompareTable from "../../v7/CompareTable.jsx";
 import React, { useDeferredValue, useMemo, useState } from "react";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import CardFace from "../../v5/CardFace.jsx";
@@ -127,7 +128,8 @@ export default function Explore({ profile: raw, onOpenCard }) {
   );
 }
 
-/* Side by side, restyled CardComparison — every number from the v5 engine. */
+/* Side by side — v7 D3: the same compare as the Wallet Lab swap drawer
+   (CompareTable), first card as the reference, then the summary rows. */
 export function Compare({ ids, profile, onClose, onOpenCard }) {
   const ds = useMemo(() => ids.map((id) => cardDetail(id, profile)), [ids, profile]);
   const line = (label, fn) => (
@@ -137,6 +139,8 @@ export function Compare({ ids, profile, onClose, onOpenCard }) {
     <div className="sheet-wrap" role="dialog" aria-modal="true" aria-label="Compare cards" onClick={onClose}>
       <div className="sheet compare glass" onClick={(e) => e.stopPropagation()}>
         <header className="sheet-head"><h2 className="t-h2">Compare</h2><button className="icon-btn" onClick={onClose} aria-label="Close"><X size={20} /></button></header>
+        <CompareTable ids={ids} setup={profile.cardsHeld} profile={normalizeProfile(profile)} onOpenCard={onOpenCard}
+          caption={`Compared with the ${cardDisplayName(BY_ID[ids[0]])}; differences in colour. "Yearly net it adds" is beside the cards you have.`} />
         <div className="compare-scroll">
           <table className="compare-table">
             <thead><tr><th />{ds.map((d) => <th key={d.card.id} scope="col"><button className="compare-photo" onClick={() => onOpenCard?.(d.card.id)}><CardFace card={d.card} /></button><span>{d.name}</span></th>)}</tr></thead>

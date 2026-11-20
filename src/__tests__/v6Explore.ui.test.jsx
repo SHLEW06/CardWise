@@ -113,8 +113,11 @@ describe("Explore screen", () => {
     const compares = within(screen.getByRole("list", { name: "Cards" })).getAllByRole("button", { name: /^Compare / });
     fireEvent.click(compares[0]); fireEvent.click(compares[1]);
     fireEvent.click(within(screen.getByRole("region", { name: "Compare" })).getByRole("button", { name: "Compare" }));
-    const table = within(screen.getByRole("dialog", { name: "Compare cards" })).getByRole("table");
-    expect(within(table).getByText("Adds to your wallet")).toBeInTheDocument();
+    const dlg = screen.getByRole("dialog", { name: "Compare cards" });
+    /* v7 D3: the Wallet Lab compare (deltas vs the first card) + the summary table. */
+    expect(within(within(dlg).getByTestId("compare-table")).getByText("Yearly net it adds")).toBeInTheDocument();
+    const summary = within(dlg).getAllByRole("table").find((t) => t.classList.contains("compare-table"));
+    expect(within(summary).getByText("Adds to your wallet")).toBeInTheDocument();
     fireEvent.click(within(grid).getAllByRole("button", { name: /^Open / })[0]);
     expect(onOpen).toHaveBeenCalled();
   });

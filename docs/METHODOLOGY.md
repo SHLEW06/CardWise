@@ -256,6 +256,28 @@ card takes over, its % vs the before-wallet's % there, $ difference; each
 benefit counted after dedupe; lounge visits × $35 × coverage; fee; hurdle;
 net. `gain = ΔE + ΔU − fee` exactly.
 
+## 5c. Slots and swaps (v7 Part D)
+
+**Slot %** (`slotsFor`): every allocation row in the slot's categories
+counts — rotating 5% included. The slot shows the **lead card's own rate**
+(its value ÷ its dollars); `overall` = all value ÷ all dollars, and when
+several cards share the slot the screen says so: "This slot overall: 3.5%
+(Robinhood Gold 3% + Freedom Flex 5% on rotating categories)". *Bug fixed:*
+rotating rows were skipped in the value but their dollars stayed in the
+total, so Robinhood's 3% showed as ≈ 2.3%.
+
+**Swaps** (`alternativesForSlot`): each candidate is valued two ways —
+**Add alongside** (default: the setup + the card; it takes only the lanes
+where it pays more) and **Replace** (the slot's card removed everywhere;
+lists the other slots that costs). Both must fit the fee budget and card
+limit. **Compare** (`compareCards`): % back per category (pctBack beside
+the setup), credits used, lounges, fee, what each adds to the setup, and
+the application cost — delta = candidate − current, coloured better /
+worse.
+
+**One % function** (v7 G): every "≈ % back" is `pctBack(rate, cpp)` or
+`backPct(value, dollars)` (valuation.js), shown with `formatPctBack`.
+
 ## 6. Portal vs direct (Part I)
 
 ```

@@ -17,11 +17,11 @@ import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile, totalAnnualSpend, annualSpend } from "../profileDefaults.js";
 import {
   allocateSpend, lanesFor, buckets, walletCpp, benefitBreakdown, cardFee, loungeTotal,
-  rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES,
+  rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, directBase,
 } from "./value.js";
 import { cardPointValue, isUnlocked, CASH_LIKE } from "./pointValues.js";
 import { TRANSFER_RULES } from "../../data/programs.js";
-import { BANK_CURRENCIES } from "./valuation.js";
+import { BANK_CURRENCIES, backPct } from "./valuation.js";
 import { applicationHurdle, minHurdle, worthVerdict, keeperHotelOptions, airlineKeeperValue } from "./apply.js";
 
 export const BASELINE_PCT = 2;           // "Rewards over a 2% card"
@@ -492,21 +492,35 @@ export function slotsFor(value, rawProfile) {
     if (s.buckets) {
       const dollars = s.buckets.reduce((t, b) => t + (spend[b] || 0), 0);
       if (!dollars) continue;
+      /* v7 D4: every row counts toward the slot's overall % (rotating 5%
+         included — before, its dollars stayed in the total but its value was
+         skipped, so Robinhood's 3% showed as 2.3%). The slot shows the LEAD
+         card's own rate; "overall" and `shared` explain a slot several cards
+         share. One function for every %: backPct (valuation.js). */
       const byCard = {};
       for (const b of s.buckets) for (const r of value.earning.byBucket[b] || []) {
-        if (r.rotating) continue;
-        (byCard[r.cardId] ||= { dollars: 0, value: 0 });
-        byCard[r.cardId].dollars += r.dollars; byCard[r.cardId].value += r.value;
+        const k = `${r.cardId}${r.rotating ? "#rot" : ""}`;
+        (byCard[k] ||= { cardId: r.cardId, rotating: !!r.rotating, dollars: 0, value: 0 });
+        byCard[k].dollars += r.dollars; byCard[k].value += r.value;
       }
-      const lead = Object.entries(byCard).sort((a, b) => b[1].dollars - a[1].dollars)[0];
-      const earned = Object.values(byCard).reduce((t, x) => t + x.value, 0);
-      out.push({ key: s.key, label: s.label, cardId: lead?.[0] || null, pct: dollars ? (100 * earned) / dollars : 0, dollars, value: Math.round(earned) });
+      const parts = Object.values(byCard).sort((a, b) => (a.rotating ? 1 : 0) - (b.rotating ? 1 : 0) || b.dollars - a.dollars);
+      const lead = parts.find((x) => !x.rotating) || parts[0];
+      const earned = parts.reduce((t, x) => t + x.value, 0);
+      const covered = parts.reduce((t, x) => t + x.dollars, 0);
+      const base = ["hotels", "flights"].includes(s.key) ? directBase(profile, s.key, value.cards) : null;
+      out.push({
+        key: s.key, label: s.label, cardId: lead?.cardId || null,
+        pct: lead ? backPct(lead.value, lead.dollars) : 0,
+        overall: backPct(earned, covered || dollars),
+        shared: parts.length > 1 ? parts.map((x) => ({ cardId: x.cardId, rotating: x.rotating, dollars: Math.round(x.dollars), pct: backPct(x.value, x.dollars) })) : null,
+        programBase: base, dollars, value: Math.round(earned),
+      });
     } else if (s.key === "rotating") {
       const rows = Object.values(value.earning.byBucket).flat().filter((r) => r.rotating);
       if (!rows.length) continue;
       const v = rows.reduce((t, r) => t + r.value, 0);
       const d = rows.reduce((t, r) => t + r.dollars, 0);
-      out.push({ key: s.key, label: s.label, cardId: rows[0].cardId, pct: (100 * v) / d, dollars: d, value: Math.round(v) });
+      out.push({ key: s.key, label: s.label, cardId: rows[0].cardId, pct: backPct(v, d), dollars: d, value: Math.round(v) });
     } else if (s.key === "lounge") {
       if (profile.travel.lounges === "no") continue;
       const it = value.benefits.find((b) => b.dedupe === "lounge");

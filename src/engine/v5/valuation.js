@@ -57,6 +57,9 @@ export function cppForProfile(currency, profile) {
 
 /** Percent back for an earn rate (points per $) at a cpp (cents). */
 export const pctBack = (rate, cpp) => rate * cpp;
+/** The same % from $ earned on $ spent (slots, lanes) — v7 G: every
+    "≈ % back" comes from pctBack / backPct and is shown by formatPctBack. */
+export const backPct = (value, dollars) => (dollars > 0 ? (100 * value) / dollars : 0);
 
 /** "≈ 3% back" / "≈ 2.5% back" — the only way value is shown. */
 export function formatPctBack(pct) {

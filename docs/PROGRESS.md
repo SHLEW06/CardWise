@@ -534,7 +534,8 @@ rendered-face setting for launch.
 | A. Survey | done |
 | B. Valuations + audit | done (B5 portal lanes on hold) |
 | C. Optimizer additions | done |
-| D–G | in progress, in order |
+| D. Wallet Lab | done |
+| E–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -736,5 +737,22 @@ Owner-like, held wallet: N +$854 · net $1503 · fees $475
 Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
 ```
 
+## Part D — Wallet Lab usability (2026-11-20)
+
+- **D1:** any card in the Lab (slots, "also in this setup", keep / cancel,
+  when to apply, alternatives, compare) opens the full CardDetail, judged
+  against the Lab's setup (App `openCard(id, wallet)`).
+- **D2:** alternatives carry both "Add alongside" (default) and "Replace"
+  (with the slots it gives up). The brief's case — Blue Cash Everyday next to
+  Robinhood: add alongside is positive; replace is negative because Robinhood
+  leaves every slot (test).
+- **D3:** `<CompareTable>` (current vs candidate, coloured deltas) in the
+  swap drawer and Explore → Compare.
+- **D4:** slot % fix + "this slot overall" line (test with Robinhood +
+  Freedom Flex).
+- **D5:** sticky slot index, panels collapsed (`<details>`), fee ladder
+  beside the budget control; the spending drawer uses the Monthly / Yearly
+  rows.
+
 ## Next (v7)
-Parts D → G in order, committing after each.
+Parts E → G in order, committing after each.

@@ -10,7 +10,9 @@
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
 import { walletValue, slotsFor, eligibility, isChase, SLOT_DEFS } from "./methodology.js";
-import { cardFee, lanesFor, buckets, rolesFor } from "./value.js";
+import { cardFee, lanesFor, buckets, rolesFor, benefitBreakdown, earnRate } from "./value.js";
+import { pctBack } from "./valuation.js";
+import { applicationHurdle } from "./apply.js";
 import { cardPointValue } from "./pointValues.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 
@@ -48,25 +50,83 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
     if (slotKey === "rotating") return !!c.rotating || c.earnRates?.Rotating != null;
     return (slotPct(c, slotKey, profile, setup) || 0) > 0;
   };
+  /* v7 D2: two ways in. "Add alongside" (default) keeps every card and lets
+     the newcomer take only the lanes where it wins. "Replace" removes the
+     slot's card everywhere — and says which other slots that costs. */
+  const fits = (next) => next.length <= max && next.reduce((t, id) => t + cardFee(BY_ID[id], profile), 0) <= B;
+  const lostWithout = current ? slots.filter((s) => s.cardId === current && s.key !== slotKey).map((s) => s.label) : [];
+  const variant = (next, c, displaced) => {
+    const v = walletValue(next, profile, { normalized: true });
+    return { setup: next, N: v.N, net: v.net, delta: v.N - before.N, feeDelta: v.F - before.F, displaced, pct: def?.buckets ? slotPct(c, slotKey, profile, next) : null };
+  };
   const out = [];
   for (const c of catalog) {
     if (setup.includes(c.id) || !eligibility(c, profile).ok || !relevant(c)) continue;
     if (["csp", "csr"].includes(c.id) && setup.some((id) => ["csp", "csr"].includes(id) && id !== c.id)) continue;
-    /* Replace the slot's card when it does nothing else — or when the setup
-       is already at the card limit. */
-    const replace = !!current && (otherSlotsOfCurrent === 0 || setup.length >= max);
-    const next = replace ? [...setup.filter((id) => id !== current), c.id] : [...setup, c.id];
-    if (next.length > max) continue;
-    const fees = next.reduce((t, id) => t + cardFee(BY_ID[id], profile), 0);
-    if (fees > B) continue;
-    const v = walletValue(next, profile, { normalized: true });
-    out.push({
-      cardId: c.id, setup: next, N: v.N, net: v.net, delta: v.N - before.N, feeDelta: v.F - before.F,
-      displaced: replace ? current : null, pct: def?.buckets ? slotPct(c, slotKey, profile, next) : null,
-    });
+    const addSetup = [...setup, c.id];
+    const add = fits(addSetup) ? variant(addSetup, c, null) : null;
+    const repSetup = current ? [...setup.filter((id) => id !== current), c.id] : null;
+    const replace = repSetup && fits(repSetup) ? { ...variant(repSetup, c, current), lost: lostWithout } : null;
+    const pick = add || replace;
+    if (!pick) continue;
+    const hurdle = applicationHurdle(c, profile, pick.setup).total;
+    out.push({ cardId: c.id, ...pick, mode: add ? "add" : "replace", add, replace, hurdle });
   }
   out.sort((a, b) => b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
   return { current, before, alternatives: out.slice(0, limit) };
+}
+
+/* ── D3: side-by-side compare (FIFA-style) ──────────────────────────────── */
+
+export const COMPARE_ROWS = [
+  { key: "dining", label: "Dining", cats: ["dining"] },
+  { key: "groceries", label: "Groceries", cats: ["groceries"] },
+  { key: "gas", label: "Gas", cats: ["gas"] },
+  { key: "travel", label: "Travel", cats: ["flights", "hotels"] },
+  { key: "online", label: "Online shopping", cats: ["online"] },
+  { key: "other", label: "Everything else", cats: ["other"] },
+];
+
+/**
+ * Two cards side by side for one person and setup, every row with a delta
+ * (b − a) and which side is better. `a` may be null (an empty slot).
+ *   → { a, b, rows: [{ key, label, a, b, delta, better: "a"|"b"|null, unit }] }
+ * % rows: rate × value per point beside the setup (pctBack — the one
+ * function every "≈ % back" uses). Yearly net: what each adds to the setup.
+ */
+export function compareCards(aId, bId, setup, rawProfile) {
+  const profile = normalizeProfile(rawProfile);
+  const base = setup.filter((id) => id !== aId && id !== bId);
+  const baseN = walletValue(base, profile, { normalized: true }).N;
+  const side = (id) => {
+    if (!id) return null;
+    const card = BY_ID[id];
+    const wallet = [...base, id];
+    const cpp = cardPointValue(card, profile, wallet).cpp;
+    const pcts = Object.fromEntries(COMPARE_ROWS.map((r) => [r.key, Math.max(...r.cats.map((cat) => pctBack(earnRate(card, cat, profile), cpp)))]));
+    const b = benefitBreakdown(card, profile, { wallet });
+    const credits = b.items.filter((i) => i.kind === "credit").reduce((t, i) => t + i.value, 0);
+    const lounge = b.items.filter((i) => i.kind === "lounge").reduce((t, i) => t + i.value, 0);
+    const fee = cardFee(card, profile);
+    const adds = walletValue(wallet, profile, { normalized: true }).N - baseN;
+    const hurdle = profile.cardsHeld.includes(id) ? 0 : applicationHurdle(card, profile, wallet).total;
+    return { id, pcts, credits, lounge, fee, adds, hurdle };
+  };
+  const A = side(aId), Bs = side(bId);
+  const row = (key, label, av, bv, unit, higherIsBetter = true) => {
+    const delta = av == null ? null : bv - av;
+    const better = delta == null || Math.abs(delta) < 1e-9 ? null : (delta > 0) === higherIsBetter ? "b" : "a";
+    return { key, label, a: av, b: bv, delta, better, unit };
+  };
+  const rows = [
+    ...COMPARE_ROWS.map((r) => row(r.key, r.label, A ? A.pcts[r.key] : null, Bs.pcts[r.key], "pct")),
+    row("credits", "Credits you'd use", A?.credits ?? null, Bs.credits, "usd"),
+    row("lounge", "Lounges", A?.lounge ?? null, Bs.lounge, "usd"),
+    row("fee", "Yearly fee", A?.fee ?? null, Bs.fee, "usd", false),
+    row("adds", "Yearly net it adds", A?.adds ?? null, Bs.adds, "usd"),
+    row("hurdle", "Application cost", A?.hurdle ?? null, Bs.hurdle, "usd", false),
+  ];
+  return { a: A, b: Bs, rows };
 }
 
 /** The diff toast after a swap. */

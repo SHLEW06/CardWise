@@ -1,0 +1,69 @@
+/* ============================================================================
+   v7 Part D — Wallet Lab: slot index, split card / slot targets, collapsed
+   panels, fee ladder beside the budget, compare drawer. Ink & Stone.
+   ========================================================================== */
+
+/* Fee budget + ladder side by side (desktop first). */
+.v5 .lab-budget { display: grid; gap: 20px; }
+.v5 .lab-budget.has-ladder { grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); align-items: start; }
+.v5 .lab-budget-control { display: grid; gap: 8px; justify-items: start; }
+.v5 .lab-budget-control .money-row { width: 100%; }
+
+/* Sticky slot index */
+.v5 .slot-index {
+  position: sticky; top: 64px; z-index: 5; display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 10px 0; margin: 0 0 -8px; background: var(--paper); border-bottom: 1px solid var(--hair);
+}
+.v5 .slot-chip {
+  display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: var(--r-chip);
+  box-shadow: inset 0 0 0 1px var(--hair-strong); color: var(--ink-2); font-size: var(--fs-caption); text-decoration: none;
+}
+.v5 .slot-chip:hover { color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink-3); }
+.v5 .slot-item { scroll-margin-top: 120px; position: relative; display: grid; }
+.v5 .slots { grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); }
+
+/* Card face opens the detail; the rest of the slot opens alternatives. */
+.v5 .slot-item .slot-card { position: absolute; top: 40px; left: 16px; right: 16px; z-index: 1; border-radius: 4.5% / 7.14%; }
+.v5 .slot-item .slot-card + .slot { position: relative; padding-top: calc(40px + (100% - 32px) / 1.586 + 6px); }
+.v5 .slot-item .slot-card + .slot .slot-label { position: absolute; top: 16px; left: 16px; right: 16px; }
+.v5 .slot-item .slot-card:focus-visible { outline-offset: 3px; }
+.v5 .slot-shared { line-height: 1.4; }
+.v5 .slot-more { margin-top: 4px; font-size: var(--fs-caption); color: var(--ink-3); text-decoration: underline; text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
+.v5 .slot:hover .slot-more { color: var(--ink); text-decoration-color: var(--bronze); }
+
+/* Collapsed panels */
+.v5 .fold { padding: 0; }
+.v5 .fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; }
+.v5 .fold > summary::-webkit-details-marker { display: none; }
+.v5 .fold > summary::after { content: "+"; font-size: 1.25rem; color: var(--ink-3); }
+.v5 .fold[open] > summary::after { content: "−"; }
+.v5 .fold > summary .t-h2 { font-size: 1.125rem; }
+.v5 .fold-body { display: grid; gap: 12px; padding: 0 24px 24px; }
+.v5 .lab-panels { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+
+/* Compare drawer */
+.v5 .sheet-wide { width: min(980px, 100%); }
+.v5 .cmp-scroll { overflow-x: auto; }
+.v5 .cmp { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+.v5 .cmp th, .v5 .cmp td { padding: 10px 12px; border-bottom: 1px solid var(--hair); text-align: right; vertical-align: middle; }
+.v5 .cmp th[scope="row"] { text-align: left; font-weight: 400; color: var(--ink-2); }
+.v5 .cmp thead th { border-bottom: 1px solid var(--hair-strong); vertical-align: bottom; }
+.v5 .cmp-head { min-width: 180px; }
+.v5 .cmp-head > span { display: block; text-align: right; font-weight: 500; color: var(--ink); }
+.v5 .cmp-head > .t-caption { font-weight: 400; color: var(--ink-3); }
+.v5 .cmp-photo { width: 120px; display: block; margin: 0 0 8px auto; }
+.v5 .cmp td { color: var(--ink); }
+.v5 .cmp td > span { display: block; }
+.v5 .cmp-delta { font-size: var(--fs-caption); color: var(--ink-3); }
+.v5 .cmp-delta.is-better { color: var(--good); }
+.v5 .cmp-delta.is-worse { color: var(--warn); }
+.v5 .cmp tr.is-total th, .v5 .cmp tr.is-total td { color: var(--ink); font-weight: 500; }
+.v5 .cmp caption { text-align: left; padding-bottom: 8px; }
+.v5 .swap-compare { display: grid; gap: 14px; }
+.v5 .swap-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.v5 .timeline-name.link { justify-self: start; font-size: inherit; font-weight: 500; color: var(--ink); }
+
+@media (max-width: 900px) {
+  .v5 .lab-budget.has-ladder { grid-template-columns: 1fr; }
+  .v5 .slot-index { top: 56px; }
+}

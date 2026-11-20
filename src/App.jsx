@@ -205,7 +205,10 @@ export default function App() {
   };
 
   const spend = useMemo(() => (profile ? buildSpend(profile) : {}), [profile]);
-  const openCard = (id) => setModalCard(id);
+  /* v7 D1: any card opens its full detail; Wallet Lab passes the setup it's
+     judged against. */
+  const [modalWallet, setModalWallet] = useState(null);
+  const openCard = (id, wallet = null) => { setModalWallet(Array.isArray(wallet) ? wallet : null); setModalCard(id); };
 
   // ----- render -----
   if (!ready) {
@@ -262,6 +265,7 @@ export default function App() {
         <CardDetail
           cardId={modalCard}
           profile={v5}
+          wallet={modalWallet}
           onClose={() => setModalCard(null)}
           onToggleOwn={toggleWallet}
           onProfileChange={(p) => applyV5(saveV5Profile(p))}

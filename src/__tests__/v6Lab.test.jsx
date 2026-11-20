@@ -71,11 +71,16 @@ describe("Wallet Lab screen", () => {
     expect(names).not.toContain("Lounge card");
     expect(names).toContain("Dining");
   });
-  it("tap a slot → alternatives; one tap swaps it in and a toast explains", async () => {
+  it("tap a slot → alternatives → compare → add alongside (default) or replace; a toast explains", async () => {
     render(<WalletLab profile={P} />);
     fireEvent.click(screen.getByRole("button", { name: /^Dining:/ }));
     const dialog = screen.getByRole("dialog", { name: /Dining alternatives/ });
-    fireEvent.click(within(dialog).getAllByRole("button", { name: "Swap in" })[0]);
+    fireEvent.click(within(dialog).getAllByRole("button", { name: "Compare" })[0]);
+    expect(within(dialog).getByTestId("swap-compare")).toBeInTheDocument();
+    for (const row of ["Dining", "Groceries", "Gas", "Travel", "Online shopping", "Everything else", "Credits you'd use", "Lounges", "Yearly fee", "Yearly net it adds", "Application cost"]) {
+      expect(within(dialog).getByRole("rowheader", { name: row })).toBeInTheDocument();
+    }
+    fireEvent.click(within(dialog).getAllByRole("button", { name: /^(Add alongside|Replace)/ })[0]);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent(/\/yr — .+ took Dining/);
   });
