@@ -1020,13 +1020,34 @@ Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold
 Owner-like, held wallet: N +$854 · net $1503 · fees $475
 Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
 ```
-The legacy golden profiles don't use the new survey answers, so they move
-only where v7b changed shared rules: niche credits $0 unless picked, travel
-credits, bags on that airline only. The v7b goldens (route inference,
+The legacy golden profiles came out **identical** before and after v7b —
+they don't use the new survey answers, and none of their wallets carried a
+niche credit or bags on a second airline. The v7b goldens (route inference,
 lounge middle answer, perk tiers, negative slot change) are in
 `v7bPart3/4/5.test` and METHODOLOGY §7.
 
-## Next (v7b)
-- Acceptance checklist run, screenshots/acceptance/, docs/ACCEPTANCE_REPORT.md.
-- Decision questions for the owner (collected so far): see the session
-  summary.
+## Acceptance run (2026-11-20)
+
+`docs/ACCEPTANCE_REPORT.md`: 74 IDs — 64 PASS · 8 FIXED · 2 HOLD · 0 FAIL.
+Fixed in the run: A4 (Geist / Instrument Serif still loaded from Google
+Fonts), B2 (airport fit + redemption pricing restored in Profile), C8 (hotels
+"Best value" + default on skip), E6 (Welcome bonuses section), E12 (Home next
+move and "Why this card?" disagreed), E13 / G4 (held-card headline used gross
+rewards), G1 (Lounge access / Travel chips, Type filter). HOLD: H5 automatic
+portal pricing, H6 bank calibration. Screenshots: `screenshots/acceptance/`.
+
+## Open questions for the owner (held to the end, as asked)
+1. Robinhood Gold offset: compare with a typical high-yield account (4.2%,
+   used now → $0 offset) or the national average (0.39%)?
+2. "Lounge & credits": Venture X nets most for the test profile; Sapphire
+   Reserve and Platinum are shown as options with net value. OK?
+3. "Amex points rank first" holds when ranked by flights; counting hotel
+   stays, Chase / Bilt lead. Which ranking?
+4. Wordmark and dial number moved to Switzer (Boska only ≥ 48px). Keep the
+   wordmark in Boska as a logo?
+5. /styletile and the app were restyled together (no stop for OK) — review
+   `screenshots/v7b/`.
+6. No welcome-bonus offers are on file (all `sub.offer` null, needs
+   verification): fill them, or keep "Offer not on file"?
+7. The owner's "Amex MR missing" in the points step couldn't be reproduced
+   from repo data; covered by a regression test — still seeing it?
