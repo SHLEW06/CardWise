@@ -72,10 +72,10 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
   return (
     <section className="page lab">
       <Reveal as="header" className="lab-head">
-        <ScoreDial score={score} caption={sameAsHeld ? "Your wallet" : "Suggested setup"} label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
+        <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">
           <p className="t-eyebrow">Wallet Lab · {sameAsHeld ? "your wallet" : "suggested setup"}</p>
-          <p className="lab-now"><span className="t-big"><CountUp value={value.net} /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
+          <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
           <p className="t-caption lab-basis">Score {score} = {scoreBasisText(value.N, best.value.N)}.</p>
           <dl className="lab-refs">
             {!sameAsHeld && <div><dt>Your wallet now</dt><dd className="t-value" data-testid="lab-now-score">{nowScore} <span className="t-caption">· {money(nowValue.net)} a year</span></dd></div>}

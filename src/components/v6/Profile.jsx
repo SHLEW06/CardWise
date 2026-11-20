@@ -16,6 +16,7 @@ import { cardDisplayName } from "../../data/cardNames.js";
 import { Reveal } from "./motion.jsx";
 import FeeBudget from "./FeeBudget.jsx";
 import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
+import { useCardArtMode, setCardArtMode } from "../../state/cardArtMode.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const list = (xs, none = "None picked") => (xs.length ? xs.join(", ") : none);
@@ -103,12 +104,28 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, onOpen
             <button className="btn btn-ink btn-small" onClick={signInWithGoogle}>Sign in with Google</button>
           </div>
         )}
+        <CardArtSetting />
         <div className="profile-row">
           <span>Answer everything again, from the start.</span>
           <button className="btn btn-quiet btn-small" onClick={onRestart}>Run setup again</button>
         </div>
       </Reveal>
     </section>
+  );
+}
+
+/* Issuer photos (today) or our own rendered faces (public launch). */
+function CardArtSetting() {
+  const mode = useCardArtMode();
+  return (
+    <div className="profile-row">
+      <span>Card pictures <span className="t-caption">· the issuer's photo, or our drawing of the card in its real colour</span></span>
+      <div className="segmented" role="radiogroup" aria-label="Card pictures">
+        {[["issuer", "Issuer photos"], ["rendered", "Our drawings"]].map(([k, l]) => (
+          <button key={k} role="radio" aria-checked={mode === k} aria-selected={mode === k} className="segmented-item" onClick={() => setCardArtMode(k)}>{l}</button>
+        ))}
+      </div>
+    </div>
   );
 }
 

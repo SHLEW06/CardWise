@@ -1,0 +1,111 @@
+/* ============================================================================
+   v7 components (REDESIGN_SPEC §9.11) — shared by the /styletile page
+   (.ink-stone) and the app (.v5, whose tokens alias the v7 names in
+   styles/v5/tokens.css).
+   ========================================================================== */
+
+/* ── Components ─────────────────────────────────────────────────────────── */
+
+:is(.ink-stone, .v5) .v7-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+:is(.ink-stone, .v5) .v7-panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 22px 24px 14px; }
+
+/* Buttons: primary is the only pill, ivory on ink. */
+:is(.ink-stone, .v5) .v7-btn-primary {
+  display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 24px;
+  border-radius: var(--r-pill); background: var(--text); color: var(--bg); font-weight: 500; font-size: 1rem;
+  transition: background var(--t-1) var(--ease-std), transform var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-btn-primary:hover { background: #FFFFFF; }
+:is(.ink-stone, .v5) .v7-btn-primary:active { transform: scale(.98); }
+:is(.ink-stone, .v5) .v7-btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--r);
+  border: 1px solid var(--line-strong); color: var(--text); font-weight: 500; font-size: .9375rem;
+  transition: border-color var(--t-1) var(--ease-std), background var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-btn-secondary:hover { border-color: var(--text-3); background: var(--raised); }
+:is(.ink-stone, .v5) .v7-btn-secondary:disabled { color: var(--text-3); border-color: var(--line); background: none; cursor: not-allowed; }
+:is(.ink-stone, .v5) .v7-btn-quiet {
+  display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 4px; color: var(--text-2); font-size: .9375rem;
+  text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px;
+  transition: color var(--t-1) var(--ease-std), text-decoration-color var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-btn-quiet:hover { color: var(--text); text-decoration-color: var(--bronze); }
+:is(.ink-stone, .v5) .v7-btn-quiet svg { transition: transform var(--t-2) var(--ease-out); }
+:is(.ink-stone, .v5) .v7-btn-quiet svg.is-flipped { transform: rotate(180deg); }
+
+/* List rows: hairline separated, hover lifts to --raised. */
+:is(.ink-stone, .v5) .v7-rows { list-style: none; margin: 0; padding: 0 0 8px; }
+:is(.ink-stone, .v5) .v7-row {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 18px; align-items: center;
+  padding: 14px 24px; border-top: 1px solid var(--line); transition: background var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-row:hover { background: var(--raised); }
+:is(.ink-stone, .v5) .v7-row-main { display: grid; gap: 2px; min-width: 0; }
+:is(.ink-stone, .v5) .v7-row-value { margin: 0; text-align: right; white-space: nowrap; }
+:is(.ink-stone, .v5) .v7-row-value .num-ui { font-size: 1.125rem; font-weight: 500; }
+
+/* Chips: selected = ivory fill + check (one rule for every choice control). */
+:is(.ink-stone, .v5) .v7-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+:is(.ink-stone, .v5) .v7-chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--r);
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); font-size: .9375rem;
+  transition: background var(--t-1) var(--ease-std), border-color var(--t-1) var(--ease-std), color var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-chip:hover { border-color: var(--text-3); }
+:is(.ink-stone, .v5) .v7-chip.is-on { background: var(--text); border-color: var(--text); color: var(--bg); font-weight: 500; }
+
+/* Input + Monthly / Yearly segmented toggle. */
+:is(.ink-stone, .v5) .v7-field { display: grid; gap: 8px; }
+:is(.ink-stone, .v5) .v7-field-row { display: flex; gap: 10px; flex-wrap: wrap; }
+:is(.ink-stone, .v5) .v7-input {
+  display: inline-flex; align-items: center; gap: 6px; height: 46px; padding: 0 14px; min-width: 160px; flex: 1;
+  background: var(--raised); border: 1px solid var(--line-strong); border-radius: var(--r); color: var(--text-2);
+  transition: border-color var(--t-1) var(--ease-std);
+}
+:is(.ink-stone, .v5) .v7-input:focus-within { border-color: var(--bronze); }
+:is(.ink-stone, .v5) .v7-input input {
+  all: unset; flex: 1; min-width: 0; color: var(--text); font-family: var(--f-ui); font-size: 1.0625rem;
+  font-variant-numeric: tabular-nums;
+}
+:is(.ink-stone, .v5) .v7-seg { display: inline-flex; height: 46px; padding: 3px; gap: 2px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); }
+:is(.ink-stone, .v5) .v7-seg button { padding: 0 14px; border-radius: 2px; color: var(--text-2); font-size: .9375rem; transition: background var(--t-1) var(--ease-std), color var(--t-1) var(--ease-std); }
+:is(.ink-stone, .v5) .v7-seg button:hover { color: var(--text); }
+:is(.ink-stone, .v5) .v7-seg button.is-on { background: var(--text); color: var(--bg); font-weight: 500; }
+
+/* "What you're missing" hint: a plain block — bronze label, one sentence,
+   "Show the math" link. No left-border accents anywhere (v7 review). */
+:is(.ink-stone, .v5) .v7-hint { display: grid; gap: 10px; max-width: 40em; }
+:is(.ink-stone, .v5) .v7-hint-row { display: grid; gap: 4px; }
+:is(.ink-stone, .v5) .v7-hint .v7-btn-quiet { justify-self: start; height: auto; padding: 4px 0; color: var(--text); text-decoration-color: var(--line-strong); }
+:is(.ink-stone, .v5) .v7-hint-label { color: var(--bronze); margin-bottom: 4px; }
+
+:is(.ink-stone, .v5) .v7-math, :is(.ink-stone, .v5) .v7-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); }
+:is(.ink-stone, .v5) .v7-math th, :is(.ink-stone, .v5) .v7-table th { font-weight: 400; color: var(--text-3); text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-caption); }
+:is(.ink-stone, .v5) .v7-math td, :is(.ink-stone, .v5) .v7-table td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); color: var(--text-2); }
+:is(.ink-stone, .v5) .v7-math td:first-child, :is(.ink-stone, .v5) .v7-table td:first-child { color: var(--text); }
+:is(.ink-stone, .v5) .v7-math th:not(:first-child), :is(.ink-stone, .v5) .v7-math td:not(:first-child),
+:is(.ink-stone, .v5) .v7-table th:not(:first-child), :is(.ink-stone, .v5) .v7-table td:not(:first-child) { text-align: right; }
+:is(.ink-stone, .v5) .v7-math tr.is-total td { border-bottom: 0; color: var(--text); font-weight: 500; }
+:is(.ink-stone, .v5) .v7-good { color: var(--good) !important; }
+
+/* Dial */
+:is(.ink-stone, .v5) .v7-dial { position: relative; flex: none; }
+:is(.ink-stone, .v5) .v7-dial svg { display: block; }
+:is(.ink-stone, .v5) .v7-dial-inner { position: absolute; inset: 12%; display: grid; place-content: center; text-align: center; gap: 2px; }
+:is(.ink-stone, .v5) .v7-dial-num { line-height: 1; }
+:is(.ink-stone, .v5) .v7-dial-cap { font-family: var(--f-label); font-size: .5625rem; white-space: nowrap; letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--text-3); }
+
+/* Card pictures (issuer photo or our rendered face). */
+:is(.ink-stone, .v5) .v7-card { position: relative; container-type: inline-size; width: 100%; aspect-ratio: 1.586; border-radius: 4.5% / 7.14%; overflow: hidden; box-shadow: var(--shadow-card); background: var(--raised); }
+:is(.ink-stone, .v5) .v7-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+:is(.ink-stone, .v5) .v7-card-rendered { position: absolute; inset: 0; background: var(--base); color: var(--face-ink); font-family: var(--f-ui); }
+:is(.ink-stone, .v5) .v7-card-rendered.finish-metal { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+:is(.ink-stone, .v5) .v7-card-wordmark { position: absolute; top: 8%; left: 6.5%; font-weight: 500; font-size: 5.6cqw; letter-spacing: -.01em; }
+:is(.ink-stone, .v5) .v7-card-chip { position: absolute; top: 37%; left: 6.5%; width: 13%; aspect-ratio: 1.3; border-radius: 1.6cqw; background: #B9A57E; box-shadow: inset 0 0 0 .4cqw rgba(60, 45, 20, .35); }
+:is(.ink-stone, .v5) .v7-card-name { position: absolute; left: 6.5%; bottom: 8%; right: 34%; font-size: 4.4cqw; font-weight: 500; line-height: 1.15; opacity: .92; }
+:is(.ink-stone, .v5) .v7-card-network { position: absolute; right: 6.5%; bottom: 8%; font-family: var(--f-label); font-size: 3.6cqw; letter-spacing: .08em; opacity: .9; }
+
+/* Focal image frame */
+:is(.ink-stone, .v5) .focal { margin: 0; position: relative; overflow: hidden; border-radius: var(--r); background: #2A241D; aspect-ratio: 4 / 5; }
+:is(.ink-stone, .v5) .focal img, :is(.ink-stone, .v5) .focal-svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+

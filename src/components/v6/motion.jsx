@@ -9,6 +9,7 @@
    ========================================================================== */
 import React, { useEffect, useRef, useState } from "react";
 import { useCountUp } from "../wallet/useCountUp.js";
+import Num from "../v7/Num.jsx";
 
 export const reducedMotion = () =>
   typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -58,9 +59,11 @@ export function useParallax(max = 24) {
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 
 /** A number that counts up. format: "money" | "int" | (n) => string. */
-export function CountUp({ value, format = "money", duration = 700, className }) {
+export function CountUp({ value, format = "money", duration = 700, className, display = false }) {
   const v = useCountUp(Number(value) || 0, duration);
   const text = typeof format === "function" ? format(v) : format === "int" ? String(Math.round(v)) : `${value < 0 ? "−" : ""}${money(v)}`;
+  /* display: set in Boska lining figures with the plain zero (v7 <Num>). */
+  if (display) return <Num className={className}>{text}</Num>;
   return <span className={className}>{text}</span>;
 }
 

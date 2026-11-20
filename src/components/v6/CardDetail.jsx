@@ -103,12 +103,12 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             <h1 className="t-d2">{d.name}</h1>
             {d.inWallet.has ? (
               <>
-                <p className="detail-value"><span className="t-big">{d.own.net >= 0 ? "Worth" : "Costs you"} ≈ <CountUp value={Math.abs(d.own.net)} /></span><span className="detail-unit"> a year to you{d.own.fee ? ` after its ${money(d.own.fee)} fee` : ""}</span></p>
+                <p className="detail-value"><span className="t-big">{d.own.net >= 0 ? "Worth" : "Costs you"} ≈ <CountUp value={Math.abs(d.own.net)} display /></span><span className="detail-unit"> a year to you{d.own.fee ? ` after its ${money(d.own.fee)} fee` : ""}</span></p>
                 <p className="t-lead">{breakEvenLine(d.own)}</p>
               </>
             ) : (
               <>
-                <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} /></span><span className="detail-unit"> a year to you</span></p>
+                <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} display /></span><span className="detail-unit"> a year to you</span></p>
                 <p className="t-lead">{value > 0 ? whyLine(d) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
               </>
             )}

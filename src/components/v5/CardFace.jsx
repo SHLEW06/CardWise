@@ -3,20 +3,23 @@ import { Check } from "lucide-react";
 import { materialFor, wordmarkFor, NETWORK_LABEL } from "../../data/cardMaterials.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { useTilt } from "../v6/motion.jsx";
+import { useCardArtMode } from "../../state/cardArtMode.js";
 
 /* A card face: the issuer's real art when public/cards/ has it, otherwise a
    designed face (§7) — the card's real material colour, finish, issuer
    wordmark, chip, name, network. Sizes itself from its container's width
    (container queries), so one component serves a 64px thumbnail and a hero.
 
-   Props: card, selected (gold ring + check badge + 4px lift),
-          tilt (≤ 4° + moving specular, §18), eager (no lazy load, for heroes),
+   Props: card, selected (ivory ring + check badge + 4px lift),
+          tilt (≤ 3°, no sheen — v7 §9.11), eager (no lazy load, for heroes),
           label (accessible name; default cardDisplayName), className */
 export default function CardFace({ card, selected = false, label, className = "", tilt = false, eager = false }) {
   const [failed, setFailed] = useState(false);
-  const t = useTilt(4);
+  const t = useTilt(3);
+  const mode = useCardArtMode();
   if (!card) return null;
-  const art = card.image?.localImage && !failed ? card.image.localImage : null;
+  /* v7: issuer photo, or our rendered face when the launch setting is on. */
+  const art = mode === "issuer" && card.image?.localImage && !failed ? card.image.localImage : null;
   const m = materialFor(card);
   const name = label || cardDisplayName(card);
 
@@ -41,7 +44,6 @@ export default function CardFace({ card, selected = false, label, className = ""
           </>
         )}
       </div>
-      {tilt && <span className="v5-face-shine" aria-hidden="true" />}
       {selected && (
         <span className="v5-face-check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
       )}

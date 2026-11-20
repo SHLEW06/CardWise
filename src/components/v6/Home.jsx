@@ -9,7 +9,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
-import { Reveal, CountUp, useParallax } from "./motion.jsx";
+import FocalImage from "../v7/FocalImage.jsx";
+import { Reveal, CountUp } from "./motion.jsx";
 import { walletScore, scoreBasisText } from "../../engine/v5/methodology.js";
 import { optimizeWallet } from "../../engine/v5/optimizer.js";
 import { describeOffer, isLive, offerValueFor } from "../../engine/offers/offerModel.js";
@@ -44,23 +45,22 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
   const cards = profile.cardsHeld.map((id) => BY_ID[id]).filter(Boolean);
   const s = useMemo(() => walletScore(profile), [profile]);
   const move = useMemo(() => (cards.length ? nextMove(profile) : null), [profile, cards.length]);
-  const drift = useParallax(24);
   const top = useMemo(() => offers.filter((o) => isLive(o) && o.status === "available" && profile.cardsHeld.includes(o.cardId))
     .map((o) => ({ o, v: offerValueFor(o, o.minSpend || 50).potential || o.reward || 0 })).sort((a, b) => b.v - a.v).slice(0, 3), [offers, profile]);
   const near = useNearYou(profile, offers);
-  const fan = cards.filter((c) => c.image?.localImage).slice(0, 5);
-  const fanCards = fan.length ? fan : cards.slice(0, 5);
+  const fanCards = cards;
 
   if (!cards.length) {
     return (
       <section className="home">
-        <div className="home-hero-v6">
+        <div className="home-hero-v7">
           <Reveal className="home-copy">
             <p className="t-eyebrow">CardWise</p>
-            <h1 className="t-hero parallax" ref={drift}>Start with the cards <span className="fill-gold">you carry.</span></h1>
+            <h1 className="t-hero">Start with the cards you carry.</h1>
             <p className="t-lead">Tell us how you spend and travel. We'll find the setup that pays you most — benefits first.</p>
             <button className="btn btn-signal" onClick={onSetup}>Start setup <ArrowRight size={18} aria-hidden="true" /></button>
           </Reveal>
+          <FocalImage slot="home" className="home-hero-focal" />
         </div>
       </section>
     );
@@ -68,31 +68,32 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
 
   return (
     <section className="home">
-      <div className="home-hero-v6">
+      <div className="home-hero-v7">
         <Reveal className="home-copy">
           <p className="t-eyebrow">Your wallet</p>
-          <h1 className="t-hero parallax" ref={drift}><span className="fill-ivory">≈ </span><CountUp value={s.current.net} className="fill-gold" /><span className="home-unit"> a year</span></h1>
+          <h1 className="t-hero">{s.current.net < 0
+            ? <>Your cards cost you <CountUp value={-s.current.net} display /> a year.</>
+            : <>Your cards pay you <CountUp value={s.current.net} display /> a year.</>}</h1>
           <p className="t-lead">{s.current.net < 0
             ? `Right now your fees cost more than you get back — your next move below fixes that.`
-            : `${cards.length} card${cards.length === 1 ? "" : "s"}, after fees, with the benefits you'd actually use.`}</p>
+            : `That's after their yearly fees, across ${cards.length} card${cards.length === 1 ? "" : "s"}, counting only the perks you told us you'd use.`}</p>
+          <div className="home-actions">
+            {move && <a className="btn btn-signal" href="#next-move">See your next move <ArrowRight size={18} aria-hidden="true" /></a>}
+          </div>
           <div className="home-score">
-            <ScoreDial score={s.score} size={120} caption="Wallet Score" />
+            <ScoreDial score={s.score} size={120} caption="Score" />
             <div className="home-basis">
-              <p className="t-caption" data-testid="home-score-basis">Score {s.score} = {scoreBasisText(s.current.N, s.best.value.N)}.</p>
+              <p className="t-small" data-testid="home-score-basis">Score {s.score} = {scoreBasisText(s.current.N, s.best.value.N)}.</p>
               <p className="t-caption">Best possible at your fee budget: <span className="t-value">{money(s.best.value.net)} a year</span></p>
             </div>
           </div>
         </Reveal>
-        <div className="home-fan-v6" aria-hidden="true">
-          {fanCards.map((c, i, a) => (
-            <div key={c.id} className="home-fan-card-v6" style={{ "--i": i - (a.length - 1) / 2 }}><CardFace card={c} tilt eager /></div>
-          ))}
-        </div>
+        <FocalImage slot="home" className="home-hero-focal" />
       </div>
 
       <div className="page home-below">
         {move && (
-          <Reveal className="panel next-move">
+          <Reveal className="panel next-move" id="next-move">
             <p className="t-eyebrow">Your next move</p>
             <div className="next-move-row">
               <button className="next-move-photo" onClick={() => onOpenCard?.(move.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[move.cardId])}`}><CardFace card={BY_ID[move.cardId]} /></button>
@@ -104,6 +105,20 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             </div>
           </Reveal>
         )}
+
+        <Reveal i={1} className="home-cards">
+          <h2 className="t-eyebrow">Your cards</h2>
+          <ul className="home-cards-row">
+            {fanCards.map((c) => (
+              <li key={c.id}>
+                <button onClick={() => onOpenCard?.(c.id)} aria-label={`Open ${cardDisplayName(c)}`}>
+                  <CardFace card={c} />
+                  <span className="t-caption">{cardDisplayName(c)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
 
         {near.length > 0 && (
           <Reveal i={1} className="near-strip">

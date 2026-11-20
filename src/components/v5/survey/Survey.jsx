@@ -499,8 +499,8 @@ function RevealStep({ d, headRef }) {
       <div className="reveal-hero">
         {has && <ScoreDial score={s.score} caption="Wallet Score" />}
         <div className="reveal-numbers">
-          {has && <p><span className="t-big"><CountUp value={s.current.net} /></span><span className="reveal-unit">a year now</span></p>}
-          <p><span className="t-big fill-gold"><CountUp value={best.value.net} /></span><span className="reveal-unit">a year with the best setup</span></p>
+          {has && <p><span className="t-big"><CountUp value={s.current.net} display /></span><span className="reveal-unit">a year now</span></p>}
+          <p><span className="t-big fill-gold"><CountUp value={best.value.net} display /></span><span className="reveal-unit">a year with the best setup</span></p>
           <p className="t-caption">After fees, with benefits you'd use. {fmt(best.value.N)} more than a simple 2% card.</p>
         </div>
       </div>

@@ -529,8 +529,9 @@ rendered-face setting for launch.
 
 | Part | State |
 |---|---|
-| 0. Style tile | done — **waiting for review** (stop point) |
-| A–G | not started (after "go") |
+| 0. Style tile | done; reviewed 2026-11-20 ("go" + 3 changes, done in 048297c) |
+| Restyle | done — app on §9.11 |
+| A–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -567,6 +568,32 @@ rendered-face setting for launch.
   issuer's default colour. Needs a material per card before the launch
   setting is switched on.
 
+## Restyle — app on "Ink & Stone" (2026-11-20)
+
+- Tokens: `styles/v5/tokens.css` now carries the v7 values under the old
+  names (`--paper`, `--ink`, `--surface` …) plus the v7 names as aliases
+  (`--text`, `--line`, `--bronze` …), so every screen moved at once. Old
+  "gold = value" resolves to ivory; bronze only marks focus, the dial,
+  survey progress and hints.
+- `styles/v7/components.css`: the tile's v7-* components, shared by the
+  tile and the app. `styles/v7/app.css` (loaded last) flattens every glass
+  panel, removes gold fills/gradients/sheen/blur, sets labels in Archivo
+  Expanded, makes secondary buttons 4px (pills only for the primary), and
+  turns the Wallet Lab timeline into dated rows (no left rail — no
+  left-border accents anywhere; a test checks the stylesheets).
+- `<Backdrop>` now draws only the flat ground (procedural scenes removed).
+  Texture is the one `<FocalImage>` per hero: Landing and Home.
+- Home hero recomposed as on the tile: "Your cards pay you $X a year." in
+  Boska lining figures (via `<Num>`; `CountUp display`), primary "See your
+  next move", the bronze dial, focal image; their cards as a row below.
+- Score dial → the v7 `<Dial>` everywhere.
+- Card pictures setting (Profile → Settings → Card pictures: issuer photos /
+  our drawings), `state/cardArtMode.js`; build default `VITE_CARD_ART`.
+  `CardFace` honours it; tilt ≤ 3°, no specular sheen.
+- Tests: 1,369 / 1,371 pass. The 2 failures are optimizer *timing* tests
+  ("under 150 ms per search", 5 s timeout) — the machine was at load ≈ 30–50
+  right after the crash/reboot; the same file passed 46/46 earlier in the
+  session. Build OK.
+
 ## Next (v7)
-Waiting on review of `/styletile`. On "go": restyle the app to §9.11, then
 Parts A → G in order, committing after each.

@@ -1,84 +1,99 @@
 /* ============================================================================
-   v6 design tokens — docs/REDESIGN_SPEC.md §18 (dark, lit, photographic).
+   App design tokens — v7 "Ink & Stone" (docs/REDESIGN_SPEC.md §9.11).
    ----------------------------------------------------------------------------
-   Dark-first. The v5 class names stay (`.v5`, --paper, --ink …) so every
-   screen moved over at once; the VALUES are now night-first:
-     --paper    page background (night)
-     --surface  frosted black glass panel (sits over a <Backdrop>)
-     --ink      primary text (ivory)
-   Contrast, measured on #0B0A08 and on glass over it (#1E1B16):
-     --ink  #F5F3EE 17.9 / 15.5 · --ink-2 #B9B2A3 9.4 / 8.1 ·
-     --ink-3 #A39C8C 7.3 / 6.3 · gold #CFB97D 10.3 / 8.9 — all ≥ 4.5:1.
-   Gold is for values and accents only, never paragraphs.
+   The v5 class names stay (`.v5`, --paper, --ink, --surface …) so every
+   screen moved over at once; the VALUES are v7:
+     --paper    deep ink navy page        --surface  flat panel (#0E1830)
+     --raised   inputs, hover, sheets     --hair     1px line (#1E2F50)
+     --ink      warm ivory text           --bronze   the one accent
+   Contrast (WCAG) on page / raised: --ink 16.5 / 13.5 · --ink-2 9.5 / 7.8 ·
+   --ink-3 6.7 / 5.5 · bronze 6.4 / 5.2. Old "--gold = value" now resolves
+   to ivory; bronze marks focus, the dial, progress and hints only.
    ========================================================================== */
 
 .v5 {
-  /* ── Night ── */
-  --night:   #0B0A08;
-  --night-2: #110E08;
-  --night-3: #1A160F;
+  /* ── Ground (v7 Ink & Stone, §9.11): solid surfaces, no glass ── */
+  --night:   #070B16;
+  --night-2: #0A1020;
+  --night-3: #13213A;
   --paper:   var(--night);                 /* page background */
-  --paper-2: #14110C;                      /* alternating band */
-  --surface: rgba(12, 11, 9, .55);         /* glass panel */
-  --surface-solid: #16130E;                /* glass fallback without backdrop-filter */
-  --raised:  rgba(26, 23, 18, .92);        /* menus, sheets, toasts */
-  --glass-blur: blur(24px) saturate(140%);
+  --paper-2: #0A1020;                      /* alternating band */
+  --surface: #0E1830;                      /* panel — flat fill */
+  --surface-solid: #0E1830;
+  --raised:  #13213A;                      /* inputs, hover rows, menus, sheets */
+  --glass-blur: none;                      /* v7: no glass anywhere */
 
   /* ── Text ── */
-  --ink:     #F5F3EE;
-  --ink-2:   #B9B2A3;
-  --ink-3:   #A39C8C;
-  --hair:    rgba(255, 255, 255, .08);
-  --hair-strong: rgba(255, 255, 255, .2);
-  --navy:    #E8E2D2;                      /* links + focus ring (ivory on night) */
-  --good:    #8FD1A6;
-  --warn:    #E8AE78;
+  --ink:     #F1EBDD;                      /* warm ivory */
+  --ink-2:   #B9B4A8;
+  --ink-3:   #9A968C;
+  --hair:    #1E2F50;                      /* --line */
+  --hair-strong: #2C4170;
+  --navy:    #B08D57;                      /* focus ring = the bronze accent */
+  --good:    #8FB59B;
+  --warn:    #D59C86;
 
-  /* ── Editorial paper band (the odd one) ── */
-  --ivory:     #F5F3EE;
-  --ivory-ink: #0A0A0B;
-  --ivory-gold: #6E5F35;                   /* 5.7:1 on ivory */
+  /* ── Editorial paper band (unused in v7; kept for older markup) ── */
+  --ivory:     #F1EBDD;
+  --ivory-ink: #070B16;
+  --ivory-gold: #6E5F35;
 
   /* ── Legacy names still read by older rules ── */
   --night-ink: var(--ink);
-  --stone:     #35322D;
-  --sand:      #DAD3C0;
+  --stone:     #2C4170;
+  --sand:      #B9B4A8;
 
-  /* ── Value + accent ── */
-  --gold:      #CFB97D;
-  --gold-deep: #94814C;
-  --gold-fill: linear-gradient(180deg, #F3E8C6 0%, #CFB97D 55%, #A8915A 100%);
-  --ivory-fill: linear-gradient(180deg, #FFFFFF 0%, #F5F3EE 50%, #CFC6B0 100%);
+  /* ── Values are ivory; bronze is the one accent, used sparingly ── */
+  --bronze:    #B08D57;
+  --gold:      var(--ink);                 /* old "gold = value" → ivory */
+  --gold-deep: var(--ink);
+  --gold-fill: none;
+  --ivory-fill: none;
 
-  /* One signal colour for the single primary action on a page. */
-  --signal:     #FF5F2E;
-  --signal-ink: #110E08;
+  /* Primary action: ivory pill on ink (was a signal orange). */
+  --signal:     #F1EBDD;
+  --signal-ink: #070B16;
 
-  /* ── Type (§18): display serif 300–400, hero 72–112 desktop / 44–56 phone ── */
-  --f-display: var(--font-display);
-  --f-ui: var(--font-ui);
-  --fs-hero: clamp(2.75rem, 1.2rem + 6vw, 7rem);       /* 44 → 112 */
-  --fs-d1: clamp(2.75rem, 1.4rem + 4.4vw, 4.5rem);     /* 44 → 72 */
-  --fs-d2: clamp(2.25rem, 1.4rem + 2.8vw, 3.625rem);   /* 36 → 58 */
-  --fs-h1: clamp(1.875rem, 1.3rem + 1.8vw, 2.75rem);   /* 30 → 44 */
-  --fs-h2: clamp(1.5rem, 1.2rem + 1vw, 2rem);           /* 24 → 32 */
-  --fs-h3: 1.25rem;
-  --fs-body: 1rem;
-  --fs-small: .875rem;
-  --fs-caption: .8125rem;
-  --ls-display: -.02em;
+  /* ── v7 names (§9.11), so the shared v7 components read the same tokens ── */
+  --bg:          var(--night);
+  --text:        var(--ink);
+  --text-2:      var(--ink-2);
+  --text-3:      var(--ink-3);
+  --line:        var(--hair);
+  --line-strong: var(--hair-strong);
+  --bronze-soft: rgba(176, 141, 87, .16);
+  --bad:         var(--warn);
+  --r:           4px;
+  --fs-label:    .6875rem;               /* 11 */
+  --ls-label:    .12em;
+
+  /* ── Type (§9.11): Boska display 300–400 · Switzer UI 400/500 · Archivo
+     Expanded labels. Sizes tuned for 1280–1600px; phone just scales. ── */
+  --f-display: var(--font-v7-display);
+  --f-ui: var(--font-v7-ui);
+  --f-label: var(--font-v7-label);
+  --fs-hero: clamp(3rem, 1rem + 5.4vw, 7.25rem);       /* 48 → 116 */
+  --fs-d1: clamp(2.5rem, 1rem + 3.6vw, 4.75rem);       /* 40 → 76 */
+  --fs-d2: clamp(2rem, 1rem + 2.2vw, 3.25rem);         /* 32 → 52 */
+  --fs-h1: clamp(1.625rem, 1.1rem + 1.1vw, 2.25rem);   /* 26 → 36 */
+  --fs-h2: 1.5rem;                                     /* 24 */
+  --fs-h3: 1.1875rem;
+  --fs-body: 1.0625rem;                                /* 17 */
+  --fs-small: .9375rem;                                /* 15 */
+  --fs-caption: .8125rem;                              /* 13 */
+  --ls-display: -.015em;
 
   /* ── Layout + corners (§18: 0–4px; pills only for primary buttons) ── */
   --u: 8px;
-  --max: 1180px;
-  --gutter: clamp(16px, 4vw, 40px);
+  --max: 1320px;                           /* desktop first: 1280–1600px */
+  --gutter: clamp(20px, 4vw, 56px);
   --section: clamp(56px, 4rem + 5vw, 144px);
   --r-panel: 4px;
   --r-control: 4px;
   --r-chip: 3px;
   --r-pill: 999px;
   --r-card: 4.5cqw;                        /* a real card's corner */
-  --shadow-card: 0 2px 2px rgba(0, 0, 0, .35), 0 24px 48px -16px rgba(0, 0, 0, .7);
+  --shadow-card: 0 1px 1px rgba(0, 0, 0, .4), 0 18px 40px -18px rgba(0, 0, 0, .75);
 
   /* ── Motion (§18) ── */
   --ease-out: cubic-bezier(.16, 1, .3, 1);
@@ -100,14 +115,15 @@
   -webkit-font-smoothing: antialiased;
 }
 
-html, body { background: #0B0A08; }
+html, body { background: #070B16; }
 
 .v5 *, .v5 *::before, .v5 *::after { box-sizing: border-box; }
 .v5 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
-.v5 a { color: var(--navy); text-underline-offset: 3px; }
-.v5 :focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 2px; }
+.v5 a { color: var(--ink); text-decoration-color: var(--hair-strong); text-underline-offset: 3px; }
+.v5 a:hover { text-decoration-color: var(--ink); }
+.v5 :focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; border-radius: 2px; }
 .v5 input, .v5 select, .v5 textarea { color: var(--ink); }
-.v5 ::selection { background: rgba(207, 185, 125, .35); }
+.v5 ::selection { background: rgba(176, 141, 87, .3); }
 
 /* Night section (kept for older markup; everything is night now). */
 .v5 .on-night { background: transparent; color: var(--ink); }

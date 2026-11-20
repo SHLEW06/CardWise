@@ -18,15 +18,27 @@ beforeEach(() => localStorage.clear());
 
 const css = (f) => readFileSync(resolve(process.cwd(), "src/styles", f), "utf8");
 
-describe("design tokens (§18)", () => {
-  it("dark-first: night page, ivory text, contrast-checked secondary", () => {
+describe("design tokens (v7 Ink & Stone, §9.11)", () => {
+  it("ink navy page, flat surfaces, warm ivory text, one bronze accent, no glass", () => {
     const t = css("v5/tokens.css");
-    expect(t).toMatch(/--night:\s*#0B0A08/);
-    expect(t).toMatch(/--ink:\s*#F5F3EE/);
-    expect(t).toMatch(/--ink-2:\s*#B9B2A3/);
-    expect(t).toMatch(/--surface:\s*rgba\(12, 11, 9, \.55\)/);
-    expect(t).toMatch(/--glass-blur:\s*blur\(24px\) saturate\(140%\)/);
-    expect(t).toMatch(/--hair:\s*rgba\(255, 255, 255, \.08\)/);
+    expect(t).toMatch(/--night:\s*#070B16/);
+    expect(t).toMatch(/--surface:\s*#0E1830/);
+    expect(t).toMatch(/--raised:\s*#13213A/);
+    expect(t).toMatch(/--hair:\s*#1E2F50/);
+    expect(t).toMatch(/--ink:\s*#F1EBDD/);
+    expect(t).toMatch(/--ink-2:\s*#B9B4A8/);
+    expect(t).toMatch(/--bronze:\s*#B08D57/);
+    expect(t).toMatch(/--glass-blur:\s*none/);
+    expect(t).toMatch(/--gold:\s*var\(--ink\)/);
+  });
+  it("no left-border accent bars anywhere in the app's styles", () => {
+    for (const f of ["v5/primitives.css", "v5/survey.css", "v5/screens.css", "v5/shell.css", "v6/screens.css", "v6/lab.css", "v6/explore.css", "v6/checkout.css", "v6/offers.css", "v6/home.css", "v7/components.css", "v7/app.css"]) {
+      const s = css(f).replace(/\/\*[\s\S]*?\*\//g, "");
+      const accents = [...s.matchAll(/border-left:\s*([^;]+);/g)].map((m) => m[1]).filter((v) => !/^0\b|none/.test(v.trim()));
+      const overridden = f !== "v7/app.css" && f !== "v7/components.css";
+      if (!overridden) expect(accents, f).toEqual([]);
+    }
+    expect(css("v7/app.css")).toMatch(/\.timeline-row \{[^}]*border-left: 0/);
   });
   it("corners are 0–4px except pills and card photos", () => {
     const t = css("v5/tokens.css");
@@ -52,23 +64,16 @@ describe("design tokens (§18)", () => {
 });
 
 describe("<Backdrop>", () => {
-  it("has the seven slots and draws a procedural scene without a photo", () => {
+  it("v7: the seven slots draw only a flat ground — no horizon, glow, bokeh or grain", () => {
     expect(BACKDROP_SLOTS).toEqual(["home", "checkout", "offers", "lab", "explore", "survey", "card"]);
     for (const slot of BACKDROP_SLOTS) {
       const { container, unmount } = render(<Backdrop slot={slot} card="csr" />);
       const bd = container.querySelector(".backdrop");
       expect(bd.dataset.slot).toBe(slot);
-      expect(bd.querySelector(".bd-horizon"), slot).toBeTruthy();
-      expect(bd.querySelector(".bd-grain")).toBeTruthy();
+      expect(bd.children, slot).toHaveLength(0);
       unmount();
     }
-  });
-  it("slot variants: bokeh for checkout, spotlight for explore, shelves for the lab", () => {
-    expect(render(<Backdrop slot="checkout" />).container.querySelectorAll(".bd-bokeh span").length).toBeGreaterThan(10);
-    cleanup();
-    expect(render(<Backdrop slot="explore" />).container.querySelector(".bd-spot")).toBeTruthy();
-    cleanup();
-    expect(render(<Backdrop slot="lab" />).container.querySelector(".bd-shelves")).toBeTruthy();
+    expect(css("v6/backdrop.css").replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(/gradient|blur|bokeh|grain/);
   });
 });
 

@@ -12,6 +12,7 @@ import Num from "./Num.jsx";
 import CardPhoto from "./CardPhoto.jsx";
 import { BY_ID } from "../../data/cards/index.js";
 import "../../styles/v7/tokens.css";
+import "../../styles/v7/components.css";
 import "../../styles/v7/styletile.css";
 
 /* WCAG contrast, so the ratios shown are computed, not typed. */
