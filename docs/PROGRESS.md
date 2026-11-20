@@ -893,7 +893,7 @@ tile screenshots are in `screenshots/v7b/` for the end review.
 | 3. Survey: where people fly | done |
 | 4. Perks: two steps | done |
 | 5. Wallet Lab | done |
-| 6. Checkout | **not started** |
+| 6. Checkout | done |
 | Acceptance run + report | **not started** |
 
 ## Part 1 — premium navy (2026-11-20)
@@ -987,8 +987,46 @@ tile screenshots are in `screenshots/v7b/` for the end review.
   this card?".
 - Tests: `v7bPart5.test.jsx` (8) incl. golden negative slot change.
 
+## Part 6 — Checkout stores (2026-11-20)
+
+- 10 quick picks + "Browse all 3,207 stores, A–Z": grouped by first letter
+  with a jump index, category filter, search; picking a store ranks the
+  wallet (`v7bPart6.test.jsx`).
+
+## v7b golden output, before → after (`npm run golden`)
+Before v7b (ddb8e8f):
+```
+1 student $0: N +$0 · net $192 · fees $0 · discover-student
+2 Costco family: N +$265 · net $649 · fees $95 · costco-citi, bcp
+3 foodie $400: N +$893 · net $1447 · fees $325 · amex-gold
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1179 · net $1779 · fees $710 · delta-reserve, robinhood-gold, discover-it
+5 ATL Delta, lounges no: N +$914 · net $1514 · fees $210 · delta-gold, robinhood-gold, discover-it
+Owner-like, from scratch: N +$2143 · net $2792 · fees $990 · hyatt, delta-gold, marriott-brilliant, marriott-boundless, freedom-flex
+Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$854 · net $1503 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+After Parts 1–6:
+```
+1 student $0: N +$0 · net $192 · fees $0 · discover-student
+2 Costco family: N +$265 · net $649 · fees $95 · costco-citi, bcp
+3 foodie $400: N +$893 · net $1447 · fees $325 · amex-gold
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1179 · net $1779 · fees $710 · delta-reserve, robinhood-gold, discover-it
+5 ATL Delta, lounges no: N +$914 · net $1514 · fees $210 · delta-gold, robinhood-gold, discover-it
+Owner-like, from scratch: N +$2143 · net $2792 · fees $990 · hyatt, delta-gold, marriott-brilliant, marriott-boundless, freedom-flex
+Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$854 · net $1503 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+The legacy golden profiles don't use the new survey answers, so they move
+only where v7b changed shared rules: niche credits $0 unless picked, travel
+credits, bags on that airline only. The v7b goldens (route inference,
+lounge middle answer, perk tiers, negative slot change) are in
+`v7bPart3/4/5.test` and METHODOLOGY §7.
+
 ## Next (v7b)
-- Part 6 Checkout: 10 quick picks + full A–Z store list with category filter.
 - Acceptance checklist run, screenshots/acceptance/, docs/ACCEPTANCE_REPORT.md.
 - Decision questions for the owner (collected so far): see the session
   summary.

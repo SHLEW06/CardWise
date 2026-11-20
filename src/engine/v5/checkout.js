@@ -95,6 +95,8 @@ function current() {
   return cache;
 }
 export const storeCount = () => current().stores.length;
+/** v7b 6: every store, A–Z (curated + generated), for the full list. */
+export const allStores = () => [...current().stores].sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
 
 /** Search stores by name / alias / prefix; curated fuzzy matches (typos) first. → top `limit`. */
 export function searchStores(q, limit = 8) {

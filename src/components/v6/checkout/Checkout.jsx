@@ -13,7 +13,7 @@ import Choice from "../../v5/Choice.jsx";
 import { parseMoney } from "../../v5/MoneySlider.jsx";
 import TravelRanker from "../../v7/TravelRanker.jsx";
 import { Reveal } from "../motion.jsx";
-import { searchStores, rankPurchase, bestByCategory, loadGeneratedBrands, matchStore, storeCount, BUCKET_WORDS } from "../../../engine/v5/checkout.js";
+import { searchStores, rankPurchase, bestByCategory, loadGeneratedBrands, matchStore, storeCount, allStores, BUCKET_WORDS } from "../../../engine/v5/checkout.js";
 import { queryNearbyStores, distanceMeters } from "../../../connector/nearby.js";
 import { PLACES, PLACE_RADIUS_M } from "../../../data/places.js";
 import { METROS, CURATED_METROS, METRO_RADIUS_M } from "../../../data/metros.js";
@@ -58,6 +58,50 @@ export default function Checkout({ profile: raw, offers = [], onOpenCard, onMark
 }
 
 /* ── Search ─────────────────────────────────────────────────────────────── */
+/* v7b 6: every store A–Z, grouped by first letter, with a category filter
+   and search. Opens on demand (3,000+ rows). */
+const STORE_CATEGORIES = [
+  ["all", "All"], ["dining", "Dining"], ["groceries", "Groceries"], ["gas", "Gas"], ["drugstores", "Drugstores"],
+  ["online", "Online"], ["warehouse", "Warehouse clubs"], ["hotels", "Travel"], ["streaming", "Streaming"], ["other", "Everything else"],
+];
+export function AllStores({ onPick }) {
+  const [open, setOpen] = useState(false);
+  const [cat, setCat] = useState("all");
+  const [q, setQ] = useState("");
+  const stores = useMemo(() => (open ? allStores() : []), [open, storeCount()]);
+  const shown = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return stores.filter((x) => (cat === "all" || x.bucket === cat || (cat === "hotels" && ["hotels", "flights", "rentals", "transit"].includes(x.bucket)))
+      && (!s || x.name.toLowerCase().includes(s)));
+  }, [stores, cat, q]);
+  const groups = useMemo(() => {
+    const g = new Map();
+    for (const x of shown) { const L = /^[a-z]/i.test(x.name) ? x.name[0].toUpperCase() : "#"; (g.get(L) || g.set(L, []).get(L)).push(x); }
+    return [...g.entries()];
+  }, [shown]);
+  if (!open) return <button className="link all-stores-open" onClick={() => setOpen(true)}>Browse all {storeCount().toLocaleString("en-US")} stores, A–Z</button>;
+  return (
+    <section className="all-stores" aria-label="All stores" data-testid="all-stores">
+      <div className="all-stores-tools">
+        <label className="field"><Search size={16} aria-hidden="true" /><input aria-label="Filter stores" placeholder="Filter stores" value={q} onChange={(e) => setQ(e.target.value)} /></label>
+        <div className="chip-wrap" role="radiogroup" aria-label="Store category">
+          {STORE_CATEGORIES.map(([k, l]) => <Choice key={k} radio pill selected={cat === k} onSelect={() => setCat(k)}>{l}</Choice>)}
+        </div>
+        <nav className="letter-index" aria-label="Jump to a letter">{groups.map(([L]) => <a key={L} href={`#stores-${L}`}>{L}</a>)}</nav>
+      </div>
+      <p className="t-caption">{shown.length.toLocaleString("en-US")} stores</p>
+      <div className="all-stores-scroll">
+        {groups.map(([L, xs]) => (
+          <div key={L} id={`stores-${L}`} className="letter-group">
+            <h3 className="t-eyebrow">{L}</h3>
+            <ul className="store-grid">{xs.map((x) => <li key={x.key}><button className="link" onClick={() => onPick(x)}>{x.name}</button></li>)}</ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function SearchMode({ profile, offers, onOpenCard, onMarkAdded, initialQuery }) {
   const [q, setQ] = useState(initialQuery);
   const [store, setStore] = useState(() => (initialQuery ? matchStore(initialQuery, 0.5) : null));
@@ -96,9 +140,12 @@ function SearchMode({ profile, offers, onOpenCard, onMarkAdded, initialQuery }) 
         <Choice radio pill selected={channel === "online"} onSelect={() => setChannel("online")}><Globe size={14} aria-hidden="true" /> Online</Choice>
       </div>
       {!store && (
-        <div className="chip-wrap quick-stores">
-          {QUICK.map((n) => <button key={n} className="link" onClick={() => { const s = matchStore(n, 0.5); if (s) pick(s); }}>{n}</button>)}
-        </div>
+        <>
+          <div className="chip-wrap quick-stores" aria-label="Popular stores">
+            {QUICK.map((n) => <button key={n} className="link" onClick={() => { const s = matchStore(n, 0.5); if (s) pick(s); }}>{n}</button>)}
+          </div>
+          <AllStores onPick={pick} />
+        </>
       )}
       {r && <Result r={r} profile={profile} onOpenCard={onOpenCard} onMarkAdded={onMarkAdded} />}
     </>

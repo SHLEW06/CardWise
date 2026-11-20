@@ -142,3 +142,14 @@ html, body { background: #0B1222 !important; }
   .v5 .sheet-wide .alt-row { grid-template-columns: 64px minmax(0, 1fr) auto; }
   .v5 .ab-row { grid-template-columns: minmax(0, 1fr) auto; }
 }
+
+/* ── Checkout: all stores A–Z (v7b Part 6) ── */
+.v5 .all-stores { display: grid; gap: 12px; padding: 20px; background: var(--surface); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: var(--r); }
+.v5 .all-stores-tools { display: grid; gap: 10px; }
+.v5 .all-stores-tools .field { max-width: 420px; }
+.v5 .letter-index { display: flex; flex-wrap: wrap; gap: 4px; }
+.v5 .letter-index a { min-width: 28px; height: 28px; display: grid; place-items: center; border-radius: var(--r-chip); background: var(--raised); color: var(--ink-2); text-decoration: none; font-size: var(--fs-caption); }
+.v5 .all-stores-scroll { max-height: 56vh; overflow-y: auto; display: grid; gap: 18px; }
+.v5 .store-grid { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; }
+.v5 .store-grid .link { font-size: var(--fs-small); text-align: left; }
+.v5 .all-stores-open { justify-self: start; }
