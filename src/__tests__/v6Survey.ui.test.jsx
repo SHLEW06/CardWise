@@ -136,7 +136,7 @@ describe("3 · travel", () => {
     for (const c of CARDS) if (LOYALTY[c.pointCurrency]?.kind === "air") expect(AIRLINE_KEYS, c.id).toContain(c.pointCurrency);
     saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 4 }] } });
     render(<Survey initialMode="thorough" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("radio", { name: "I'll choose" }));                 // v7b: airlines are inferred unless they choose
+    fireEvent.click(within(screen.getByTestId("airlines-inferred")).getByRole("radio", { name: "I'll choose" }));   // v7b: airlines are inferred unless they choose
     for (const g of ["US airlines", "Star Alliance", "oneworld", "SkyTeam", "Other airlines"]) expect(screen.getByText(g)).toBeInTheDocument();
   });
   it("hotel brands include the big chains and 'whatever's cheapest'", () => {

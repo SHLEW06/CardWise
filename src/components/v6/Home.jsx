@@ -43,7 +43,9 @@ export function nextMove(rawProfile) {
     /* v7 C1: a big loan within 12 months holds new cards until after it. */
     const t = get.action === "upgrade" ? null : applyTimeline([...p.cardsHeld, get.cardId], p).find((x) => x.cardId === get.cardId);
     const when = t?.afterLoan ? `${timelineLabel(t)}: a new card's credit check can nudge a loan rate up.` : null;
-    return { kind: get.action === "upgrade" ? "upgrade" : "apply", cardId: get.cardId, title: `${get.action === "upgrade" ? "Upgrade to" : "Get"} the ${cardDisplayName(BY_ID[get.cardId])}`, impact: Math.max(0, get.gain || 0), sentence: get.sentence, when };
+    /* The plan's gain is measured beside the wallet it keeps; "Why this card?"
+       uses that same wallet so the two numbers agree. */
+    return { kind: get.action === "upgrade" ? "upgrade" : "apply", cardId: get.cardId, title: `${get.action === "upgrade" ? "Upgrade to" : "Get"} the ${cardDisplayName(BY_ID[get.cardId])}`, impact: Math.max(0, get.gain || 0), sentence: get.sentence, when, context: plan.wallet.filter((id) => id !== get.cardId) };
   }
   return null;
 }
@@ -112,7 +114,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
                 {move.when && <p className="t-caption next-move-when">{move.when}</p>}
               </div>
             </div>
-            {move.kind === "apply" && <WhyThisCard cardId={move.cardId} wallet={profile.cardsHeld} profile={profile} />}
+            {move.kind === "apply" && <WhyThisCard cardId={move.cardId} wallet={move.context || profile.cardsHeld} profile={profile} />}
           </Reveal>
         )}
 

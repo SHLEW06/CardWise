@@ -544,7 +544,11 @@ function TravelStep({ d, set, mode, headRef }) {
       </fieldset>
       <fieldset className="survey-group">
         <legend className="t-h3">Hotels</legend>
-        <ToggleChips options={HOTEL_BRANDS} picked={hotelsPicked} onChange={setHotels} label="Hotel brands" limit={HOTEL_BRANDS.length} />
+        <div className="chip-wrap" role="radiogroup" aria-label="Which hotel program to value">
+          <Choice radio pill selected={n.travel.hotelChoice === "auto"} onSelect={() => setTravel({ hotelChoice: "auto" })}>Best value: let CardWise decide</Choice>
+          <Choice radio pill selected={n.travel.hotelChoice !== "auto"} onSelect={() => setTravel({ hotelChoice: "manual" })}>I'll choose</Choice>
+        </div>
+        <ToggleChips options={HOTEL_BRANDS} picked={hotelsPicked} onChange={(h) => { set({ brands: { ...d.brands, hotelsPicked: h, hotels: h }, travel: { ...t, hotelChoice: "manual" } }); }} label="Hotel brands" limit={HOTEL_BRANDS.length} />
         <p className="t-caption">"Independent / whatever's cheapest" or "Not sure": we pick the hotel program that's strongest where you go.</p>
         {n.brands.hotelPick && <p className="inferred-line" data-testid="hotel-pick">{n.brands.hotelPick.why}</p>}
       </fieldset>

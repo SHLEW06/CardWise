@@ -188,6 +188,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
         <Fold title="Keep or cancel"><KeepOrCancel profile={p} onOpenCard={openCard} /></Fold>
         <Fold title="When to apply"><WhenToApply setup={setup} profile={p} onOpenCard={openCard} /></Fold>
         <Fold title="Credits you'd plan around"><PlanAround setup={setup} profile={draft} onChange={(planAround) => setDraft({ ...draft, planAround })} /></Fold>
+        <Fold title="Welcome bonuses"><WelcomeBonuses setup={setup} profile={p} /></Fold>
         <Fold title="Saved setups"><SavedSetups setup={setup} profile={p} value={value} onLoad={(ids) => setCustom(ids)} /></Fold>
         <Fold title="Portal vs direct" className="lab-portal">
           <p className="t-caption">Is the travel portal's price worth it with this setup?</p>
@@ -199,6 +200,31 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
       {drawer && <SpendDrawer draft={draft} setDraft={setDraft} onClose={() => setDrawer(false)} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </section>
+  );
+}
+
+/* Welcome bonuses (owner rule 2026-11-20): shown here only — never in the
+   score, the ranking or "what it adds". Offers change often; when we don't
+   have a verified offer we say so and link the issuer's page. */
+function WelcomeBonuses({ setup, profile }) {
+  const fresh = setup.filter((id) => !profile.cardsHeld.includes(id) && BY_ID[id]);
+  return (
+    <div data-testid="welcome-bonuses">
+      <p className="t-caption">Never counted in your score or rankings — they're one-time and change often.</p>
+      {!fresh.length && <p className="t-caption">No new cards in this setup.</p>}
+      <ul className="rows">
+        {fresh.map((id) => {
+          const c = BY_ID[id];
+          const sub = c.sub || {};
+          return (
+            <li key={id} className="plan-row">
+              <span className="plan-name">{cardDisplayName(c)}</span>
+              <span className="t-caption">{sub.offer ? `${sub.offer}${sub.estimatedValueUsd ? ` (≈ ${money(sub.estimatedValueUsd)})` : ""}` : "Offer not on file — check the issuer's page"}{/^https?:/.test(c.verifiedSource || "") ? <> · <a href={c.verifiedSource} target="_blank" rel="noreferrer">issuer page</a></> : null}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 

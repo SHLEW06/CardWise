@@ -174,7 +174,10 @@ export function normalizeProfile(p = {}) {
      unless an older profile already named its airlines. */
   const hadAirlines = (p.brands?.airlinesPicked ?? p.brands?.airlines ?? []).length > 0;
   travel.airlineChoice = ["auto", "manual"].includes(travel.airlineChoice) ? travel.airlineChoice : (travel.airports.length || !hadAirlines ? "auto" : "manual");
-  travel.hotelChoice = ["auto", "manual"].includes(travel.hotelChoice) ? travel.hotelChoice : "manual";
+  /* Hotels on skip: "Best value: let CardWise decide" for anyone who told us
+     where they fly but picked no hotel program (older profiles unchanged). */
+  const hotelsGiven = (p.brands?.hotelsPicked ?? p.brands?.hotels ?? []).length > 0;
+  travel.hotelChoice = ["auto", "manual"].includes(travel.hotelChoice) ? travel.hotelChoice : (travel.airports.length && !hotelsGiven ? "auto" : "manual");
   travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
   travel.tripsByAirline = {};
   travel.workPrograms = [];

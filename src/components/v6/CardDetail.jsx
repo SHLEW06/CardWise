@@ -66,6 +66,15 @@ export function whyLine(d, e) {
   return `Mostly ${drivers.map((x, i) => (i === 0 ? `its ${x.text} (${money(x.value)})` : `${x.text} (${money(x.value)})`)).join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
 }
 
+/** A held card in plain words: what it earns beyond their other cards,
+    the benefits counted for it, and the fee (sums to the headline). */
+export function heldLine(e) {
+  const extra = Math.round(e.earned);
+  const parts = `${extra >= 0 ? `${money(extra)} more` : `${money(-extra)} less`} in rewards than your other cards would earn on the same spending${e.benefitTotal ? ` and ${money(e.benefitTotal)} in benefits you use` : ""}`;
+  if (!e.fee) return `No yearly fee — ${parts}.`;
+  return `${parts.charAt(0).toUpperCase()}${parts.slice(1)}, against its ${money(e.fee)} fee.`;
+}
+
 /** One line on break-even for a card they hold. */
 export function breakEvenLine(own) {
   const got = own.earn + own.benefits;
@@ -114,8 +123,11 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             <h1 className="t-d2">{d.name}</h1>
             {d.inWallet.has ? (
               <>
-                <p className="detail-value"><span className="t-big">{d.own.net >= 0 ? "Worth" : "Costs you"} ≈ <CountUp value={Math.abs(d.own.net)} display /></span><span className="detail-unit"> a year to you{d.own.fee ? ` after its ${money(d.own.fee)} fee` : ""}</span></p>
-                <p className="t-lead">{breakEvenLine(d.own)}</p>
+                {/* Acceptance fix: a held card's headline is what it ADDS to their
+                    wallet (the same number as "What it adds to your wallet"), not its
+                    gross rewards — those would mostly be earned by their other cards. */}
+                <p className="detail-value" data-testid="held-headline"><span className="t-big">{e.gain >= 0 ? "Worth" : "Costs you"} ≈ <CountUp value={Math.abs(e.gain)} display /></span><span className="detail-unit"> a year to you{d.own.fee ? ` after its ${money(d.own.fee)} fee` : ""}</span></p>
+                <p className="t-lead">{heldLine(e)}</p>
               </>
             ) : (
               <>

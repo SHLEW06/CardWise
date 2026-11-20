@@ -126,7 +126,14 @@ describe("6 · held-card detail: worth after its fee + break-even", () => {
     render(<CardDetail cardId="amex-gold" profile={{ cardsHeld: ["amex-gold"], spend: spend({ dining: 700, groceries: 700 }), brands: { perks: ["uber", "resy"] } }} onClose={() => {}} />);
     const dlg = screen.getByRole("dialog");
     expect(within(dlg).getByText(/after its \$325 fee/)).toBeInTheDocument();
-    expect(within(dlg).getByText(/(cover its \$325 fee with \$[\d,]+ to spare|short of breaking even)/)).toBeInTheDocument();
+    /* Acceptance G4 fix: the line explains the headline — what it earns beyond
+       their other cards + benefits, against the fee — and the headline equals
+       "What it adds to your wallet". */
+    expect(within(dlg).getByText(/in rewards than your other cards would earn on the same spending.*against its \$325 fee\./)).toBeInTheDocument();
+    const head = within(dlg).getByTestId("held-headline").textContent;
+    const sentence = within(dlg).getByText(/minus its \$325 fee/).textContent;
+    const n = (t) => Number(t.match(/[−-]?\$([\d,]+)/)[1].replace(/,/g, ""));
+    expect(n(head)).toBe(n(sentence.split(":").pop()));
     expect(within(dlg).queryByText(/It adds/)).toBeNull();
   });
 });
