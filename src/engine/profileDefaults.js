@@ -207,6 +207,7 @@ export function normalizeProfile(p = {}) {
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : { cash: "cash", both: "portal", travel: "partners" }[wants],
     pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
+    valueMode: ["conservative", "typical", "optimistic"].includes(p.valueMode) ? p.valueMode : "typical",   // v7 B1
   };
 }
 

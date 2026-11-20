@@ -20,6 +20,12 @@ import { PROGRAMS, LOYALTY, TRANSFER_RULES } from "../../data/programs.js";
 import { VAL, VAL_META } from "../../data/valuations.js";
 import { PARTNER_CPP, PARTNER_VALUATIONS_SOURCE } from "../../data/partnerValuations.js";
 import { transferRatio } from "../transferValue.js";
+import { programCpp, DEFAULT_VALUE_MODE } from "../../data/valueModes.js";
+
+/* v7 Part B1: the person's valuation mode (Conservative / Typical /
+   Optimistic) picks the low / mid / high value of every airline and hotel
+   program; co-brand discounts (TakeOff 15) apply when the wallet unlocks them. */
+const modeOf = (profile) => profile?.valueMode || DEFAULT_VALUE_MODE;
 
 export const CASH_CPP = 1.0;
 export const FLEX_CURRENCIES = ["chase", "amex", "c1", "citi", "bilt", "wf"];
@@ -46,7 +52,7 @@ export function partnerPicksFor(cur, profile) {
 }
 
 /** Every partner a currency can reach from this wallet, with ratio and value. */
-export function partnerOptions(cur, wallet = []) {
+export function partnerOptions(cur, wallet = [], profile = null) {
   const rule = TRANSFER_RULES[cur];
   const program = PROGRAMS[cur];
   if (!rule || !program) return [];
@@ -56,7 +62,7 @@ export function partnerOptions(cur, wallet = []) {
   const factor = unlocked ? 1 : rule.alone?.ratioFactor ?? 1;
   return keys.map((key) => {
     const ratio = transferRatio(cur, key, have) * factor;
-    const cpp = key in PARTNER_CPP ? PARTNER_CPP[key] : null;
+    const cpp = key in PARTNER_CPP ? programCpp(key, modeOf(profile), have)?.cpp ?? PARTNER_CPP[key] : null;
     return { key, name: LOYALTY[key]?.name || key, ratio, partnerCpp: cpp, effectiveCpp: cpp == null ? null : cpp * ratio };
   });
 }
@@ -82,14 +88,15 @@ export function currencyValue(cur, profile, wallet = []) {
     const picked = [...(profile?.brands?.airlines || []), ...(profile?.brands?.hotels || [])].includes(cur);
     const travels = profile?.travel?.trips > 0 || profile?.travel?.hotelNights > 0;
     const floor = meta?.conservativeCpp ?? CASH_CPP;
-    const v = picked ? VAL[cur] ?? floor : travels ? floor : floor * 0.5;
-    return { cpp: v, basis: "standard", unlocked: false, partners: [], upTo: null, note: picked ? null : "Valued low: you didn't pick this brand." };
+    const pv = picked ? programCpp(cur, modeOf(profile), ids(wallet)) : null;
+    const v = picked ? pv?.cpp ?? VAL[cur] ?? floor : travels ? floor : floor * 0.5;
+    return { cpp: v, basis: "standard", unlocked: false, partners: [], upTo: null, base: pv?.base ?? null, discount: pv?.discount || null, note: picked ? null : "Valued low: you didn't pick this brand." };
   }
   const have = ids(wallet);
   const unlocked = isUnlocked(cur, have);
   const floor = rule.alone?.cpp ?? CASH_CPP;
   const picks = partnerPicksFor(cur, profile);
-  const usable = partnerOptions(cur, have).filter((p) => picks.includes(p.key) && p.effectiveCpp != null);
+  const usable = partnerOptions(cur, have, profile).filter((p) => picks.includes(p.key) && p.effectiveCpp != null);
   const boosts = Object.entries(rule.boost || {}).filter(([id]) => have.includes(id)).map(([, b]) => b.upTo);
   const upTo = boosts.length ? Math.max(...boosts) : null;
   if (!usable.length) return { cpp: floor, basis: "cash", unlocked, partners: [], upTo, note: rule.note || null };

@@ -284,8 +284,11 @@ export const CARDS = [
   {
     id: "marriott-bold", name: "Bonvoy Bold", issuer: "Chase", network: "VISA",
     annualFee: 0, currency: "Marriott Bonvoy", pointCurrency: "marriott",
-    earnRates: { Hotels: 3, Dining: 2, General: 1 }, portalMultipliers: {},
-    credits: [], benefits: ["Silver Elite status", "5 elite night credits/year", "No fee", "No checked-bag/free-night cert"],
+    /* v7 audit (issuer page, 2026-11-20): 3X Marriott; 2X grocery stores,
+       internet/cable/phone, select streaming, rideshare + taxis, select food
+       delivery apps; restaurants are 1X (were wrongly 2X here). */
+    earnRates: { Hotels: 3, Groceries: 2, Wireless: 2, Internet: 2, Streaming: 2, Transit: 2, General: 1 }, portalMultipliers: {},
+    credits: [], benefits: ["3x Marriott", "2x groceries, phone/internet, select streaming, rideshare", "Silver Elite status", "5 elite night credits/year", "Pay Yourself Back on airline + Marriott purchases (up to $750/yr)", "No fee", "No free-night certificate"],
     transferAccess: [], loungeAccess: null,
     hotelStatus: { program: "marriott", tier: "Silver", estValue: 15 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
@@ -294,8 +297,10 @@ export const CARDS = [
     bestFor: ["A no-fee way to bank Marriott points + elite nights"],
     avoidIf: ["You want a free-night certificate (Boundless) or rarely use Marriott"],
     overlapTags: ["marriott-card"], tags: ["hotel"],
-    beginner: 7, complexity: 3, art: "marriott-bold", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 3, art: "marriott-bold", sourceDate: SD, needsVerification: false,
     why: "No fee and 5 elite nights, but it lacks a free-night certificate — thin unless you genuinely stay at Marriott.",
+    verifiedAt: "2026-11-20",
+    verifiedSource: "https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/bold",
   },
   {
     id: "marriott-boundless", name: "Bonvoy Boundless", issuer: "Chase", network: "VISA",
@@ -403,8 +408,13 @@ export const CARDS = [
   {
     id: "ihg-traveler", name: "IHG One Rewards Card", issuer: "Chase", network: "MASTERCARD",
     annualFee: 0, currency: "IHG One Rewards", pointCurrency: "ihg",
-    earnRates: { Hotels: 5, Dining: 3, Gas: 3, General: 2 }, portalMultipliers: {},
-    credits: [], benefits: ["4th reward night free", "Silver Elite status", "No fee", "No free-night certificate"],
+    /* v7 audit (issuer page, 2026-11-20): 5X IHG; 3X gas, dining, grocery
+       stores (grocery was missing); 3X utilities / internet / phone / select
+       streaming only through 12/31/2026, 2X after (= the base rate, so the
+       steady-state model leaves them at 2X); 2X else. Gold status + 10k
+       points at $15k calendar-year spend. */
+    earnRates: { Hotels: 5, Dining: 3, Gas: 3, Groceries: 3, General: 2 }, portalMultipliers: {},
+    credits: [], benefits: ["5x IHG", "3x gas, dining, groceries", "4th reward night free", "Silver Elite status (Gold at $15k spend)", "No fee", "No free-night certificate"],
     transferAccess: [], loungeAccess: null,
     hotelStatus: { program: "ihg", tier: "Silver", estValue: 12 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
@@ -413,10 +423,10 @@ export const CARDS = [
     bestFor: ["A no-fee IHG card that still gives 4th-night-free"],
     avoidIf: ["You'd use a free-night cert (Premier) or rarely stay at IHG"],
     overlapTags: ["ihg-card"], tags: ["hotel"],
-    beginner: 7, complexity: 3, art: "ihg-traveler", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 3, art: "ihg-traveler", sourceDate: SD, needsVerification: false,
     why: "Keeps the valuable 4th-night-free with no fee, but no free-night certificate — a lighter IHG option for occasional stays.",
-    verifiedSource: "https://creditcards.chase.com/all-credit-cards",
-    verificationNote: "Fee from the listing page summary only.",
+    verifiedAt: "2026-11-20",
+    verifiedSource: "https://creditcards.chase.com/travel-credit-cards/ihg-rewards-club/traveler",
   },
   {
     id: "united-gateway", name: "United Gateway", issuer: "Chase", network: "VISA",

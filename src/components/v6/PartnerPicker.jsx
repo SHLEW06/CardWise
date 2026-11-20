@@ -9,6 +9,19 @@ import { ratioText } from "../../engine/v5/pointsExplained.js";
 import { currencyValue, partnerOptions, partnerPicksFor, partnerShortName, FLEX_CURRENCIES, PARTNER_VALUATIONS_SOURCE } from "../../engine/v5/pointValues.js";
 
 const NAMES = { chase: "Chase points", amex: "Amex points", c1: "Capital One miles", citi: "Citi points", bilt: "Bilt points", wf: "Wells Fargo points" };
+const ONE = { chase: "Chase point", amex: "Amex point", c1: "Capital One mile", citi: "Citi point", bilt: "Bilt point", wf: "Wells Fargo point" };
+
+/** v7 B2: plain words for a partner whose transfer ratio isn't 1:1 — the
+    partner's own point value, then what one of YOUR points is worth there.
+    Chase → Hyatt: 4:3 with Preferred / Ink, 1:1 with the Reserve. */
+export function ratioSentence(cur, p) {
+  const name = partnerShortName(p.key);
+  if (cur === "chase" && p.key === "hyatt") {
+    return `${cents(p.partnerCpp)} is what a Hyatt point is worth. A Chase point moved at 4:3 (Sapphire Preferred or Ink Preferred) becomes 0.75 Hyatt points: ${cents(p.partnerCpp * 0.75)}. With the Sapphire Reserve it moves 1:1: the full ${cents(p.partnerCpp)}.`;
+  }
+  if (p.ratio === 1) return null;
+  return `${cents(p.partnerCpp)} is what a ${name} point is worth. One ${ONE[cur] || "point"} becomes ${Math.round(p.ratio * 100) / 100} ${name} points (${ratioText(p.ratio)}): ${cents(p.effectiveCpp)}.`;
+}
 const cents = (n) => `${(Math.round(n * 100) / 100).toString().replace(/(\.\d)0$/, "$1")}¢`;
 
 /** Which flexible currencies to show: the ones their cards earn (all six if none). */
@@ -29,7 +42,7 @@ export default function PartnerPicker({ profile, currencies, onChange }) {
       {currencies.map((cur) => {
         /* Show the full list the currency can reach once unlocked, so people
            can plan; value uses what this wallet reaches. */
-        const reach = partnerOptions(cur, [...wallet, ...(TRANSFER_RULES[cur]?.unlockCards || []).slice(0, 1)]).filter((p) => p.partnerCpp != null);
+        const reach = partnerOptions(cur, [...wallet, ...(TRANSFER_RULES[cur]?.unlockCards || []).slice(0, 1)], profile).filter((p) => p.partnerCpp != null);
         const v = currencyValue(cur, profile, wallet);
         const picks = partnerPicksFor(cur, profile);
         return (
@@ -42,10 +55,11 @@ export default function PartnerPicker({ profile, currencies, onChange }) {
             <div className="chip-wrap" role="group" aria-label={`${NAMES[cur]} partners you'd use`}>
               {reach.map((p) => (
                 <Choice key={p.key} pill selected={picks.includes(p.key)} onSelect={() => toggle(cur, p.key)}>
-                  {partnerShortName(p.key)} · {ratioText(p.ratio)} · ≈ {cents(p.partnerCpp)}
+                  {partnerShortName(p.key)} · ≈ {cents(p.effectiveCpp)} a {ONE[cur] || "point"}
                 </Choice>
               ))}
             </div>
+            {reach.filter((p) => picks.includes(p.key)).map((p) => ratioSentence(cur, p)).filter(Boolean).map((t) => <p key={t} className="t-caption partner-ratio">{t}</p>)}
           </section>
         );
       })}

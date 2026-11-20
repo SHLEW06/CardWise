@@ -60,7 +60,10 @@ export const CARDS = [
     annualFee: 0, currency: "US Bank Points", pointCurrency: "cash",
     earnRates: { Travel: 4, Gas: 4, EV: 4, Groceries: 2, Dining: 2, Streaming: 2, General: 1 },
     earnCaps: [{ keys: ["Gas", "EV"], annual: 4000, after: 1 }], portalMultipliers: { Hotels: 5, Car: 5 },
-    credits: [],
+    /* v7 audit (issuer page, 2026-11-20): pays the Global Entry and/or TSA
+       PreCheck application fee (amount not stated; valued like the catalog's
+       other $120-every-4-years credits). */
+    credits: [cred("Global Entry / TSA PreCheck application credit", 30, "EASY", "membership", "4yr")],
     benefits: ["4x travel, gas station & EV charging", "2x groceries, dining & streaming", "Priority Pass lounge passes ($95 fee waived first year for visits)", "No annual fee", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass (4 visits a year)"], passes: 4, estAnnual: 150, use: "MEDIUM", type: "Priority Pass, 4 free visits per membership year" }, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],

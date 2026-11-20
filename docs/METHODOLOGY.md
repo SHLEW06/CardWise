@@ -76,6 +76,41 @@ Example: Sapphire Reserve 3x dining with picks Virgin (1.5), Hyatt (1.65 at
 1:1), Aeroplan (1.45) → `v = 1.533¢` → ≈ 4.6% back, which beats Robinhood
 Gold's 3% cash. At `v = 1.0¢` (nothing picked) the two tie at 3%.
 
+## 1b. Valuation modes, co-brand discounts, direct base earn (v7 Part B)
+
+**Modes** (`data/valueModes.js`, Profile → Point values): Conservative ·
+Typical (default) · Optimistic pick the low / mid / high value of every
+airline and hotel program, for co-brand miles and for transfers alike.
+Bands: Hyatt 1.5 / 1.65 / 1.8, Delta 1.0 / 1.15 / 1.3, Marriott 0.7 / 0.8 /
+0.9 (owner, v7 brief); every other program TPG's value (partnerValuations.js)
+× 0.9 / 1 / 1.1, rounded to 0.05¢ (modeling default). Profile lists the cards
+that drop out or join at the other modes (`plans.js modeSensitivity`).
+
+*Changed vs v6:* Delta typical is 1.15¢ (was TPG 1.2¢) and Marriott 0.8¢
+(was 0.75¢), per the owner's bands.
+
+**TakeOff 15** (delta.com, read 2026-11-20): Delta Gold / Platinum /
+Reserve (and Business) Card Members save 15% on the miles for Delta-operated
+award flights booked at delta.com or the app; Blue isn't eligible; partner
+flights, Pay with Miles and Miles + Cash are excluded. Modeled as
+`v_delta = band ÷ 0.85` whenever an eligible card is in the wallet — for
+Delta miles earned directly and for Amex points moved to Delta. This is
+why Delta shows ≈ 1.35¢ beside a Delta Gold (1.15 ÷ 0.85) and 1.15¢
+without one. No other co-brand discount was verified in this pass.
+
+**Direct base earn** (`value.js directBase`, `data/programBaseEarn.js`):
+booking direct with a picked program earns its member points on top of the
+card (Hyatt 5/$, Marriott 10/$, Hilton 10/$, IHG 10/$, Delta / United /
+American 5 miles/$; unverified modeling defaults). It comes with every card,
+so it doesn't change which card wins a direct booking and isn't in `N`
+(the 2% baseline would earn it too); it is shown beside the card's rate
+("Hyatt card 4x + 5x Hyatt base") and is what a portal booking gives up.
+
+**Portal lanes and the cabin markup** (B5): **on hold** (owner, 2026-11-20).
+Portal multipliers stay on file (CARD_AUDIT lists them) but no portal lane
+enters `E(W)` until portal data is entered; the portal calculator keeps the
+prices people type.
+
 ## 2. Earning `E(W)`
 
 Each card turns into **lanes** — one per (card, category) with a rate and

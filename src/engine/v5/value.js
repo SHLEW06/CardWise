@@ -25,6 +25,7 @@ import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
 import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
+import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
 export const AIRLINE_CURRENCIES = new Set(["delta", "united", "aa", "southwest", "alaska", "jetblue", "aeroplan", "avios", "flyingblue"]);
@@ -351,6 +352,28 @@ export function creditUsage(card, credit, profile) {
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
 }
+
+/**
+ * v7 B4: program base points for booking DIRECT with a picked hotel or
+ * airline program — earned with any card, so shown beside the card's own
+ * rate ("Hyatt card 4x + Hyatt base 5x"). Not counted when they book through
+ * portals (those bookings usually earn no program points).
+ * → { program, perDollar, cpp, pct } for the strongest picked program, or null.
+ */
+export function directBase(profile, bucket, wallet = []) {
+  if (!["hotels", "flights"].includes(bucket) || profile.travel.booking === "portal") return null;
+  const picked = bucket === "hotels" ? profile.brands.hotels : profile.brands.airlines;
+  let best = null;
+  for (const k of picked) {
+    const e = PROGRAM_BASE_EARN[k];
+    if (!e) continue;
+    const cpp = currencyValueFor(k, profile, wallet);
+    const pct = e.perDollar * cpp;
+    if (!best || pct > best.pct) best = { program: k, perDollar: e.perDollar, cpp, pct };
+  }
+  return best;
+}
+const currencyValueFor = (k, profile, wallet) => cardPointValue({ id: `__${k}`, pointCurrency: k }, profile, wallet).cpp;
 
 /** Free checked bags $ a year (v7 A2): fee × min(card's bags, bags per trip)
     × 2 ways × trips × share of trips with bags. Not asked → 1 bag, every trip. */

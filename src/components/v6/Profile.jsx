@@ -5,7 +5,7 @@
    Sections whose feature arrives in a later milestone render the slot they
    will fill (`slots` prop) so the page structure is final now.
    ========================================================================== */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { loadStrategies } from "../../firebase/firestore.js";
 import { ChevronRight } from "lucide-react";
 import { BY_ID } from "../../data/cards/index.js";
@@ -17,6 +17,8 @@ import { Reveal } from "./motion.jsx";
 import FeeBudget from "./FeeBudget.jsx";
 import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
 import { useCardArtMode, setCardArtMode } from "../../state/cardArtMode.js";
+import { VALUE_MODES, MODE_LABEL, band, CO_BRAND_DISCOUNTS } from "../../data/valueModes.js";
+import { modeSensitivity } from "../../engine/v5/plans.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const list = (xs, none = "None picked") => (xs.length ? xs.join(", ") : none);
@@ -70,12 +72,13 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, onOpen
       <Reveal i={2} className="panel profile-block">
         <h2 className="t-h2">Fee budget</h2>
         <p className="t-caption">The most you'd pay in yearly card fees, all cards combined.</p>
-        <FeeBudget value={profile.feeBudget} onChange={(feeBudget) => save({ feeBudget })} />
+        <FeeBudget value={profile.feeBudget} onChange={(feeBudget) => save({ feeBudget })} profile={profile} />
       </Reveal>
 
       <Reveal i={3} className="panel profile-block" id="point-values">
         <h2 className="t-h2">Point values</h2>
         <p className="t-caption">Pick the airlines and hotels you'd actually move points to. Every "≈ % back" in the app uses this.</p>
+        <ValueMode profile={profile} save={save} />
         {slots.pointValues || <PartnerPicker profile={profile} currencies={currenciesFor(profile, BY_ID)} onChange={(partnerPicks) => save({ partnerPicks })} />}
       </Reveal>
 
@@ -111,6 +114,39 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, onOpen
         </div>
       </Reveal>
     </section>
+  );
+}
+
+const cents = (n) => `${(Math.round(n * 100) / 100).toString().replace(/(\.\d)0$/, "$1")}¢`;
+
+/* v7 B1: Conservative / Typical / Optimistic, with what changes. */
+function ValueMode({ profile, save }) {
+  const mode = profile.valueMode || "typical";
+  const sens = useMemo(() => modeSensitivity(profile, (id) => cardDisplayName(BY_ID[id])), [profile]);
+  const picked = [...profile.brands.airlines, ...profile.brands.hotels].filter((k) => band(k));
+  const key = mode === "conservative" ? "low" : mode === "optimistic" ? "high" : "mid";
+  const deltaCard = profile.cardsHeld.some((id) => CO_BRAND_DISCOUNTS.delta.cards.includes(id));
+  return (
+    <div className="value-mode" data-testid="value-mode">
+      <div className="profile-row">
+        <span>How we value points</span>
+        <div className="segmented" role="radiogroup" aria-label="How we value points">
+          {VALUE_MODES.map((m) => (
+            <button key={m} role="radio" aria-checked={mode === m} aria-selected={mode === m} className="segmented-item" onClick={() => save({ valueMode: m })}>{MODE_LABEL[m]}</button>
+          ))}
+        </div>
+      </div>
+      {picked.length > 0 && (
+        <p className="t-caption">{picked.map((k) => `${k[0].toUpperCase()}${k.slice(1)} ${cents(band(k).low)} / ${cents(band(k).mid)} / ${cents(band(k).high)}`).join(" · ")} (conservative / typical / optimistic){mode !== "typical" ? `; using ${mode}` : ""}.</p>
+      )}
+      {profile.brands.airlines.includes("delta") && (
+        <p className="t-caption" data-testid="delta-why">
+          Why Delta miles show about {cents(band("delta")[key] / (deltaCard ? 0.85 : 1))}: a typical Delta award gets about {cents(band("delta")[key])} a mile.
+          {deltaCard ? ` Your Delta card adds TakeOff 15 — 15% off the miles on Delta award flights — so each mile goes further: ${cents(band("delta")[key])} ÷ 0.85.` : " With a Delta Gold, Platinum or Reserve, TakeOff 15 takes 15% off the miles on Delta award flights, so each mile is worth ÷ 0.85."}
+        </p>
+      )}
+      {sens.notes.length > 0 && <ul className="mode-notes">{sens.notes.map((n) => <li key={n} className="t-caption">{n}</li>)}</ul>}
+    </div>
   );
 }
 

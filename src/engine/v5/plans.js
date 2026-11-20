@@ -147,6 +147,29 @@ export function loyaltyStrategies(rawProfile, { max = 3 } = {}) {
   return top;
 }
 
+/* ── B1: when the valuation mode changes the answer ──────────────────────── */
+
+/**
+ * Best wallet at conservative and optimistic values vs the person's mode:
+ * which cards drop out or join. → { byMode: { mode: wallet }, notes: [string] }
+ * e.g. "At conservative values, Chase World of Hyatt drops out."
+ */
+export function modeSensitivity(rawProfile, cardName = (id) => BY_ID[id]?.name || id) {
+  const profile = normalizeProfile(rawProfile);
+  const byMode = {};
+  for (const m of ["conservative", "typical", "optimistic"]) byMode[m] = optimalWallet({ ...profile, valueMode: m }).wallet;
+  const mine = byMode[profile.valueMode];
+  const notes = [];
+  for (const m of ["conservative", "typical", "optimistic"]) {
+    if (m === profile.valueMode) continue;
+    const out = mine.filter((id) => !byMode[m].includes(id));
+    const join = byMode[m].filter((id) => !mine.includes(id));
+    if (out.length) notes.push(`At ${m} values, ${out.map(cardName).join(" and ")} drop${out.length === 1 ? "s" : ""} out.`);
+    if (join.length) notes.push(`At ${m} values, ${join.map(cardName).join(" and ")} join${join.length === 1 ? "s" : ""}.`);
+  }
+  return { byMode, notes };
+}
+
 /** Profile patch for "Use this strategy": pick its programs so the optimizer
     values them (replacing "Not sure" / independent hotel answers). */
 export function applyStrategy(rawProfile, strategy) {

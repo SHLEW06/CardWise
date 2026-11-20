@@ -532,7 +532,8 @@ rendered-face setting for launch.
 | 0. Style tile | done; reviewed 2026-11-20 ("go" + 3 changes, done in 048297c) |
 | Restyle | done — app on §9.11 |
 | A. Survey | done |
-| B–G | in progress, in order |
+| B. Valuations + audit | done (B5 portal lanes on hold) |
+| C–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -634,5 +635,66 @@ rendered-face setting for launch.
 - Bilt's partner list here has no American Airlines (the brief's example
   says Bilt → American) — for the Part B audit.
 
+## Part B — valuations and the card audit (2026-11-20)
+
+- **B1 modes:** `data/valueModes.js`; `profile.valueMode`; Profile → Point
+  values has Conservative / Typical / Optimistic, the bands for picked
+  programs, and "At conservative values, X drops out" notes.
+- **B2 Hyatt chip:** partner chips now show the value of ONE of your points
+  ("Hyatt · ≈ 1.24¢ a Chase point"), with a sentence: Hyatt's own 1.65¢,
+  4:3 with Preferred / Ink → 1.24¢, 1:1 with the Reserve → 1.65¢.
+- **B3 TakeOff 15:** verified on delta.com; Delta miles ÷ 0.85 beside an
+  eligible card; Profile explains why Delta shows ≈ 1.35¢.
+- **B4 direct base earn:** `directBase` (shown in slots / "Why this card?").
+- **B5 portal lanes + cabin markup:** on hold, per the owner. The owner is
+  gathering travel-portal data; lanes switch on once it's entered.
+- **B6 audit:** `docs/CARD_AUDIT.md` (`npm run audit:cards`): all 130 cards
+  with source + date + automated checks; notes in `CARD_AUDIT_NOTES.md`.
+  Fixed from issuer pages: Marriott Bold (dining 1x, +2x categories), IHG
+  no-fee (+3x groceries), JetBlue Plus ($100+ Vacations credit, 5k
+  anniversary points), Altitude Connect (+Global Entry / TSA credit);
+  JetBlue + Costco Visa confirmed. 96 / 130 verified (was 91).
+- Golden tests: all pass. `npm run golden` output:
+
+Before v7 (048297c):
+```
+1 student $0: N +$36 · net $228 · fees $0 · discover-student, discover-student-chrome
+2 Costco family: N +$377 · net $761 · fees $95 · costco-citi, usb-altitude-go, bcp, freedom-flex
+3 foodie $400: N +$931 · net $1485 · fees $325 · amex-gold, wf-autograph
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1334 · net $1934 · fees $805 · delta-reserve, robinhood-gold, usb-altitude-connect, freedom-flex, usb-altitude-go, bcp
+5 ATL Delta, lounges no: N +$1145 · net $1745 · fees $305 · delta-gold, robinhood-gold, usb-altitude-connect, freedom-flex, usb-altitude-go, bcp
+Owner-like, from scratch: N +$2183 · net $2831 · fees $990 · hyatt, marriott-brilliant, delta-gold, marriott-boundless, freedom-flex, usb-altitude-go
+Owner-like, from wallet: N +$1144 · net $1793 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$819 · net $1468 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+After Part B:
+```
+1 student $0: N +$36 · net $228 · fees $0 · discover-student, discover-student-chrome
+2 Costco family: N +$377 · net $761 · fees $95 · costco-citi, usb-altitude-go, bcp, freedom-flex
+3 foodie $400: N +$931 · net $1485 · fees $325 · amex-gold, wf-autograph
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1313 · net $1913 · fees $805 · delta-reserve, robinhood-gold, freedom-flex, usb-altitude-go, bcp
+5 ATL Delta, lounges no: N +$1145 · net $1745 · fees $305 · delta-gold, robinhood-gold, usb-altitude-connect, freedom-flex, usb-altitude-go, bcp
+Owner-like, from scratch: N +$2197 · net $2846 · fees $990 · hyatt, delta-gold, marriott-brilliant, marriott-boundless, freedom-flex, usb-altitude-go
+Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$854 · net $1503 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+
+### Unverified (Part B)
+- Every americanexpress.com card page (JavaScript-only to a fetch): BCP,
+  BCE, Green, Delta Blue/Gold/Platinum, Marriott Bevy/Brilliant, Hilton
+  Honors/Surpass. Suspected: Delta Gold credits may be $100 Delta Stays +
+  $200 flight credit after $10k spend (not changed).
+- Venture X $300 travel credit and Altitude Connect's 4 Priority Pass visits
+  (not in the fetched text; kept).
+- Program base earn rates (Hyatt 5/$ etc.) — modeling defaults.
+- US Bank Cash+ choose-your-category keys aren't modeled (earns 1% base).
+- Bilt has no American Airlines partner (brief's example); Part A's earlier
+  note about Venture X lacking a Global Entry credit was wrong — the page
+  doesn't list one.
+
 ## Next (v7)
-Parts B → G in order, committing after each.
+Parts C → G in order, committing after each.

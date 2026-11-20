@@ -68,7 +68,7 @@ export const CARDS = [
     bestFor: ["Costco members with high gas spend", "Costco-loyal cash-back users"],
     avoidIf: ["You're not a Costco member", "You'd rather have a flat 3% (Robinhood Gold)"],
     overlapTags: ["costco"], tags: ["cashback"],
-    beginner: 7, complexity: 3, art: "costco-citi", sourceDate: SD, needsVerification: true,
+    beginner: 7, complexity: 3, art: "costco-citi", sourceDate: SD, needsVerification: false, verifiedAt: "2026-11-20", verifiedSource: "https://www.citi.com/credit-cards/citi-costco-anywhere-visa-credit-card",
     availabilityStatus: "openToNewApplicants",
     requiresSubscription: { name: "Costco membership", annual: 65 },
     why: "4% gas with a $7k/yr cap is class-leading — primarily attractive to existing Costco members with significant gas spend.",
