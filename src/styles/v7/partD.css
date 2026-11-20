@@ -73,6 +73,12 @@
 .v5 .ranker-price input { text-align: right; }
 .v5 .ranker-pwp { display: block; max-width: 22em; margin-left: auto; text-align: right; }
 
+/* ── Part F: Near me location states ── */
+.v5 .near-help { padding: 18px 20px; background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r); max-width: 46em; }
+.v5 .near-help p { margin: 0; }
+.v5 .near-steps { margin: 4px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.v5 .near-help .link { justify-self: start; }
+
 @media (max-width: 900px) {
   .v5 .lab-budget.has-ladder { grid-template-columns: 1fr; }
   .v5 .slot-index { top: 56px; }

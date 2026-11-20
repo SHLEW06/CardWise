@@ -15,6 +15,8 @@ import { Reveal } from "../motion.jsx";
 import { searchStores, rankPurchase, bestByCategory, loadGeneratedBrands, matchStore, storeCount, BUCKET_WORDS } from "../../../engine/v5/checkout.js";
 import { queryNearbyStores, distanceMeters } from "../../../connector/nearby.js";
 import { PLACES, PLACE_RADIUS_M } from "../../../data/places.js";
+import { METROS, CURATED_METROS, METRO_RADIUS_M } from "../../../data/metros.js";
+import { locate, LOCATE_HELP, queryMalls } from "../../../connector/locate.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
@@ -159,28 +161,50 @@ function Result({ r, profile, onOpenCard, onMarkAdded }) {
 /* ── Near me ────────────────────────────────────────────────────────────── */
 const memoryCache = new Map();          // coarse (≈100 m) → stores, this tab only
 
-function NearMode({ profile, offers, onOpenCard }) {
-  const [state, setState] = useState({ status: "idle", stores: [], where: null, error: null });
+/* v7 F2: places come from the home airport's metro — Atlanta's curated
+   list, or malls and outlets OpenStreetMap knows around that city. */
+export function useMetroPlaces(homeAirport, { fetchImpl } = {}) {
+  const metro = homeAirport ? METROS[homeAirport] : null;
+  const curated = !metro || CURATED_METROS.has(metro.metro);
+  const [osm, setOsm] = useState({ status: curated ? "curated" : "idle", places: [] });
+  useEffect(() => {
+    if (curated || !metro) return undefined;
+    let off = false;
+    const key = `cardwise.malls.${homeAirport}`;
+    try {
+      const hit = sessionStorage.getItem(key);
+      if (hit) { setOsm({ status: "done", places: JSON.parse(hit) }); return undefined; }
+    } catch { /* storage blocked */ }
+    setOsm({ status: "loading", places: [] });
+    queryMalls({ lat: metro.lat, lng: metro.lng }, { radius: METRO_RADIUS_M, city: metro.metro, ...(fetchImpl ? { fetchImpl } : {}) })
+      .then((places) => { if (off) return; setOsm({ status: "done", places }); try { sessionStorage.setItem(key, JSON.stringify(places)); } catch { /* ignore */ } })
+      .catch(() => { if (!off) setOsm({ status: "error", places: [] }); });
+    return () => { off = true; };
+  }, [homeAirport, curated]);
+  return { metro: metro?.metro || null, curated, places: curated ? PLACES : osm.places, status: osm.status };
+}
+
+function NearMode({ profile, offers, onOpenCard, fetchImpl }) {
+  const [state, setState] = useState({ status: "idle", stores: [], where: null, error: null, help: null });
   const [placeQ, setPlaceQ] = useState("");
+  const metroPlaces = useMetroPlaces(profile?.travel?.homeAirport, { fetchImpl });
   const look = async (here, label) => {
     const key = `${here.lat.toFixed(3)},${here.lng.toFixed(3)}`;
-    setState({ status: "loading", stores: [], where: label, error: null });
+    setState({ status: "loading", stores: [], where: label, error: null, help: null });
     try {
       const stores = memoryCache.get(key) || await queryNearbyStores(here, { radius: label ? PLACE_RADIUS_M : 150 });
       memoryCache.set(key, stores);
-      setState({ status: "done", stores, where: label, error: null });
+      setState({ status: "done", stores, where: label, error: null, help: null });
     } catch (e) {
-      setState({ status: "error", stores: [], where: label, error: "Couldn't reach the places service. Type a store or pick a mall instead." });
+      setState({ status: "error", stores: [], where: label, error: "Couldn't reach the places service. Type a store or pick a mall instead.", help: null });
     }
   };
-  const useLocation = () => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) { setState({ status: "error", stores: [], error: "This browser can't share location. Pick a mall or type a store." }); return; }
-    setState({ status: "asking", stores: [], error: null });
-    navigator.geolocation.getCurrentPosition(
-      (pos) => look({ lat: pos.coords.latitude, lng: pos.coords.longitude }, null),
-      () => setState({ status: "error", stores: [], error: "Location is off. Pick a mall or type a store instead." }),
-      { enableHighAccuracy: false, maximumAge: 120000, timeout: 10000 },
-    );
+  /* v7 F1: one state per outcome, with how to fix it. */
+  const useLocation = async () => {
+    setState({ status: "asking", stores: [], where: null, error: null, help: null });
+    const r = await locate();
+    if (r.status === "success") return look(r.coords, null);
+    setState({ status: r.status, stores: [], where: null, error: null, help: LOCATE_HELP[r.status] || LOCATE_HELP.unavailable });
   };
   const recs = useMemo(() => {
     const seen = new Set();
@@ -194,14 +218,23 @@ function NearMode({ profile, offers, onOpenCard }) {
     }
     return out.sort((a, b) => (b.r.activateFirst.length ? 1 : 0) - (a.r.activateFirst.length ? 1 : 0) || (a.place.distance ?? 0) - (b.place.distance ?? 0));
   }, [state.stores, profile, offers]);
-  const places = PLACES.filter((p) => !placeQ || `${p.name} ${p.city}`.toLowerCase().includes(placeQ.toLowerCase()));
+  const places = metroPlaces.places.filter((p) => !placeQ || `${p.name} ${p.city}`.toLowerCase().includes(placeQ.toLowerCase()));
   return (
     <>
       <Reveal className="panel near-start">
-        <button className="btn btn-signal" onClick={useLocation} disabled={state.status === "asking" || state.status === "loading"}><MapPin size={18} aria-hidden="true" /> Use my location</button>
+        <button className="btn btn-signal" onClick={useLocation} disabled={state.status === "asking" || state.status === "loading"}><MapPin size={18} aria-hidden="true" /> {state.status === "asking" ? "Finding you…" : "Use my location"}</button>
         <p className="t-caption">We ask only when you tap. Your location stays in this tab and goes only to OpenStreetMap's public places service to find nearby stores — never to CardWise, and it isn't saved.</p>
       </Reveal>
+      {state.help && (
+        <div className="v7-hint near-help" role="alert" data-testid={`locate-${state.status}`}>
+          <p className="t-eyebrow v7-hint-label">Location</p>
+          <p>{state.help.title}</p>
+          <ol className="near-steps">{state.help.steps.map((t) => <li key={t} className="t-caption">{t}</li>)}</ol>
+          <button className="link" onClick={useLocation}>Try again</button>
+        </div>
+      )}
       <div className="near-places">
+        <p className="t-caption">{metroPlaces.curated ? "Malls and outlets around Atlanta" : metroPlaces.status === "loading" ? `Finding malls and outlets around ${metroPlaces.metro}…` : metroPlaces.status === "error" ? `Couldn't load places around ${metroPlaces.metro} — use your location or type a store.` : `Malls and outlets around ${metroPlaces.metro} (OpenStreetMap)`}</p>
         <label className="field"><Search size={16} aria-hidden="true" /><input aria-label="Find a mall or place" placeholder="Or pick a mall" value={placeQ} onChange={(e) => setPlaceQ(e.target.value)} /></label>
         <div className="chip-wrap">
           {places.map((p) => <Choice key={p.key} pill selected={state.where === p.name} onSelect={() => look({ lat: p.lat, lng: p.lng }, p.name)}>{p.name}</Choice>)}

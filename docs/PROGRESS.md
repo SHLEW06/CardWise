@@ -536,7 +536,8 @@ rendered-face setting for launch.
 | C. Optimizer additions | done |
 | D. Wallet Lab | done |
 | E. Flights & hotels | done (automatic portal prices + cabin markup on hold) |
-| F–G | in progress, in order |
+| F. Near me | done |
+| G. Small fixes | in progress |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -769,5 +770,24 @@ Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-
   price per portal can come from that data instead of "type it".
 - Tests: `v7PartE.test.jsx` (4) + Checkout test updated.
 
+## Part F — Near me (2026-11-20)
+
+- **F1 location:** `connector/locate.js` — `locate()` returns exactly one
+  of success / denied / unavailable / timeout / unsupported. Why it "didn't
+  work": every failure showed the same "Location is off", a remembered
+  Block failed instantly with no prompt, and a dismissed prompt could leave
+  the button disabled forever. Now the permission state is checked first,
+  each error code has its own message with steps (Chrome site settings;
+  macOS System Settings → Privacy & Security → Location Services → Chrome),
+  a guard timer ends a request that never calls back, and "Try again" is
+  there. A test per state (`v7PartF.test.jsx`).
+  *Reproduced in headless Chrome only* (no real Location Services here); the
+  macOS-specific path (code 2, "unavailable") is covered by the test and the
+  copy, not by a live run on the owner's Mac.
+- **F2 places:** `data/metros.js` maps every catalog airport to its city
+  (approx. city-centre point). Atlanta keeps the curated list; any other
+  home airport gets malls and outlets from OpenStreetMap within 40 km
+  (cached per session).
+
 ## Next (v7)
-Parts F → G in order, committing after each.
+Part G, then screenshots + the report.
