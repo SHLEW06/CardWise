@@ -1,41 +1,46 @@
 /* ============================================================================
-   App design tokens — v7 "Ink & Stone" (docs/REDESIGN_SPEC.md §9.11).
+   App design tokens — v7b "premium navy" (docs/REDESIGN_SPEC.md §9.12).
    ----------------------------------------------------------------------------
-   The v5 class names stay (`.v5`, --paper, --ink, --surface …) so every
-   screen moved over at once; the VALUES are v7:
-     --paper    deep ink navy page        --surface  flat panel (#0E1830)
-     --raised   inputs, hover, sheets     --hair     1px line (#1E2F50)
-     --ink      warm ivory text           --bronze   the one accent
-   Contrast (WCAG) on page / raised: --ink 16.5 / 13.5 · --ink-2 9.5 / 7.8 ·
-   --ink-3 6.7 / 5.5 · bronze 6.4 / 5.2. Old "--gold = value" now resolves
-   to ivory; bronze marks focus, the dial, progress and hints only.
+   Same identity as v7 (navy, ivory, one bronze accent, the focal card), but
+   the page is never one flat colour: a vertical navy-metallic gradient, a
+   soft light pool behind each heading, and a blurred, tinted image per tab
+   (<Backdrop>). Panels are translucent navy with a 20px blur and no borders —
+   separated by space and tone. Text never pure white, ground never black.
+   The v5 names stay (--paper, --ink, --surface …) so every screen moves.
+   Contrast (WCAG, `node scripts/contrast.mjs`), worst case over every
+   ground (gradient top/mid/bottom, light-pool peak), panel and chip:
+     --ink #ECE6DA ≥ 11.0 · --ink-2 #C2BDB2 ≥ 7.3 · --ink-3 #9C988F ≥ 4.8 ·
+     bronze #B8955E ≥ 4.8 (brightened from #B08D57 so labels clear 4.5 on
+     the light pool).
    ========================================================================== */
 
 .v5 {
-  /* ── Ground (v7 Ink & Stone, §9.11): solid surfaces, no glass ── */
-  --night:   #070B16;
-  --night-2: #0A1020;
-  --night-3: #13213A;
-  --paper:   var(--night);                 /* page background */
-  --paper-2: #0A1020;                      /* alternating band */
-  --surface: #0E1830;                      /* panel — flat fill */
-  --surface-solid: #0E1830;
-  --raised:  #13213A;                      /* inputs, hover rows, menus, sheets */
-  --glass-blur: none;                      /* v7: no glass anywhere */
+  /* ── Ground: navy-metallic gradient (see body/.backdrop) ── */
+  --night:   #0B1222;                      /* gradient end (bottom) */
+  --night-2: #101A30;                      /* gradient middle */
+  --night-3: #18243F;                      /* gradient start (top) */
+  --paper:   #101A30;                      /* solid fallback for sticky bars */
+  --paper-2: #0E172B;
+  --ground:  linear-gradient(180deg, #18243F 0%, #101A30 48%, #0B1222 100%);
+  --pool:    radial-gradient(60% 55% at 22% 14%, rgba(48, 66, 104, .30) 0%, rgba(48, 66, 104, 0) 70%);
+  --surface: rgba(22, 33, 58, .70);        /* panel #16213A @ 70% */
+  --surface-solid: #14203A;
+  --raised:  #1A2742;                      /* chips, inputs, menus */
+  --glass-blur: blur(20px);
 
   /* ── Text ── */
-  --ink:     #F1EBDD;                      /* warm ivory */
-  --ink-2:   #B9B4A8;
-  --ink-3:   #9A968C;
-  --hair:    #1E2F50;                      /* --line */
-  --hair-strong: #2C4170;
-  --navy:    #B08D57;                      /* focus ring = the bronze accent */
+  --ink:     #ECE6DA;                      /* headings */
+  --ink-2:   #C2BDB2;                      /* body */
+  --ink-3:   #9C988F;                      /* captions */
+  --hair:    rgba(194, 189, 178, .10);     /* list dividers only — panels have no borders */
+  --hair-strong: rgba(194, 189, 178, .22);
+  --navy:    #B8955E;                      /* focus ring = the bronze accent */
   --good:    #8FB59B;
   --warn:    #D59C86;
 
   /* ── Editorial paper band (unused in v7; kept for older markup) ── */
-  --ivory:     #F1EBDD;
-  --ivory-ink: #070B16;
+  --ivory:     #ECE6DA;
+  --ivory-ink: #0B1222;
   --ivory-gold: #6E5F35;
 
   /* ── Legacy names still read by older rules ── */
@@ -44,15 +49,15 @@
   --sand:      #B9B4A8;
 
   /* ── Values are ivory; bronze is the one accent, used sparingly ── */
-  --bronze:    #B08D57;
+  --bronze:    #B8955E;
   --gold:      var(--ink);                 /* old "gold = value" → ivory */
   --gold-deep: var(--ink);
   --gold-fill: none;
   --ivory-fill: none;
 
   /* Primary action: ivory pill on ink (was a signal orange). */
-  --signal:     #F1EBDD;
-  --signal-ink: #070B16;
+  --signal:     #ECE6DA;
+  --signal-ink: #0B1222;
 
   /* ── v7 names (§9.11), so the shared v7 components read the same tokens ── */
   --bg:          var(--night);
@@ -79,6 +84,7 @@
   --fs-h2: 1.5rem;                                     /* 24 */
   --fs-h3: 1.1875rem;
   --fs-body: 1.0625rem;                                /* 17 */
+  --measure: 70ch;                                     /* max line length */
   --fs-small: .9375rem;                                /* 15 */
   --fs-caption: .8125rem;                              /* 13 */
   --ls-display: -.015em;
@@ -87,7 +93,7 @@
   --u: 8px;
   --max: 1320px;                           /* desktop first: 1280–1600px */
   --gutter: clamp(20px, 4vw, 56px);
-  --section: clamp(56px, 4rem + 5vw, 144px);
+  --section: clamp(64px, 4rem + 4vw, 128px);          /* v7b: 96–128px on desktop */
   --r-panel: 4px;
   --r-control: 4px;
   --r-chip: 3px;
@@ -110,12 +116,12 @@
   color: var(--ink);
   font-family: var(--f-ui);
   font-size: var(--fs-body);
-  line-height: 1.55;
+  line-height: 1.6;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
-html, body { background: #070B16; }
+html, body { background: #101A30; }
 
 .v5 *, .v5 *::before, .v5 *::after { box-sizing: border-box; }
 .v5 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }

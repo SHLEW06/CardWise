@@ -1,5 +1,5 @@
 /* ============================================================================
-   /styletile — v7 "Ink & Stone" style tile (REDESIGN_SPEC §9.11). Dev only:
+   /styletile — v7b "premium navy" style tile (REDESIGN_SPEC §9.12; was v7 §9.11). Dev only:
    main.jsx mounts it only under `import.meta.env.DEV`, so it never ships.
    Review artifact — nothing here is wired into the app yet. Numbers on this
    page are sample values, not engine output.
@@ -13,6 +13,7 @@ import CardPhoto from "./CardPhoto.jsx";
 import { BY_ID } from "../../data/cards/index.js";
 import "../../styles/v7/tokens.css";
 import "../../styles/v7/components.css";
+import "../../styles/v7/v7b.css";
 import "../../styles/v7/styletile.css";
 
 /* WCAG contrast, so the ratios shown are computed, not typed. */
@@ -26,17 +27,19 @@ export const contrast = (a, b) => {
   return (x + 0.05) / (y + 0.05);
 };
 
+/* v7b (§9.12): the ground is a gradient; panels are #16213A at 70% (shown
+   here as composited over the middle of the gradient). */
 const GROUND = [
-  { name: "Ink", token: "--bg", hex: "#070B16", role: "Page background" },
-  { name: "Surface", token: "--surface", hex: "#0E1830", role: "Panels" },
-  { name: "Raised", token: "--raised", hex: "#13213A", role: "Inputs, hover rows, menus" },
-  { name: "Line", token: "--line", hex: "#1E2F50", role: "1px borders, dividers" },
+  { name: "Ground, top", token: "--ground", hex: "#18243F", role: "Gradient start, behind headings" },
+  { name: "Ground, middle", token: "--ground", hex: "#101A30", role: "Most of the page" },
+  { name: "Panel", token: "--surface", hex: "#141F37", role: "#16213A at 70%, blur 20px, no border" },
+  { name: "Chip / input", token: "--raised", hex: "#1A2742", role: "Filled, borderless" },
 ];
 const INKS = [
-  { name: "Ivory", token: "--text", hex: "#F1EBDD", role: "Primary text" },
-  { name: "Ivory 2", token: "--text-2", hex: "#B9B4A8", role: "Secondary text" },
-  { name: "Ivory 3", token: "--text-3", hex: "#9A968C", role: "Captions, labels" },
-  { name: "Bronze", token: "--bronze", hex: "#B08D57", role: "The one accent: dial, focus, hints" },
+  { name: "Headings", token: "--text", hex: "#ECE6DA", role: "Headings" },
+  { name: "Body", token: "--text-2", hex: "#C2BDB2", role: "Body text" },
+  { name: "Captions", token: "--text-3", hex: "#9C988F", role: "Captions, labels" },
+  { name: "Bronze", token: "--bronze", hex: "#B8955E", role: "The one accent: dial, focus, hints" },
   { name: "Good", token: "--good", hex: "#8FB59B", role: "Better (muted)" },
   { name: "Worse", token: "--bad", hex: "#D59C86", role: "Worse (muted)" },
 ];
@@ -123,14 +126,14 @@ export default function StyleTile() {
     <main className="ink-stone st">
       <div className="st-top">
         <p className="is-label">CardWise · style tile · dev only</p>
-        <p className="is-label">v7 · Ink &amp; Stone · 2026-11-20</p>
+        <p className="is-label">v7b · Premium navy · 2026-11-20</p>
       </div>
 
       <Section n={1} id="hero" title="Home, composed" note="One idea, one big serif line, calm UI around it. The focal image is the only texture on the page.">
         <Hero />
       </Section>
 
-      <Section n={2} id="palette" title="Palette" note="Deep ink navy, lighter blue surfaces you can see, warm ivory text, one bronze accent used sparingly. Ratios are computed (WCAG).">
+      <Section n={2} id="palette" title="Palette" note="A navy-metallic gradient with a soft light pool behind headings, translucent panels with no borders, warm ivory text, one bronze accent. Ratios are computed on the actual surfaces (WCAG).">
         <div className="st-ground">
           {GROUND.map((g) => (
             <div key={g.hex} className="st-ground-swatch" style={{ background: g.hex }}>
@@ -138,7 +141,7 @@ export default function StyleTile() {
               <p className="st-hex num-ui">{g.hex}</p>
               <p className="is-caption">{g.role}</p>
               {g.token !== "--line" && (
-                <p className="is-caption st-ratios num-ui">Ivory {fmtRatio(contrast("#F1EBDD", g.hex))} · Ivory 2 {fmtRatio(contrast("#B9B4A8", g.hex))} · Ivory 3 {fmtRatio(contrast("#9A968C", g.hex))}</p>
+                <p className="is-caption st-ratios num-ui">Headings {fmtRatio(contrast("#ECE6DA", g.hex))} · Body {fmtRatio(contrast("#C2BDB2", g.hex))} · Captions {fmtRatio(contrast("#9C988F", g.hex))}</p>
               )}
             </div>
           ))}
@@ -151,7 +154,7 @@ export default function StyleTile() {
                 <p className="is-body" style={{ color: c.hex }}>{c.name}</p>
                 <p className="is-caption num-ui">{c.hex} · {c.role}</p>
               </div>
-              <p className="is-caption st-ink-ratio num-ui">{fmtRatio(contrast(c.hex, "#070B16"))} on ink<br />{fmtRatio(contrast(c.hex, "#13213A"))} on raised</p>
+              <p className="is-caption st-ink-ratio num-ui">{fmtRatio(contrast(c.hex, "#101A30"))} on the page<br />{fmtRatio(contrast(c.hex, "#1A2742"))} on a chip</p>
             </div>
           ))}
         </div>
@@ -204,7 +207,7 @@ export default function StyleTile() {
             <ul className="st-rules">
               <li>Tightly cropped navy card, bronze metal edge, on warm stone.</li>
               <li>Diagonal window light with soft mullion shadows; light from the upper right.</li>
-              <li>No glows, lattices, sheen or blur on panels. Panels are flat fills with a 1px line.</li>
+              <li>No glows, lattices or sheen. Panels are translucent navy (blur 20px) with no borders, separated by space and tone.</li>
               <li>Corners 0–4px. Only primary buttons are pills.</li>
               <li>Brief for the photo or render: docs/BACKGROUNDS.md → “focal-home”.</li>
             </ul>
@@ -221,7 +224,7 @@ export default function StyleTile() {
         </div>
       </Section>
 
-      <Section n={6} id="components" title="Components" note="Calm, flat, legible. Selected is ivory; bronze marks focus, the dial and hints.">
+      <Section n={6} id="components" title="Components" note="Borderless and filled. Selected is ivory; bronze marks focus, the dial and hints.">
         <div className="st-comp-grid">
           <div className="v7-panel st-comp-routes">
             <div className="v7-panel-head">
@@ -287,7 +290,7 @@ export default function StyleTile() {
               <Dial score={82} size={148} caption="Wallet Score" />
               <div>
                 <p className="is-label">Score dial</p>
-                <p className="is-small">Hairline ring, thin bronze arc, the number in Boska.</p>
+                <p className="is-small">Hairline ring, thin bronze arc; the number in Switzer (Boska is only for 48px and up).</p>
               </div>
             </div>
           </div>

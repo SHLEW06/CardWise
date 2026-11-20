@@ -18,18 +18,25 @@ beforeEach(() => localStorage.clear());
 
 const css = (f) => readFileSync(resolve(process.cwd(), "src/styles", f), "utf8");
 
-describe("design tokens (v7 Ink & Stone, §9.11)", () => {
-  it("ink navy page, flat surfaces, warm ivory text, one bronze accent, no glass", () => {
+describe("design tokens (v7b premium navy, §9.12)", () => {
+  it("navy-metallic gradient ground, translucent panels, v7b text colours, one bronze accent", () => {
     const t = css("v5/tokens.css");
-    expect(t).toMatch(/--night:\s*#070B16/);
-    expect(t).toMatch(/--surface:\s*#0E1830/);
-    expect(t).toMatch(/--raised:\s*#13213A/);
-    expect(t).toMatch(/--hair:\s*#1E2F50/);
-    expect(t).toMatch(/--ink:\s*#F1EBDD/);
-    expect(t).toMatch(/--ink-2:\s*#B9B4A8/);
-    expect(t).toMatch(/--bronze:\s*#B08D57/);
-    expect(t).toMatch(/--glass-blur:\s*none/);
+    expect(t).toMatch(/--ground:\s*linear-gradient\(180deg, #18243F 0%, #101A30 48%, #0B1222 100%\)/);
+    expect(t).toMatch(/--pool:\s*radial-gradient/);
+    expect(t).toMatch(/--surface:\s*rgba\(22, 33, 58, \.70\)/);
+    expect(t).toMatch(/--raised:\s*#1A2742/);
+    expect(t).toMatch(/--glass-blur:\s*blur\(20px\)/);
+    expect(t).toMatch(/--ink:\s*#ECE6DA/);
+    expect(t).toMatch(/--ink-2:\s*#C2BDB2/);
+    expect(t).toMatch(/--ink-3:\s*#9C988F/);
+    expect(t).toMatch(/--bronze:\s*#B8955E/);
     expect(t).toMatch(/--gold:\s*var\(--ink\)/);
+    /* no pure black or white as a colour token */
+    expect(t).not.toMatch(/#000000|#FFFFFF\b|#000\b|#fff\b/i);
+  });
+  it("every text / surface pair is ≥ 4.5:1 (scripts/contrast.mjs)", async () => {
+    const { report } = await import("../../scripts/contrast.mjs");
+    for (const r of report()) expect(r.ratio, `${r.text} on ${r.surface}`).toBeGreaterThanOrEqual(4.5);
   });
   it("no left-border accent bars anywhere in the app's styles", () => {
     for (const f of ["v5/primitives.css", "v5/survey.css", "v5/screens.css", "v5/shell.css", "v6/screens.css", "v6/lab.css", "v6/explore.css", "v6/checkout.css", "v6/offers.css", "v6/home.css", "v7/components.css", "v7/app.css"]) {
@@ -64,16 +71,21 @@ describe("design tokens (v7 Ink & Stone, §9.11)", () => {
 });
 
 describe("<Backdrop>", () => {
-  it("v7: the seven slots draw only a flat ground — no horizon, glow, bokeh or grain", () => {
-    expect(BACKDROP_SLOTS).toEqual(["home", "checkout", "offers", "lab", "explore", "survey", "card"]);
+  it("v7b: every tab gets ground gradient + its own blurred, tinted image (or stand-in) + light pool + grain", () => {
+    expect(BACKDROP_SLOTS).toEqual(["home", "checkout", "offers", "lab", "explore", "survey", "card", "profile"]);
     for (const slot of BACKDROP_SLOTS) {
       const { container, unmount } = render(<Backdrop slot={slot} card="csr" />);
       const bd = container.querySelector(".backdrop");
       expect(bd.dataset.slot).toBe(slot);
-      expect(bd.children, slot).toHaveLength(0);
+      for (const layer of ["bd-ground", "bd-image", "bd-tint", "bd-pool", "bd-grain"]) expect(bd.querySelector(`.${layer}`), `${slot} ${layer}`).toBeTruthy();
+      expect(bd.querySelector(".bd-image svg, .bd-image img"), slot).toBeTruthy();
       unmount();
     }
-    expect(css("v6/backdrop.css").replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(/gradient|blur|bokeh|grain/);
+    const b = css("v6/backdrop.css");
+    expect(b).toMatch(/\.bd-image \{[^}]*filter: blur\(32px\)/);
+    expect(b).toMatch(/mask-image: radial-gradient/);            // faded into the ground at its edges
+    expect(b).toMatch(/\.bd-tint \{ background: linear-gradient\(180deg, rgba\(11, 18, 34, \.74\)/);
+    expect(b).toMatch(/\.bd-grain \{\s*opacity: \.025/);
   });
 });
 

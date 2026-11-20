@@ -2,6 +2,7 @@
    currency, the major transfer partners with ratio and value; the person
    toggles the ones they'd use. Value = mean of the picks, never below cash.
    Used in Profile → Point values and survey step 7. */
+import ChipList from "../v7/ChipList.jsx";
 import React from "react";
 import Choice from "../v5/Choice.jsx";
 import { PROGRAMS, TRANSFER_RULES } from "../../data/programs.js";
@@ -52,13 +53,12 @@ export default function PartnerPicker({ profile, currencies, onChange }) {
               <span className="t-value partner-value">≈ {cents(v.cpp)} a point{v.upTo ? `, up to ${cents(v.upTo)}` : ""}</span>
             </header>
             {!v.unlocked && TRANSFER_RULES[cur]?.note && <p className="t-caption">{TRANSFER_RULES[cur].note}</p>}
-            <div className="chip-wrap" role="group" aria-label={`${NAMES[cur]} partners you'd use`}>
-              {reach.map((p) => (
+            <ChipList options={reach} label={`${NAMES[cur]} partners you'd use`} isPicked={(p) => picks.includes(p.key)}
+              render={(p) => (
                 <Choice key={p.key} pill selected={picks.includes(p.key)} onSelect={() => toggle(cur, p.key)}>
                   {partnerShortName(p.key)} · ≈ {cents(p.effectiveCpp)} a {ONE[cur] || "point"}
                 </Choice>
-              ))}
-            </div>
+              )} />
             {reach.filter((p) => picks.includes(p.key)).map((p) => ratioSentence(cur, p)).filter(Boolean).map((t) => <p key={t} className="t-caption partner-ratio">{t}</p>)}
           </section>
         );

@@ -1,5 +1,6 @@
 /* ============================================================================
-   v7 "Ink & Stone" tokens — docs/REDESIGN_SPEC.md §9.11.
+   v7b "premium navy" tokens for the style tile — REDESIGN_SPEC §9.12
+   (was v7 "Ink & Stone", §9.11). Contrast: `node scripts/contrast.mjs`.
    ----------------------------------------------------------------------------
    Scoped to .ink-stone so nothing in the running app changes until the
    restyle is approved; the /styletile route is the only reader today.
@@ -17,19 +18,21 @@
 
 .ink-stone {
   /* ── Ground + surfaces ── */
-  --bg:       #070B16;     /* deep ink navy page */
-  --surface:  #0E1830;     /* panels */
-  --raised:   #13213A;     /* rows on hover, inputs, menus, selected tiles */
-  --line:     #1E2F50;     /* 1px borders and dividers */
-  --line-strong: #2C4170;  /* hover border, focus companion */
+  --bg:       #101A30;     /* v7b: middle of the navy-metallic gradient */
+  --ground:   linear-gradient(180deg, #18243F 0%, #101A30 48%, #0B1222 100%);
+  --pool:     radial-gradient(60% 55% at 22% 14%, rgba(48, 66, 104, .30) 0%, rgba(48, 66, 104, 0) 70%);
+  --surface:  rgba(22, 33, 58, .70);   /* panels: #16213A @ 70%, blur 20px, no border */
+  --raised:   #1A2742;     /* chips, inputs, menus */
+  --line:     rgba(194, 189, 178, .10);   /* list dividers only */
+  --line-strong: rgba(194, 189, 178, .22);
 
   /* ── Text ── */
-  --text:   #F1EBDD;       /* warm ivory */
-  --text-2: #B9B4A8;
-  --text-3: #9A968C;
+  --text:   #ECE6DA;       /* headings */
+  --text-2: #C2BDB2;       /* body */
+  --text-3: #9C988F;       /* captions */
 
   /* ── The one accent ── */
-  --bronze:      #B08D57;
+  --bronze:      #B8955E;
   --bronze-soft: rgba(176, 141, 87, .16);
 
   /* ── State (muted, desaturated) ── */
@@ -68,11 +71,11 @@
   --t-3: 400ms;
 
   color-scheme: dark;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--ground);
+  color: var(--text-2);
   font-family: var(--f-ui);
   font-size: var(--fs-body);
-  line-height: 1.55;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   font-synthesis: none;
 }
@@ -91,6 +94,9 @@
 .ink-stone .is-d1 { font-size: var(--fs-d1); }
 .ink-stone .is-d2 { font-size: var(--fs-d2); line-height: 1.06; }
 .ink-stone .is-h1 { font-size: var(--fs-h1); font-weight: 400; line-height: 1.15; }
+/* v7b: Boska only at 48px and above — section and step headings are Switzer Medium. */
+.ink-stone .is-d2, .ink-stone .is-h1 { font-family: var(--f-ui); font-weight: 500; letter-spacing: -.01em; line-height: 1.2; }
+.ink-stone .is-d2 { font-size: clamp(1.75rem, 1.2rem + 1.2vw, 2.375rem); }
 .ink-stone .is-h2 { font-family: var(--f-ui); font-weight: 500; font-size: var(--fs-h2); line-height: 1.25; letter-spacing: -.01em; margin: 0; }
 .ink-stone .is-lead { font-size: 1.1875rem; line-height: 1.5; color: var(--text-2); margin: 0; max-width: 34em; }
 .ink-stone .is-body { font-size: var(--fs-body); color: var(--text); margin: 0; }

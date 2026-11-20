@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
+import ChipList from "../../v7/ChipList.jsx";
 import { ArrowLeft, ArrowRight, Search, X, ChevronDown } from "lucide-react";
 import CardFace from "../CardFace.jsx";
 import Choice from "../Choice.jsx";
@@ -324,14 +325,14 @@ export function searchAirports(q) {
   return AIRPORT_LIST.filter((ap) => ap.code.toLowerCase().startsWith(s) || norm(`${ap.city} ${ap.name}`).includes(s)).slice(0, 6);
 }
 
-function ToggleChips({ options, picked, onChange, label }) {
+function ToggleChips({ options, picked, onChange, label, limit }) {
+  /* v7b: about 6 per group, plus "Show all (N)"; picked chips stay visible. */
   return (
-    <div className="chip-wrap" role="group" aria-label={label}>
-      {options.map((o) => {
+    <ChipList options={options} label={label} limit={limit} isPicked={(o) => picked.includes(o.key)}
+      render={(o) => {
         const on = picked.includes(o.key);
         return <Choice key={o.key} pill selected={on} onSelect={() => onChange(on ? picked.filter((k) => k !== o.key) : [...picked, o.key])}>{o.label}</Choice>;
-      })}
-    </div>
+      }} />
   );
 }
 
@@ -434,7 +435,7 @@ function TravelStep({ d, set, mode, headRef }) {
       </fieldset>
       <fieldset className="survey-group">
         <legend className="t-h3">Hotel brands</legend>
-        <ToggleChips options={HOTEL_BRANDS} picked={d.brands.hotels} onChange={(hotels) => set({ brands: { ...d.brands, hotels } })} label="Hotel brands" />
+        <ToggleChips options={HOTEL_BRANDS} picked={d.brands.hotels} onChange={(hotels) => set({ brands: { ...d.brands, hotels } })} label="Hotel brands" limit={HOTEL_BRANDS.length} />
         <p className="t-caption">"Independent / whatever's cheapest" means no hotel loyalty: we pick the best value per stay.</p>
       </fieldset>
       <StrategyHelper d={d} set={set} open={d.brands.hotels.includes("unsure")} />

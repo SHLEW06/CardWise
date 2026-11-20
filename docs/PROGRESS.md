@@ -873,3 +873,34 @@ Flights & hotels ranker already takes typed portal prices per portal.
 **Unverified:** see Part A / B / F lists above (Amex pages, Venture X
 travel credit, Altitude Connect visit count, base-earn rates, Cash+ choice
 categories, macOS location on a real Mac).
+
+
+---
+
+# v7b — consolidated change requests
+
+Brief: `docs/CLAUDE_CODE_V7B_CHANGES.md`, then
+`docs/CLAUDE_CODE_V7_ACCEPTANCE.md`. Owner's instruction (2026-11-20): keep
+decision questions to the end; run on localhost, don't deploy. The brief
+asked to wait for an OK on /styletile before restyling the app; per the
+owner's later instruction the tile and the app were done together and the
+tile screenshots are in `screenshots/v7b/` for the end review.
+
+| Part | State |
+|---|---|
+| 1. Look and feel | done |
+| 2–6, golden | in progress |
+
+## Part 1 — premium navy (2026-11-20)
+
+- Spec §9.12. Tokens (`styles/v5/tokens.css`, tile `styles/v7/tokens.css`):
+  gradient ground, light pool, translucent borderless panels, v7b text
+  colours, bronze #B8955E. `scripts/contrast.mjs` measures every text /
+  surface pair (min 4.8:1); a test runs it.
+- `<Backdrop>`: ground + blurred tinted image or procedural stand-in per tab
+  + pool + 2.5% grain; image prompts in BACKGROUNDS.md ("v7b backgrounds").
+- `styles/v7/v7b.css`: Boska only ≥ 48px, Switzer Medium headings,
+  borderless filled 40px chips, ivory selected, sections 64–112px apart.
+- `<ChipList>`: about 6 per group + "Show all (N)" (survey chip groups,
+  partner picker; hotels show all so "Not sure" is always visible).
+- Screenshots: `screenshots/v7b/styletile-{1280,1440,1600}.png`.

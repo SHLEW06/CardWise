@@ -6,7 +6,10 @@
 
 /* ── Style tile layout ──────────────────────────────────────────────────── */
 
-.ink-stone.st { min-height: 100vh; padding: 0 var(--gutter) 96px; }
+.ink-stone.st { min-height: 100vh; padding: 0 var(--gutter) 96px; background: var(--pool), var(--ground); background-attachment: fixed; }
+/* v7b: borderless swatches, separated by tone. */
+.st-ground { border: 0 !important; gap: 2px; }
+.st-ground-swatch { border-left: 0 !important; }
 .st > * { max-width: var(--max); margin-left: auto; margin-right: auto; }
 .st-top { display: flex; justify-content: space-between; padding: 22px 0; border-bottom: 1px solid var(--line); }
 

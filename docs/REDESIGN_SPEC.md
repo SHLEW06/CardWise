@@ -495,6 +495,48 @@ portal pricing and the cabin markup are on hold (the portal calculator keeps
 prices the person types; portal earning lanes stay off unless data is
 entered).
 
+### 9.12 Direction v7b: "premium navy" (2026-11-20, owner's v7b brief; overrides §9.11)
+
+Same identity as v7 — navy, ivory, one bronze accent, the focal card — but
+dark and easy to read through light, imagery and space rather than contrast
+(references: TradingView home, Robinhood Banking, Awwwards luxury).
+
+**Ground — never one flat colour.** A vertical navy-metallic gradient
+`#18243F → #101A30 → #0B1222` (`--ground`), one large soft light pool behind
+each page's heading (`--pool`, radial, rgba(48,66,104,.30)), and each tab's
+own image layer (`<Backdrop slot>`): a photo or render blurred 32px, tinted
+navy-black 74–90% top to bottom, faded into the ground at its edges, plus
+2.5% grain. Until real images exist, procedural stand-ins of the same scene
+(home: the focal card on stone · checkout: a city street at night · offers:
+storefronts · lab: a desk with cards · explore: a lit display shelf · card:
+the card itself). Prompts: `docs/BACKGROUNDS.md` → "v7b backgrounds". No
+glows, lattices or sheen on panels.
+
+**Surfaces.** Panels `#16213A` at 70% over the backdrop with `blur(20px)`,
+**no borders** — separated by space and tone. Chips and inputs filled
+`#1A2742`, borderless.
+
+**Text** (measured with `scripts/contrast.mjs`, worst case over every
+ground, panel and chip): headings `#ECE6DA` ≥ 11.0:1, body `#C2BDB2` ≥ 7.3,
+captions `#9C988F` ≥ 4.8, bronze `#B8955E` ≥ 4.8 (brightened from `#B08D57`
+so bronze labels clear 4.5 on the light pool). Body 17px, line-height 1.6,
+paragraphs ≤ 70 characters. No pure white, no pure black.
+
+**Type.** Boska only at 48px and above (page titles, hero numbers). Every
+other heading — step, section, card name, wordmark, dial number — Switzer
+Medium, sentence case, −0.01em. Labels Archivo Expanded 11px. Numbers in
+tables Switzer tabular.
+
+**Chips and pills.** Borderless, filled `#1A2742`, 40px tall; selected =
+ivory fill with dark text and a check. Long lists show about 6 per group
+plus "Show all (N)" (`<ChipList>`); picked chips stay visible.
+
+**Hints.** No left-border accent bars anywhere: bronze label, sentence,
+"Show the math".
+
+**Layout.** Sections 96–128px apart on desktop, one idea per section, a
+clear reading order down the page.
+
 ### 9.7 Anti-AI checklist (review every screen against it)
 
 No emoji · no sparkle icons · no gradient text or backgrounds · no glow ·

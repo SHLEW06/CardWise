@@ -1,0 +1,96 @@
+/* ============================================================================
+   v7b "premium navy" (REDESIGN_SPEC §9.12) — loaded last.
+   · panels: translucent navy (#16213A @ 70%, blur 20px), no borders —
+     separated by space and tone
+   · text: headings #ECE6DA, body #C2BDB2, captions #9C988F; 17px / 1.6;
+     paragraphs ≤ 70 characters
+   · type: Boska only at 48px+ (page titles, hero numbers); every other
+     heading Switzer Medium, sentence case, −0.01em; labels Archivo 11px;
+     table numbers Switzer tabular
+   · chips: borderless, filled #1A2742, 40px; selected = ivory + dark text
+   · sections 96–128px apart; one idea per section
+   ========================================================================== */
+
+/* ── Ground + text colours ── */
+/* The legacy body rule paints the old --bg (near-black): pin the page to
+   navy, and give the shell the gradient itself so nothing below the fold
+   ever falls back to a flat or black ground. */
+html, body { background: #0B1222 !important; }
+.v5 { color: var(--ink-2); background: var(--ground); }
+.v5.shell { min-height: 100vh; background: var(--ground); background-attachment: fixed; }
+.v5.detail { background: transparent; }
+.v5 h1, .v5 h2, .v5 h3, .v5 h4, .v5 strong, .v5 th, .v5 button, .v5 summary,
+.v5 .t-value, .v5 .slot-name, .v5 .alt-name, .v5 .verdict-name, .v5 .timeline-name, .v5 .plan-name,
+.v5 .saved-name, .v5 .near-name, .v5 .offer-merchant, .v5 .tile-name, .v5 .benefit-name, .v5 .spend-label,
+.v5 .money-label, .v5 .strategy-name, .v5 .face-tile-name, .v5 .survey-card-name, .v5 .reveal-card-name { color: var(--ink); }
+.v5 .page p, .v5 .survey p, .v5 .detail-inner p, .v5 .t-lead { max-width: var(--measure); }
+.v5 .t-caption, .v5 .money-hint { color: var(--ink-3); }
+
+/* ── Type roles ── */
+.v5 .t-hero { font-family: var(--f-display); font-weight: 300; font-size: var(--fs-hero); }          /* 48 → 116 */
+.v5 .t-d1 { font-family: var(--f-display); font-weight: 300; font-size: clamp(3rem, 1rem + 3.6vw, 4.75rem); } /* ≥ 48 */
+.v5 .t-big { font-family: var(--f-display); font-size: clamp(3rem, 2rem + 2.4vw, 4.25rem); }       /* ≥ 48 */
+.v5 .t-d2, .v5 .t-h1 {
+  font-family: var(--f-ui); font-weight: 500; letter-spacing: -.01em; line-height: 1.2; text-transform: none;
+}
+.v5 .t-d2 { font-size: clamp(2rem, 1.4rem + 1.4vw, 2.625rem); }
+.v5 .t-h1 { font-size: clamp(1.625rem, 1.2rem + 1vw, 2.125rem); }
+.v5 .t-h2 { font-family: var(--f-ui); font-weight: 500; font-size: 1.375rem; letter-spacing: -.01em; }
+.v5 .t-h3 { font-family: var(--f-ui); font-weight: 500; font-size: 1.125rem; letter-spacing: -.01em; }
+.v5 .partner-name, .v5 .points-name, .v5 .portal-line { font-family: var(--f-ui); font-weight: 500; letter-spacing: -.01em; font-size: 1.25rem; }
+.v5 .shell-wordmark { font-family: var(--f-ui); font-weight: 500; font-size: 1.25rem; letter-spacing: -.01em; }
+/* Dial numbers are under 48px: Switzer tabular, not Boska. */
+:is(.v5, .ink-stone) .v7-dial-num, .v5 .dial-num { font-family: var(--f-ui); font-weight: 500; font-variant-numeric: tabular-nums lining-nums; letter-spacing: -.02em; }
+.v5 .t-eyebrow, .v5 .slot-label, .v5 .is-label { font-size: 11px; }
+.v5 table, .v5 .num-ui, .v5 .t-num { font-variant-numeric: tabular-nums; }
+
+/* ── Surfaces: translucent navy, no borders ── */
+.v5 .panel, .v5 .glass, .v5 .tile, .v5 .slot, .v5 .rank-row, .v5 .survey-tray, .v5 .lab-rest-item, .v5 .fold,
+.v5 .helper, .v5 .compare-two > div, .v5 .near-help, .v5 .home-link, .v5 .sample, .v5 .v7-panel, .v5 .sheet {
+  background: var(--surface); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 0; box-shadow: none;
+}
+.v5 .strategy { background: rgba(26, 39, 66, .6); border: 0; }
+.v5 .strategy.is-on { box-shadow: inset 0 0 0 2px var(--ink); }
+.v5 .slot:hover, .v5 .home-link:hover, .v5 .tile:hover { background: rgba(28, 41, 70, .78); border: 0; }
+.v5 .next-move { border: 0; }
+.v5 .sheet-wrap { background: rgba(8, 13, 26, .6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.v5 .sheet { background: rgba(20, 31, 55, .94); }
+.v5 .toast { border: 0; background: rgba(26, 39, 66, .95); }
+.v5.detail { background: var(--ground); }
+
+/* Sticky bars: translucent over the backdrop. */
+.v5 .shell-top, .v5 .survey-top { background: rgba(16, 26, 48, .72); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 0; }
+.v5 .survey-foot { background: rgba(16, 26, 48, .86); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-top: 0; }
+.v5 .shell-foot { background: transparent; border-top: 0; }
+.v5 .slot-index { background: rgba(16, 26, 48, .8); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-bottom: 0; }
+@media (max-width: 900px) { .v5 .shell-tabs { background: rgba(16, 26, 48, .86); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-top: 0; } }
+
+/* ── Chips, pills, choices, inputs: borderless and filled ── */
+.v5 .choice, .v5 .choice-pill, .v5 .tray-chip, .v5 .segmented, .v5 .slot-chip, .v5 .unit-seg, .v5 .v7-chip, .v5 .v7-seg {
+  background: var(--raised); box-shadow: none; border: 0; color: var(--ink);
+}
+.v5 .choice-pill, .v5 .v7-chip { min-height: 40px; height: 40px; padding: 0 16px; }
+.v5 .choice:hover, .v5 .slot-chip:hover { background: #223150; box-shadow: none; }
+.v5 .choice[aria-pressed="true"], .v5 .choice[aria-checked="true"], .v5 .tray-chip, .v5 .v7-chip.is-on {
+  background: var(--ink); color: var(--night); box-shadow: none;
+}
+.v5 .segmented { padding: 3px; }
+.v5 .segmented-item[aria-selected="true"], .v5 .unit-seg button[aria-checked="true"] { background: var(--ink); color: var(--night); }
+.v5 .tag, .v5 .tag-good, .v5 .tag-warn, .v5 .tag-gold { box-shadow: none; background: rgba(26, 39, 66, .9); }
+.v5 .tile-fit { box-shadow: none; }
+.v5 .field, .v5 .survey-search, .v5 .money-field, .v5 .v7-input { background: var(--raised); box-shadow: none; border: 0; }
+.v5 .field:focus-within, .v5 .survey-search:focus-within, .v5 .money-field:focus-within { box-shadow: 0 0 0 2px var(--bronze); }
+.v5 .btn-quiet { background: var(--raised); box-shadow: none; }
+.v5 .btn-quiet:hover { background: #223150; box-shadow: none; }
+.v5 .slot-empty { border: 0; background: rgba(26, 39, 66, .5); }
+.v5 .show-all { min-height: 40px; padding: 0 12px; border-radius: var(--r-chip); color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--hair-strong); text-underline-offset: 4px; }
+.v5 .show-all:hover { color: var(--ink); text-decoration-color: var(--bronze); }
+
+/* ── Rhythm: sections 96–128px apart ── */
+.v5 .home-below { gap: clamp(64px, 7vw, 112px); }
+.v5 .lab { gap: clamp(48px, 6vw, 96px); }
+.v5 .profile, .v5 .you { gap: clamp(48px, 6vw, 96px); }
+.v5 .survey-step { gap: 40px; }
+.v5 .perk-section { padding-top: 40px; border-top: 0; }
+.v5 .partner-block { border-top: 0; padding-top: 28px; }

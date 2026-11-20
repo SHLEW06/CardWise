@@ -144,3 +144,31 @@ hero**, the only texture on the page. `<FocalImage slot="…">` loads
   shadows; the rest of the stone is in warm shade. Soft cast shadow, fine
   stone texture, shallow depth of field, natural film grain, quiet luxury
   editorial mood, 4:5, photorealistic."*
+
+
+---
+
+## v7b backgrounds (2026-11-20) — supersede the v6 scenes above
+
+Each image sits behind its tab blurred ~32px and tinted navy-black 74–90%
+(`Backdrop.jsx`), so it reads as atmosphere, not content. Drop finished files
+at `public/backgrounds/<slot>.(avif|webp|jpg|png)` (gitignored), then run
+`npm run art`. Wide 16:9, 2400px+, no text, no logos, no people's faces, no
+real card brands. Keep the darkest third at the bottom.
+
+- **home** — The focal card on stone: a tightly cropped navy card with a
+  bronze metal edge lying on warm limestone, diagonal window light from the
+  upper right with soft mullion shadows. Shallow depth of field.
+- **checkout** — A city street at night after rain: shop windows glowing warm
+  amber, a few cool blue signs, wet pavement reflections, shot low and wide,
+  everything soft and out of focus.
+- **offers** — A row of small storefronts at dusk: warm lit windows, awnings,
+  a little colour from goods inside, no readable signage.
+- **lab** — A dark walnut desk seen from above at an angle: four or five
+  plain metal and plastic cards (navy, gold, silver, black — no logos), a pen,
+  a notebook edge, one warm lamp pool in the top right.
+- **explore** — A lit display shelf: three thin shelves with warm LED strips,
+  cards standing in a row like a gallery, deep navy wall behind.
+- **survey / profile** — use the home image.
+- **card** (card detail) — no image: the card's own photo is blurred behind
+  it.

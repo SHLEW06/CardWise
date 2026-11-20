@@ -6,7 +6,7 @@
 
 /* ── Components ─────────────────────────────────────────────────────────── */
 
-:is(.ink-stone, .v5) .v7-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+:is(.ink-stone, .v5) .v7-panel { background: var(--surface); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 0; border-radius: var(--r); }
 :is(.ink-stone, .v5) .v7-panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 22px 24px 14px; }
 
 /* Buttons: primary is the only pill, ivory on ink. */
@@ -19,7 +19,7 @@
 :is(.ink-stone, .v5) .v7-btn-primary:active { transform: scale(.98); }
 :is(.ink-stone, .v5) .v7-btn-secondary {
   display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--r);
-  border: 1px solid var(--line-strong); color: var(--text); font-weight: 500; font-size: .9375rem;
+  border: 0; background: var(--raised); color: var(--text); font-weight: 500; font-size: .9375rem;
   transition: border-color var(--t-1) var(--ease-std), background var(--t-1) var(--ease-std);
 }
 :is(.ink-stone, .v5) .v7-btn-secondary:hover { border-color: var(--text-3); background: var(--raised); }
@@ -47,11 +47,11 @@
 /* Chips: selected = ivory fill + check (one rule for every choice control). */
 :is(.ink-stone, .v5) .v7-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 :is(.ink-stone, .v5) .v7-chip {
-  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: var(--r);
-  border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); font-size: .9375rem;
+  display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px; border-radius: var(--r);
+  border: 0; background: var(--raised); color: var(--text); font-size: .9375rem;
   transition: background var(--t-1) var(--ease-std), border-color var(--t-1) var(--ease-std), color var(--t-1) var(--ease-std);
 }
-:is(.ink-stone, .v5) .v7-chip:hover { border-color: var(--text-3); }
+:is(.ink-stone, .v5) .v7-chip:hover { background: #223150; }
 :is(.ink-stone, .v5) .v7-chip.is-on { background: var(--text); border-color: var(--text); color: var(--bg); font-weight: 500; }
 
 /* Input + Monthly / Yearly segmented toggle. */
@@ -59,15 +59,15 @@
 :is(.ink-stone, .v5) .v7-field-row { display: flex; gap: 10px; flex-wrap: wrap; }
 :is(.ink-stone, .v5) .v7-input {
   display: inline-flex; align-items: center; gap: 6px; height: 46px; padding: 0 14px; min-width: 160px; flex: 1;
-  background: var(--raised); border: 1px solid var(--line-strong); border-radius: var(--r); color: var(--text-2);
+  background: var(--raised); border: 0; border-radius: var(--r); color: var(--text-2);
   transition: border-color var(--t-1) var(--ease-std);
 }
-:is(.ink-stone, .v5) .v7-input:focus-within { border-color: var(--bronze); }
+:is(.ink-stone, .v5) .v7-input:focus-within { box-shadow: 0 0 0 2px var(--bronze); }
 :is(.ink-stone, .v5) .v7-input input {
   all: unset; flex: 1; min-width: 0; color: var(--text); font-family: var(--f-ui); font-size: 1.0625rem;
   font-variant-numeric: tabular-nums;
 }
-:is(.ink-stone, .v5) .v7-seg { display: inline-flex; height: 46px; padding: 3px; gap: 2px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); }
+:is(.ink-stone, .v5) .v7-seg { display: inline-flex; height: 46px; padding: 3px; gap: 2px; border: 0; border-radius: var(--r); background: var(--raised); }
 :is(.ink-stone, .v5) .v7-seg button { padding: 0 14px; border-radius: 2px; color: var(--text-2); font-size: .9375rem; transition: background var(--t-1) var(--ease-std), color var(--t-1) var(--ease-std); }
 :is(.ink-stone, .v5) .v7-seg button:hover { color: var(--text); }
 :is(.ink-stone, .v5) .v7-seg button.is-on { background: var(--text); color: var(--bg); font-weight: 500; }
