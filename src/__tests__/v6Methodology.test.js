@@ -1,6 +1,7 @@
 /* v6 engine (docs/REDESIGN_SPEC.md §20, §22; docs/METHODOLOGY.md).
    Part E point values, Part G methodology + golden profiles, Part I
    portal breakeven. Every rule with a number in it has a test here. */
+import { explainCard, HURDLE_BASE } from "../engine/v5/apply.js";
 import { describe, it, expect } from "vitest";
 import { BY_ID, CARDS } from "../data/cards/index.js";
 import { PARTNER_CPP, PARTNER_VALUATIONS_SOURCE } from "../data/partnerValuations.js";
@@ -252,7 +253,11 @@ describe("net value and the optimal wallet", () => {
     const p = { feeBudget: 300, cardsHeld: ["citi-double-cash"] };
     const s = walletScore(p);
     expect(s.score).toBe(Math.max(0, Math.min(100, Math.round((100 * s.current.N) / s.best.value.N))));
-    expect(walletScore({ ...p, cardsHeld: s.best.wallet }).score).toBe(100);
+    /* v7 C1: cards you hold carry no application hurdle, so holding the best
+       setup can make one more card worth it; at the fixpoint the score is 100. */
+    let q = { ...p, cardsHeld: s.best.wallet };
+    for (let i = 0; i < 3; i++) q = { ...q, cardsHeld: walletScore(q).best.wallet };
+    expect(walletScore(q).score).toBe(100);
     expect(walletScore({ feeBudget: 300 }).score).toBe(0);   // no cards: below a 2% card
   });
   it("card fit = 100 × Δk / max Δ; 'doesn't add value' when Δk ≤ 0", () => {
@@ -300,10 +305,20 @@ describe("golden profiles", () => {
     /* 670+: neither builder type. */
     for (const id of optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 705 } }).wallet) expect(["secured", "student"]).not.toContain(BY_ID[id].cardType);
   });
-  it("2. Costco family with Costco gas → the Costco Anywhere Visa is in the wallet", () => {
-    const r = optimalWallet({ feeBudget: 100, spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" });
-    expect(r.wallet).toContain("costco-citi");
-    expect(slotsFor(r.value, { spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" }).find((s) => s.key === "warehouse").cardId).toBe("costco-citi");
+  it("2. Costco family with Costco gas → the Costco Visa, unless a 3%-everywhere card leaves it under its application hurdle", () => {
+    const p = { feeBudget: 100, spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" };
+    /* v7 C1: beside Robinhood Gold's 3% the Costco Visa adds only Costco gas
+       at 5% vs 3% (≈ $72 a year) — under the $75 hurdle + $25 minimum gain. */
+    const r = optimalWallet(p);
+    expect(r.wallet).not.toContain("costco-citi");
+    const rh = explainCard("costco-citi", r.wallet, p, walletValue);
+    expect(rh.gain).toBeLessThan(HURDLE_BASE + MIN_GAIN);
+    expect(rh.verdict).toMatch(/No|Marginal/);
+    /* Without a 3%-everywhere card (no Robinhood), it's in and fills the Costco slot. */
+    const noRH = optimalWallet(p, { filter: (c) => c.id !== "robinhood-gold", tag: "golden2-noRH" });
+    expect(noRH.wallet).toContain("costco-citi");
+    expect(noRH.worth["costco-citi"].verdict).toBe("Yes");
+    expect(slotsFor(noRH.value, p).find((s) => s.key === "warehouse").cardId).toBe("costco-citi");
   });
   it("3. foodie who picked Dunkin', Resy and Uber, high dining + groceries, $400 → Amex Gold", () => {
     const p = { feeBudget: 400, wants: "travel", spend: spend({ dining: 1200, groceries: 1000 }), travel: { trips: 2 }, brands: { perks: ["dunkin", "resy", "uber"], airlines: ["aeroplan", "flyingblue"] } };

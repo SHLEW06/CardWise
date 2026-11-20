@@ -224,6 +224,38 @@ W*(B)    = argmax N(W) − $25 × |W|
   card) · Hotel loyalist (their brand) · Costco family (Costco Visa, Costco
   gas, $300/mo warehouse if they gave none).
 
+## 5b. Application cost and keepers (v7 Part C)
+
+**Hurdle** (`apply.js applicationHurdle`, modeling defaults): a card the
+person would apply for is recommended only if its yearly gain in the plan
+(`N(W) − N(W ∖ k)`) beats
+
+| Part | $ a year | When |
+|---|---|---|
+| Hard inquiry + newer average account age | **75** | every new card |
+| A 5/24 slot | **50** | under 5/24, a Chase card is in the plan, and this card isn't Chase |
+| Big loan in 12–24 months | **250** | survey: loan in 12–24 months |
+| Welcome bonus offset | −min(hurdle, bonus) | only if "count the welcome bonus" is on |
+
+A big loan **within 12 months**: the setup is still shown, but every new
+card moves to "After your loan" (month 12) in When to apply. The search
+subtracts each set's hurdles; the branch-and-bound bound uses the smallest
+possible hurdle per added card, so the search stays exact. Narrow cards
+(Costco, Amazon, store cards) clear the same hurdle. "Worth applying?":
+**Yes** if gain − hurdle ≥ $50, **Marginal** if ≥ $0, else **No**. Cards you
+hold carry no hurdle. When to apply now spaces new cards **6 months**
+apart (owner rule, was 3).
+
+**Keepers**: airline keeper = bags (A2 answers) + companion − fee; the
+keeper hotel slot, when no free-night card is in the setup (independent /
+not sure), lists the best options: certificate points × program value
+(mode) × P(use) 0.85 + elite perks − fee.
+
+**Why this card?** (`apply.js explainCard`): per spend lane, the dollars the
+card takes over, its % vs the before-wallet's % there, $ difference; each
+benefit counted after dedupe; lounge visits × $35 × coverage; fee; hurdle;
+net. `gain = ΔE + ΔU − fee` exactly.
+
 ## 6. Portal vs direct (Part I)
 
 ```
@@ -275,6 +307,14 @@ with the Sapphire Reserve, 4:3 with Preferred / Ink).
 | 6 | Sapphire Reserve vs Robinhood Gold, 3x dining | ties at 1.0¢; Chase ahead at 1.2¢ |
 | 7 | Non-traveler holding Platinum, no brands | cancel or downgrade |
 | 8 | Split hotel credit | $0 default; $300 (0.6 × $500 The Edit) after opt-in with 6 nights |
+
+**v7 Part C changes** (application hurdle): golden 2 — beside Robinhood
+Gold's 3%, the Costco Visa adds only Costco gas at 5% vs 3% (≈ $72 a year),
+under the $75 hurdle + $25 minimum gain, so it's no longer in the wallet; with
+no 3%-everywhere card it is (verdict Yes, +$348). Golden 5 — narrow no-fee
+cards (Altitude Connect, Altitude Go, Freedom Flex, BCP) drop out when they
+add less than their hurdle: lounges Yes → Delta Reserve, Robinhood Gold,
+Discover it.
 
 **Where the numbers differ from the brief's expectation** (recorded, not
 forced):

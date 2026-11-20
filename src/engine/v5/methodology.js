@@ -22,6 +22,7 @@ import {
 import { cardPointValue, isUnlocked, CASH_LIKE } from "./pointValues.js";
 import { TRANSFER_RULES } from "../../data/programs.js";
 import { BANK_CURRENCIES } from "./valuation.js";
+import { applicationHurdle, minHurdle, worthVerdict, keeperHotelOptions, airlineKeeperValue } from "./apply.js";
 
 export const BASELINE_PCT = 2;           // "Rewards over a 2% card"
 export const MAX_CANDIDATES = 30;
@@ -305,9 +306,18 @@ export function optimalWallet(rawProfile, options = {}) {
 
   let best = null;
   let nodes = 0;
+  /* v7 C1: every card to apply for must clear its application hurdle. */
+  const isApply = (c) => elig[c.id]?.how === "apply";
+  const hurdleOf = (set) => {
+    const ids = set.map((c) => c.id);
+    let t = 0;
+    for (const c of set) if (isApply(c)) t += applicationHurdle(c, profile, ids).total;
+    return t;
+  };
+  const lowHurdle = minHurdle(profile);
   const consider = (set) => {
     if (!feasible(set)) return;
-    const v = ev.eval(set).N - MIN_GAIN * set.length;
+    const v = ev.eval(set).N - MIN_GAIN * set.length - hurdleOf(set);
     if (!best || v > best.N + EPS || (Math.abs(v - best.N) <= EPS && set.length < best.set.length)) best = { N: v, set: [...set] };
   };
 
@@ -323,10 +333,10 @@ export function optimalWallet(rawProfile, options = {}) {
     consider(set);
     while (set.length < maxCards) {
       let pick = null;
-      const cur = ev.eval(set).N;
+      const cur = ev.eval(set).N - hurdleOf(set);
       for (const c of cands) {
         if (!fitsWith(set, c, feesSoFar)) continue;
-        const g = ev.eval([...set, c]).N - cur - MIN_GAIN;
+        const g = ev.eval([...set, c]).N - hurdleOf([...set, c]) - cur - MIN_GAIN;
         if (g > EPS && (!pick || g > pick.g)) pick = { c, g };
       }
       if (!pick) break;
@@ -346,12 +356,15 @@ export function optimalWallet(rawProfile, options = {}) {
   const evo = makeEvaluator(profile, pool, { optimistic: true });
   const order = cands.filter((c) => !forced.includes(c));
   const bound = (set, from, feesSoFar) => {
-    const here = evo.eval(set).N - MIN_GAIN * set.length;
+    /* Hurdles only grow as cards join (a Chase card in the plan adds 5/24
+       slot costs to the others), so today's hurdles + the smallest possible
+       hurdle per added card keep this an upper bound. */
+    const here = evo.eval(set).N - MIN_GAIN * set.length - hurdleOf(set);
     const gains = [];
     for (let j = from; j < order.length; j++) {
       const c = order[j];
       if (!fitsWith(set, c, feesSoFar)) continue;
-      const g = evo.eval([...set, c]).N - evo.eval(set).N - MIN_GAIN;
+      const g = evo.eval([...set, c]).N - evo.eval(set).N - MIN_GAIN - (isApply(c) ? lowHurdle : 0);
       if (g > 0) gains.push(g);
     }
     gains.sort((x, y) => y - x);
@@ -378,9 +391,19 @@ export function optimalWallet(rawProfile, options = {}) {
 
   const ids = (best?.set || startSet).map((c) => c.id).sort((a, b) => solo.get(b) - solo.get(a) || (a < b ? -1 : 1));
   const value = walletValue(ids, profile, { normalized: true });
+  /* v7 C1: "Worth applying?" for each card to apply for — its gain in this
+     setup (N with it − N without it) against its hurdle. */
+  const worth = {};
+  for (const id of ids) {
+    if (elig[id]?.how !== "apply") continue;
+    const gain = value.N - walletValue(ids.filter((x) => x !== id), profile, { normalized: true }).N;
+    const h = applicationHurdle(BY_ID[id], profile, ids);
+    worth[id] = { gain, hurdle: h.total, parts: h.parts, verdict: worthVerdict(gain, h.total) };
+  }
   const out = {
     wallet: ids,
     value,
+    worth,
     adds: ids.filter((id) => elig[id]?.how !== "held"),
     how: Object.fromEntries(ids.map((id) => [id, elig[id]?.how || "held"])),
     upgrades: Object.fromEntries(ids.filter((id) => elig[id]?.how === "upgrade").map((id) => [id, elig[id].from])),
@@ -446,6 +469,7 @@ export function cardFits(rawProfile, catalog = CARDS) {
 
 export const SLOT_DEFS = [
   { key: "hotelKeeper", label: "Keeper hotel card" },
+  { key: "airlineKeeper", label: "Keeper airline card" },
   { key: "lounge", label: "Lounge card" },
   { key: "everyday", label: "Everyday catch-all", buckets: ["other", "phone", "transit", "drugstores", "streaming"] },
   { key: "dining", label: "Dining", buckets: ["dining"] },
@@ -489,9 +513,29 @@ export function slotsFor(value, rawProfile) {
       if (it) out.push({ key: s.key, label: s.label, cardId: it.cardId, pct: null, value: it.value });
       else out.push({ key: s.key, label: s.label, cardId: null, pct: null, value: 0 });
     } else if (s.key === "hotelKeeper") {
-      if (!profile.brands.hotels.length) continue;
+      /* v7 C2: never empty for "independent / not sure" — suggest the best
+         keeper hotel cards (certificate × program value × P(use) + perks − fee). */
       const it = value.benefits.find((b) => b.kind === "freeNight");
-      out.push({ key: s.key, label: s.label, cardId: it?.cardId || null, pct: null, value: it?.value || 0 });
+      if (it) { out.push({ key: s.key, label: s.label, cardId: it.cardId, pct: null, value: it.value }); continue; }
+      const nights = profile.travel.hotelNights ?? profile.travel.trips * 2;
+      if (!profile.brands.hotels.length && !nights) continue;
+      const opts = keeperHotelOptions(profile).filter((o) => o.net > 0);
+      out.push({ key: s.key, label: s.label, cardId: null, pct: null, value: 0, suggestions: opts });
+    } else if (s.key === "airlineKeeper") {
+      /* v7 C2: the airline card's keeper value — bags × trips × fee +
+         companion − fee — whatever their hotel answer. */
+      if (!profile.travel.trips) continue;
+      const own = value.cards.map((id) => BY_ID[id]).filter((c) => AIRLINE_CURRENCIES.has(c.pointCurrency) && (c.annualFee || 0) > 0);
+      if (own.length) {
+        const best = own.map((c) => ({ c, k: airlineKeeperValue(c, profile) })).sort((a, b) => b.k.net - a.k.net)[0];
+        out.push({ key: s.key, label: s.label, cardId: best.c.id, pct: null, value: best.k.bags + best.k.companion, keeper: best.k });
+        continue;
+      }
+      const picked = profile.brands.airlines.filter((a) => AIRLINE_CURRENCIES.has(a));
+      if (!picked.length) continue;
+      const opts = CARDS.filter((c) => picked.includes(c.pointCurrency) && c.cardType !== "business" && (c.annualFee || 0) > 0 && c.availabilityStatus === "openToNewApplicants")
+        .map((c) => ({ cardId: c.id, ...airlineKeeperValue(c, profile) })).filter((o) => o.net > 0).sort((a, b) => b.net - a.net).slice(0, 3);
+      if (opts.length) out.push({ key: s.key, label: s.label, cardId: null, pct: null, value: 0, suggestions: opts });
     }
   }
   return out;

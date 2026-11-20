@@ -111,9 +111,9 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
             <li key={s.key}>
               <button className="slot" onClick={() => setSheet(s.key)} aria-label={`${s.label}: ${card ? cardDisplayName(card) : "empty"}. See alternatives`}>
                 <span className="slot-label">{s.label}</span>
-                {card ? <CardFace card={card} /> : <span className="slot-empty">No card yet</span>}
-                <span className="slot-name">{card ? cardDisplayName(card) : "Tap to add one"}</span>
-                <span className="slot-value">{s.pct != null ? pctText(s.pct) : s.value ? `${money(s.value)} a year to you` : "—"}</span>
+                {card ? <CardFace card={card} /> : s.suggestions?.length ? <CardFace card={BY_ID[s.suggestions[0].cardId]} className="is-suggestion" /> : <span className="slot-empty">No card yet</span>}
+                <span className="slot-name">{card ? cardDisplayName(card) : s.suggestions?.length ? `Consider: ${cardDisplayName(BY_ID[s.suggestions[0].cardId])}` : "Tap to add one"}</span>
+                <span className="slot-value">{s.pct != null ? pctText(s.pct) : s.keeper ? `${money(s.keeper.bags + s.keeper.companion)} in bags + perks − ${money(s.keeper.fee)} fee` : s.value ? `${money(s.value)} a year to you` : s.suggestions?.length ? `≈ ${money(s.suggestions[0].net)} a year after its fee` : "—"}</span>
                 {also.length > 0 && <span className="slot-also">{also.map((a) => <span key={a} className="tag">{a}</span>)}</span>}
               </button>
             </li>

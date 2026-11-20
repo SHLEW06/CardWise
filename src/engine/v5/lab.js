@@ -81,10 +81,12 @@ export function swapSentence(beforeValue, afterValue, cardId, slotKey, displaced
 
 /* ── When to apply ──────────────────────────────────────────────────────── */
 
-/* Modeling defaults for pacing (issuer practice, not published rules):
-   about one new card every 3 months keeps each welcome-bonus spend
-   reachable; Capital One usually approves about one new card per 6 months. */
-export const APPLY_SPACING_MONTHS = 3;
+/* Pacing: at most one new card every 6 months (owner's product rule,
+   2026-11-20 — was 3); Capital One usually approves about one new card per
+   6 months anyway. A big loan within 12 months holds every new card until
+   after it (v7 C1). */
+export const APPLY_SPACING_MONTHS = 6;
+export const LOAN_WAIT_MONTHS = 12;
 export const C1_SPACING_MONTHS = 6;
 /* Amex family rules (welcome bonus): having had Platinum blocks the Gold and
    Green bonuses; having had Gold blocks Green. So Green → Gold → Platinum. */
@@ -110,7 +112,8 @@ export function applyTimeline(setup, rawProfile) {
     || (amexRank(a) !== 99 && amexRank(b) !== 99 ? amexRank(a) - amexRank(b) : 0)
     || gain[b] - gain[a]);
   let count = profile.credit.newCards24mo;
-  let month = 0;
+  const afterLoan = profile.credit.loan === "12";
+  let month = afterLoan ? LOAN_WAIT_MONTHS : 0;
   let lastC1 = -Infinity;
   const pastAmex = new Set(profile.credit.pastAmex);
   const pastChase = new Set(profile.credit.pastChase);
@@ -135,7 +138,8 @@ export function applyTimeline(setup, rawProfile) {
     }
     if (c.issuer === "Citi" && /strata/.test(id)) notes.push("Citi gives a Strata bonus only if you haven't had one on this card in 48 months.");
     if (c.issuer === "Capital One") notes.push("Capital One usually approves about one new card every 6 months.");
-    out.push({ cardId: id, how: "apply", month, notes });
+    if (afterLoan && month === LOAN_WAIT_MONTHS) notes.unshift("After your loan: a new card's hard inquiry can nudge a loan rate up, so wait until it closes.");
+    out.push({ cardId: id, how: "apply", month, notes, afterLoan });
     if (c.issuer === "Capital One") lastC1 = month;
     count += 1;
     month += APPLY_SPACING_MONTHS;
@@ -144,3 +148,4 @@ export function applyTimeline(setup, rawProfile) {
 }
 
 export const monthLabel = (m) => (m === 0 ? "Now" : m === 3 ? "In 3 months" : `In ${m} months`);
+export const timelineLabel = (t) => (t.afterLoan && t.month === LOAN_WAIT_MONTHS ? "After your loan" : monthLabel(t.month));

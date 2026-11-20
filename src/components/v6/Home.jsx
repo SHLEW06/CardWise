@@ -10,6 +10,8 @@ import { ArrowRight, MapPin } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
 import FocalImage from "../v7/FocalImage.jsx";
+import WhyThisCard from "../v7/WhyThisCard.jsx";
+import { timelineLabel, applyTimeline } from "../../engine/v5/lab.js";
 import { Reveal, CountUp } from "./motion.jsx";
 import { walletScore, scoreBasisText } from "../../engine/v5/methodology.js";
 import { optimizeWallet } from "../../engine/v5/optimizer.js";
@@ -36,7 +38,12 @@ export function nextMove(rawProfile) {
     const what = drop.action === "cancel" ? `Cancel your ${cardDisplayName(card)}` : drop.action === "upgrade" ? `Upgrade your ${cardDisplayName(card)} to the ${BY_ID[drop.upgradeTo].name}` : `Switch your ${cardDisplayName(card)} to the ${BY_ID[drop.downgradeTo].name}`;
     return { kind: drop.action, cardId: drop.downgradeTo || drop.upgradeTo || drop.cardId, title: what, impact: drop.impact, sentence: drop.sentence };
   }
-  if (get) return { kind: "apply", cardId: get.cardId, title: `${get.action === "upgrade" ? "Upgrade to" : "Get"} the ${cardDisplayName(BY_ID[get.cardId])}`, impact: Math.max(0, get.gain || 0), sentence: get.sentence };
+  if (get) {
+    /* v7 C1: a big loan within 12 months holds new cards until after it. */
+    const t = get.action === "upgrade" ? null : applyTimeline([...p.cardsHeld, get.cardId], p).find((x) => x.cardId === get.cardId);
+    const when = t?.afterLoan ? `${timelineLabel(t)}: a new card's credit check can nudge a loan rate up.` : null;
+    return { kind: get.action === "upgrade" ? "upgrade" : "apply", cardId: get.cardId, title: `${get.action === "upgrade" ? "Upgrade to" : "Get"} the ${cardDisplayName(BY_ID[get.cardId])}`, impact: Math.max(0, get.gain || 0), sentence: get.sentence, when };
+  }
   return null;
 }
 
@@ -101,8 +108,10 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
                 <h2 className="t-h2">{move.title}</h2>
                 {move.impact > 0 && <p className="next-move-impact t-value">+{money(move.impact)} a year</p>}
                 <p className="t-caption">{move.sentence}</p>
+                {move.when && <p className="t-caption next-move-when">{move.when}</p>}
               </div>
             </div>
+            {move.kind === "apply" && <WhyThisCard cardId={move.cardId} wallet={profile.cardsHeld} profile={profile} />}
           </Reveal>
         )}
 

@@ -533,7 +533,8 @@ rendered-face setting for launch.
 | Restyle | done — app on §9.11 |
 | A. Survey | done |
 | B. Valuations + audit | done (B5 portal lanes on hold) |
-| C–G | in progress, in order |
+| C. Optimizer additions | done |
+| D–G | in progress, in order |
 
 ## Part 0 — style tile (2026-11-20)
 
@@ -696,5 +697,44 @@ Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-
   note about Venture X lacking a Global Entry credit was wrong — the page
   doesn't list one.
 
+## Part C — optimizer additions (2026-11-20)
+
+- **C1 hurdle** (`engine/v5/apply.js`, METHODOLOGY §5b): $75 base, + $50
+  5/24 slot, + $250 loan in 12–24 months, optional welcome-bonus offset
+  (`profile.bonusOffsetsHurdle`); exact in the branch-and-bound;
+  `optimalWallet().worth` = gain / hurdle / Yes·Marginal·No per new card.
+  Loan within 12 months → new cards "After your loan". When to apply: one new
+  card per 6 months (owner rule; was 3).
+- **C2 keepers:** "Keeper airline card" slot (bags + companion − fee);
+  "Keeper hotel card" suggests the best certificate cards for independent /
+  not sure.
+- **C3 Why this card?** (`<WhyThisCard>`): Home's next move, card detail
+  (Explore + Wallet Lab). Plain block, math on "Show the math".
+- **Owner-like profile** (ATL, Delta + Hyatt + Marriott, some international,
+  Amex Gold, Delta Gold, Freedom Unlimited + Flex, Robinhood Gold, $1,000):
+  - Altitude Connect beside the held cards: +$144 a year ($62 earning —
+    4% hotels / flights / gas vs Robinhood 3% / Gold 3.2% — + $81 Priority
+    Pass at 4 visits × $35 × 58% ATL practicality) − $75 hurdle = **+$69,
+    Yes**. In the full plan (with World of Hyatt, a Chase card → +$50 slot)
+    it nets **−$14: No** — it doesn't make the cut. Portal lanes aren't
+    modeled (on hold), so its 5x Travel Center hotels / cars aren't counted.
+  - Blue Cash Preferred: +$5 a year (6% groceries is +$82 over the Gold's
+    4.48%, then the $95 fee) − $75 = **No**.
+  - From my wallet: add **World of Hyatt** (+$319, hurdle $75: Yes); Amex
+    Gold → downgrade to Green is still suggested.
+- Golden report after Part C:
+```
+1 student $0: N +$0 · net $192 · fees $0 · discover-student
+2 Costco family: N +$265 · net $649 · fees $95 · costco-citi, bcp
+3 foodie $400: N +$893 · net $1447 · fees $325 · amex-gold
+4 Hyatt $400: N +$771 · net $1261 · fees $95 · hyatt, freedom-flex
+5 ATL Delta, lounges yes: N +$1179 · net $1779 · fees $710 · delta-reserve, robinhood-gold, discover-it
+5 ATL Delta, lounges no: N +$914 · net $1514 · fees $210 · delta-gold, robinhood-gold, discover-it
+Owner-like, from scratch: N +$2143 · net $2792 · fees $990 · hyatt, delta-gold, marriott-brilliant, marriott-boundless, freedom-flex
+Owner-like, from wallet: N +$1173 · net $1822 · fees $570 · hyatt, delta-gold, robinhood-gold, freedom-flex, freedom-unlimited, amex-gold
+Owner-like, held wallet: N +$854 · net $1503 · fees $475
+Owner-like verdicts: amex-gold downgrade→amex-green, delta-gold keep, freedom-unlimited keep, freedom-flex keep, robinhood-gold keep
+```
+
 ## Next (v7)
-Parts C → G in order, committing after each.
+Parts D → G in order, committing after each.

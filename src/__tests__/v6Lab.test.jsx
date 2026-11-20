@@ -39,10 +39,10 @@ describe("lab engine", () => {
     const after = walletValue(["amex-gold"], P);
     expect(swapSentence(before, after, "amex-gold", "dining", "csp")).toMatch(/^[+−]\$[\d,]+\/yr — Amex Gold took Dining from Chase Sapphire Preferred\.$/);
   });
-  it("when to apply: Chase first under 5/24, then one card every 3 months; Amex Green → Gold → Platinum", () => {
+  it("when to apply: Chase first under 5/24, then at most one card every 6 months; Amex Green → Gold → Platinum", () => {
     const t = applyTimeline(["amex-gold", "csp", "freedom-unlimited"], { credit: { newCards24mo: 1 } });
     expect(BY_ID[t[0].cardId].issuer).toMatch(/^Chase/);
-    expect(t.map((x) => x.month)).toEqual([0, 3, 6]);
+    expect(t.map((x) => x.month)).toEqual([0, 6, 12]);   // v7: one new card per 6 months (owner rule)
     expect(AMEX_FAMILY_ORDER).toEqual(["amex-green", "amex-gold", "amex-plat"]);
     const amex = applyTimeline(["amex-plat", "amex-gold"], {}).map((x) => x.cardId);
     expect(amex).toEqual(["amex-gold", "amex-plat"]);

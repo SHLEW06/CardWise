@@ -208,6 +208,7 @@ export function normalizeProfile(p = {}) {
     pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
     valueMode: ["conservative", "typical", "optimistic"].includes(p.valueMode) ? p.valueMode : "typical",   // v7 B1
+    bonusOffsetsHurdle: !!p.bonusOffsetsHurdle,   // v7 C1: count a welcome bonus against the application hurdle
   };
 }
 

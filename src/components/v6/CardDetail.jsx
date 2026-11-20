@@ -23,6 +23,7 @@ import { LOUNGE_SITES, networkKey } from "../../data/loungeLocations.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
+import WhyThisCard from "../v7/WhyThisCard.jsx";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => `≈ ${(Math.round(p * 10) / 10).toString()}% back`;
@@ -66,7 +67,9 @@ export function breakEvenLine(own) {
   return `It's ${money(own.fee - got)} short of breaking even: ${money(own.earn)} in rewards and ${money(own.benefits)} in benefits you use against a ${money(own.fee)} fee.`;
 }
 
-export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange }) {
+/* `wallet`: the setup the card is judged against (Wallet Lab passes its
+   setup); default = the cards they hold. */
+export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null }) {
   const profile = normalizeProfile(raw);
   const [math, setMath] = useState(false);
   const [showUnused, setShowUnused] = useState(false);
@@ -120,6 +123,10 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             {onToggleOwn && (
               <Choice selected={d.inWallet.has} onSelect={() => onToggleOwn(c.id)}>{d.inWallet.has ? "In my wallet" : "I have this card"}</Choice>
             )}
+          </Reveal>
+
+          <Reveal i={2} className="panel detail-block detail-why">
+            <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
 
           <Reveal i={2} className="panel detail-block">

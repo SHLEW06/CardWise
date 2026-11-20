@@ -63,6 +63,19 @@
 .v5 .sub-q { display: grid; gap: 10px; padding: 14px 0 0; }
 .v5 .network-note { color: var(--ink-2); font-size: var(--fs-small); max-width: 46em; }
 
+/* ── Part C: "Why this card?", keeper suggestions ── */
+.v5 .why { max-width: none; }
+.v5 .why .v7-hint-label { color: var(--bronze); }
+.v5 .why-sentence { margin: 0; }
+.v5 .why-verdict { font-weight: 500; }
+.v5 .why-verdict.is-yes { color: var(--good); }
+.v5 .why-verdict.is-no { color: var(--warn); }
+.v5 .why-math { display: grid; gap: 18px; padding-top: 6px; }
+.v5 .why-math caption { text-align: left; padding-bottom: 6px; }
+.v5 .why-math td .t-caption { display: inline; }
+.v5 .v5-face.is-suggestion { opacity: .55; }
+.v5 .next-move .why { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--hair); }
+
 @media (max-width: 700px) {
   .v5 .compare-two { grid-template-columns: 1fr; }
   .v5 .spend-unit-row { grid-template-columns: minmax(0, 1fr) auto; }
