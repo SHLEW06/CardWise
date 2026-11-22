@@ -123,9 +123,10 @@ describe("3 · travel", () => {
     for (const n of ["I'd pay extra for lounge access", /^I'd love it if my card included it/, "Don't care"]) expect(screen.getByRole("radio", { name: n })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "I'd pay extra for lounge access" }));
     fireEvent.click(screen.getByRole("radio", { name: "4–9" }));
+    fireEvent.click(screen.getByRole("radio", { name: "I have brands I like" }));   // v7c: brand chips only after the mode question
     fireEvent.click(screen.getByRole("button", { name: "Hyatt" }));
     cont();
-    expect(loadV5Profile().travel).toMatchObject({ trips: 4, homeAirport: "ATL", lounges: "yes", hotelNights: 6, airlineChoice: "auto" });
+    expect(loadV5Profile().travel).toMatchObject({ trips: 4, homeAirport: "ATL", lounges: "yes", hotelNights: 6, airlineChoice: "auto", hotelChoice: "manual" });
     expect(loadV5Profile().travel.airports[0]).toMatchObject({ code: "ATL", trips: 4 });
     expect(loadV5Profile().brands).toMatchObject({ airlines: ["delta"], hotels: ["hyatt"] });
   });
@@ -139,8 +140,8 @@ describe("3 · travel", () => {
     fireEvent.click(within(screen.getByTestId("airlines-inferred")).getByRole("radio", { name: "I'll choose" }));   // v7b: airlines are inferred unless they choose
     for (const g of ["US airlines", "Star Alliance", "oneworld", "SkyTeam", "Other airlines"]) expect(screen.getByText(g)).toBeInTheDocument();
   });
-  it("hotel brands include the big chains and 'whatever's cheapest'", () => {
-    expect(HOTEL_BRANDS.map((h) => h.label)).toEqual(expect.arrayContaining(["Marriott", "Hilton", "Hyatt", "IHG", "Wyndham", "Choice", "Best Western", "Accor", "Sonesta", "Independent / whatever's cheapest"]));
+  it("v7c: hotel brand chips are brands only — no 'let CardWise pick' chips", () => {
+    expect(HOTEL_BRANDS.map((h) => h.label)).toEqual(["Marriott", "Hilton", "Hyatt", "IHG", "Wyndham", "Choice", "Best Western", "Accor", "Sonesta"]);
   });
 });
 

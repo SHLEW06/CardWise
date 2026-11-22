@@ -42,6 +42,13 @@ export function pickHotelProgram({ airports = [], nights = 0, mode = "typical" }
     return { program: p, name: NAME[p], score, pct, where, of: Object.keys(byDest).length, strong };
   }).sort((a, b) => b.score - a.score);
   const best = rows[0];
-  const why = `${best.name}: good hotels in ${best.where} of your ${best.of} destination${best.of === 1 ? "" : "s"}${best.strong.length ? ` (incl. ${best.strong.slice(0, 3).join(", ")})` : ""}, and booking direct earns ≈ ${(Math.round(best.pct * 10) / 10)}% back in points.`;
-  return { program: best.program, why, rows };
+  const pctText = (r) => `${Math.round(r.pct * 10) / 10}%`;
+  const incl = (list) => (list.length > 1 ? `${list.slice(0, -1).join(", ")} and ${list[list.length - 1]}` : list[0]);
+  /* v7c 1.5: one sentence — "We'd pick Marriott: strong in 3 of your 3
+     destinations, incl. Shanghai and Tokyo". */
+  const sentence = `We'd pick ${best.name}: strong in ${best.where} of your ${best.of} destination${best.of === 1 ? "" : "s"}${best.strong.length ? `, incl. ${incl(best.strong.slice(0, 3))}` : ""}`;
+  const why = `${sentence}, and booking direct earns ≈ ${pctText(best)} back in points.`;
+  /* "Why?" — every program, strongest first, in the same words. */
+  for (const r of rows) r.line = `${r.name}: strong in ${r.where} of ${r.of}${r.strong.length ? ` (${r.strong.slice(0, 3).join(", ")})` : ""} · booking direct earns ≈ ${pctText(r)} back`;
+  return { program: best.program, why, sentence, rows };
 }

@@ -14,7 +14,7 @@ import { AIRPORTS } from "../../../data/airports.js";
 import {
   MOST_HELD, SPEND_ROWS, SPEND_GROUPS, SPEND_MAX, SPEND_STEP, RENT_MAX, GAS_AT, WAREHOUSE_CLUBS, STORES,
   FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
-  LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS,
+  LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS, STAY_STYLES,
 } from "../../../data/surveyOptions.js";
 import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor } from "../../../data/perkChips.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
@@ -453,6 +453,8 @@ function TravelStep({ d, set, mode, headRef }) {
   const setAirports = (list) => setTravel({ airports: list });
   const flies = airports.length > 0 && airports.some((a) => a.trips > 0);
   const auto = (t.airlineChoice || "auto") === "auto";
+  /* Lounges: "I'll choose" stays open while they pick their first network. */
+  const loungeAuto = (t.loungeChoice || (t.loungeNetworks?.length ? "manual" : "auto")) === "auto";
   const hotelsPicked = d.brands.hotelsPicked ?? d.brands.hotels;
   const setHotels = (hotelsPicked) => set({ brands: { ...d.brands, hotelsPicked, hotels: hotelsPicked } });
   const nights = t.hotelNights ?? (n.travel.trips ? n.travel.trips * 2 : 0);
@@ -483,12 +485,12 @@ function TravelStep({ d, set, mode, headRef }) {
       {flies && (
         <>
           <fieldset className="survey-group" data-testid="airlines-inferred">
-            <legend className="t-h3">Airlines</legend>
-            {n.travel.inferred?.text && <p className="inferred-line">{n.travel.inferred.text}</p>}
-            <div className="chip-wrap" role="radiogroup" aria-label="Which airlines to value">
-              <Choice radio pill selected={auto} onSelect={() => setTravel({ airlineChoice: "auto" })}>Best value: let CardWise decide</Choice>
-              <Choice radio pill selected={!auto} onSelect={() => { set({ travel: { ...t, airlineChoice: "manual" }, brands: { ...d.brands, airlinesPicked: d.brands.airlinesPicked?.length ? d.brands.airlinesPicked : n.brands.airlines } }); }}>I'll choose</Choice>
+            <legend className="t-h3" id="q-airline-mode">How do you pick airlines?</legend>
+            <div className="choice-stack" role="radiogroup" aria-labelledby="q-airline-mode">
+              <Choice radio selected={auto} onSelect={() => setTravel({ airlineChoice: "auto" })}>Let CardWise pick</Choice>
+              <Choice radio selected={!auto} onSelect={() => { set({ travel: { ...t, airlineChoice: "manual" }, brands: { ...d.brands, airlinesPicked: d.brands.airlinesPicked?.length ? d.brands.airlinesPicked : n.brands.airlines } }); }}>I'll choose</Choice>
             </div>
+            {n.travel.inferred?.text && <p className="inferred-line">{n.travel.inferred.text}</p>}
             <p className="t-caption">Your choice matters most where several airlines have hubs (like New York); elsewhere the routes decide.</p>
             {!auto && AIRLINE_GROUPS.map((g) => (
               <div key={g.key} className="airline-group">
@@ -523,14 +525,19 @@ function TravelStep({ d, set, mode, headRef }) {
             </div>
             {t.lounges && t.lounges !== "no" && (
               <div className="sub-q">
-                <span className="t-caption">Which lounges matter?</span>
-                <div className="chip-wrap" role="group" aria-label="Lounge networks">
-                  <Choice pill selected={!(t.loungeNetworks || []).length} onSelect={() => setTravel({ loungeNetworks: [] })}>Whichever is best value</Choice>
-                  {LOUNGE_NETWORKS.map((o) => {
-                    const on = (t.loungeNetworks || []).includes(o.key);
-                    return <Choice key={o.key} pill selected={on} onSelect={() => setTravel({ loungeNetworks: on ? t.loungeNetworks.filter((k) => k !== o.key) : [...(t.loungeNetworks || []), o.key] })}>{o.label}</Choice>;
-                  })}
+                <span className="t-caption" id="q-lounge-mode">Which lounges?</span>
+                <div className="chip-wrap" role="radiogroup" aria-labelledby="q-lounge-mode">
+                  <Choice radio pill selected={loungeAuto} onSelect={() => setTravel({ loungeChoice: "auto", loungeNetworks: [] })}>Let CardWise pick the best value</Choice>
+                  <Choice radio pill selected={!loungeAuto} onSelect={() => setTravel({ loungeChoice: "manual" })}>I'll choose</Choice>
                 </div>
+                {!loungeAuto && (
+                  <div className="chip-wrap" role="group" aria-label="Lounge networks">
+                    {LOUNGE_NETWORKS.map((o) => {
+                      const on = (t.loungeNetworks || []).includes(o.key);
+                      return <Choice key={o.key} pill selected={on} onSelect={() => setTravel({ loungeChoice: "manual", loungeNetworks: on ? t.loungeNetworks.filter((k) => k !== o.key) : [...(t.loungeNetworks || []), o.key] })}>{o.label}</Choice>;
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </fieldset>
@@ -542,17 +549,51 @@ function TravelStep({ d, set, mode, headRef }) {
           {NIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={nights === o.key} onSelect={() => setTravel({ hotelNights: o.key })}>{o.label}</Choice>)}
         </div>
       </fieldset>
-      <fieldset className="survey-group">
-        <legend className="t-h3">Hotels</legend>
-        <div className="chip-wrap" role="radiogroup" aria-label="Which hotel program to value">
-          <Choice radio pill selected={n.travel.hotelChoice === "auto"} onSelect={() => setTravel({ hotelChoice: "auto" })}>Best value: let CardWise decide</Choice>
-          <Choice radio pill selected={n.travel.hotelChoice !== "auto"} onSelect={() => setTravel({ hotelChoice: "manual" })}>I'll choose</Choice>
+      <HotelQuestions d={d} n={n} t={t} set={set} setTravel={setTravel} />
+      <StrategyHelper d={d} set={set} />
+    </>
+  );
+}
+
+/* v7c Part 1: "How do you pick hotels?" first (default: let CardWise pick);
+   brand chips only for "I have brands I like"; "Where do you usually stay?"
+   is its own single choice (it weighs hotel points and status, it isn't a
+   brand). The pick shows as one sentence with a "Why?" link. */
+export function HotelQuestions({ d, n, t, set, setTravel }) {
+  const [why, setWhy] = useState(false);
+  /* "I have brands I like" stays selected while they pick the first brand. */
+  const manual = (t.hotelChoice || n.travel.hotelChoice) === "manual";
+  const picked = (d.brands.hotelsPicked ?? d.brands.hotels ?? []).filter((h) => HOTEL_BRANDS.some((b) => b.key === h));
+  const setPicked = (h) => set({ brands: { ...d.brands, hotelsPicked: h, hotels: h }, travel: { ...t, hotelChoice: "manual" } });
+  const pick = n.brands.hotelPick;
+  return (
+    <>
+      <fieldset className="survey-group" data-testid="hotel-mode">
+        <legend className="t-h3" id="q-hotel-mode">How do you pick hotels?</legend>
+        <div className="choice-stack" role="radiogroup" aria-labelledby="q-hotel-mode">
+          <Choice radio selected={!manual} onSelect={() => set({ travel: { ...t, hotelChoice: "auto" }, brands: { ...d.brands, hotelsPicked: [], hotels: [] } })}>Let CardWise pick the best program for me</Choice>
+          <Choice radio selected={manual} onSelect={() => setTravel({ hotelChoice: "manual" })}>I have brands I like</Choice>
         </div>
-        <ToggleChips options={HOTEL_BRANDS} picked={hotelsPicked} onChange={(h) => { set({ brands: { ...d.brands, hotelsPicked: h, hotels: h }, travel: { ...t, hotelChoice: "manual" } }); }} label="Hotel brands" limit={HOTEL_BRANDS.length} />
-        <p className="t-caption">"Independent / whatever's cheapest" or "Not sure": we pick the hotel program that's strongest where you go.</p>
-        {n.brands.hotelPick && <p className="inferred-line" data-testid="hotel-pick">{n.brands.hotelPick.why}</p>}
+        {manual && <ToggleChips options={HOTEL_BRANDS} picked={picked} onChange={setPicked} label="Hotel brands you like" limit={HOTEL_BRANDS.length} />}
+        {!manual && pick && (
+          <div className="hotel-pick" data-testid="hotel-pick">
+            <p className="inferred-line">{pick.sentence}. <button type="button" className="link" aria-expanded={why} onClick={() => setWhy(!why)}>Why?</button></p>
+            {why && (
+              <ul className="t-caption why-list" data-testid="hotel-why">
+                {pick.rows.map((r) => <li key={r.program}>{r.line}</li>)}
+                <li>Strong = a good hotel from that chain for most stays there. Weighted by your nights in each place and what the points are worth to you.</li>
+              </ul>
+            )}
+          </div>
+        )}
       </fieldset>
-      <StrategyHelper d={d} set={set} open={hotelsPicked.includes("unsure")} />
+      <fieldset className="survey-group" data-testid="stay-style">
+        <legend className="t-h3" id="q-stay">Where do you usually stay?</legend>
+        <p className="t-caption">This sets how much hotel points and status are worth to you. It isn't a brand pick.</p>
+        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-stay">
+          {STAY_STYLES.map((o) => <Choice key={o.key} radio pill selected={t.stayStyle === o.key} onSelect={() => setTravel({ stayStyle: o.key })}>{o.label}</Choice>)}
+        </div>
+      </fieldset>
     </>
   );
 }

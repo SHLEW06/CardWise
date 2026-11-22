@@ -152,20 +152,21 @@ describe("Part A screens", () => {
     cont();
     expect(loadV5Profile().travel).toMatchObject({ trips: 8, cabin: "business", booking: "best", airlinePerks: ["bags"], bags: { perTrip: 2, share: 1 } });
   });
-  it("lounges: three answers; the networks follow-up defaults to best value", () => {
+  it("lounges: three answers; 'Which lounges?' asks the mode first (default: let CardWise pick)", () => {
     saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 8 }] } });
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
     fireEvent.click(screen.getByRole("radio", { name: /^I'd love it if my card included it/ }));
-    const nets = screen.getByRole("group", { name: "Lounge networks" });
-    expect(within(nets).getByRole("button", { name: "Whichever is best value" })).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(within(nets).getByRole("button", { name: "Priority Pass" }));
+    expect(screen.getByRole("radio", { name: "Let CardWise pick the best value" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByRole("group", { name: "Lounge networks" })).toBeNull();   // v7c: networks only after "I'll choose"
+    fireEvent.click(within(screen.getByRole("radiogroup", { name: "Which lounges?" })).getByRole("radio", { name: "I'll choose" }));
+    fireEvent.click(within(screen.getByRole("group", { name: "Lounge networks" })).getByRole("button", { name: "Priority Pass" }));
     cont();
-    expect(loadV5Profile().travel).toMatchObject({ lounges: "bundle", loungeNetworks: ["prioritypass"] });
+    expect(loadV5Profile().travel).toMatchObject({ lounges: "bundle", loungeChoice: "manual", loungeNetworks: ["prioritypass"] });
   });
   it("hotels: 'Not sure — help me choose' opens the strategy helper; using one picks the programs", () => {
     saveV5Profile(ME);
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Not sure — help me choose" }));
+    fireEvent.click(screen.getByRole("button", { name: /Help me pick/ }));
     const helper = screen.getByTestId("strategy-helper");
     const first = within(helper).getAllByRole("button", { name: /Use this strategy|Using this/ })[0];
     fireEvent.click(first);

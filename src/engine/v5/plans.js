@@ -116,7 +116,7 @@ export function loyaltyStrategies(rawProfile, { max = 3 } = {}) {
     combos.push({ airlines: [airlines[0]], hotels: hotels.slice(0, 2) });
   }
   const runs = combos.map((c) => {
-    const p = { ...profile, travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: "manual" }, brands: { ...profile.brands, airlines: c.airlines, airlinesPicked: c.airlines, hotels: c.hotels, hotelsPicked: c.hotels }, partnerPicks: {} };
+    const p = { ...profile, travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: c.hotels.length ? "manual" : "none" }, brands: { ...profile.brands, airlines: c.airlines, airlinesPicked: c.airlines, hotels: c.hotels, hotelsPicked: c.hotels }, partnerPicks: {} };
     const r = optimalWallet(p, { tag: `strategy:${[...c.airlines, ...c.hotels].join("+")}` });
     const programs = [...c.airlines, ...c.hotels];
     const feed = feeders(r.wallet, programs);
@@ -208,5 +208,5 @@ export function applyStrategy(rawProfile, strategy) {
      default (their survey brands) pick them up from `brands`. */
   for (const f of strategy.feeders) if (Array.isArray(partnerPicks[f.cur])) partnerPicks[f.cur] = [...new Set([...partnerPicks[f.cur], ...f.feeds])];
   /* A strategy is a manual pick: it replaces "Best value" and "Not sure". */
-  return { travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: "manual" }, brands: { ...profile.brands, airlines, airlinesPicked: airlines, hotels, hotelsPicked: hotels }, partnerPicks };
+  return { travel: { ...profile.travel, airlineChoice: "manual", hotelChoice: hotels.length ? "manual" : "none" }, brands: { ...profile.brands, airlines, airlinesPicked: airlines, hotels, hotelsPicked: hotels }, partnerPicks };
 }

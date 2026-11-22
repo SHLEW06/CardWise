@@ -1051,3 +1051,38 @@ portal pricing, H6 bank calibration. Screenshots: `screenshots/acceptance/`.
    verification): fill them, or keep "Offer not on file"?
 7. The owner's "Amex MR missing" in the points step couldn't be reproduced
    from repo data; covered by a regression test — still seeing it?
+
+---
+
+# v7c — survey, perks and card-data fixes (`docs/CLAUDE_CODE_V7C_CHANGES.md`)
+
+Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
+
+## Part 1 — hotels question (2026-11-22)
+
+- **"How do you pick hotels?"** is one radio question: *Let CardWise pick
+  the best program for me* (default) or *I have brands I like*. Brand chips
+  (Marriott, Hilton, Hyatt, IHG, Wyndham, Choice, Best Western, Accor,
+  Sonesta) show only for the second; several are fine. The three chips that
+  meant "let CardWise pick" are gone.
+- **"Where do you usually stay?"** (Big hotel chains / Independent or
+  boutique / A mix) is its own single choice. It scales hotel points above
+  their floor, hotel status and free-night use: 1 / 0.4 / 0.75
+  (`STAY_STYLE_FACTOR`, METHODOLOGY §3). Not answered = chains.
+- The pick is one sentence ("We'd pick Marriott: strong in 3 of your 3
+  destinations, incl. Shanghai and Tokyo") with a **Why?** link listing
+  every program the same way.
+- Same pattern for **airlines** ("How do you pick airlines?" → Let CardWise
+  pick / I'll choose → chips) and **lounges** ("Which lounges?" → Let
+  CardWise pick the best value / I'll choose → networks).
+- Engine: auto values the picked program only, manual values the brands
+  only — never both. Old saved "Independent" chips migrate: alone → auto +
+  independent; beside brands → those brands + a mix. Older profiles with no
+  hotel answer and no airports still value no hotel program (`"none"`), so
+  the golden profiles are unchanged; the survey saves "auto" up front.
+- **Bug fixed:** when bags per trip wasn't asked, a 2-bag card was valued at
+  2 bags a trip (the code contradicted its own comment). Now 1 bag. This is
+  what let United Quest back into the test profile once the hotel answer
+  changed. `npm run golden`: identical before → after.
+- Tests: `v7cPart1.test.jsx` (7); updated travel tests in v6Survey,
+  v7PartA, v7bPart3.

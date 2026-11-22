@@ -21,6 +21,8 @@ import { VAL, VAL_META } from "../../data/valuations.js";
 import { PARTNER_CPP, PARTNER_VALUATIONS_SOURCE } from "../../data/partnerValuations.js";
 import { transferRatio } from "../transferValue.js";
 import { programCpp, DEFAULT_VALUE_MODE } from "../../data/valueModes.js";
+import { STAY_STYLE_FACTOR } from "../../data/benefitUsage.js";
+const HOTEL_PROGRAMS = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham"]);
 
 /* v7 Part B1: the person's valuation mode (Conservative / Typical /
    Optimistic) picks the low / mid / high value of every airline and hotel
@@ -89,7 +91,10 @@ export function currencyValue(cur, profile, wallet = []) {
     const travels = profile?.travel?.trips > 0 || profile?.travel?.hotelNights > 0;
     const floor = meta?.conservativeCpp ?? CASH_CPP;
     const pv = picked ? programCpp(cur, modeOf(profile), ids(wallet)) : null;
-    const v = picked ? pv?.cpp ?? VAL[cur] ?? floor : travels ? floor : floor * 0.5;
+    let v = picked ? pv?.cpp ?? VAL[cur] ?? floor : travels ? floor : floor * 0.5;
+    /* v7c 1.4: hotel points above their floor scale with where they stay. */
+    const stay = STAY_STYLE_FACTOR[profile?.travel?.stayStyle] ?? 1;
+    if (picked && stay < 1 && HOTEL_PROGRAMS.has(cur) && v > floor) v = floor + (v - floor) * stay;
     return { cpp: v, basis: "standard", unlocked: false, partners: [], upTo: null, base: pv?.base ?? null, discount: pv?.discount || null, note: picked ? null : "Valued low: you didn't pick this brand." };
   }
   const have = ids(wallet);

@@ -13,6 +13,10 @@ import { inferAirlines, intlShareOf, mainAirport } from "./v5/routes.js";
 import { pickHotelProgram } from "./v5/hotelPick.js";
 import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
 
+/* v7c 1: answers that used to mean "let CardWise pick" as a hotel chip. */
+const HOTEL_AUTO_CHIPS = ["independent", "unsure"];
+export const STAY_STYLE_KEYS = ["chains", "independent", "mix"];
+
 /* v5 survey fee buckets (kept so saved v5 answers still decode). */
 export const FEE_BUDGETS = { "0": 0, "100": 100, "250": 250, "300": 300, "500": 500, "700": 700, "750": 750, "1000": 1000, "1500": 1500, any: Infinity };
 
@@ -174,11 +178,29 @@ export function normalizeProfile(p = {}) {
      unless an older profile already named its airlines. */
   const hadAirlines = (p.brands?.airlinesPicked ?? p.brands?.airlines ?? []).length > 0;
   travel.airlineChoice = ["auto", "manual"].includes(travel.airlineChoice) ? travel.airlineChoice : (travel.airports.length || !hadAirlines ? "auto" : "manual");
-  /* Hotels on skip: "Best value: let CardWise decide" for anyone who told us
-     where they fly but picked no hotel program (older profiles unchanged). */
-  const hotelsGiven = (p.brands?.hotelsPicked ?? p.brands?.hotels ?? []).length > 0;
-  travel.hotelChoice = ["auto", "manual"].includes(travel.hotelChoice) ? travel.hotelChoice : (travel.airports.length && !hotelsGiven ? "auto" : "manual");
+  /* v7c 1: "How do you pick hotels?" — "Let CardWise pick the best program
+     for me" (auto, the default) or "I have brands I like" (manual + brand
+     chips). Saved "Independent" / "Not sure" chips meant auto. Manual with
+     no brand left is treated as auto (never a contradiction). */
+  const realHotels = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).filter((h) => !HOTEL_AUTO_CHIPS.includes(h));
+  /* Not answered: brands → manual; told us where they fly → auto; an older
+     profile with neither keeps valuing no hotel program (goldens unchanged).
+     The survey saves "auto" up front (draftFrom), so new answers default to
+     "Let CardWise pick". */
+  const hotelAnswered = ["auto", "manual", "none"].includes(travel.hotelChoice);   // "none" = no hotel program (strategies, older profiles)
+  const askedUs = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).some((h) => HOTEL_AUTO_CHIPS.includes(h));
+  travel.hotelChoice = hotelAnswered ? travel.hotelChoice : realHotels.length ? "manual" : travel.airports.length || askedUs ? "auto" : "none";
+  if (travel.hotelChoice === "manual" && !realHotels.length) travel.hotelChoice = "auto";
+  /* An old "Independent / whatever's cheapest" chip becomes where they stay:
+     alone → independent; beside brands → a mix. */
+  const hadIndependent = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).includes("independent");
+  travel.stayStyle = STAY_STYLE_KEYS.includes(travel.stayStyle) ? travel.stayStyle : hadIndependent ? (realHotels.length ? "mix" : "independent") : null;
   travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
+  /* v7c 1.6: lounges — "Let CardWise pick the best value" (auto) or "I'll
+     choose" (networks). Auto ignores any saved networks. */
+  travel.loungeChoice = ["auto", "manual"].includes(travel.loungeChoice) ? travel.loungeChoice : travel.loungeNetworks.length ? "manual" : "auto";
+  if (travel.loungeChoice === "auto") travel.loungeNetworks = [];
+  if (travel.loungeChoice === "manual" && !travel.loungeNetworks.length) travel.loungeChoice = "auto";
   travel.tripsByAirline = {};
   travel.workPrograms = [];
   travel.inferred = null;
@@ -237,13 +259,15 @@ export function normalizeProfile(p = {}) {
          on "Best value" come from where they fly; hotels on "Independent /
          not sure" also get the program with the best footprint. */
       const airlinesPicked = lower(p.brands?.airlinesPicked ?? p.brands?.airlines);
-      const hotelsPicked = lower(p.brands?.hotelsPicked ?? p.brands?.hotels);
+      /* v7c 1: brand chips only — never "Independent" / "Not sure". */
+      const hotelsPicked = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).filter((h) => !HOTEL_AUTO_CHIPS.includes(h));
       const airlines = travel.airlineChoice === "auto" && travel.inferred ? [...travel.inferred.programs] : airlinesPicked;
-      const wantsPick = hotelsPicked.some((h) => h === "independent" || h === "unsure") || travel.hotelChoice === "auto";
+      const wantsPick = travel.hotelChoice === "auto";
       const nights = travel.hotelNights != null ? travel.hotelNights : travel.trips * DEFAULT_NIGHTS_PER_TRIP;
       const pick = wantsPick ? pickHotelProgram({ airports: travel.airports.length ? travel.airports : [{ code: travel.homeAirport || "X", trips: travel.trips || 1, destinations: [] }], nights, mode: p.valueMode || "typical" }) : null;
-      const hotels = [...new Set([...hotelsPicked, ...(pick ? [pick.program] : [])])];
-      return { airlines, airlinesPicked, hotels, hotelsPicked, hotelPick: pick ? { program: pick.program, why: pick.why } : null,
+      /* Auto values the picked program only; manual values their brands. */
+      const hotels = wantsPick ? (pick ? [pick.program] : []) : hotelsPicked;
+      return { airlines, airlinesPicked, hotels, hotelsPicked, hotelPick: pick ? { program: pick.program, why: pick.why, sentence: pick.sentence, rows: pick.rows } : null,
       everyday: lower(p.brands?.everyday),
       perks: lower(p.brands?.perks),
       perksMaybe: lower(p.brands?.perksMaybe).filter((k) => !lower(p.brands?.perks).includes(k)),

@@ -88,6 +88,12 @@ export const LOUNGE_INTEREST = { no: 0, sometimes: 0.5, yes: 1, later: 0.5, bund
    premium bundle: visits × $ × coverage at this reduced factor (they'd use
    them, but wouldn't pay for access on their own). Modeling default. */
 export const LOUNGE_BUNDLE_FACTOR = 0.6;
+/* v7c 1.4: "Where do you usually stay?" scales what hotel loyalty is worth:
+   a hotel program's points above their dependable floor, its elite status
+   and its free-night certificates. Independent / boutique stayers rarely
+   get to use them. Not answered = chains (the pre-v7c behaviour).
+   Modeling default (METHODOLOGY §2.6). */
+export const STAY_STYLE_FACTOR = { chains: 1, mix: 0.75, independent: 0.4 };
 /* v7b 3.3: flying an airline for work weighs its elite status and its own
    lounges higher (more trips you can't choose, more value in perks). */
 export const WORK_STATUS_FACTOR = 1.5;

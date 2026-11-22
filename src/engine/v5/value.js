@@ -18,7 +18,7 @@ import {
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
   FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS, INTERESTED_FACTOR,
-  LOUNGE_BUNDLE_FACTOR, WORK_STATUS_FACTOR, WORK_LOUNGE_FACTOR,
+  LOUNGE_BUNDLE_FACTOR, WORK_STATUS_FACTOR, WORK_LOUNGE_FACTOR, STAY_STYLE_FACTOR,
 } from "../../data/benefitUsage.js";
 import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
 import { pctBack, BANK_CURRENCIES } from "./valuation.js";
@@ -401,7 +401,8 @@ export function bagValue(card, profile) {
   const ans = profile.travel.bags;
   const perks = profile.travel.airlinePerks;
   if (perks && !perks.includes("bags")) return 0;
-  const used = ans ? Math.min(free, ans.perTrip) * ans.share : free;
+  /* Not asked → one bag a trip (the card may cover more; they may not check them). */
+  const used = ans ? Math.min(free, ans.perTrip) * ans.share : 1;
   /* v7b 4.5: bags per trip × trips on THAT airline × the bag fee. */
   return BAG_FEE * used * airlineTrips(profile, cardBrand(card)) * 2;
 }
@@ -472,12 +473,16 @@ export function loungeTotal(networks) {
   return Math.min(LOUNGE_RETAIL_CAP, vals[0] + SECOND_LOUNGE_SHARE * vals.slice(1).reduce((a, b) => a + b, 0));
 }
 
+/** v7c 1.4: how much hotel loyalty is worth to them (1 = chains / not asked). */
+export const stayFactor = (profile) => STAY_STYLE_FACTOR[profile?.travel?.stayStyle] ?? 1;
+
 function statusValue(status, profile) {
   if (!status?.program || !status?.tier) return 0;
   const programs = String(status.program).split(/[+/]/);
   if (!programs.some((p) => pickedBrand(profile, p))) return 0;
   const work = programs.some((p) => (profile.travel.workPrograms || []).includes(p)) ? WORK_STATUS_FACTOR : 1;
-  return Math.round((STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0) * work);
+  const stay = programs.some((p) => HOTEL_CURRENCIES.has(p)) ? stayFactor(profile) : 1;
+  return Math.round((STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0) * work * stay);
 }
 
 /** Protections this card carries (keys from benefitUsage PROTECTIONS). */
@@ -517,7 +522,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     const pc = card.pointCurrency;
     const points = n.pointCap || UNCAPPED_FREE_NIGHT_POINTS[pc] || 0;
     const face = Math.round(points * ((VAL[pc] ?? 0) / 100));
-    const p = pickedCardBrand && nights > 0 && reachable(n.spend) ? FREE_NIGHT_P_USE : 0;
+    const p = pickedCardBrand && nights > 0 && reachable(n.spend) ? FREE_NIGHT_P_USE * stayFactor(profile) : 0;
     const id = `${card.id}#night-${slug(n.name)}`;
     if (p > 0) items.push({ id, label: n.name, face, value: Math.round(face * p), kind: "freeNight" });
     else unused.push({ id, label: n.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : !nights ? "You don't stay in hotels" : `Needs $${n.spend.toLocaleString("en-US")} a year on this card` });

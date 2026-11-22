@@ -100,12 +100,18 @@ describe("3.4 / 4.5 bags × trips on THAT airline", () => {
 });
 
 describe("3.7 hotels by footprint", () => {
-  it("'independent' picks the program strongest where they go, and says why", () => {
-    const p = normalizeProfile(G);
+  it("v7c: 'Let CardWise pick' picks the program strongest where they go, in one sentence", () => {
+    const p = normalizeProfile({ ...G, travel: { ...G.travel, hotelChoice: "auto" } });
     expect(p.brands.hotelPick.program).toBe(pickHotelProgram({ airports: AIRPORTS, nights: 20 }).program);
-    expect(p.brands.hotelPick.why).toMatch(/good hotels in \d of your \d destinations/);
-    expect(p.brands.hotels).toContain(p.brands.hotelPick.program);
-    expect(p.brands.hotelsPicked).toEqual(["hyatt", "marriott", "independent"]);   // the answer itself isn't rewritten
+    expect(p.brands.hotelPick.sentence).toMatch(/^We'd pick \w+: strong in \d of your \d destinations/);
+    expect(p.brands.hotels).toEqual([p.brands.hotelPick.program]);
+  });
+  it("v7c: an old 'Independent' chip beside brands → those brands, staying at a mix", () => {
+    const p = normalizeProfile(G);
+    expect(p.travel).toMatchObject({ hotelChoice: "manual", stayStyle: "mix" });
+    expect(p.brands.hotels).toEqual(["hyatt", "marriott"]);
+    expect(p.brands.hotelPick).toBeNull();
+    expect(normalizeProfile({ brands: { hotels: ["independent"] } }).travel).toMatchObject({ hotelChoice: "auto", stayStyle: "independent" });
   });
 });
 
@@ -147,9 +153,11 @@ describe("travel step screen", () => {
     expect(p.travel.airports[1].destinations[0]).toMatchObject({ key: "tokyo", trips: 1 });
     expect(p.travel.workPrograms).toContain("delta");
   });
-  it("hotels: 'independent' shows which program we'd pick and why", () => {
-    saveV5Profile(G);
+  it("hotels: 'Let CardWise pick' shows the pick in one sentence with a Why? link", () => {
+    saveV5Profile({ ...G, travel: { ...G.travel, hotelChoice: "auto" } });
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    expect(screen.getByTestId("hotel-pick")).toHaveTextContent(/good hotels in/);
+    expect(screen.getByTestId("hotel-pick")).toHaveTextContent(/^We'd pick \w+: strong in \d of your \d destinations/);
+    fireEvent.click(screen.getByRole("button", { name: "Why?" }));
+    expect(screen.getByTestId("hotel-why")).toHaveTextContent(/Hilton: strong in/);
   });
 });

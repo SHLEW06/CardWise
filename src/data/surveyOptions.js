@@ -117,11 +117,22 @@ export const AIRLINE_GROUPS = [
 ];
 export const AIRLINE_KEYS = AIRLINE_GROUPS.flatMap((g) => g.options.map((o) => o.key));
 
+/* v7c 1.3: brand chips only (shown after "I have brands I like"). The old
+   "Independent / whatever's cheapest" and "Not sure" chips meant "let
+   CardWise pick" — that's now the mode question's default answer. */
 export const HOTEL_BRANDS = [
   { key: "marriott", label: "Marriott" }, { key: "hilton", label: "Hilton" }, { key: "hyatt", label: "Hyatt" }, { key: "ihg", label: "IHG" },
   { key: "wyndham", label: "Wyndham" }, { key: "choice", label: "Choice" }, { key: "bestwestern", label: "Best Western", program: false },
-  { key: "accor", label: "Accor" }, { key: "sonesta", label: "Sonesta", program: false }, { key: "independent", label: "Independent / whatever's cheapest", program: false },
-  { key: "unsure", label: "Not sure — help me choose", program: false },
+  { key: "accor", label: "Accor" }, { key: "sonesta", label: "Sonesta", program: false },
+];
+/* Saved answers from before v7c that meant "let CardWise pick". */
+export const LEGACY_HOTEL_AUTO = ["independent", "unsure"];
+/* v7c 1.4: where they usually stay — how much hotel points and status are
+   worth to them (STAY_STYLE_FACTOR), not a brand pick. */
+export const STAY_STYLES = [
+  { key: "chains", label: "Big hotel chains" },
+  { key: "independent", label: "Independent or boutique" },
+  { key: "mix", label: "A mix" },
 ];
 
 /* ── Step 5: memberships you already pay for (optional) — a card that needs

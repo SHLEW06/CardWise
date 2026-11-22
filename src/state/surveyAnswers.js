@@ -26,7 +26,10 @@ export const stepsFor = (mode) => STEP_DEFS.filter((s) => mode === "thorough" ||
 
 /** Any saved profile → the survey's draft (normalized, so every field exists). */
 export function draftFrom(profile) {
-  const p = normalizeProfile(profile || {});
+  /* v7c 1: the hotel mode question's default is "Let CardWise pick". */
+  const raw = profile || {};
+  const p0 = normalizeProfile(raw);
+  const p = p0.travel.hotelChoice === "none" ? normalizeProfile({ ...p0, travel: { ...p0.travel, hotelChoice: "auto" } }) : p0;
   /* v7b: a profile saved before home airports had one airport and a trip
      count. Show it as the first airport row, keeping the airlines they
      picked ("I'll choose") until they switch to "Best value". */
