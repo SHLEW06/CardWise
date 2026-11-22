@@ -346,6 +346,12 @@ export function creditUsage(card, credit, profile) {
   const chipFloor = chips.some((k) => profile.brands.perks.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9)
     : chips.some((k) => profile.brands.perksMaybe.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * INTERESTED_FACTOR : 0;
   const lift = (u) => (u.factor > 0 || chipFloor > 0 ? { ...u, factor: Math.max(u.factor, chipFloor), reason: Math.max(u.factor, chipFloor) > 0 ? null : u.reason } : u);
+  if (credit.kind === "portal" || creditClass(credit) === "niche") {
+    /* v7c 5.3: niche or portal-tied credits count only if they picked them. */
+    const brand = travelBrandOf(card, credit);
+    if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
+    return chipFloor > 0 ? { factor: chipFloor, reason: null } : { factor: 0, reason: "Tied to booking through the card's travel site — $0 unless you pick it" };
+  }
   if (credit.kind === "broad") return lift({ factor: trips > 0 ? 0.95 : 0.6, reason: null });
   if (credit.kind === "hotel") {
     const brand = travelBrandOf(card, credit);
@@ -356,12 +362,6 @@ export function creditUsage(card, credit, profile) {
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
     if (!trips) return { factor: 0, reason: "You don't fly" };
     return lift({ factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null });
-  }
-  if (credit.kind === "portal" || creditClass(credit) === "niche") {
-    /* v7c 5.3: niche or portal-tied credits count only if they picked them. */
-    const brand = travelBrandOf(card, credit);
-    if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
-    return chipFloor > 0 ? { factor: chipFloor, reason: null } : { factor: 0, reason: "Tied to booking through the card's travel site — $0 unless you pick it" };
   }
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
@@ -523,7 +523,8 @@ export function benefitBreakdown(card, profile, ctx = {}) {
       gated.push({ id: creditId(card, c), label: c.name, face: c.annual, spend: spendThreshold(c) });
       continue;
     }
-    const u = creditUsage(card, c, profile);
+    /* v7c Part 6: a credit the issuer page doesn't show counts $0. */
+    const u = c.unverified ? { factor: 0, reason: "Not on the issuer's page — counted $0" } : creditUsage(card, c, profile);
     const id = creditId(card, c);
     const value = Math.round(c.annual * u.factor);
     /* v7 A5c: one brand's perk counts once per wallet (a new card isn't
@@ -571,7 +572,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   const status = (off.has("hotelStatus") ? 0 : statusValue(card.hotelStatus, profile)) + (off.has("airlineStatus") ? 0 : statusValue(card.airlineStatus, profile));
   if (status) items.push({ id: `${card.id}#status`, label: "Elite status", face: status, value: status, kind: "status" });
 
-  if (card.anniversaryPoints) {
+  if (card.anniversaryPoints && !(card.unverified || []).includes("anniversary")) {
     const cpp = cardPointValue(card, profile, ctx.wallet || []).cpp;
     const v = Math.round(card.anniversaryPoints * (cpp / 100));
     items.push({ id: `${card.id}#anniversary`, label: `${card.anniversaryPoints.toLocaleString("en-US")} bonus points each year`, face: v, value: v, kind: "points" });

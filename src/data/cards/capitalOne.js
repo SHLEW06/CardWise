@@ -32,12 +32,16 @@ export const CARDS = [
     id: "venture-x", name: "Capital One Venture X", issuer: "Capital One", network: "VISA",
     annualFee: 395, currency: "Cap One Miles", pointCurrency: "c1",
     earnRates: { General: 2 }, portalMultipliers: { Hotels: 10, Car: 10, Flights: 5 },
-    credits: [cred("$300 Capital One Travel credit", 300, "MEDIUM", "portal", "annual")],
-    benefits: ["2x everywhere", "Capital One + Priority Pass lounges", "Authorized users get lounge access free", "Primary rental coverage"],
+    /* v7c audit (capitalone.com/credit-cards/venture-x, 2026-11-22): the page
+       no longer shows the $300 Capital One Travel credit, the 10,000
+       anniversary miles, rental car or trip cover, or lounge access for
+       authorized users — kept, marked unverified, counted $0. */
+    credits: [cred("$300 Capital One Travel credit", 300, "MEDIUM", "portal", "annual", { cls: "niche", unverified: true })],
+    benefits: ["2x everywhere", "10x hotels and rental cars, 5x flights and vacation rentals on Capital One Travel", "5x Capital One Entertainment", "Capital One Lounges + Priority Pass (primary cardholder)", "Cell phone protection (up to $800)", "Premier Collection $100 / Lifestyle Collection $50 experience credit per stay", "Hertz Gold+ status upgrade"],
     transferAccess: ["c1"], loungeAccess: { networks: ["Capital One Lounge", "Priority Pass"], estAnnual: 250, use: "MEDIUM", type: "Capital One + Priority Pass" },
     hotelStatus: { program: "hilton/wyndham", tier: "via Premier Collection", estValue: 0 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
-    directBookingBenefits: ["Premier Collection hotel perks"], travelProtections: ["Primary CDW", "Trip delay", "Trip cancellation"], foreignTransactionFee: 0,
+    directBookingBenefits: ["Premier Collection hotel perks"], travelProtections: ["Cell phone protection ($800)", "Primary CDW (not on the product page)", "Trip delay / cancellation (not on the product page)"], foreignTransactionFee: 0,
     downgradeOptions: ["Venture ($95)", "VentureOne ($0)"],
     downgradeOptionIds: ["venture", "venture-one", "quicksilver"],
     productChangePaths: ["Downgrade to Venture/VentureOne"],

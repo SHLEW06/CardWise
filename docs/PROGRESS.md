@@ -1223,3 +1223,82 @@ the card) no longer count; Delta Stays counts only if picked. Without them
 the Delta Platinum's companion certificate beats the Gold for the no-lounge
 flyer. Tests: `v7cPart5.test.jsx` (9); v5Engine worked example now picks
 portal credits explicitly; bag test uses the verified two domestic bags.
+
+## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
+
+Method: each issuer's own page, rendered in headless Chrome (Amex pages only
+show terms with JavaScript; their "Explore All → Expand All" benefit list was
+opened too). Capital One blocks the headless browser, so Venture X was read
+with a plain page fetch. No blog, no memory: whatever a page doesn't confirm
+is marked **unverified** and counted **$0**. Record per card in
+`src/data/cardAudit.js` (source, date, group, batch, old → new, unverified,
+and the issuer's own sentence for every credit); `npm run audit:v7c` writes
+the table into `docs/CARD_AUDIT.md`.
+
+- **Group 1 (the owner's cards):** Amex Gold, Delta Gold, Freedom Unlimited,
+  Robinhood Gold.
+- **Group 2 (every card the optimizer recommends to the owner's profile —
+  optimal wallet in all modes, Wallet Score best, loyalty strategies, sample
+  setups, lounge options, fee ladder):** Amex Platinum, BofA Premium Rewards
+  Elite, Citi Double Cash, Citi Strata Premier, Citi Strata Elite, Costco
+  Anywhere, Sapphire Reserve, Delta Reserve, Marriott Brilliant, Discover it,
+  Freedom Flex, World of Hyatt, IHG Premier, Marriott Boundless, US Bank
+  Altitude Connect, Venture X.
+- Batches: 1 = group 1 + 6 of group 2 (commit c7d769b); 2 = the other 10.
+
+**Biggest findings (need the owner's eye):**
+1. **Venture X:** capitalone.com no longer shows the **$300 Capital One
+   Travel credit**, the **10,000 anniversary miles**, primary rental cover
+   or trip delay / cancellation. All kept in the data but unverified → $0.
+   The page does show cell phone protection (up to $800), lounges for the
+   primary cardholder, 10x / 5x on Capital One Travel. (Its Visa Infinite
+   benefits PDF wasn't read.)
+2. **IHG Premier gives Gold Elite, not Platinum** (Platinum only after
+   $15,000 a year); + $50 United TravelBank cash a year.
+3. **Amex Platinum was missing its Global Entry / TSA PreCheck credit** —
+   added (it's in the All Benefits list).
+4. **Freedom Flex:** no foreign transaction fee (data said 3%); **cell phone
+   protection isn't on the page** (data had it) → $0.
+5. **Robinhood Gold:** the 5% travel-portal rate isn't on its card page →
+   dropped; Robinhood Travel no longer appears in the portal list.
+6. **Marriott Boundless:** 3x grocery / gas / dining only on the first
+   $6,000 combined a year; trip delay / baggage delay not on the page.
+7. **Discover it:** the first-year Cashback Match isn't on the page (the
+   offer shown is a $200 bonus).
+8. Delta Gold and Delta Reserve: second bag free on domestic Delta flights;
+   Reserve + Global Entry credit, cell phone protection, trip cancellation.
+9. Marriott Brilliant: + $100 Ritz-Carlton / St. Regis property credit
+   (niche, $0 unless picked), + Global Entry credit; its $300 dining credit
+   is $25 a month (now valued as a monthly credit, ×0.5, was ×0.9).
+
+**Engine fixes found on the way:**
+- The optimizer's dominance pruning could drop a co-brand card of a program
+  the person uses (it dropped the Brilliant once its solo value dipped,
+  missing a wallet worth $427 more). Co-brands of their own airlines and
+  hotels are now always shortlisted and never pruned by dominance.
+- Niche / portal-tied credits are checked before the hotel and airline
+  rules (the Ritz property credit was being counted).
+- `cred()` carries `unverified: true`; unverified credits, protections,
+  hotel / airline status and anniversary points count $0.
+
+**Golden before → after (`npm run golden`, batch 1 + 2):**
+
+| Profile | Before (end of Part 5) | After |
+|---|---|---|
+| 3 foodie $400 | N +$893 | N +$868 — Amex Gold trip-delay cover not on its page |
+| 4 Hyatt $400 | N +$771 | N +$751 — Hyatt's page lists trip cancellation, not trip delay |
+| 5 ATL Delta, lounges yes | N +$1,019 | N +$1,039 — Reserve: verified second domestic bag, cell phone cover |
+| Owner-like, from scratch | N +$1,993 | N +$1,853 · same five cards — Brilliant dining credit monthly, Ritz credit niche, Boundless cap |
+| Owner-like, from wallet | N +$1,023 | N +$1,003 |
+| Owner-like, held wallet | N +$704 | N +$684 |
+
+Tests: `v7cPart6.test.js` (6): every credit has a class and a source;
+audited cards' credits carry the issuer page + date; no spend-gated credit
+adds value; every credit on an audited card has the issuer's sentence with
+its amount (or is flagged unverified); unverified items count $0;
+CARD_AUDIT.md lists every audited card.
+
+**Next (after the owner's review):** group 3 — the 40 most popular cards
+(Sapphire Preferred, the Delta / United / Hilton / Marriott / Hyatt / IHG
+cards, Citi Strata, Bilt, Blue Cash, Altitude …), then group 4, batches of
+~10. Resume from `src/data/cardAudit.js` (cards not in it are unaudited).

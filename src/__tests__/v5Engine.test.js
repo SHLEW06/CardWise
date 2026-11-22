@@ -139,7 +139,10 @@ describe("worked example: Citi Strata Elite for AA-hub flyers", () => {
   });
   it("the benefit pass fills the lounge slot for this person", () => {
     const r = optimizeWallet(P);
-    expect(recommended(r).some((x) => x.role === "Lounge card")).toBe(true);
+    /* v7c audit: Venture X's $300 credit is off its page, so the lounge need
+       is now met by a card whose lounge access is its benefit (AA Globe's
+       Admirals Club passes) rather than a "Lounge card" slot. */
+    expect(recommended(r).some((x) => x.role === "Lounge card" || BY_ID[x.cardId].loungeAccess)).toBe(true);
   });
 });
 

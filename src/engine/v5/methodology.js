@@ -254,6 +254,10 @@ export function optimalWallet(rawProfile, options = {}) {
     if (unlockIds.has(c.id) && (curs.has(c.pointCurrency) || (TRANSFER_RULES.c1.unlockCards.includes(c.id) && cands.some((x) => top.has(x.id) && (TRANSFER_RULES.c1.convertFrom || []).includes(x.id))))) top.add(c.id);
     if (elig[c.id].how === "held") top.add(c.id);
     if (mustOneOf?.includes(c.id)) top.add(c.id);
+    /* v7c: a co-brand card of an airline / hotel they use is always tried —
+       its value is mostly perks that pay off beside the rest of the wallet,
+       so a modest solo value mustn't hide it (Marriott Brilliant). */
+    if ((profile.brands.airlines.includes(c.pointCurrency) || profile.brands.hotels.includes(c.pointCurrency)) && solo.get(c.id) > -ev.fees[c.id]) top.add(c.id);
   }
   cands = cands.filter((c) => top.has(c.id));
 
@@ -278,7 +282,10 @@ export function optimalWallet(rawProfile, options = {}) {
       const solid = b.items.filter((i) => !i.dedupe).reduce((t, i) => t + i.value, 0);
       return [c.id, { ...pctRange(c), all: b.total, solid, fee: ev.fees[c.id] }];
     }));
-    const keep = (c) => unlockIds.has(c.id) || elig[c.id].how === "held" || mustOneOf?.includes(c.id);
+    /* v7c: co-brands of their own programs aren't pruned by dominance either —
+       their certificates and status don't line up rate-for-rate with others. */
+    const ownProgram = (c) => profile.brands.airlines.includes(c.pointCurrency) || profile.brands.hotels.includes(c.pointCurrency);
+    const keep = (c) => unlockIds.has(c.id) || elig[c.id].how === "held" || mustOneOf?.includes(c.id) || ownProgram(c);
     const bks = Object.keys(ev.spend).filter((b) => ev.spend[b] > 0);
     cands = cands.filter((a) => {
       if (keep(a)) return true;

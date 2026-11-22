@@ -158,6 +158,8 @@ describe("4 · brands (perks)", () => {
     for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras", "Travel credits"]) expect(screen.getByText(g)).toBeInTheDocument();
     expect(screen.queryByTestId("perks-spend")).toBeNull();
     const food = screen.getByRole("group", { name: "Food & delivery: would use" });
+    const more = within(food).queryByRole("button", { name: /^Show all/ });
+    if (more) fireEvent.click(more);
     fireEvent.click(within(food).getByRole("button", { name: "Dunkin' credit" }));
     fireEvent.click(within(food).getByRole("button", { name: "Resy dining credit" }));
     const spend = within(screen.getByTestId("perks-spend")).getByRole("group", { name: "Already spend on" });

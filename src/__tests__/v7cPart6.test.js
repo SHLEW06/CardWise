@@ -10,7 +10,7 @@ import { creditClass, CREDIT_CLASSES } from "../data/creditClass.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
 import { benefitBreakdown, protectionsOf } from "../engine/v5/value.js";
 
-const amountOf = (s) => (String(s).match(/\$([\d,]+)/) || [])[1];
+const amountOf = (s) => (String(s).match(/\$(\d[\d,]*\d|\d)/) || [])[1];
 
 describe("every credit has a class and a source", () => {
   it("all cards", () => {
@@ -46,6 +46,8 @@ describe("no credit is attached to a card whose source page lacks it", () => {
     for (const [id, a] of Object.entries(AUDIT)) {
       for (const cr of BY_ID[id].credits || []) {
         const q = a.quotes?.[cr.name];
+        /* A credit the page doesn't show stays on the card only flagged unverified (counted $0). */
+        if (!q && cr.unverified) continue;
         if (!q) { bad.push(`${id}: ${cr.name} (no quote)`); continue; }
         const amt = amountOf(cr.name);
         if (amt && !q.includes(`$${amt}`)) bad.push(`${id}: ${cr.name} (quote lacks $${amt})`);
@@ -60,9 +62,13 @@ describe("unverified items count $0", () => {
   it("protections and status the page doesn't confirm aren't valued", () => {
     expect(protectionsOf(BY_ID["boa-premium-elite"]).map((p) => p.key)).toEqual([]);
     expect(protectionsOf(BY_ID["amex-gold"]).map((p) => p.key)).not.toContain("tripProtection");
-    const p = normalizeProfile({ travel: { trips: 4, hotelNights: 10, hotelChoice: "manual" }, brands: { hotels: ["marriott", "hilton"] } });
-    expect(benefitBreakdown(BY_ID["amex-plat"], p).items.some((i) => i.kind === "status")).toBe(false);
+    expect(protectionsOf(BY_ID["ihg-premier"]).map((p) => p.key)).not.toContain("tripProtection");
+    expect(protectionsOf(BY_ID["freedom-flex"]).map((p) => p.key)).not.toContain("cellPhone");
     expect(BY_ID["robinhood-gold"].portalMultipliers).toEqual({});
+    /* Venture X: the $300 travel credit and anniversary miles aren't on its page. */
+    const vx = benefitBreakdown(BY_ID["venture-x"], normalizeProfile({ travel: { trips: 6 }, brands: { perksUse: ["portal-travel"], perksSpend: ["portal travel"] } }));
+    expect(vx.items.some((i) => /Capital One Travel credit|bonus points each year/.test(i.label))).toBe(false);
+    expect(vx.unused.find((u) => /Capital One Travel credit/.test(u.label)).reason).toBe("Not on the issuer's page — counted $0");
   });
   it("docs/CARD_AUDIT.md lists every audited card with changes, unverified items, source and date", () => {
     const doc = readFileSync(resolve(process.cwd(), "docs/CARD_AUDIT.md"), "utf8");

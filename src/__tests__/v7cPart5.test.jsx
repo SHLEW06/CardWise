@@ -57,7 +57,9 @@ describe("5.2–5.3 · only free or easy credits count; niche / portal-tied $0 u
     const stays = (p) => benefitBreakdown(BY_ID["delta-gold"], normalizeProfile(p)).items.find((i) => /Delta Stays/.test(i.label))?.value || 0;
     expect(stays(FLYER)).toBe(0);
     expect(stays({ ...FLYER, brands: { ...FLYER.brands, perksUse: ["hotel-portal"], perksSpend: ["portal hotels"] } })).toBeGreaterThan(0);
-    const vx = (p) => benefitBreakdown(BY_ID["venture-x"], normalizeProfile(p)).items.find((i) => /Capital One Travel/.test(i.label))?.value || 0;
+    /* A non-hotel portal credit (Venture X's, as the data had it before the v7c audit flagged it unverified). */
+    const card = { ...BY_ID["venture-x"], credits: [{ ...BY_ID["venture-x"].credits[0], unverified: false }] };
+    const vx = (p) => benefitBreakdown(card, normalizeProfile(p)).items.find((i) => /Capital One Travel/.test(i.label))?.value || 0;
     expect(vx(FLYER)).toBe(0);
     expect(vx({ ...FLYER, brands: { ...FLYER.brands, perksUse: ["portal-travel"], perksSpend: ["portal travel"] } })).toBeGreaterThan(0);
   });
