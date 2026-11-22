@@ -1302,3 +1302,29 @@ CARD_AUDIT.md lists every audited card.
 (Sapphire Preferred, the Delta / United / Hilton / Marriott / Hyatt / IHG
 cards, Citi Strata, Bilt, Blue Cash, Altitude …), then group 4, batches of
 ~10. Resume from `src/data/cardAudit.js` (cards not in it are unaudited).
+
+## v7c acceptance re-run (2026-11-22)
+
+`docs/ACCEPTANCE_REPORT.md` updated: C3–C12, E2, F6 re-checked against v7c
+(PASS), new **C19** (no contradictory selections, mode question first —
+PASS, `acceptanceV7c.test.jsx`), **D10 HOLD** (audit stopped after groups
+1–2 for review). Totals: 65 PASS · 7 FIXED · 3 HOLD · 0 FAIL (75 IDs).
+Screenshots: `screenshots/v7c/` (C3 trips, C8 hotel + strategy Why, C10
+perks + "already spend", E2 Unlocks with spending, F6 Overlap).
+Also fixed from the screenshots: "Your cards already give you" no longer
+lists spend-gated or unverified credits.
+
+## Questions for the owner (v7c)
+1. **Venture X**: its page no longer shows the $300 travel credit or the
+   10,000 anniversary miles. They're kept, counted $0 until confirmed — do
+   you see them on your account / statement? (The Visa Infinite benefits PDF
+   wasn't read; it may list the travel protections.)
+2. **Spend-gated free nights** (Hilton Surpass, World of Hyatt's 2nd night,
+   Marriott Bevy after $15k) still count when the optimizer puts that much
+   spend on the card, as before. The brief's $0 rule names credits; should
+   certificates behind a spend threshold also count $0?
+3. **Close calls on routes** use 70% (another airline with ≥ 70% of the
+   most flights is a close call, where your picks decide). OK, or tighter?
+4. **Stay style** factors: chains 1 · mix 0.75 · independent 0.4. OK?
+5. The **Global Entry credit** amount on US Bank Altitude Connect isn't on
+   its page — valued at $24 a year like the others.

@@ -18,6 +18,7 @@ import {
 } from "../../../data/surveyOptions.js";
 import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor, spendBrandsFor } from "../../../data/perkChips.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
+import { creditClass } from "../../../data/creditClass.js";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
 import { searchPlaces, placeName, placeShort, isIntl, suggestRoutes, ROUTE_DATA_SOURCE } from "../../../engine/v5/tripRoutes.js";
@@ -735,6 +736,8 @@ export function perksFromHeld(cardsHeld) {
   for (const id of cardsHeld) {
     const c = BY_ID[id];
     for (const cr of c?.credits || []) {
+      /* v7c: a spend-gated or unverified credit isn't something they already get. */
+      if (cr.unverified || creditClass(cr) === "spend-gated") continue;
       const chips = perkChipsFor(cr).filter((k) => CHIP_BY_KEY[k]);
       if (!chips.length) continue;
       out.push({ cardId: id, credit: cr.name, annual: cr.annual, chips, label: CHIP_BY_KEY[chips[0]].label });
