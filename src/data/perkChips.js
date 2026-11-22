@@ -53,7 +53,7 @@ export const PERK_CHIPS = [
   { key: "youtube", label: "YouTube Premium / TV credit", group: "streaming" },
   { key: "nyt", label: "New York Times credit", group: "streaming" },
   { key: "wsj", label: "Wall Street Journal credit", group: "streaming" },
-  { key: "globalentry", label: "TSA PreCheck / Global Entry fee credit", group: "travel" },
+  { key: "globalentry", label: "TSA PreCheck / Global Entry / NEXUS fee credit", group: "travel" },
   { key: "clear", label: "CLEAR+ membership", group: "travel" },
   { key: "loungebuddy", label: "LoungeBuddy credit", group: "travel" },
   { key: "avis", label: "Avis / Budget credit", group: "travel" },
@@ -73,6 +73,47 @@ export const PERK_CHIPS = [
   { key: "general-business", label: "Business credit (advertising, software, airline fees)", group: "general" },
 ];
 export const CHIP_BY_KEY = Object.fromEntries(PERK_CHIPS.map((c) => [c.key, c]));
+
+/* v7c 4.2: "Do you already spend on any of these?" — plain brand names, not
+   "credit". Chips for the same brand share one answer (Uber Cash and Uber
+   One are both "Uber"). PreCheck has its own follow-up; the travel-credit
+   chips ask about the kind of spend. */
+export const SPEND_BRAND = {
+  uber: ["uber", "Uber"], "uber one": ["uber", "Uber"], lyft: ["lyft", "Lyft"], blacklane: ["blacklane", "Blacklane"],
+  doordash: ["doordash", "DoorDash"], dashpass: ["doordash", "DoorDash"], grubhub: ["grubhub", "Grubhub"],
+  "five guys": ["five guys", "Five Guys"], "cheesecake factory": ["cheesecake factory", "The Cheesecake Factory"], dunkin: ["dunkin", "Dunkin'"],
+  resy: ["resy", "Resy restaurants"], opentable: ["opentable", "OpenTable restaurants"], inkind: ["inkind", "inKind restaurants"],
+  lululemon: ["lululemon", "lululemon"], oura: ["oura", "Oura"], peloton: ["peloton", "Peloton"], "walmart+": ["walmart", "Walmart"],
+  "best buy": ["best buy", "Best Buy"], stubhub: ["stubhub", "StubHub"], "live nation": ["live nation", "Live Nation / Ticketmaster"],
+  "1stdibs": ["1stdibs", "1stDibs"], future: ["future", "Future"], "disney+": ["disney+", "Disney+ / Hulu / ESPN+"],
+  peacock: ["peacock", "Peacock"], "paramount+": ["paramount+", "Paramount+"], youtube: ["youtube", "YouTube Premium / TV"],
+  nyt: ["nyt", "The New York Times"], wsj: ["wsj", "The Wall Street Journal"], clear: ["clear", "CLEAR"],
+  loungebuddy: ["loungebuddy", "LoungeBuddy"], avis: ["avis", "Avis / Budget"], turo: ["turo", "Turo"], jsx: ["jsx", "JSX"],
+  renowned: ["chase travel hotels", "Hotels booked through Chase Travel"],
+  "airline-flight": ["airline tickets", "Airline tickets"], "airline-incidental": ["airline fees", "Airline bag, seat and upgrade fees"],
+  "hotel-portal": ["portal hotels", "Hotels booked through a card's travel site"], "hotel-brand": ["chain hotels", "Stays at one hotel chain"],
+  "travel-broad": ["travel", "Travel of any kind"],
+};
+/** The brands to ask about for these picked chips: [{ key, label, chips }]. */
+export function spendBrandsFor(picked = []) {
+  const out = new Map();
+  for (const k of picked) {
+    const b = SPEND_BRAND[k];
+    if (!b) continue;
+    const row = out.get(b[0]) || { key: b[0], label: b[1], chips: [] };
+    row.chips.push(k);
+    out.set(b[0], row);
+  }
+  return [...out.values()];
+}
+/** v7c 4.5: TSA PreCheck / Global Entry / NEXUS. Official fees (read
+    2026-11-22): Global Entry "$120, and membership lasts for five years"
+    (cbp.gov/travel/trusted-traveler-programs/global-entry); NEXUS "$120"
+    "valid for five years" (cbp.gov/…/nexus/apply-renew); TSA PreCheck "five
+    years of benefits for $85 or less" (tsa.gov/precheck). Cards pay the fee
+    once every 4–4.5 years, but the membership lasts 5, so the credit is used
+    once per 5 years: $120 ÷ 5 = $24 a year. */
+export const TRUSTED_TRAVELER_YEARLY = 24;
 export const TRAVEL_CREDIT_CHIPS = new Set(["airline-flight", "airline-incidental", "hotel-portal", "hotel-brand", "travel-broad"]);
 
 const GENERAL_CHIP = [

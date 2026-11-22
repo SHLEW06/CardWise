@@ -16,7 +16,7 @@ import {
   FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
   LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS, STAY_STYLES,
 } from "../../../data/surveyOptions.js";
-import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor } from "../../../data/perkChips.js";
+import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor, spendBrandsFor } from "../../../data/perkChips.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
@@ -135,7 +135,6 @@ function Step({ id, d, set, mode, headRef }) {
     case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "travel": return <TravelStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "brands": return <PerksStep d={d} set={set} headRef={headRef} />;
-    case "perksMaybe": return <PerksMaybeStep d={d} set={set} headRef={headRef} />;
     case "fee":
       return (
         <>
@@ -757,18 +756,50 @@ function PerkGroups({ picked, onChange, exclude = [], suffix }) {
   });
 }
 
+/* v7c Part 4: one perk step. "Which of these would you actually use if a
+   card included them?" (chips named the way the card names them, grouped,
+   built from the card data), then — about the picked perks only — "Do you
+   already spend on any of these?" in plain brand names. Picked + already
+   spend → near full value; picked only → reduced; not picked → $0. PreCheck
+   asks whether they already have it. */
 function PerksStep({ d, set, headRef }) {
-  const use = d.brands.perks;
+  const use = d.brands.perksUse ?? [...new Set([...(d.brands.perks || []), ...(d.brands.perksMaybe || [])])];
+  const spend = d.brands.perksSpend ?? [];
   const have = useMemo(() => perksFromHeld(d.cardsHeld), [d.cardsHeld]);
-  const setUse = (perks) => set({ brands: { ...d.brands, perks, perksMaybe: (d.brands.perksMaybe || []).filter((k) => !perks.includes(k)) } });
+  const brandsAsked = spendBrandsFor(use);
+  const setBrands = (patch) => set({ brands: { ...d.brands, perksUse: use, perksSpend: spend, ...patch } });
+  const setUse = (perksUse) => setBrands({ perksUse, perksSpend: spend.filter((b) => spendBrandsFor(perksUse).some((x) => x.key === b)) });
+  const pc = d.brands.precheck;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Card perks" title="Perks you already pay for or use"
-        sub="Statement credits and memberships some cards include, named the way the card names them. These are card perks, not point redemptions. Counted at full value." />
+      <Head headRef={headRef} eyebrow="Card perks" title="Which of these would you actually use if a card included them?"
+        sub="Statement credits and memberships some cards include, named the way the card names them. Premium cards bundle many of these — pick only the ones you'd really use." />
       <section className="perk-section" aria-labelledby="perks-a">
-        <h2 className="sr-only" id="perks-a">Already pay for or use</h2>
-        <PerkGroups picked={use} onChange={setUse} suffix="already use" />
+        <h2 className="sr-only" id="perks-a">Perks you'd use</h2>
+        <PerkGroups picked={use} onChange={setUse} suffix="would use" />
       </section>
+      {brandsAsked.length > 0 && (
+        <fieldset className="survey-group" data-testid="perks-spend">
+          <legend className="t-h3">Do you already spend on any of these?</legend>
+          <p className="t-caption">A perk you'd use where you already spend counts at nearly full value; one you'd have to start using counts for less.</p>
+          <ToggleChips options={brandsAsked} picked={spend} onChange={(perksSpend) => setBrands({ perksSpend })} label="Already spend on" limit={brandsAsked.length} />
+        </fieldset>
+      )}
+      {use.includes("globalentry") && (
+        <fieldset className="survey-group" data-testid="precheck">
+          <legend className="t-h3" id="q-precheck">Already have PreCheck or Global Entry?</legend>
+          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-precheck">
+            <Choice radio pill selected={pc ? !pc.has : false} onSelect={() => setBrands({ precheck: { has: false } })}>No</Choice>
+            <Choice radio pill selected={!!pc?.has} onSelect={() => setBrands({ precheck: { has: true, renewIn: pc?.renewIn ?? 2 } })}>Yes, renewing in…</Choice>
+            {pc?.has && (
+              <select aria-label="Years until you renew" value={pc.renewIn ?? 2} onChange={(e) => setBrands({ precheck: { has: true, renewIn: Number(e.target.value) } })}>
+                {[0, 1, 2, 3, 4, 5].map((y) => <option key={y} value={y}>{y === 0 ? "this year" : `${y} year${y === 1 ? "" : "s"}`}</option>)}
+              </select>
+            )}
+          </div>
+          <p className="t-caption">Worth about $24 a year: the $120 fee is paid once every five years. Counted once, however many cards offer it.</p>
+        </fieldset>
+      )}
       <section className="perk-section" aria-labelledby="perks-c">
         <h2 className="t-h3" id="perks-c">Your cards already give you</h2>
         {have.length ? (
@@ -786,18 +817,6 @@ function PerksStep({ d, set, headRef }) {
           </>
         ) : <p className="t-caption">{d.cardsHeld.length ? "None of your cards pay for these perks." : "Add your cards in step 1 to see the perks they already include."}</p>}
       </section>
-    </>
-  );
-}
-
-function PerksMaybeStep({ d, set, headRef }) {
-  const maybe = d.brands.perksMaybe || [];
-  const setMaybe = (perksMaybe) => set({ brands: { ...d.brands, perksMaybe, perks: d.brands.perks.filter((k) => !perksMaybe.includes(k)) } });
-  return (
-    <>
-      <Head headRef={headRef} eyebrow="Card perks" title="Would you use these if a card included them?"
-        sub="Premium cards bundle many perks; you don't buy them one at a time. Pick the ones you'd actually use if they came with a card — they count at about half their value." />
-      <PerkGroups picked={maybe} onChange={setMaybe} exclude={d.brands.perks} suffix="would use" />
     </>
   );
 }

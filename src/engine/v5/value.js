@@ -26,7 +26,7 @@ import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
 import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
-import { perkChipsFor } from "../../data/perkChips.js";
+import { perkChipsFor, TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -323,8 +323,10 @@ export function creditUsage(card, credit, profile) {
   if (credit.kind === "membership" && TRAVEL_MEMBERSHIP.test(credit.name)) {
     /* v7 A5: TSA PreCheck / Global Entry / NEXUS is a "Travel extras" pick. */
     if (!trips) return { factor: 0, reason: "You don't fly", dedupe: "globalEntry" };
+    /* v7c 4.5: $24 a year ($120 every 5 years), counted once per wallet. */
     const pick = profile.brands.perks.includes("globalentry") ? 1 : profile.brands.perksMaybe.includes("globalentry") ? INTERESTED_FACTOR : 0;
-    return pick ? { factor: 0.9 * pick, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You didn't pick TSA PreCheck / Global Entry", dedupe: "globalEntry" };
+    const factor = credit.annual ? Math.min(1, TRUSTED_TRAVELER_YEARLY / credit.annual) * pick : 0;
+    return pick ? { factor, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You didn't pick TSA PreCheck / Global Entry / NEXUS", dedupe: "globalEntry" };
   }
   if (isSplitCredit(credit)) {
     const brand = travelBrandOf(card, credit);

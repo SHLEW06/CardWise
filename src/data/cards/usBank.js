@@ -17,7 +17,7 @@ export const CARDS = [
     id: "usb-altitude-reserve", name: "US Bank Altitude Reserve", issuer: "US Bank", network: "VISA",
     annualFee: 400, currency: "US Bank Points", pointCurrency: "cash",
     earnRates: { Travel: 3, Mobile: 3, General: 1 }, portalMultipliers: {},
-    credits: [cred("$325 annual travel/dining credit", 325, "EASY"), cred("Global Entry/TSA credit", 25, "EASY", "membership", "4yr")],
+    credits: [cred("$325 annual travel/dining credit", 325, "EASY"), cred("Global Entry/TSA credit", 24, "EASY", "membership", "4yr")],
     benefits: ["3x real-time mobile wallet purchases (Apple Pay / Google Pay)", "3x travel", "$325 annual travel & dining credit", "Priority Pass lounges", "Global Entry/TSA credit", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass"], estAnnual: 150, use: "MEDIUM", type: "Priority Pass" },
     hotelStatus: null, airlineStatus: null,
@@ -63,7 +63,7 @@ export const CARDS = [
     /* v7 audit (issuer page, 2026-11-20): pays the Global Entry and/or TSA
        PreCheck application fee (amount not stated; valued like the catalog's
        other $120-every-4-years credits). */
-    credits: [cred("Global Entry / TSA PreCheck application credit", 30, "EASY", "membership", "4yr")],
+    credits: [cred("Global Entry / TSA PreCheck application credit", 24, "EASY", "membership", "4yr")],
     benefits: ["4x travel, gas station & EV charging", "2x groceries, dining & streaming", "Priority Pass lounge passes ($95 fee waived first year for visits)", "No annual fee", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: { networks: ["Priority Pass (4 visits a year)"], passes: 4, estAnnual: 150, use: "MEDIUM", type: "Priority Pass, 4 free visits per membership year" }, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],

@@ -109,7 +109,23 @@ these mean, and some can't be answered by a chip at all.
    - The credits themselves are brand-specific (Uber Cash works only on
      Uber, DoorDash credits only on DoorDash), so the engine still needs
      the brand.
-3. **One question per chip, three states.** Each brand chip cycles
+   - **Ask about habits, never about value.** People can't say what a
+     credit is worth to them, but they know how often they order takeout.
+     So for each service they'd use, ask one quick frequency question:
+     - **Never** / **A few times a year** / **About monthly** / **Weekly+**.
+     - For subscriptions, ask **Already pay for it** / **Would start if
+       free** / **No**.
+   - The engine turns the answers into yearly dollars, using typical order
+     sizes and prices in METHODOLOGY.md. Each credit counts at 100% of
+     the lesser of its face value and that spending. A monthly credit
+     also can't exceed one month's spending × 12.
+     - Example: "About monthly" on takeout ≈ $35 × 12 = $420 a year, so a
+       $120 delivery credit ($10 a month) counts in full. "A few times a
+       year" ≈ $105 a year, so it counts about $105 but can't use the
+       months with no orders. Count months used × $10.
+   - Show the result back in plain words, e.g. "You'd use about $90 of the
+     $120 Uber credit", and let the person tap to adjust it.
+3. **One question per chip** (the frequency answers above replace the old three states; "Never"/"No" = $0). Each brand chip cycles
    **Use now → Would use → No**. This replaces the separate "already spend"
    follow-up and the old "Perks you already pay for" step.
    - Use now: near full value.
@@ -242,21 +258,17 @@ file and the tests.
    - Show each card once, with its total counted value.
    - The other roles go in small tags on that card.
    - A slot is only for a role that card is actually the best at.
-2. **Debug this first: my Amex Gold is missing everywhere.** It's absent
-   from the points screen (no Membership Rewards row) and from the Dining
-   and Groceries slots, though I own it.
-   - Trace `amex-gold` from the "Your cards" step through the saved
-     profile, the wallet state, the points screen and the slot optimizer.
-   - Look for an id mismatch, a filter that drops owned Amex cards, or
-     MR valued at $0 because no "transfer-unlocking" flag is set (every MR
-     card can transfer; see programs.js `amex: { any: true }`).
-   - Write the root cause in PROGRESS.md.
-   - Add a regression test: a profile owning Amex Gold + Freedom Unlimited
-     + Robinhood Gold + Delta Gold gets the Amex Gold in Dining and
-     Groceries, and an MR row on the points screen.
+2. **Correction: I do NOT own the Amex Gold.** My cards are Freedom
+   Unlimited, Robinhood Gold and Delta Gold. Still, the Amex Gold (4x US
+   supermarkets and restaurants) should show up as a strong recommendation
+   for Groceries and Dining. It was hidden by the fee-budget filter (see
+   5d-2.5, now removed).
+   - Add a test: for a profile holding exactly those three cards, the
+     Groceries and Dining sheets list the Amex Gold with its slot gain and
+     its net value after the fee, whether that's positive or negative.
 3. **Category slots use the person's real best card, including Amex MR.**
-   - Dining and Groceries must show the Amex Gold (4x restaurants, 4x US
-     supermarkets), not Freedom Unlimited or Robinhood.
+   - If the Amex Gold (or any card) is in the recommended wallet, it must
+     take the categories it wins (4x restaurants, 4x US supermarkets).
    - Add a test: for every category, the slot card earns the most at
      counted point values among the cards in the wallet.
 4. **The catch-all line** "This slot overall: 3% (Robinhood 3% + Freedom
@@ -284,14 +296,8 @@ PROGRESS.md):
 
   So one card shows up in several places, and two Marriott cards sit in one
   wallet.
-- **My Amex Gold is likely dropped by the optimizer, not lost.**
-  - In "scratch" mode, held cards aren't forced in. Within the fee budget,
-    the Brilliant's inflated value ($535 free night + $134 lounge + $150
-    status) beats the Amex Gold's $325 fee, so the Gold gets crowded out.
-  - Check which mode the page is in. Check that `cardsHeld` contains
-    `amex-gold` after the survey.
-  - Then re-run with the 5b valuation rules and confirm that the Amex Gold
-    comes back.
+- **The Amex Gold never appears as an option** because the fee-budget check
+  hides it (see item 5 below). I don't own it.
 
 Fixes:
 1. **Default to "From my wallet" mode whenever the person has cards, and
@@ -322,8 +328,8 @@ Fixes:
    cards from the same hotel or airline program unless the second adds a
    clearly positive net value. Explain it if it does.
 4. **Re-run the optimizer after the 5b valuation changes,** and add a test
-   with my four held cards:
-   - The Amex Gold is kept and wins Dining and Groceries.
+   with my three held cards (Freedom Unlimited, Robinhood Gold, Delta Gold):
+   - The Amex Gold is evaluated for Dining and Groceries. It's recommended only if its net value after the fee is positive.
    - No card appears twice.
    - There is no Brilliant + Boundless pair.
 
@@ -348,8 +354,46 @@ Fixes:
      - Cards the person **already owns** that aren't in the current setup
        go at the top, marked "You have this card", with a one-tap "Put it
        back".
-     - Test: with my four cards and the Brilliant in the setup, the
-       Groceries sheet shows the Amex Gold with a swap suggestion.
+     - Test: with my three cards and the Brilliant in the setup, the
+       Groceries sheet lists the Amex Gold as an alternative.
+
+## 5f. Home page and card detail: issues from my full-page review
+
+1. **"I have this card"** on a card detail must update `cardsHeld` and
+   re-run everything. Add a save/load round-trip test for `cardsHeld`.
+2. **Credits I didn't pick still count.** The Amex Platinum counts Resy,
+   lululemon, Oura, Walmart+, digital entertainment, Uber One and CLEAR at
+   30–50% each. Under Part 4 + 5b:
+   - Picked (Use now / Would use) = 100%, or capped at actual spend.
+   - Not picked = $0, shown in "Benefits you wouldn't use".
+   - Remove the old per-credit haircuts (0.75, 0.5, 0.45, 0.3…) from the
+     engine entirely.
+3. **Status ($100) and trip delay ($25) still count:** set them to $0 and
+   move them to "Nice extras".
+4. **The lounge math is inconsistent.** The breakdown shows Centurion $134
+   + Sky Club $168 + Priority Pass $134, but the total says $208.
+   - Value lounges as **one** benefit per wallet: the best single network
+     at the airports the person uses, at **1/8 of face**.
+   - Show one line, not three.
+5. **One number per idea.**
+   - The Boundless says "+$100 a year after that cost" in "Why this card?",
+     then "Worth applying? Yes — gains $175". The Platinum shows "+$350"
+     and "+$275".
+   - Always lead with **net after the application cost**. Show the
+     pre-cost figure only inside "Show the math".
+   - Flights shows "+$26" in one place and "$54 a year on $1,080" in
+     another. Label them "adds $26 over your current card" vs "earns $54",
+     or show only the "adds" number outside the math.
+6. **Remove fee-budget copy** (per 5d-2.5): "Best possible at your fee
+   budget" and "Play with your fee budget". Use "Best possible wallet for
+   you: $X a year" instead.
+7. **"Opens transfers to Delta, Marriott"** on the Platinum is wrong when
+   the person already holds an MR card that can transfer. Show the
+   transfer line only when the card unlocks something new.
+8. **The Score line is jargon.** "Score 42 = $477 of a possible $1,125 a
+   year more than a simple 2% card" should read: "You're getting 42% of
+   the most your cards could earn you. Best possible: +$1,125 a year over
+   a basic 2% card."
 
 ## 5e. Now vs later: plan for future spending
 
@@ -392,7 +436,7 @@ the issuer's current official page.
   things worth checking on the issuer's page.
 
 **Order:**
-1. My cards: Amex Gold, Delta Gold, Freedom Unlimited, Robinhood Gold.
+1. My cards: Delta Gold, Freedom Unlimited, Robinhood Gold (plus the Amex Gold, since it's a likely recommendation).
 2. Every card the optimizer recommends to me.
 3. The 40 most popular cards: Sapphire Preferred and Reserve, Amex Platinum,
    Venture X, the Delta and United cards, the Hilton, Marriott, Hyatt and IHG

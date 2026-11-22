@@ -1152,3 +1152,31 @@ Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
 - Regional assignment for SkyWest / Republic is a heuristic (whichever
   partner has more mainline flights at the route's airports).
 - T-100 lags ~3 months; routes started or dropped since August 2026 aren't in it.
+
+## Part 4 — perks: one step plus a short follow-up (2026-11-22)
+
+- One step: **"Which of these would you actually use if a card included
+  them?"** — chips named the way the card gives them, grouped, built from
+  the card data. On the same screen, for the picked perks only: **"Do you
+  already spend on any of these?"** in plain brand names (Uber, DoorDash,
+  lululemon …; Uber Cash and Uber One share "Uber").
+- Value: picked + already spend → the cadence factor (near full); picked,
+  not spending there today → × 0.5 (`INTERESTED_FACTOR`); not picked → $0.
+  Stored as `brands.perksUse` / `perksSpend`; the engine still reads
+  `perks` / `perksMaybe`, derived from them. Older profiles keep their lists.
+- The separate "Perks you already pay for or use" step is gone (9 steps;
+  Quick asks 6). "Your cards already give you" stays on the perk step.
+- **TSA PreCheck / Global Entry / NEXUS fee credit** is back under Travel
+  extras (label now names NEXUS). Fees verified on the official pages
+  2026-11-22: Global Entry "The application fee is $120, and membership lasts
+  for five years" (cbp.gov/travel/trusted-traveler-programs/global-entry);
+  NEXUS "$120 (USD) per adult", "valid for five years"
+  (cbp.gov/travel/trusted-traveler-programs/nexus/apply-renew); TSA PreCheck
+  "five years of benefits for $85 or less" (tsa.gov/precheck). Valued at
+  **$24 a year** (every card's credit face set to 24, was 25–30). Once per
+  wallet; other copies show **Overlap** in All your benefits; $0 on a new
+  card when a held card covers it. If picked: "Already have PreCheck or
+  Global Entry?" (No / Yes, renewing in 0–5 years) — saved for timing; the
+  yearly value doesn't change.
+- Tests: `v7cPart4.test.jsx` (10, incl. "every credit maps to a chip the
+  survey shows"); step-count and perk-screen tests updated.

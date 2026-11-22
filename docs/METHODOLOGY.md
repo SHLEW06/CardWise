@@ -222,7 +222,7 @@ category, then card id (deterministic).
 
 | Benefit | Usage |
 |---|---|
-| **Brand credits** (Uber, Dunkin', Resy, lululemon, Oura, Walmart+ …) | $0 unless one of the credit's brands was picked. Picked: annual **0.9** · semiannual **0.75** · quarterly **0.6** · monthly **0.5**; promo codes × 0.5. **v7:** "Would use if a card paid for it" counts at **½** of that (`INTERESTED_FACTOR`, a modeling default: some adopted perks never get used). One brand counts **once per wallet** (dedupe key = the credit's first brand), so a new card isn't credited for an Uber credit the person already gets. *Changed from v5's flat 0.8 picked / 0.2 unpicked: the cadence factors capture that monthly drips get forgotten; unpicked brands now count nothing.* |
+| **Brand credits** (Uber, Dunkin', Resy, lululemon, Oura, Walmart+ …) | **v7c:** one survey list "would you actually use if a card included them?" plus "do you already spend on any of these?" (plain brand names). Picked + already spend there = the full cadence factor below; picked but not spending there today = ½ of it (`INTERESTED_FACTOR`); not picked = $0. $0 unless one of the credit's brands was picked. Picked: annual **0.9** · semiannual **0.75** · quarterly **0.6** · monthly **0.5**; promo codes × 0.5. **v7:** "Would use if a card paid for it" counts at **½** of that (`INTERESTED_FACTOR`, a modeling default: some adopted perks never get used). One brand counts **once per wallet** (dedupe key = the credit's first brand), so a new card isn't credited for an Uber credit the person already gets. *Changed from v5's flat 0.8 picked / 0.2 unpicked: the cadence factors capture that monthly drips get forgotten; unpicked brands now count nothing.* |
 | General credits (restaurants-anywhere, lifestyle, Bilt Cash) | by cadence, as above |
 | Broad travel credit (Sapphire Reserve $300) | 0.95 if they fly (0.6 if not) |
 | Portal / airline annual credits | v5 trip-based factors (portal 0.15 / 0.5 / 0.8; airline 0.1 / 0.5 / 0.75); an airline- or hotel-specific credit is $0 unless that brand was picked |
@@ -235,7 +235,8 @@ category, then card id (deterministic).
 | Anniversary points | points × `v` |
 | Protections | cell phone $20; trip delay/cancellation $25 and primary rental $15 if they fly — once each per wallet |
 | **Where they stay (v7c)** | "Where do you usually stay?" scales hotel loyalty: a hotel program's point value above its dependable floor, its elite status and its free-night P(use) × **1** (big chains, or not asked) · **0.75** (a mix) · **0.4** (independent or boutique). `STAY_STYLE_FACTOR`, a modeling default: boutique stayers rarely get to use chain points or status. |
-| Global Entry / TSA, CLEAR | **v7:** asked under "Travel extras" — counted (0.9 of face) only if picked, ½ of that if "would use"; once per wallet |
+| Global Entry / TSA PreCheck / NEXUS | **v7c:** **$24 a year** — the $120 Global Entry / NEXUS fee (CBP pages, read 2026-11-22; TSA PreCheck "$85 or less") is paid once per 5-year membership, so a card's "every 4–4.5 years" credit is used once in 5. Counted only if picked; once per wallet (other cards' copies flagged **Overlap**); $0 on a new card when a held card already covers it. |
+| CLEAR | asked under "Travel extras" — counted only if picked, ½ if picked but they don't already pay for it; once per wallet |
 
 ## 4. Fees `F(W)`
 

@@ -19,7 +19,7 @@ describe("4.1 every card perk maps to a named chip", () => {
     expect(CHIP_BY_KEY.uber.label).toBe("Uber Cash (Uber rides + Uber Eats)");
     expect(CHIP_BY_KEY["airline-flight"].label).toBe("Airline flight credit (tickets)");
     expect(CHIP_BY_KEY["airline-incidental"].label).toBe("Airline incidental credit (bags, seats, upgrades)");
-    expect(CHIP_BY_KEY.globalentry.label).toBe("TSA PreCheck / Global Entry fee credit");
+    expect(CHIP_BY_KEY.globalentry.label).toBe("TSA PreCheck / Global Entry / NEXUS fee credit");
   });
 });
 
