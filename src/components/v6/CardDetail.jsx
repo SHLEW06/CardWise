@@ -85,6 +85,12 @@ export function breakEvenLine(own) {
 
 /* `wallet`: the setup the card is judged against (Wallet Lab passes its
    setup); default = the cards they hold. */
+/** v7c 5.1: "$200 Delta flight credit after $10,000 a year on this card". */
+export function gatedLine(g) {
+  const base = String(g.label).replace(/\s*after \$[\d,]+.*$/i, "").replace(/\s*\(w\/ \$\d+k spend\)/i, "");
+  return g.spend ? `${base} after $${g.spend.toLocaleString("en-US")} a year on this card` : base;
+}
+
 export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null, slotKey = null, onOpenCard }) {
   const profile = normalizeProfile(raw);
   const [math, setMath] = useState(false);
@@ -175,6 +181,20 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
               })}
             </ul>
           </Reveal>
+
+          {(d.gated || []).length > 0 && (
+            <Reveal i={3} className="panel detail-block" data-testid="unlocks-with-spending">
+              <h2 className="t-h2">Unlocks with spending</h2>
+              <p className="t-caption">Earned only after a spending threshold on this card, so they're never counted in its value or your score.</p>
+              <ul className="rows">
+                {d.gated.map((g) => (
+                  <li key={g.id} className="unused-row">
+                    <span className="benefit-name">{gatedLine(g)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          )}
 
           {d.unused.length > 0 && (
             <Reveal i={3} className="panel detail-block">

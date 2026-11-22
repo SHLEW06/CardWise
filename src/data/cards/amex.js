@@ -28,6 +28,8 @@ export const ART = {
   "amex-biz-plat":          { grad: "linear-gradient(135deg,#1d1d22,#34343c 60%,#4a4a55)", glow: "rgba(140,140,150,.35)", ink: "#fff", tag: "Amex MR" },
 };
 
+const GOLD_SRC = "https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-gold-american-express-card/";
+
 export const CARDS = [
   {
     id: "bcp", name: "Blue Cash Preferred", issuer: "American Express", network: "AMEX",
@@ -154,11 +156,19 @@ export const CARDS = [
     id: "delta-gold", name: "Delta SkyMiles Gold", issuer: "American Express", network: "AMEX",
     annualFee: 150, firstYearFree: true, currency: "Delta SkyMiles", pointCurrency: "delta",
     earnRates: { Flights: 2, Dining: 2, Groceries: 2, General: 1 }, portalMultipliers: {}, boost: "delta",
-    credits: [cred("$200 Delta flight credit", 200, "MEDIUM", "airline"), cred("$100 Resy credit", 100, "HARD")],
-    benefits: ["First checked bag free", "20% off in-flight purchases", "TakeOff 15 (15% off Delta awards)", "Main Cabin priority boarding"],
+    /* v7c 5.4 (americanexpress.com Delta Gold page, read 2026-11-22): no Resy
+       credit on the Gold (Resy is on the Platinum and Reserve); the $200
+       flight credit needs $10,000 in a calendar year; rideshare $10 a month
+       after the first renewal; $100 Delta Stays (prepaid via delta.com). */
+    credits: [
+      cred("$200 Delta flight credit after $10,000 a year on this card", 200, "MEDIUM", "airline", "annual", { cls: "spend-gated", spend: 10000, source: GOLD_SRC, checked: "2026-11-22" }),
+      cred("$120 rideshare credit ($10 a month, after your first renewal)", 120, "MEDIUM", "merchant", "monthly", { cls: "easy", source: GOLD_SRC, checked: "2026-11-22" }),
+      cred("$100 Delta Stays credit", 100, "MEDIUM", "portal", "annual", { cls: "niche", source: GOLD_SRC, checked: "2026-11-22" }),
+    ],
+    benefits: ["First checked bag free on Delta flights worldwide; second bag free on domestic Delta flights", "20% back on in-flight food and beverage purchases", "TakeOff 15 (15% off Delta award travel)", "Zone 5 priority boarding", "No foreign transaction fees"],
     transferAccess: [], loungeAccess: null, hotelStatus: null,
     airlineStatus: { program: "delta", tier: "none", estValue: 0 },
-    checkedBagBenefits: { bags: 1, estAnnual: 140, use: "MEDIUM" }, companionCertificates: [], freeNightCertificates: [],
+    checkedBagBenefits: { bags: 1, domesticBags: 2, estAnnual: 140, use: "MEDIUM" }, companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0,
     downgradeOptions: ["Delta SkyMiles Blue ($0)"],
     downgradeOptionIds: ["delta-blue"],
@@ -167,10 +177,10 @@ export const CARDS = [
     bestFor: ["Occasional Delta flyers who check a bag", "ATL/MSP/DTW/SLC based travelers"],
     avoidIf: ["You rarely fly Delta or never check bags", "You want everyday earning (the base is weak)"],
     overlapTags: ["delta-card"], tags: ["airline", "travel"],
-    beginner: 6, complexity: 4, art: "delta-gold", sourceDate: SD, needsVerification: true,
+    beginner: 6, complexity: 4, art: "delta-gold", sourceDate: "2026-11-22", needsVerification: false,
     why: "The free checked bag pays the fee fast, and holding it turns on TakeOff 15 to stretch every Delta award. Use it for Delta perks, not spend.",
-    verifiedSource: "americanexpress.com / delta.com (search)",
-    verificationNote: "Fee verified ($0 first year, then $150); benefits not readable.",
+    verifiedSource: GOLD_SRC, verifiedAt: "2026-11-22",
+    verificationNote: "Fee, earn, credits and benefits read on the Amex page 2026-11-22 (v7c Part 5).",
   },
   {
     id: "delta-plat", name: "Delta SkyMiles Platinum", issuer: "American Express", network: "AMEX",

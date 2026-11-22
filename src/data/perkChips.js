@@ -63,6 +63,7 @@ export const PERK_CHIPS = [
   { key: "airline-flight", label: "Airline flight credit (tickets)", group: "travelCredits" },
   { key: "airline-incidental", label: "Airline incidental credit (bags, seats, upgrades)", group: "travelCredits" },
   { key: "hotel-portal", label: "Hotel credit (prepaid via a card's travel site)", group: "travelCredits" },
+  { key: "portal-travel", label: "Travel credit (booked through the card's travel site)", group: "travelCredits" },
   { key: "hotel-brand", label: "Hotel stay credit (one hotel chain)", group: "travelCredits" },
   { key: "travel-broad", label: "Travel credit (any travel purchase)", group: "travelCredits" },
   { key: "general-dining", label: "Dining credit at any restaurant", group: "general" },
@@ -92,6 +93,7 @@ export const SPEND_BRAND = {
   renowned: ["chase travel hotels", "Hotels booked through Chase Travel"],
   "airline-flight": ["airline tickets", "Airline tickets"], "airline-incidental": ["airline fees", "Airline bag, seat and upgrade fees"],
   "hotel-portal": ["portal hotels", "Hotels booked through a card's travel site"], "hotel-brand": ["chain hotels", "Stays at one hotel chain"],
+  "portal-travel": ["portal travel", "Trips booked through a card's travel site"],
   "travel-broad": ["travel", "Travel of any kind"],
 };
 /** The brands to ask about for these picked chips: [{ key, label, chips }]. */
@@ -130,7 +132,7 @@ export function perkChipsFor(credit) {
   const brands = brandsForCredit(credit).filter((k) => CHIP_BY_KEY[k] && k !== "dashpass");
   if (brands.length) return brands;
   if (credit.kind === "airline") return [/incidental|fee credit|bag|seat|upgrade/i.test(name) ? "airline-incidental" : "airline-flight"];
-  if (credit.kind === "portal") return ["hotel-portal"];
+  if (credit.kind === "portal") return [/hotel|stays|\bthe edit\b|fine hotels|hotel collection/i.test(name) ? "hotel-portal" : "portal-travel"];
   if (credit.kind === "hotel") return ["hotel-brand"];
   if (credit.kind === "broad") return ["travel-broad"];
   return [];

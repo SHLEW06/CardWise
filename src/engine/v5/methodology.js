@@ -142,7 +142,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   const alloc = allocateSpend(cards, profile, opts.alloc || {});
   const perCard = cards.map((c) => {
     const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids });
-    return { cardId: c.id, items: b.items, unused: b.unused };
+    return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [] };
   });
   const U = dedupeBenefits(perCard);
   const F = cards.reduce((t, c) => t + cardFee(c, profile), 0);

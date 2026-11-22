@@ -126,7 +126,9 @@ describe("worked example: Ritz-Carlton", () => {
 describe("worked example: Citi Strata Elite for AA-hub flyers", () => {
   const P = normalizeProfile({
     wants: "travel", feeBudget: 700, travel: { trips: 6, lounges: "yes", homeAirport: "DFW" },
-    brands: { airlines: ["aa"] }, credit: { score: 770 },
+    /* v7c 5.3: its Citi Travel hotel credit is portal-tied — counted only
+       because this flyer picked portal credits (so is Venture X's). */
+    brands: { airlines: ["aa"], perks: ["hotel-portal", "portal-travel"] }, credit: { score: 770 },
   });
   it("is a Lounge card candidate: benefits ≥ 0.6 × fee, including its Admirals Club passes", () => {
     const c = BY_ID["citi-strata-elite"];

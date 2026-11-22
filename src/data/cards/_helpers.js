@@ -20,7 +20,13 @@ export const VERIFIED = "2026-11-18";
      cadence — "annual" | "semiannual" | "quarterly" | "monthly" | "4yr"
                (`annual` is always the per-year dollar amount; a $120 every-4-years
                Global Entry credit is annual: 30, cadence: "4yr"). */
-export const cred = (name, annual, use, kind = "merchant", cadence = "annual") => ({ name, annual, use, kind, cadence });
+export const cred = (name, annual, use, kind = "merchant", cadence = "annual", opts = {}) => ({ name, annual, use, kind, cadence, ...opts });
+/* v7c Part 5 / 6: `opts` may carry
+     cls     — "automatic" | "easy" | "niche" | "spend-gated" (see
+               src/data/creditClass.js; derived when absent)
+     spend   — the yearly spend on the card that unlocks a spend-gated credit
+     source  — the issuer page the credit was read on (Part 6 audit)
+     checked — date the source was read */
 
 /* Free-night certificate. `spend` = calendar/anniversary-year spend needed to
    earn it (0 = arrives automatically each year). */

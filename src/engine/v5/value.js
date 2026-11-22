@@ -27,6 +27,7 @@ import { VAL } from "../../data/valuations.js";
 import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
 import { perkChipsFor, TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
+import { creditClass, spendThreshold } from "../../data/creditClass.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -356,10 +357,11 @@ export function creditUsage(card, credit, profile) {
     if (!trips) return { factor: 0, reason: "You don't fly" };
     return lift({ factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null });
   }
-  if (credit.kind === "portal") {
+  if (credit.kind === "portal" || creditClass(credit) === "niche") {
+    /* v7c 5.3: niche or portal-tied credits count only if they picked them. */
     const brand = travelBrandOf(card, credit);
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
-    return lift({ factor: CREDIT_USAGE.portal({ trips }), reason: trips ? null : "You don't travel" });
+    return chipFloor > 0 ? { factor: chipFloor, reason: null } : { factor: 0, reason: "Tied to booking through the card's travel site — $0 unless you pick it" };
   }
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
@@ -399,7 +401,10 @@ export function airlineTrips(profile, airline) {
 export function bagValue(card, profile) {
   const b = card.checkedBagBenefits;
   if (!b) return 0;
-  const free = b.bags || 1;
+  /* v7c: some cards add a bag on domestic flights (Delta Gold: first bag
+     worldwide, second on domestic Delta flights). */
+  const intl = Math.max(0, Math.min(1, profile.travel.intlShare || 0));
+  const free = b.domesticBags ? b.domesticBags * (1 - intl) + (b.bags || 1) * intl : b.bags || 1;
   const ans = profile.travel.bags;
   const perks = profile.travel.airlinePerks;
   if (perks && !perks.includes("bags")) return 0;
@@ -509,7 +514,13 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   const pickedCardBrand = pickedBrand(profile, brand);
   const reachable = (need) => !need || (ctx.cardSpend ?? totalAnnualSpend(profile)) >= need;
 
+  const gated = [];
   for (const c of card.credits || []) {
+    /* v7c 5.1: spend-gated credits are never counted — listed apart. */
+    if (creditClass(c) === "spend-gated") {
+      gated.push({ id: creditId(card, c), label: c.name, face: c.annual, spend: spendThreshold(c) });
+      continue;
+    }
     const u = creditUsage(card, c, profile);
     const id = creditId(card, c);
     const value = Math.round(c.annual * u.factor);
@@ -568,7 +579,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     items.push({ id: `${card.id}#${p.key}`, label: p.label, face: p.value, value: p.value, kind: "protection", dedupe: p.key });
   }
 
-  return { total: items.reduce((t, i) => t + i.value, 0), items, unused };
+  return { total: items.reduce((t, i) => t + i.value, 0), items, unused, gated };
 }
 
 export const benefitValue = (card, profile) => benefitBreakdown(card, profile).total;

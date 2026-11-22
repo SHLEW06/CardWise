@@ -1180,3 +1180,46 @@ Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
   yearly value doesn't change.
 - Tests: `v7cPart4.test.jsx` (10, incl. "every credit maps to a chip the
   survey shows"); step-count and perk-screen tests updated.
+
+## Part 5 — credit realism (2026-11-22)
+
+- **Credit classes** (`src/data/creditClass.js`): automatic · easy · niche
+  or portal-tied · spend-gated (with its threshold). `cred()` takes
+  `{ cls, spend, source, checked }`; without them the class is derived.
+- **Spend-gated credits count $0** in every value and score (benefits,
+  wallet value, optimizer, Explore, Lab). They're listed apart: card detail
+  "Unlocks with spending" ("$200 Delta flight credit after $10,000 a year on
+  this card"), and All your benefits flags them "Unlocks with spending".
+  Never under "Benefits you'd use".
+- **Niche / portal-tied credits count $0 unless picked** — Delta Stays,
+  Renowned Hotels, The Edit, Fine Hotels + Resorts, JSX, and every "booked
+  through the card's travel site" credit. New chip "Travel credit (booked
+  through the card's travel site)" for non-hotel portal credits (Venture X
+  $300). Airline and hotel-brand credits still count for an airline / hotel
+  they use (routes and hotel answer).
+- **Delta Gold** (americanexpress.com Delta Gold page, rendered and read
+  2026-11-22): Resy credit **removed** (the page lists Resy on the Reserve,
+  $240); $200 flight credit **spend-gated at $10,000** in a calendar year;
+  **$120 rideshare** ($10 a month, after the first renewal, enrollment
+  required) added as easy; **$100 Delta Stays** added as portal-tied; first
+  bag free worldwide and **second bag free on domestic Delta flights**
+  (bags valued by domestic share); 15% off awards, 20% back in flight, Zone
+  5 boarding, no FX fee recorded. Fee $0 first year then $150 (unchanged).
+- Bag model: a card may have `domesticBags`; free bags = domestic × (1 −
+  international share) + worldwide × international share.
+
+**Golden before → after (`npm run golden`)** — only the Delta profiles move:
+
+| Profile | Before | After |
+|---|---|---|
+| 5 ATL Delta, lounges yes | N +$1,179 · delta-reserve, robinhood-gold, discover-it | N +$1,019 · same cards |
+| 5 ATL Delta, lounges no | N +$914 · delta-gold, robinhood-gold, discover-it ($210 fees) | N +$690 · delta-plat, discover-it ($350) |
+| Owner-like, from scratch | N +$2,143 | N +$1,993 · same cards |
+| Owner-like, from wallet | N +$1,173 | N +$1,023 · same cards |
+| Owner-like, held wallet | N +$854 | N +$704 |
+
+Why: the Gold's $200 flight credit (spend-gated) and Resy credit (not on
+the card) no longer count; Delta Stays counts only if picked. Without them
+the Delta Platinum's companion certificate beats the Gold for the no-lounge
+flyer. Tests: `v7cPart5.test.jsx` (9); v5Engine worked example now picks
+portal credits explicitly; bag test uses the verified two domestic bags.

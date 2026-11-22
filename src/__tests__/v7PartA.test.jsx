@@ -61,7 +61,9 @@ describe("A2 · travel details", () => {
   it("bag value = fee × min(card bags, bags per trip) × 2 ways × trips × share of trips", () => {
     const card = BY_ID["delta-gold"];
     const p = normalizeProfile({ travel: { trips: 8, bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags"] }, brands: { airlines: ["delta"] } });
-    expect(bagValue(card, p)).toBe(BAG_FEE * 1 * 0.5 * 8 * 2);
+    /* v7c 5.4: the Gold frees two bags on domestic Delta flights (Amex page, 2026-11-22). */
+    expect(bagValue(card, p)).toBe(BAG_FEE * 2 * 0.5 * 8 * 2);
+    expect(bagValue(card, normalizeProfile({ ...p, travel: { ...p.travel, intlShare: 1, tripRows: [] } }))).toBe(BAG_FEE * 1 * 0.5 * 8 * 2);
     expect(bagValue(card, normalizeProfile({ travel: { trips: 8, airlinePerks: ["boarding"] } }))).toBe(0);
   });
   it("a companion certificate counts only if companion fares were picked (when asked)", () => {

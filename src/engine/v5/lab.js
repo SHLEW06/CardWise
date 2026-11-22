@@ -130,6 +130,8 @@ export function allBenefits(value) {
       rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: overlap && v === 0 ? "Another card already gives you this" : null });
     }
     for (const u of pc.unused || []) rows.push({ cardId: pc.cardId, label: u.label, value: 0, face: u.face || 0, flags: ["Not used"], reason: u.reason });
+    /* v7c 5.1: spend-gated credits are never counted. */
+    for (const g of pc.gated || []) rows.push({ cardId: pc.cardId, label: g.label, value: 0, face: g.face || 0, flags: ["Unlocks with spending"], reason: g.spend ? `Needs $${g.spend.toLocaleString("en-US")} a year on this card` : "Needs a spending threshold" });
   }
   return rows.sort((a, b) => b.value - a.value || (a.flags.includes("Not used") ? 1 : 0) - (b.flags.includes("Not used") ? 1 : 0) || b.face - a.face);
 }
