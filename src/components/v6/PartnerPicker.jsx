@@ -143,7 +143,7 @@ export function portalRows(profile) {
     const yours = issuerCards.filter((c) => profile.cardsHeld.includes(c.id)).map((c) => ({ cardId: c.id, rate: rate(c) }));
     const best = [...issuerCards].filter((c) => c.availabilityStatus === "openToNewApplicants").sort((a, b) => Math.max(0, ...Object.values(b.portalMultipliers)) - Math.max(0, ...Object.values(a.portalMultipliers)))[0];
     return { portal, yours, best: best ? { cardId: best.id, rate: rate(best) } : null };
-  });
+  }).filter((r) => r.best || r.yours.length);   // v7c: a portal with no confirmed card rate isn't listed
 }
 
 export default function PartnerPicker({ profile, currencies, onChange }) {

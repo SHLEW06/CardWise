@@ -32,7 +32,10 @@ describe("C8 · Best value is the default on skip", () => {
 
 describe("E12 / E13 · the numbers on Home agree", () => {
   it("the next move's +$ equals 'Why this card?' gain", () => {
-    const m = nextMove(P);
+    /* v7c: with the audited data the test profile's next move is a switch
+       (Amex Gold → Green); the agreement check needs a "get a card" move. */
+    const m = nextMove({ ...P, cardsHeld: ["freedom-unlimited"], memberships: [] });
+    expect(m.kind).toBe("apply");
     const e = explainCard(m.cardId, m.context, P, walletValue);
     expect(Math.round(e.gain)).toBe(Math.round(m.impact));
   });

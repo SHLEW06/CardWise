@@ -15,12 +15,14 @@ export const CARDS = [
   {
     id: "robinhood-gold", name: "Robinhood Gold Card", issuer: "Robinhood", network: "VISA",
     annualFee: 0, currency: "Cash to brokerage", pointCurrency: "robinhood",
-    earnRates: { General: 3 }, portalMultipliers: { Travel: 5 },
+    /* v7c audit (robinhood.com/creditcard, 2026-11-22): 3% on all categories;
+       the 5% travel-portal rate isn't on the page — dropped. */
+    earnRates: { General: 3 }, portalMultipliers: {},
     requiresSubscription: { name: "Robinhood Gold", annual: 60 },
-    credits: [], benefits: ["3% cash back on everything", "5% via Robinhood travel portal", "No foreign transaction fee"],
+    credits: [], benefits: ["3% cash back on all categories", "No annual fee (Robinhood Gold membership required)"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
-    directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0,
+    directBookingBenefits: [], travelProtections: ["Trip interruption protection", "Auto rental collision damage waiver", "Purchase security", "Extended warranty", "Return protection"], foreignTransactionFee: 0,
     downgradeOptions: [], productChangePaths: [],
     bestFor: ["The unbonused-spend benchmark — 3% flat as cash", "People who want maximum simple return"],
     avoidIf: ["You won't keep the $5/mo Gold subscription", "You'd rather earn transferable points"],

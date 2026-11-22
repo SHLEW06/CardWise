@@ -106,7 +106,8 @@ describe("Checkout screen", () => {
     render(<Checkout profile={{ ...P, cardsHeld: ["csr", "venture-x", "robinhood-gold"] }} initialMode="travel" />);
     fireEvent.change(screen.getByLabelText("Airline's own price in dollars"), { target: { value: "400" } });
     const ranker = screen.getByTestId("travel-ranker");
-    for (const portal of ["Chase Travel", "Capital One Travel", "Robinhood Travel"]) expect(ranker.textContent).toContain(portal);
+    for (const portal of ["Chase Travel", "Capital One Travel"]) expect(ranker.textContent).toContain(portal);
+    expect(ranker.textContent).not.toContain("Robinhood Travel");   // v7c audit: its 5% portal rate isn't on the card page
     expect(ranker.textContent).toMatch(/Booking direct.+after rewards/);
   });
 });

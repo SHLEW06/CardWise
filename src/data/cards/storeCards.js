@@ -63,7 +63,7 @@ export const CARDS = [
     benefits: ["4% gas worldwide (to $7k/yr)", "3% restaurants & eligible travel", "2% Costco & Costco.com", "1% elsewhere", "No annual fee (Costco membership required)", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
-    directBookingBenefits: [], travelProtections: ["Trip cancellation (limited)"], foreignTransactionFee: 0,
+    directBookingBenefits: [], travelProtections: ["Damage & theft purchase protection (120 days)", "Worldwide car rental insurance"], foreignTransactionFee: 0,
     downgradeOptions: [], productChangePaths: [],
     bestFor: ["Costco members with high gas spend", "Costco-loyal cash-back users"],
     avoidIf: ["You're not a Costco member", "You'd rather have a flat 3% (Robinhood Gold)"],

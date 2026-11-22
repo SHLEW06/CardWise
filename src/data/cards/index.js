@@ -52,7 +52,22 @@ const RAW_CARDS = [
   ...niche_CARDS,
 ];
 
-export const CARDS = RAW_CARDS.map((c) => enrichCard(c, ART));
+import { AUDIT } from "../cardAudit.js";
+
+/* v7c Part 6: an audited card carries its audit; each credit gets the
+   issuer page as its source and the date read. */
+const withAudit = (c) => {
+  const a = AUDIT[c.id];
+  if (!a) return c;
+  return {
+    ...c,
+    audit: { source: a.source, checked: a.checked, group: a.group, batch: a.batch },
+    unverified: (a.unverified || []).map((u) => u.key),
+    credits: (c.credits || []).map((cr) => ({ ...cr, source: cr.source || a.source, checked: cr.checked || a.checked })),
+    verifiedSource: a.source, verifiedAt: a.checked, needsVerification: false,
+  };
+};
+export const CARDS = RAW_CARDS.map((c) => withAudit(enrichCard(c, ART)));
 export const BY_ID = Object.fromEntries(CARDS.map((c) => [c.id, c]));
 
 /* Active consumer catalog: everything the lineup / explorer should consider by

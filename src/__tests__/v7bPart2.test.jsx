@@ -62,11 +62,11 @@ describe("2.4 ecosystem credit", () => {
 });
 
 describe("2.5 every travel portal, tied to the person's cards", () => {
-  it("Chase, Amex, Capital One, Citi, Bilt, US Bank and Robinhood, with the cards they hold there", () => {
+  it("Chase, Amex, Capital One, Citi, Bilt and US Bank, with the cards they hold there (v7c: Robinhood's portal rate is unverified)", () => {
     const rows = portalRows(ME);
-    expect(rows.map((r) => r.portal)).toEqual(["Chase Travel", "Amex Travel", "Capital One Travel", "Citi Travel", "Bilt Travel", "US Bank Travel Center", "Robinhood Travel"]);
+    expect(rows.map((r) => r.portal)).toEqual(["Chase Travel", "Amex Travel", "Capital One Travel", "Citi Travel", "Bilt Travel", "US Bank Travel Center"]);
     expect(rows.find((r) => r.portal === "Amex Travel").yours.map((y) => y.cardId)).toEqual(["amex-gold"]);
-    expect(rows.find((r) => r.portal === "Robinhood Travel").yours.map((y) => y.cardId)).toEqual(["robinhood-gold"]);
+    expect(rows.find((r) => r.portal === "Robinhood Travel")).toBeUndefined();
     for (const r of rows) expect(r.best, r.portal).toBeTruthy();
   });
 });

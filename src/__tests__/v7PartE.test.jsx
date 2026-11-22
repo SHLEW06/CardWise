@@ -13,7 +13,7 @@ const P = { cardsHeld: ["csr", "venture-x", "robinhood-gold", "citi-strata-elite
 describe("rankPortals", () => {
   it("one row per portal the cards can use, best room first; each with the breakeven formula", () => {
     const r = rankPortals({ kind: "flight", direct: 400 }, P);
-    expect(r.rows.map((x) => x.portal)).toEqual(expect.arrayContaining(["Chase Travel", "Capital One Travel", "Robinhood Travel", "Citi Travel"]));
+    expect(r.rows.map((x) => x.portal)).toEqual(expect.arrayContaining(["Chase Travel", "Capital One Travel", "Citi Travel"]));   // v7c: no Robinhood portal rate (unverified)
     for (let i = 1; i < r.rows.length; i++) expect(r.rows[i - 1].breakeven).toBeGreaterThanOrEqual(r.rows[i].breakeven);
     for (const x of r.rows) {
       expect(x.breakeven).toBeCloseTo(breakevenPrice({ D: 400, rD: r.direct.pct, eP: x.multiplier, v: x.cpp }).breakeven, 6);

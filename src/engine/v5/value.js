@@ -495,7 +495,9 @@ function statusValue(status, profile) {
 /** Protections this card carries (keys from benefitUsage PROTECTIONS). */
 export function protectionsOf(card) {
   const text = [...(card.travelProtections || []), ...(card.benefits || [])].join(" | ");
-  return PROTECTIONS.filter((p) => p.pattern.test(text));
+  /* v7c Part 6: what the issuer page doesn't confirm counts $0. */
+  const off = new Set(card.unverified || []);
+  return PROTECTIONS.filter((p) => p.pattern.test(text) && !off.has(p.key));
 }
 
 /**
@@ -565,7 +567,8 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     else unused.push({ id: `${card.id}#bags`, label: "Free checked bags", face: 0, reason: pickedCardBrand ? "You don't fly" : `You didn't pick ${brand}` });
   }
 
-  const status = statusValue(card.hotelStatus, profile) + statusValue(card.airlineStatus, profile);
+  const off = new Set(card.unverified || []);
+  const status = (off.has("hotelStatus") ? 0 : statusValue(card.hotelStatus, profile)) + (off.has("airlineStatus") ? 0 : statusValue(card.airlineStatus, profile));
   if (status) items.push({ id: `${card.id}#status`, label: "Elite status", face: status, value: status, kind: "status" });
 
   if (card.anniversaryPoints) {
