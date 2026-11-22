@@ -42,3 +42,26 @@ All are free for commercial use, including the web:
 Fontshare offers both faces as free for personal and commercial use under
 the FFL. The licence text itself wasn't re-read in this session: read it on
 fontshare.com before public launch (listed in PROGRESS → v7 → unverified).
+
+## US DOT BTS — T-100 Segment (All Carriers) (v7c Part 3)
+
+Route data for airline inference: `src/data/routes.generated.json`, built by
+`npm run routes` (`scripts/build-routes.mjs`).
+
+| | |
+|---|---|
+| Source | Bureau of Transportation Statistics, TranStats → Air Carriers: T-100 Segment (All Carriers), table `T_T100_SEGMENT_ALL_CARRIER` — https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FMG |
+| Data months | **2025-09 through 2026-08** (the latest 12 months; "Latest Available Data: August 2026" on the download page) |
+| Downloaded | 2026-11-22 |
+| Fields | carrier, origin, destination (+ city, country), departures performed, seats, passengers, service class |
+| Kept | scheduled passenger service (class F) with seats, routes touching a US airport, ≥ 12 departures a year per carrier and segment |
+| Stored | origin → destination → carrier → yearly departures performed (954 origins, 12,266 airport pairs, 173 carriers) |
+| Licence | US federal government data — public domain (17 U.S.C. § 105) |
+
+Regional airlines are counted for the airline they fly for (Endeavor →
+Delta, Envoy / PSA / Piedmont → American, Horizon → Alaska, GoJet /
+CommuteAir / Mesa → United). SkyWest and Republic fly for several airlines:
+each segment goes to whichever partner has more mainline flights at its
+airports (a modeling choice, `src/engine/v5/tripRoutes.js`).
+
+OpenFlights is not used (out of date).

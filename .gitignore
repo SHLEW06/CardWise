@@ -37,3 +37,6 @@ screenshots/
 connector/data/
 *.har
 connector/calibration/*.suggested.json
+
+# route-data downloads (npm run routes)
+.cache/

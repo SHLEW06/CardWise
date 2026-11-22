@@ -14,12 +14,22 @@ import { DESTINATIONS } from "../../data/routes.js";
 const NAME = { marriott: "Marriott", hilton: "Hilton", hyatt: "Hyatt", ihg: "IHG" };
 
 /** Nights per destination: total paid nights split by trips. */
+/* v7c: trip rows may go anywhere — a place we have no footprint for counts
+   at a typical footprint (modeling default): the US average at home, this
+   abroad. */
+const INTL_DEFAULT = { marriott: 0.75, hilton: 0.6, hyatt: 0.5, ihg: 0.6 };
+const NAMES = {};
+const INTL = {};
 export function nightsByDestination(airports = [], totalNights = 0) {
   const trips = {};
   let all = 0;
   for (const a of airports) {
     let given = 0;
-    for (const d of a.destinations || []) if (DESTINATIONS[d.key] && d.trips > 0) { trips[d.key] = (trips[d.key] || 0) + d.trips; given += d.trips; }
+    for (const d of a.destinations || []) if ((DESTINATIONS[d.key] || d.name) && d.trips > 0) {
+      trips[d.key] = (trips[d.key] || 0) + d.trips; given += d.trips;
+      if (d.name) NAMES[d.key] = d.name;
+      if (d.intl != null) INTL[d.key] = d.intl;
+    }
     const rest = Math.max(0, (a.trips || 0) - given);
     if (rest) trips.domestic = (trips.domestic || 0) + rest;
     all += a.trips || 0;
@@ -35,9 +45,9 @@ export function pickHotelProgram({ airports = [], nights = 0, mode = "typical" }
     const pct = (PROGRAM_BASE_EARN[p]?.perDollar || 0) * (programCpp(p, mode)?.cpp || 0);
     let score = 0, where = 0, strong = [];
     for (const [d, n] of Object.entries(byDest)) {
-      const f = HOTEL_FOOTPRINT[d]?.[p] ?? 0.5;
+      const f = HOTEL_FOOTPRINT[d]?.[p] ?? ((INTL[d] ?? DESTINATIONS[d]?.intl) ? INTL_DEFAULT[p] : HOTEL_FOOTPRINT.domestic[p]) ?? 0.5;
       score += n * f * pct;
-      if (f >= 0.6) { where++; if (d !== "domestic") strong.push(DESTINATIONS[d]?.name || d); }
+      if (f >= 0.6) { where++; if (d !== "domestic") strong.push(DESTINATIONS[d]?.name || NAMES[d] || d); }
     }
     return { program: p, name: NAME[p], score, pct, where, of: Object.keys(byDest).length, strong };
   }).sort((a, b) => b.score - a.score);

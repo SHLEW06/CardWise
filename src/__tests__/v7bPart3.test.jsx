@@ -64,7 +64,9 @@ describe("Golden · route-based airlines and programs", () => {
   it("Amex points rank first for where they fly (Delta)", () => {
     const rank = rankCurrencies(G);
     expect(rank[0].cur).toBe("amex");
-    expect(rank[0].reach[0]).toMatchObject({ program: "delta", trips: 5 });
+    /* v7c: from T-100 data, BDL's "various US cities" trip goes to American
+       (most departures from BDL), so Delta has 4 of the 7 trips. */
+    expect(rank[0].reach[0]).toMatchObject({ program: "delta", trips: 4 });
   });
   it("United Quest stays out: two EWR trips don't justify it", () => {
     expect(optimalWallet(G).wallet).not.toContain("united-quest");
@@ -129,6 +131,7 @@ describe("old profiles still open", () => {
   it("a saved home airport + trips becomes the first airport row, keeping its airlines", () => {
     const d = draftFrom({ travel: { homeAirport: "EWR", trips: 4 }, brands: { airlines: ["united"] } });
     expect(d.travel.airports[0]).toMatchObject({ code: "NYC", trips: 4 });
+    expect(d.travel.tripRows).toMatchObject([{ from: "NYC", to: "us", trips: 4, work: false, airline: null }]);   // v7c: one trip row
     expect(d.travel.airlineChoice).toBe("manual");
     expect(d.brands.airlines).toEqual(["united"]);
     expect(d.travel.homeAirport).toBe("EWR");
@@ -136,21 +139,16 @@ describe("old profiles still open", () => {
 });
 
 describe("travel step screen", () => {
-  it("NYC as one choice, destinations with trips, 'Leave from' on long routes, work toggle", () => {
-    saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 4 }] } });
+  it("v7c: a v7b airport profile opens as trip rows (NYC one choice), work toggle per row", () => {
+    saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 4 }, { code: "NYC", trips: 1, destinations: [{ key: "tokyo", trips: 1 }] }] } });
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.change(screen.getByLabelText("Add a home airport"), { target: { value: "nyc" } });
-    fireEvent.click(screen.getByRole("option", { name: /New York \(JFK \/ LGA \/ EWR\)/ }));
-    fireEvent.change(screen.getByLabelText("Search destinations from NYC"), { target: { value: "tok" } });
-    const nyc = screen.getByRole("group", { name: "Destinations from NYC" });
-    fireEvent.click(within(nyc).getByRole("button", { name: "Tokyo" }));
-    expect(screen.getByLabelText("Leave for Tokyo from")).toHaveValue("NYC");
-    fireEvent.click(screen.getAllByRole("button", { name: "I fly for work" })[0]);
+    expect(screen.getByLabelText("Trips a year, ATL to US cities")).toHaveValue("4");
+    expect(screen.getByLabelText("Trips a year, NYC to Tokyo")).toHaveValue("1");
+    fireEvent.click(screen.getByRole("button", { name: "I fly for work, ATL to US cities" }));
     cont();
     const p = loadV5Profile();
     expect(p.travel.airports.map((a) => a.code)).toEqual(["ATL", "NYC"]);
     expect(p.travel.airports[0].work).toBe(true);
-    expect(p.travel.airports[1].destinations[0]).toMatchObject({ key: "tokyo", trips: 1 });
     expect(p.travel.workPrograms).toContain("delta");
   });
   it("hotels: 'Let CardWise pick' shows the pick in one sentence with a Why? link", () => {

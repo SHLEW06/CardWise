@@ -153,3 +153,22 @@ html, body { background: #0B1222 !important; }
 .v5 .store-grid { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; }
 .v5 .store-grid .link { font-size: var(--fs-small); text-align: left; }
 .v5 .all-stores-open { justify-self: start; }
+
+/* ── v7c: trips step, hotel mode, strategy choice ─────────────────────── */
+.v5 .trip-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.v5 .trip-row { display: grid; gap: 12px; padding: 18px 20px; background: var(--surface); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: var(--r); }
+.v5 .trip-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.v5 .trip-route { font-weight: 500; color: var(--ink); font-size: 18px; }
+.v5 .trip-fields { display: flex; align-items: flex-end; gap: 14px 20px; flex-wrap: wrap; }
+.v5 .trip-fields .field, .v5 .trip-airline .field { display: grid; gap: 6px; }
+.v5 .trip-fields select, .v5 .trip-airline select { min-height: 40px; padding: 0 12px; border-radius: var(--r); background: var(--raised); color: var(--ink); border: 0; font: inherit; }
+.v5 .trip-airline { display: flex; align-items: flex-end; gap: 12px 20px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid rgba(236, 230, 218, .08); }
+.v5 .add-trip { display: grid; gap: 14px; padding: 18px 20px; border-radius: var(--r); background: rgba(22, 33, 58, .45); }
+.v5 .add-trip-fields { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: start; }
+.v5 .place-picked { display: grid; gap: 6px; }
+.v5 .trip-ideas { display: grid; gap: 8px; }
+.v5 .inferred-routes { list-style: none; margin: 0 0 4px; padding: 0; display: grid; gap: 6px; }
+.v5 .why-list { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.v5 .why-list .is-dropped { opacity: .85; }
+.v5 .transfer-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.v5 .hotel-pick .link, .v5 .strategy .link { color: var(--bronze); }

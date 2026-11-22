@@ -9,7 +9,8 @@
    the user types one.
    ========================================================================== */
 
-import { inferAirlines, intlShareOf, mainAirport } from "./v5/routes.js";
+import { mainAirport } from "./v5/routes.js";
+import { inferTrips, rowsFromAirports, knownPlace, isIntl, destKeyOf, placeShort, PLACE_BY_KEY } from "./v5/tripRoutes.js";
 import { pickHotelProgram } from "./v5/hotelPick.js";
 import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
 
@@ -174,6 +175,42 @@ export function normalizeProfile(p = {}) {
     work: !!a?.work,
     destinations: Array.isArray(a?.destinations) ? a.destinations.filter((x) => DESTINATIONS[x?.key]).map((x) => ({ key: x.key, trips: num(x.trips), ...(x.from ? { from: String(x.from).toUpperCase() } : {}) })) : [],
   })).filter((a) => a.code) : [];
+  /* v7c Part 3: trips replace the airport steps. Each row is one route the
+     person flies: from (airport or metro) → to (airport, metro, city or
+     "various US cities"), trips a year, cabin, "I fly for work", and an
+     optional airline edit. v7b airports (+ destinations) migrate to rows.
+     Home airports, the international share, the cabin and (in the block
+     below) the airlines all come from the rows. */
+  const rawRows = Array.isArray(travel.tripRows) && travel.tripRows.length ? travel.tripRows : travel.airports.length ? rowsFromAirports(travel.airports, CABINS.includes(p.travel?.cabin) ? p.travel.cabin : null) : [];
+  travel.tripRows = rawRows.map((r) => ({
+    from: String(r?.from || "").toUpperCase(),
+    to: r?.to === "us" || String(r?.to || "").startsWith("c:") ? String(r.to) : String(r?.to || "").toUpperCase(),
+    trips: num(r?.trips),
+    cabin: CABINS.includes(r?.cabin) && r.cabin !== "mixed" ? r.cabin : null,
+    work: !!r?.work,
+    airline: r?.airline ? String(r.airline).toLowerCase() : null,
+  })).filter((r) => knownPlace(r.from) && knownPlace(r.to) && r.from !== r.to);
+  if (travel.tripRows.length) {
+    /* Derived home airports (the shape hotels, lounges and older screens read). */
+    const homes = {};
+    for (const r of travel.tripRows) {
+      const h = (homes[r.from] ||= { code: r.from, trips: 0, work: false, destinations: [] });
+      h.trips += r.trips;
+      h.work = h.work || r.work;
+      const key = destKeyOf(r.to) || r.to;
+      const d = h.destinations.find((x) => x.key === key);
+      if (d) d.trips += r.trips;
+      else h.destinations.push({ key, trips: r.trips, name: placeShort(r.to), intl: isIntl(r.to) });
+    }
+    travel.airports = Object.values(homes).sort((a, b) => b.trips - a.trips);
+    const all = travel.tripRows.reduce((t, r) => t + r.trips, 0);
+    travel.intlShare = all ? Math.min(1, travel.tripRows.filter((r) => isIntl(r.to)).reduce((t, r) => t + r.trips, 0) / all) : 0;
+    /* The cabin most of their trips are in. */
+    const byCabin = {};
+    for (const r of travel.tripRows) if (r.cabin) byCabin[r.cabin] = (byCabin[r.cabin] || 0) + r.trips;
+    const top = Object.entries(byCabin).sort((a, b) => b[1] - a[1])[0];
+    if (top) travel.cabin = top[0];
+  }
   /* "Best value: let CardWise decide" is the default for anyone who skips —
      unless an older profile already named its airlines. */
   const hadAirlines = (p.brands?.airlinesPicked ?? p.brands?.airlines ?? []).length > 0;
@@ -204,18 +241,19 @@ export function normalizeProfile(p = {}) {
   travel.tripsByAirline = {};
   travel.workPrograms = [];
   travel.inferred = null;
-  if (travel.airports.length) {
-    travel.trips = travel.airports.reduce((t, a) => t + a.trips, 0);
+  if (travel.tripRows.length) {
+    travel.trips = travel.tripRows.reduce((t, r) => t + r.trips, 0);
     /* A metro's main airport for lounges — unless the saved home airport is
        inside that metro already (EWR stays EWR). */
     const first = travel.airports[0].code;
-    travel.homeAirport = METRO_AIRPORTS[first]?.airports.includes(travel.homeAirport) ? travel.homeAirport : mainAirport(first);
-    /* Destinations decide the international share once any are given. */
-    if (travel.airports.some((a) => a.destinations.length)) travel.intlShare = intlShareOf(travel.airports);
-    const inf = inferAirlines(travel.airports);
+    travel.homeAirport = METRO_AIRPORTS[first]?.airports.includes(travel.homeAirport) ? travel.homeAirport
+      : METRO_AIRPORTS[first] ? mainAirport(first) : PLACE_BY_KEY[first]?.airports.length === 1 ? PLACE_BY_KEY[first].airports[0] : first;
+    /* v7c 3.6–3.8: airlines per route from T-100 data; picks only break close calls. */
+    const prefs = travel.airlineChoice === "manual" ? lower(p.brands?.airlinesPicked ?? p.brands?.airlines) : [];
+    const inf = inferTrips(travel.tripRows, prefs);
     travel.tripsByAirline = inf.byProgram;
-    travel.workPrograms = inf.rows.filter((r) => r.work).map((r) => r.program);
-    travel.inferred = { text: inf.text, programs: inf.rows.map((r) => r.program), rows: inf.rows };
+    travel.workPrograms = inf.workPrograms;
+    travel.inferred = { text: inf.text, programs: inf.rows.map((r) => r.program), rows: inf.rows, routes: inf.routes.map((r) => ({ from: r.from, to: r.to, trips: r.trips, intl: r.intl, program: r.pick?.program || null, carriers: r.pick?.carriers || [], kind: r.pick?.kind || null, via: r.pick?.via || null, text: r.text, close: r.close, options: r.options.map((o) => ({ program: o.program, carriers: o.carriers, kind: o.kind })) })) };
   }
   /* v7c 2: one saved loyalty strategy (or none). */
   const st = travel.strategy;
@@ -266,7 +304,9 @@ export function normalizeProfile(p = {}) {
       const airlinesPicked = lower(p.brands?.airlinesPicked ?? p.brands?.airlines);
       /* v7c 1: brand chips only — never "Independent" / "Not sure". */
       const hotelsPicked = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).filter((h) => !HOTEL_AUTO_CHIPS.includes(h));
-      const airlines = travel.airlineChoice === "auto" && travel.inferred ? [...travel.inferred.programs] : airlinesPicked;
+      /* v7c 3.8: the routes decide; picked airlines ("I'll choose") broke the
+         close calls above and are valued too. */
+      const airlines = travel.inferred ? [...new Set([...travel.inferred.programs, ...(travel.airlineChoice === "manual" ? airlinesPicked : [])])] : airlinesPicked;
       const wantsPick = travel.hotelChoice === "auto";
       const nights = travel.hotelNights != null ? travel.hotelNights : travel.trips * DEFAULT_NIGHTS_PER_TRIP;
       const pick = wantsPick ? pickHotelProgram({ airports: travel.airports.length ? travel.airports : [{ code: travel.homeAirport || "X", trips: travel.trips || 1, destinations: [] }], nights, mode: p.valueMode || "typical" }) : null;

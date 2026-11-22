@@ -76,7 +76,35 @@ Example: Sapphire Reserve 3x dining with picks Virgin (1.5), Hyatt (1.65 at
 1:1), Aeroplan (1.45) → `v = 1.533¢` → ≈ 4.6% back, which beats Robinhood
 Gold's 3% cash. At `v = 1.0¢` (nothing picked) the two tie at 3%.
 
-## 0. Where people fly (v7b Part 3)
+## 0. Where people fly (v7c Part 3 — trips; replaces the v7b airports below)
+
+**Inputs.** Trip rows: *from* (an airport or metro; NYC = JFK/LGA/EWR) →
+*to* (an airport, a metro, a city with several airports such as Tokyo =
+HND/NRT, or "various US cities"), trips a year, cabin, "I fly for work", and
+an optional airline edit. Checked bags per trip is asked once. Derived: home
+airports (the rows' *from*s, most trips first; the first is the lounge
+airport, a metro's main airport), `T` = Σ trips, the international share
+(trips to a non-US airport ÷ `T`), the cabin with most trips.
+
+**Route data.** US DOT BTS T-100 Segment (All Carriers), departures performed
+per carrier per airport pair, latest 12 months (2025-09 … 2026-08), built by
+`npm run routes` (docs/THIRD_PARTY.md). Regional flights count for the airline
+they fly for.
+
+**Airline per route** (`engine/v5/tripRoutes.js`):
+1. A good nonstop exists (≥ 104 departures a year, two a week): carriers by
+   departures, grouped by the program they credit to (Korean Air → Delta,
+   EVA / ANA → United, JAL → American); the program with most flights wins.
+2. Otherwise the best one-stop: leg 1 on one of the home airport's three
+   biggest airlines to a connecting airport, leg 2 on it or an alliance
+   partner; score = the weaker leg's departures.
+3. Various US cities: the airline with the most departures from that home.
+Close calls — another option ≥ 70% of the best — go to an airline the person
+picked ("I'll choose"), else the program they already fly most on other
+routes, else the most flights. A row's own airline edit always wins.
+`tripsByAirline` = Σ trips per program; work rows mark their program.
+
+### v7b (kept for reference)
 
 **Inputs.** Home airports — a metro counts once (NYC = JFK/LGA/EWR; DC, Chicago,
 Bay Area, LA, Dallas likewise) — each with round trips a year, an "I fly for

@@ -47,8 +47,8 @@ These fixes come from my review of the running app. Apply them after v7b
      Sapphire Preferred or Ink.
    - Chase → Marriott is 1:1 from any Chase card that can transfer.
    - Never attach the Hyatt ratio to Marriott.
-3. Each strategy shows the smallest set of cards that delivers it within the
-   fee budget. Don't include two cards from the same hotel or airline program
+3. Each strategy shows the smallest set of cards that delivers the most net
+   value (no fee cap). Don't include two cards from the same hotel or airline program
    unless the second one adds net value. (The current set has both the
    Marriott Brilliant and the Boundless.)
 4. Show each strategy's net value after fees, its total fees, and a "Why these
@@ -99,13 +99,23 @@ these mean, and some can't be answered by a chip at all.
    - Shopping: Walmart+, lululemon, Saks, Instacart…
    - Travel services: CLEAR, Avis/Budget, Turo, LoungeBuddy, JSX.
    - The list is built from the card data and grouped, as now.
-2. **One question per chip, three states.** Each brand chip cycles
+   - **Group look-alike services into one chip.** Use "Takeout / food
+     delivery", not separate Uber Eats, DoorDash and Grubhub chips. Use
+     "Rideshare", not separate Uber and Lyft chips.
+   - Only if the chip is set to Use now / Would use, show one small
+     follow-up: "Which app?" The answers are Uber Eats / DoorDash /
+     Grubhub / **"Any, I'd switch to whichever my card covers"**.
+   - Credits count only for the apps picked. "Any" counts all of them.
+   - The credits themselves are brand-specific (Uber Cash works only on
+     Uber, DoorDash credits only on DoorDash), so the engine still needs
+     the brand.
+3. **One question per chip, three states.** Each brand chip cycles
    **Use now → Would use → No**. This replaces the separate "already spend"
    follow-up and the old "Perks you already pay for" step.
    - Use now: near full value.
    - Would use: reduced factor (keep the METHODOLOGY factors).
    - No / untouched: $0.
-3. **Remove the generic credit chips entirely.** Work them out from other
+4. **Remove the generic credit chips entirely.** Work them out from other
    answers instead:
    - "Travel credit (any travel purchase)": counts automatically if the
      person travels at all (from the trips step). No question.
@@ -118,10 +128,10 @@ these mean, and some can't be answered by a chip at all.
      The Edit, FHR, Delta Stays: ask **one yes/no question** instead:
      "Would you book a hotel through a card's travel site to use a credit?"
      No (default) = $0 for all portal-tied hotel credits.
-4. Under each chip, show a small grey line with which cards give it and how
+5. Under each chip, show a small grey line with which cards give it and how
    much, e.g. "Amex Platinum · up to $300/yr". This answers "why is this
    here?"
-5. **Travel services must include TSA PreCheck / Global Entry / NEXUS.**
+6. **Travel services must include TSA PreCheck / Global Entry / NEXUS.**
    It was dropped in the perk rename.
    - Value it as a credit that comes once every 4–5 years, about $20–30 a
      year. Verify the current TSA and CBP fees on their official pages.
@@ -130,7 +140,7 @@ these mean, and some can't be answered by a chip at all.
    - It adds $0 if a card the person already has covers it.
    - Only if picked, ask: "Already have PreCheck or Global Entry?"
      (No / Yes, renewing in ___).
-6. Add a test that every credit and membership in the card data maps to
+7. Add a test that every credit and membership in the card data maps to
    either a brand chip or a derived rule (item 3), so no perk gets dropped
    again. Add a test that no survey label contains the word "credit".
 
@@ -163,24 +173,23 @@ these mean, and some can't be answered by a chip at all.
 
 ## 5b. Only count what I'd pay for
 
-1. **"Nice extras" count $0 in every score and value.** These are things
-   that are nice to have, but I wouldn't pay extra for them:
-   - elite status, of any kind;
-   - travel protections: trip delay/cancellation, rental car, purchase,
-     cell phone;
-   - lounge access: Priority Pass, Centurion, Delta Sky Club and the rest.
-2. **Show them on the card detail** in a separate, unscored "Nice extras"
-   list, with no dollar amounts. "Benefits you'd use" shows only things
-   with real dollar value: credits the person picked, free nights,
-   companion certificates, free bags.
-3. **Free night certificates:**
-   - Value each at what the person would realistically redeem, not the cap.
-     An 85k Marriott certificate = the typical cash price of hotels in the
-     person's destinations that cost ≤ 85k points, discounted by
-     METHODOLOGY's certificate factor (it expires, and the dates are
-     restricted).
-   - Show the math behind the value.
-   - If the person has no hotel stays in their trips, count it $0.
+**Rule: a perk counts only for money it saves on things I'd pay for anyway.**
+These factors replace the old perk factors in METHODOLOGY.md. Update that
+file and the tests.
+
+| Perk type | Counted value |
+|---|---|
+| Real-value perks the person picked or will use: statement credits (dining, airline, Uber, DoorDash, streaming…), free checked bags on airlines they fly, PreCheck/Global Entry | **100% of face value** |
+| Credits limited to a kind of spending (e.g. airline *fee* credits: bags, seats, upgrades, not tickets) | **100%, capped at what the person would actually spend there**. E.g. bag fees = bags × trips on that airline × fee, minus bags another card already makes free. Show "You'd use $X of $200" with the math. |
+| Free night certificates, companion certificates | **2/3 of the max value**, e.g. an 85k Marriott certificate whose max is about a $629 night counts $419. Show "up to $629" in grey. $0 if the trips include no hotel stays (or flights, for companion certificates). |
+| Lounge access (Priority Pass, Sky Club, Centurion…) | **1/8 of face value** |
+| Elite status, of any kind | **$0** |
+| Travel and purchase protections | **$0** |
+
+1. **Every benefit row shows "Counted $X" and a grey "Face up to $Y"**,
+   so points-savvy users still see the upside.
+2. **$0 items move to an unscored "Nice extras" list,** with no dollar
+   amounts.
 4. **Fix the icons:** the dining credit currently shows a bed icon. Each
    benefit type gets its own icon.
 
@@ -193,6 +202,12 @@ these mean, and some can't be answered by a chip at all.
      correctly $0. Show a one-line reason, e.g. "No Marriott stays in your
      trips, and your other cards beat 3x dining / 2x everything else."
    - Elite-status bonus points count $0 (same rule as status).
+   - Show the full stacked return at the brand, but score only what the
+     card adds. Example: Marriott stays earn 10x as a Bonvoy member (with
+     any card) + 6x from the card = about 13% back. Show "≈13% back at
+     Marriott (4.8% from this card)". Only the card's 4.8% minus what your
+     best other card would earn on that spending counts, because you get
+     the member points no matter which card you pay with.
 6. **Recheck "Worth applying?"** after these changes:
    - The verdict uses only counted value: picked credits, a realistic free
      night, earning, minus the fee and application costs.
@@ -219,6 +234,154 @@ these mean, and some can't be answered by a chip at all.
      they'd book through that portal.
    - Don't confuse it with the Robinhood Platinum's portal rates.
    - Add a test: no card earns a portal rate on another issuer's portal.
+
+## 5d. Wallet slots: bugs from my results page
+
+1. **One card, one slot.** The Marriott Brilliant currently fills both
+   "Keeper hotel card" ($535) and "Lounge card" ($134). Fix:
+   - Show each card once, with its total counted value.
+   - The other roles go in small tags on that card.
+   - A slot is only for a role that card is actually the best at.
+2. **Debug this first: my Amex Gold is missing everywhere.** It's absent
+   from the points screen (no Membership Rewards row) and from the Dining
+   and Groceries slots, though I own it.
+   - Trace `amex-gold` from the "Your cards" step through the saved
+     profile, the wallet state, the points screen and the slot optimizer.
+   - Look for an id mismatch, a filter that drops owned Amex cards, or
+     MR valued at $0 because no "transfer-unlocking" flag is set (every MR
+     card can transfer; see programs.js `amex: { any: true }`).
+   - Write the root cause in PROGRESS.md.
+   - Add a regression test: a profile owning Amex Gold + Freedom Unlimited
+     + Robinhood Gold + Delta Gold gets the Amex Gold in Dining and
+     Groceries, and an MR row on the points screen.
+3. **Category slots use the person's real best card, including Amex MR.**
+   - Dining and Groceries must show the Amex Gold (4x restaurants, 4x US
+     supermarkets), not Freedom Unlimited or Robinhood.
+   - Add a test: for every category, the slot card earns the most at
+     counted point values among the cards in the wallet.
+4. **The catch-all line** "This slot overall: 3% (Robinhood 3% + Freedom
+   Unlimited 3%)" is confusing. Show the single best card and its rate.
+   Mention a second card only if it beats the first on some sub-category.
+
+## 5d-2. Wallet Lab results: root causes and redesign
+
+What I found in the code (verify it, and log the confirmed cause in
+PROGRESS.md):
+
+- **The slots are mixed and come from different sources.** `SLOT_DEFS` in
+  `src/engine/v5/methodology.js` mixes three kinds of slot:
+  - role slots: hotelKeeper, airlineKeeper and lounge;
+  - spending slots: dining, hotels and the rest;
+  - "Everyday catch-all".
+
+  Each one is filled by different logic:
+  - **Keeper hotel** = whichever card carries the `freeNight` benefit (the
+    Brilliant).
+  - **Lounge** = whichever card carries the `dedupe: "lounge"` benefit (the
+    Brilliant again).
+  - **Hotels** = the card with the most hotel dollars routed to it (the
+    Boundless).
+
+  So one card shows up in several places, and two Marriott cards sit in one
+  wallet.
+- **My Amex Gold is likely dropped by the optimizer, not lost.**
+  - In "scratch" mode, held cards aren't forced in. Within the fee budget,
+    the Brilliant's inflated value ($535 free night + $134 lounge + $150
+    status) beats the Amex Gold's $325 fee, so the Gold gets crowded out.
+  - Check which mode the page is in. Check that `cardsHeld` contains
+    `amex-gold` after the survey.
+  - Then re-run with the 5b valuation rules and confirm that the Amex Gold
+    comes back.
+
+Fixes:
+1. **Default to "From my wallet" mode whenever the person has cards, and
+   label the mode clearly** at the top: "Built from your 4 cards" or
+   "Starting from zero".
+   - A held card never disappears silently. If the best setup drops one,
+     show it in a "Consider cancelling / downgrading" row with the reason
+     and the dollar effect.
+2. **Split the page into two sections.**
+   - **"Your cards":** one tile per card. Each tile shows:
+     - the card's total counted value minus its fee;
+     - small tags for its jobs (Dining, Groceries, Free night, Bags…);
+     - why it's in the wallet.
+
+     Keeper cards (kept for perks rather than spending) are just cards
+     whose tags are perk jobs. There are no separate "Keeper hotel",
+     "Keeper airline" or "Lounge" slots any more.
+   - **"Which card to use where":** a compact table. Each row has:
+     - the category;
+     - the best card;
+     - its % back;
+     - the program bonus line where it applies.
+
+     Each card can appear in many rows. Use a table, not one tile per
+     category with repeated card images: eight identical Robinhood tiles
+     tell me nothing.
+3. **One hotel program, one hotel card, by default.** Never include two
+   cards from the same hotel or airline program unless the second adds a
+   clearly positive net value. Explain it if it does.
+4. **Re-run the optimizer after the 5b valuation changes,** and add a test
+   with my four held cards:
+   - The Amex Gold is kept and wins Dining and Groceries.
+   - No card appears twice.
+   - There is no Brilliant + Boundless pair.
+
+5. **Slot alternatives hide cards that break the fee budget. Confirmed
+   cause.**
+   - In `alternativesForSlot` (`src/engine/v5/lab.js`), `fits()` drops any
+     card that would push the wallet's total fees over `profile.feeBudget`.
+   - The Brilliant ($650) has used up nearly the whole budget, so only
+     cards with fees of about $95 or less can appear. That's why the Amex
+     Gold ($325) is missing from Groceries, though it would win at 4x.
+   - **Fixes:**
+     - **Remove the fee budget as a constraint everywhere.** This covers
+       `optimalWallet`, `alternativesForSlot`, `cardFits`, sample wallets
+       and the roadmap. The optimizer maximizes **net value (counted
+       value − fees − application costs)**, with no cap on total fees.
+       Fees are already subtracted, so a card is in only if it pays for
+       itself.
+     - Remove the fee-budget question from the survey, or turn it into an
+       optional display filter ("Hide cards with fees over $X"). It must
+       never change what the optimizer picks.
+     - Update METHODOLOGY.md and the tests that assumed a budget.
+     - Cards the person **already owns** that aren't in the current setup
+       go at the top, marked "You have this card", with a one-tap "Put it
+       back".
+     - Test: with my four cards and the Brilliant in the setup, the
+       Groceries sheet shows the Amex Gold with a swap suggestion.
+
+## 5e. Now vs later: plan for future spending
+
+I'm a student, so my spending is low now and will rise after graduation.
+The best card for me now isn't the best card for me in 2–3 years.
+
+1. **Add a survey step after spending:** "Will your spending change?"
+   - "About the same" (default) skips the rest of the step.
+   - "It'll grow" asks: when (e.g. "after graduating, May 2028"), then a
+     quick second spending profile. Each category gets an "expected
+     monthly" field, pre-filled with typical figures for a new grad. Also
+     ask about expected travel: trips per year and cabin.
+2. **Results get two tabs:**
+   - **Now:** today's best wallet, from current spending.
+   - **Your plan:** a timeline roadmap from now to the future profile.
+     - It respects one new card every 6 months, Chase 5/24, and issuer
+       rules (Amex once-per-lifetime bonuses, Chase Sapphire 48-month
+       rule).
+     - It orders cards so the ones that need higher spending come later.
+     - It holds back premium cards until the future spending makes them
+       worth it. Example: "Sapphire Reserve in mid-2028, when your travel
+       spending covers its fee".
+     - Mark 5/24 slots to save for Chase cards.
+3. **Each roadmap step shows:**
+   - the date window;
+   - the card;
+   - why now (the one-line reason);
+   - its net value at the spending level from then on;
+   - what to downgrade or cancel, if anything.
+4. **Closed cards** (e.g. the Ritz-Carlton card, which is only reachable by
+   product change from another Chase Marriott card) appear in the plan
+   only as "upgrade path", never as "apply".
 
 ## 6. Full card data audit
 

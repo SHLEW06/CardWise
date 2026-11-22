@@ -28,7 +28,8 @@
     "test:all": "npm test && npm run test:extension && npm run test:connector",
     "extension:calibrations": "node extension/scripts/sync-calibrations.mjs",
     "audit:cards": "node scripts/card-audit.mjs",
-    "golden": "node scripts/golden-report.mjs"
+    "golden": "node scripts/golden-report.mjs",
+    "routes": "node scripts/build-routes.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

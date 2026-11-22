@@ -1114,3 +1114,41 @@ Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
   their brands ("I have brands I like") or the three strongest where they
   go ("Let CardWise pick").
 - Tests: `v7cPart2.test.jsx` (6); v7PartA strategy tests updated.
+
+## Part 3 — trips replace the airport steps (2026-11-22)
+
+- **"Add the trips you take"**: one row per route — From (airport or metro),
+  To (city or airport), trips a year, cabin, "I fly for work",
+  domestic/international shown automatically, Remove. Checked bags asked
+  once. One-tap suggestions: the busiest routes from the home airports
+  already entered. "I don't fly" stays.
+- Home airports, the domestic/international split, cabin, airlines and
+  programs are all worked out from the rows (`travel.tripRows`; v7b airport
+  profiles migrate to rows, e.g. ATL 4 trips with Seoul 1 → ATL→Seoul 1 +
+  ATL→US cities 3).
+- **Route data:** `scripts/build-routes.mjs` (`npm run routes`) downloads
+  BTS T-100 Segment (All Carriers) for the latest 12 months (2025-09 to
+  2026-08, page says "Latest Available Data: August 2026"), keeps scheduled
+  passenger service touching the US, and writes
+  `src/data/routes.generated.json` (348 KB: 954 origins, 12,266 pairs, 173
+  carriers). Source and months in `docs/THIRD_PARTY.md`. OpenFlights isn't
+  used. Downloads cache in `.cache/` (gitignored).
+- **Airline inference:** nonstop carriers by departures; else the best
+  one-stop through the home airport's airlines and alliance partners; close
+  calls (≥ 70% of the best) go to their picks or the airline they fly most.
+  Shown per route ("ATL→LAX: Delta (most flights) · EWR→Taipei: United, EVA
+  Air (one stop, via LAX)") with an Airline menu on each row.
+- What the data changed vs the v7b hand list: **EWR→Taipei has no nonstop**
+  in the last 12 months (EVA and China Airlines fly from JFK), so EWR→Taipei
+  is United one-stop; **BDL's busiest airline is American**, so the owner's
+  BDL trip now counts for American, not Delta (Delta 4 of 7 trips, was 5).
+  Amex points still rank first. Golden output (`npm run golden`) identical.
+- The old `data/routes.js` lists stay only for v7b code paths not yet moved
+  (metro definitions, `inferAirlines` for old tests).
+- Tests: `v7cPart3.test.jsx` (11); survey, Part A and v7b Part 3 tests moved
+  to rows.
+
+### Unverified (v7c Part 3)
+- Regional assignment for SkyWest / Republic is a heuristic (whichever
+  partner has more mainline flights at the route's airports).
+- T-100 lags ~3 months; routes started or dropped since August 2026 aren't in it.

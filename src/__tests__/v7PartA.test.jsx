@@ -148,7 +148,7 @@ describe("Part A screens", () => {
   it("travel: cabin, booking, checked bags per trip; saves them (v7b)", () => {
     saveV5Profile({ travel: { airports: [{ code: "ATL", trips: 8 }] } });
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("radio", { name: "Business or first" }));
+    fireEvent.change(screen.getByLabelText("Cabin, ATL to US cities"), { target: { value: "business" } });   // v7c: cabin per trip
     fireEvent.click(screen.getByRole("radio", { name: "Whichever pays more" }));
     fireEvent.click(within(screen.getByRole("radiogroup", { name: "Checked bags per trip" })).getByRole("radio", { name: "2" }));
     cont();

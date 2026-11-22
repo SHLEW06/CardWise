@@ -113,12 +113,17 @@ describe("2 · spending", () => {
 });
 
 describe("3 · travel", () => {
-  it("v7b: home airports by code or city, trips each; airlines inferred; lounges three ways", () => {
+  it("v7c: trips from → to with trips a year; airlines per route; lounges three ways", () => {
     render(<Survey initialMode="quick" initialStepId="travel" />);
-    fireEvent.change(screen.getByLabelText("Add a home airport"), { target: { value: "atlanta" } });
+    fireEvent.change(screen.getByLabelText("From"), { target: { value: "atlanta" } });
     fireEvent.click(screen.getByRole("option", { name: /ATL · Atlanta/ }));
-    expect(screen.getByLabelText("Round trips a year from ATL")).toHaveValue("4");
-    expect(screen.getByTestId("airlines-inferred")).toHaveTextContent("Airlines you'd likely fly: Delta (most trips)");
+    fireEvent.change(screen.getByLabelText("To"), { target: { value: "LAX" } });
+    fireEvent.click(screen.getByRole("option", { name: /^LAX · Los Angeles/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Add trip" }));
+    fireEvent.click(screen.getByRole("button", { name: "More: Trips a year, ATL to LAX" }));
+    for (let k = 0; k < 2; k++) fireEvent.click(screen.getByRole("button", { name: "More: Trips a year, ATL to LAX" }));
+    expect(screen.getByLabelText("Trips a year, ATL to LAX")).toHaveValue("4");
+    expect(screen.getByTestId("airlines-inferred")).toHaveTextContent("ATL→LAX: Delta (most flights)");
     expect(screen.getByText(/Priority Pass is a network of independent lounges/)).toBeInTheDocument();
     for (const n of ["I'd pay extra for lounge access", /^I'd love it if my card included it/, "Don't care"]) expect(screen.getByRole("radio", { name: n })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("radio", { name: "I'd pay extra for lounge access" }));
@@ -127,7 +132,7 @@ describe("3 · travel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Hyatt" }));
     cont();
     expect(loadV5Profile().travel).toMatchObject({ trips: 4, homeAirport: "ATL", lounges: "yes", hotelNights: 6, airlineChoice: "auto", hotelChoice: "manual" });
-    expect(loadV5Profile().travel.airports[0]).toMatchObject({ code: "ATL", trips: 4 });
+    expect(loadV5Profile().travel.tripRows[0]).toMatchObject({ from: "ATL", to: "LAX", trips: 4 });
     expect(loadV5Profile().brands).toMatchObject({ airlines: ["delta"], hotels: ["hyatt"] });
   });
   it("airlines: US carriers, every transfer partner and every co-brand, grouped by alliance", () => {
@@ -223,7 +228,7 @@ describe("editing one step from Profile", () => {
     saveV5Profile({ cardsHeld: ["csr"], feeBudget: 750, travel: { trips: 4, homeAirport: "SEA", lounges: "yes" } });
     const onDone = vi.fn();
     render(<Survey initialProfile={loadV5Profile()} initialStepId="travel" editOnly onDone={onDone} />);
-    expect(screen.getByLabelText("Round trips a year from SEA")).toHaveValue("4");   // v7b: the old answer becomes the first airport row
+    expect(screen.getByLabelText("Trips a year, SEA to US cities")).toHaveValue("4");   // v7c: the old answer becomes the first trip row
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     const [p] = onDone.mock.calls[0];
     expect(p).toMatchObject({ cardsHeld: ["csr"], feeBudget: 750 });

@@ -19,8 +19,8 @@ import {
 import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor } from "../../../data/perkChips.js";
 import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
-import { METRO_AIRPORTS, AIRPORT_METRO, DESTINATIONS, DESTINATION_LIST } from "../../../data/routes.js";
-import { homeName, defaultFrom } from "../../../engine/v5/routes.js";
+
+import { searchPlaces, placeName, placeShort, isIntl, suggestRoutes, ROUTE_DATA_SOURCE } from "../../../engine/v5/tripRoutes.js";
 import { loyaltyStrategies, applyStrategy } from "../../../engine/v5/plans.js";
 import { optimalWallet } from "../../../engine/v5/methodology.js";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
@@ -344,21 +344,6 @@ function ToggleChips({ options, picked, onChange, label, limit }) {
   );
 }
 
-/* v7b Part 3: where people fly, not which brands they like. Home airports
-   (metros count once) with trips and "I fly for work"; destinations per
-   airport; airlines inferred from routes and hubs ("Best value: let CardWise
-   decide" by default, editable); cabin + bags; hotels with footprint pick;
-   lounges as a three-way question with a networks follow-up. */
-const HOME_OPTIONS = [
-  ...Object.entries(METRO_AIRPORTS).map(([code, m]) => ({ code, label: m.name, search: `${code} ${m.name} ${m.airports.join(" ")}` })),
-  ...Object.values(AIRPORTS).filter((ap) => !AIRPORT_METRO[ap.code]).map((ap) => ({ code: ap.code, label: `${ap.code} · ${ap.city}`, search: `${ap.code} ${ap.city} ${ap.name}` })),
-];
-export function searchHomes(q) {
-  const s = norm(q);
-  if (!s) return [];
-  return HOME_OPTIONS.filter((o) => o.code.toLowerCase().startsWith(s) || norm(o.search).includes(s)).slice(0, 6);
-}
-const CABINS_3 = CABIN_OPTIONS.filter((c) => c.key !== "mixed");
 const BAG_COUNTS = [{ key: 0, label: "None" }, { key: 1, label: "1" }, { key: 2, label: "2" }, { key: 3, label: "3+" }];
 export const LOUNGE_3 = [
   { key: "yes", label: "I'd pay extra for lounge access" },
@@ -380,66 +365,97 @@ function Stepper({ value, onChange, label, min = 0, max = 60 }) {
   );
 }
 
-function HomeSearch({ onPick, placeholder = "City, airport or metro (e.g. NYC)" }) {
+/* v7c Part 3: "Add the trips you take". */
+export function PlaceSearch({ label, value, onPick, placeholder, homesOnly = false }) {
   const [q, setQ] = useState("");
-  const matches = useMemo(() => searchHomes(q), [q]);
+  const matches = useMemo(() => searchPlaces(q, { homesOnly }), [q, homesOnly]);
+  if (value) {
+    return (
+      <span className="place-picked">
+        <span className="t-caption">{label}</span>
+        <button type="button" className="tray-chip" onClick={() => onPick(null)} aria-label={`${label}: ${placeName(value)} (change)`}>{placeName(value)} <X size={14} aria-hidden="true" /></button>
+      </span>
+    );
+  }
   return (
     <div className="airport-search">
       <div className="survey-search">
         <Search size={18} aria-hidden="true" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} aria-label="Add a home airport" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} aria-label={label} />
       </div>
       {matches.length > 0 && (
-        <ul className="airport-list" role="listbox" aria-label="Airports">
-          {matches.map((o) => (
-            <li key={o.code}><button role="option" aria-selected="false" onClick={() => { onPick(o.code); setQ(""); }}>{o.label}</button></li>
-          ))}
+        <ul className="airport-list" role="listbox" aria-label={`${label} matches`}>
+          {matches.map((o) => <li key={o.key}><button role="option" aria-selected="false" onClick={() => { onPick(o.key); setQ(""); }}>{o.name}</button></li>)}
         </ul>
       )}
-      {q && !matches.length && <p className="t-caption">We don't have "{q}" yet — try the nearest big airport.</p>}
+      {q && !matches.length && <p className="t-caption">We don't have "{q}" — try the city or the airport code.</p>}
     </div>
   );
 }
 
-function DestinationRow({ a, airports, onChange }) {
-  const [q, setQ] = useState("");
-  const dests = a.destinations || [];
-  const has = (k) => dests.some((x) => x.key === k);
-  const toggle = (k) => onChange(has(k) ? dests.filter((x) => x.key !== k) : [...dests, { key: k, trips: 1 }]);
-  const setDest = (k, patch) => onChange(dests.map((x) => (x.key === k ? { ...x, ...patch } : x)));
-  const s = norm(q);
-  const options = DESTINATION_LIST.filter((d) => !s || norm(`${d.name} ${d.country}`).includes(s));
+const CABIN_ROW = CABIN_OPTIONS.filter((c) => c.key !== "mixed");
+
+function TripRow({ row, route, onChange, onRemove }) {
+  const name = `${placeShort(row.from, "from")} to ${placeShort(row.to)}`;
+  const opts = route?.options || [];
   return (
-    <div className="dest-block">
-      <span className="t-caption" id={`dest-${a.code}`}>Where do you go from {homeName(a.code)}? Trips not given a place count as around the US.</span>
-      <div className="survey-search dest-search">
-        <Search size={16} aria-hidden="true" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="City or country" aria-label={`Search destinations from ${a.code}`} />
+    <li className="trip-row" data-route={`${row.from}>${row.to}`}>
+      <div className="trip-head">
+        <span className="trip-route">{placeName(row.from)} → {placeName(row.to)}</span>
+        <span className="tag">{isIntl(row.to) ? "International" : "Domestic"}</span>
       </div>
-      <ChipList options={options} label={`Destinations from ${a.code}`} isPicked={(d) => has(d.key)}
-        render={(d) => <Choice key={d.key} pill selected={has(d.key)} onSelect={() => toggle(d.key)}>{d.name}{d.intl ? "" : " (US)"}</Choice>} />
-      {dests.length > 0 && (
-        <ul className="dest-list">
-          {dests.map((x) => {
-            const d = DESTINATIONS[x.key];
-            const ask = d.long && airports.length > 1;
-            const suggested = ask ? defaultFrom(airports, x.key) : null;
-            return (
-              <li key={x.key} className="dest-row">
-                <span className="dest-name">{d.name}<span className="t-caption"> · {d.intl ? "international" : "domestic"}</span></span>
-                <Stepper label={`Trips a year to ${d.name} from ${a.code}`} value={x.trips} onChange={(n) => setDest(x.key, { trips: n })} />
-                {ask && (
-                  <label className="field dest-from">
-                    <span className="t-caption">Leave from</span>
-                    <select aria-label={`Leave for ${d.name} from`} value={x.from || suggested || a.code} onChange={(e) => setDest(x.key, { from: e.target.value })}>
-                      {airports.map((h) => <option key={h.code} value={h.code}>{homeName(h.code)}{h.code === suggested ? " (most nonstop options)" : ""}</option>)}
-                    </select>
-                  </label>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+      <div className="trip-fields">
+        <label className="field"><span className="t-caption">Trips a year</span>
+          <Stepper label={`Trips a year, ${name}`} value={row.trips} onChange={(v) => onChange({ trips: v })} />
+        </label>
+        <label className="field"><span className="t-caption">Cabin</span>
+          <select aria-label={`Cabin, ${name}`} value={row.cabin || "economy"} onChange={(e) => onChange({ cabin: e.target.value })}>
+            {CABIN_ROW.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+          </select>
+        </label>
+        <Choice pill selected={!!row.work} onSelect={() => onChange({ work: !row.work })} aria-label={`I fly for work, ${name}`}>I fly for work</Choice>
+        <button type="button" className="link" onClick={onRemove} aria-label={`Remove ${name}`}>Remove</button>
+      </div>
+      {route && (
+        <div className="trip-airline">
+          <span className="inferred-line">{route.text}</span>
+          {opts.length > 1 && (
+            <label className="field"><span className="t-caption">Airline</span>
+              <select aria-label={`Airline, ${name}`} value={row.airline || ""} onChange={(e) => onChange({ airline: e.target.value || null })}>
+                <option value="">Let CardWise pick</option>
+                {opts.map((o) => <option key={o.program} value={o.program}>{o.carriers.join(", ")}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
+
+function AddTrip({ rows, onAdd }) {
+  const last = rows[rows.length - 1]?.from || null;
+  const [from, setFrom] = useState(last);
+  const [to, setTo] = useState(null);
+  useEffect(() => { if (!from && last) setFrom(last); }, [last]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const add = (f, t) => { onAdd({ from: f, to: t, trips: 1, cabin: "economy", work: false, airline: null }); setTo(null); };
+  const homes = [...new Set([...rows.map((r) => r.from), ...(from ? [from] : [])])];
+  const ideas = useMemo(() => suggestRoutes(homes, rows, 6), [homes.join(","), rows.length]);   // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="add-trip" data-testid="add-trip">
+      <span className="t-h3">{rows.length ? "Add another trip" : "Add a trip"}</span>
+      <div className="add-trip-fields">
+        <PlaceSearch label="From" value={from} onPick={setFrom} placeholder="Home airport or metro (e.g. ATL, NYC)" homesOnly />
+        <PlaceSearch label="To" value={to} onPick={setTo} placeholder="City or airport (e.g. Tokyo, LAX)" />
+        <button type="button" className="btn btn-ink btn-small" disabled={!from || !to || from === to} onClick={() => add(from, to)}>Add trip</button>
+      </div>
+      {ideas.length > 0 && (
+        <div className="trip-ideas">
+          <span className="t-caption">Common routes from {homes.map((h) => placeShort(h, "from")).join(" and ")} — one tap adds it:</span>
+          <div className="chip-wrap" role="group" aria-label="Suggested routes">
+            {ideas.map((r) => <Choice key={`${r.from}>${r.to}`} pill onSelect={() => add(r.from, r.to)}>{placeShort(r.from, "from")} → {placeName(r.to).replace(/^[A-Z]{3} · /, "")}</Choice>)}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -448,10 +464,15 @@ function DestinationRow({ a, airports, onChange }) {
 function TravelStep({ d, set, mode, headRef }) {
   const n = useMemo(() => normalizeProfile(d), [d]);
   const t = d.travel;
-  const airports = t.airports || [];
+  const rows = t.tripRows || [];
   const setTravel = (patch) => set({ travel: { ...t, ...patch } });
-  const setAirports = (list) => setTravel({ airports: list });
-  const flies = airports.length > 0 && airports.some((a) => a.trips > 0);
+  /* Rows are the stored truth; trips follow them. */
+  const setRows = (list) => setTravel({ tripRows: list, airports: [], trips: list.reduce((x, r) => x + (r.trips || 0), 0), ...(list.length ? {} : { lounges: "no" }) });
+  const routes = n.travel.inferred?.routes || [];
+  const routeFor = (r) => routes.find((x) => x.from === r.from && x.to === r.to);
+  const flies = rows.some((r) => r.trips > 0);
+  const homes = n.travel.airports.map((a) => placeShort(a.code, "from"));
+  const intlTrips = rows.filter((r) => isIntl(r.to)).reduce((x, r) => x + r.trips, 0);
   const auto = (t.airlineChoice || "auto") === "auto";
   /* Lounges: "I'll choose" stays open while they pick their first network. */
   const loungeAuto = (t.loungeChoice || (t.loungeNetworks?.length ? "manual" : "auto")) === "auto";
@@ -461,25 +482,26 @@ function TravelStep({ d, set, mode, headRef }) {
   const bagCount = t.bags ? t.bags.perTrip : null;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Travel" title="Where do you fly?" sub="Your home airports and where you go. We work out which airlines you'd likely fly — you can change it." />
-      <fieldset className="survey-group">
-        <legend className="t-h3">Home airports, with trips a year from each</legend>
-        <ul className="home-list">
-          {airports.map((a, i) => (
-            <li key={a.code} className="home-row">
-              <div className="home-row-head">
-                <span className="home-code">{homeName(a.code)}</span>
-                <Stepper label={`Round trips a year from ${a.code}`} value={a.trips} onChange={(v) => setAirports(airports.map((x, k) => (k === i ? { ...x, trips: v } : x)))} />
-                <Choice pill selected={!!a.work} onSelect={() => setAirports(airports.map((x, k) => (k === i ? { ...x, work: !x.work } : x)))}>I fly for work</Choice>
-                <button type="button" className="link" onClick={() => setAirports(airports.filter((_, k) => k !== i))} aria-label={`Remove ${a.code}`}>Remove</button>
-              </div>
-              <DestinationRow a={a} airports={airports} onChange={(destinations) => setAirports(airports.map((x, k) => (k === i ? { ...x, destinations } : x)))} />
-            </li>
-          ))}
-        </ul>
-        <HomeSearch onPick={(code) => { if (!airports.some((a) => a.code === code)) setAirports([...airports, { code, trips: airports.length ? 1 : 4, work: false, destinations: [] }]); }}
-          placeholder={airports.length ? "Add another home airport" : "City, airport or metro (e.g. ATL, NYC)"} />
-        {!airports.length && <Choice selected={t.trips === 0 && !airports.length} onSelect={() => setTravel({ trips: 0, airports: [], lounges: "no" })}>I don't fly</Choice>}
+      <Head headRef={headRef} eyebrow="Travel" title="Add the trips you take" sub="Where you fly from and to, and how often. We work out the rest: your home airports, domestic or international, and the airlines you'd likely fly." />
+      <fieldset className="survey-group" data-testid="trips">
+        <legend className="t-h3">Your trips</legend>
+        {rows.length > 0 && (
+          <ul className="trip-list">
+            {rows.map((r, i) => (
+              <TripRow key={`${r.from}>${r.to}`} row={r} route={routeFor(r)}
+                onChange={(patch) => setRows(rows.map((x, k) => (k === i ? { ...x, ...patch } : x)))}
+                onRemove={() => setRows(rows.filter((_, k) => k !== i))} />
+            ))}
+          </ul>
+        )}
+        <AddTrip rows={rows} onAdd={(row) => setRows(rows.some((x) => x.from === row.from && x.to === row.to) ? rows : [...rows, row])} />
+        {!rows.length && <Choice selected={t.trips === 0 && !rows.length} onSelect={() => setTravel({ trips: 0, tripRows: [], airports: [], lounges: "no" })}>I don't fly</Choice>}
+        {flies && (
+          <p className="t-caption" data-testid="trips-summary">
+            Home airport{homes.length === 1 ? "" : "s"}: {homes.join(", ")} · {n.travel.trips - intlTrips} domestic and {intlTrips} international trip{intlTrips === 1 ? "" : "s"} a year.
+            {" "}Routes: US DOT flight data ({ROUTE_DATA_SOURCE.months[0]} to {ROUTE_DATA_SOURCE.months[ROUTE_DATA_SOURCE.months.length - 1]}).
+          </p>
+        )}
       </fieldset>
 
       {flies && (
@@ -490,8 +512,8 @@ function TravelStep({ d, set, mode, headRef }) {
               <Choice radio selected={auto} onSelect={() => setTravel({ airlineChoice: "auto" })}>Let CardWise pick</Choice>
               <Choice radio selected={!auto} onSelect={() => { set({ travel: { ...t, airlineChoice: "manual" }, brands: { ...d.brands, airlinesPicked: d.brands.airlinesPicked?.length ? d.brands.airlinesPicked : n.brands.airlines } }); }}>I'll choose</Choice>
             </div>
-            {n.travel.inferred?.text && <p className="inferred-line">{n.travel.inferred.text}</p>}
-            <p className="t-caption">Your choice matters most where several airlines have hubs (like New York); elsewhere the routes decide.</p>
+            {routes.length > 0 && <ul className="inferred-routes">{routes.map((r) => <li key={`${r.from}>${r.to}`} className="inferred-line">{r.text}</li>)}</ul>}
+            <p className="t-caption">The routes decide: the airline with the most nonstop flights, or the best one-stop through your home airport's airline. Your picks only count where airlines are close (like New York). To change one route, use its Airline menu.</p>
             {!auto && AIRLINE_GROUPS.map((g) => (
               <div key={g.key} className="airline-group">
                 <span className="t-caption">{g.label}</span>
@@ -500,13 +522,8 @@ function TravelStep({ d, set, mode, headRef }) {
             ))}
           </fieldset>
           <fieldset className="survey-group">
-            <legend className="t-h3" id="q-cabin">Cabin you usually fly</legend>
-            <div className="chip-wrap" role="radiogroup" aria-labelledby="q-cabin">
-              {CABINS_3.map((o) => <Choice key={o.key} radio pill selected={t.cabin === o.key} onSelect={() => setTravel({ cabin: o.key })}>{o.label}</Choice>)}
-            </div>
-          </fieldset>
-          <fieldset className="survey-group">
             <legend className="t-h3" id="q-bags">Checked bags per trip</legend>
+            <p className="t-caption">Asked once for all your trips.</p>
             <div className="chip-wrap" role="radiogroup" aria-labelledby="q-bags">
               {BAG_COUNTS.map((o) => <Choice key={o.key} radio pill selected={bagCount === o.key} onSelect={() => setTravel({ bags: { perTrip: o.key, share: o.key ? 1 : 0 }, airlinePerks: [...new Set([...(t.airlinePerks || []).filter((k) => k !== "bags"), ...(o.key ? ["bags"] : [])])] })}>{o.label}</Choice>)}
             </div>
