@@ -49,6 +49,9 @@ export function pickHotelProgram({ airports = [], nights = 0, mode = "typical" }
   const sentence = `We'd pick ${best.name}: strong in ${best.where} of your ${best.of} destination${best.of === 1 ? "" : "s"}${best.strong.length ? `, incl. ${incl(best.strong.slice(0, 3))}` : ""}`;
   const why = `${sentence}, and booking direct earns ≈ ${pctText(best)} back in points.`;
   /* "Why?" — every program, strongest first, in the same words. */
-  for (const r of rows) r.line = `${r.name}: strong in ${r.where} of ${r.of}${r.strong.length ? ` (${r.strong.slice(0, 3).join(", ")})` : ""} · booking direct earns ≈ ${pctText(r)} back`;
+  for (const r of rows) {
+    r.line = `${r.name}: strong in ${r.where} of ${r.of}${r.strong.length ? ` (${r.strong.slice(0, 3).join(", ")})` : ""} · booking direct earns ≈ ${pctText(r)} back`;
+    r.sentence = `We'd pick ${r.name}: strong in ${r.where} of your ${r.of} destination${r.of === 1 ? "" : "s"}${r.strong.length ? `, incl. ${incl(r.strong.slice(0, 3))}` : ""}`;
+  }
   return { program: best.program, why, sentence, rows };
 }

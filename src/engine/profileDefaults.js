@@ -217,6 +217,11 @@ export function normalizeProfile(p = {}) {
     travel.workPrograms = inf.rows.filter((r) => r.work).map((r) => r.program);
     travel.inferred = { text: inf.text, programs: inf.rows.map((r) => r.program), rows: inf.rows };
   }
+  /* v7c 2: one saved loyalty strategy (or none). */
+  const st = travel.strategy;
+  travel.strategy = st && typeof st === "object" && typeof st.key === "string"
+    ? { key: st.key, airlines: lower(st.airlines), hotels: lower(st.hotels), auto: !!st.auto }
+    : null;
   /* No flights → no airport lounge question. */
   if (travel.trips === 0) travel.lounges = "no";
 
@@ -266,8 +271,21 @@ export function normalizeProfile(p = {}) {
       const nights = travel.hotelNights != null ? travel.hotelNights : travel.trips * DEFAULT_NIGHTS_PER_TRIP;
       const pick = wantsPick ? pickHotelProgram({ airports: travel.airports.length ? travel.airports : [{ code: travel.homeAirport || "X", trips: travel.trips || 1, destinations: [] }], nights, mode: p.valueMode || "typical" }) : null;
       /* Auto values the picked program only; manual values their brands. */
-      const hotels = wantsPick ? (pick ? [pick.program] : []) : hotelsPicked;
-      return { airlines, airlinesPicked, hotels, hotelsPicked, hotelPick: pick ? { program: pick.program, why: pick.why, sentence: pick.sentence, rows: pick.rows } : null,
+      let hotels = wantsPick ? (pick ? [pick.program] : []) : hotelsPicked;
+      let valuedAirlines = airlines;
+      let shown = pick;
+      /* v7c 2.1: the chosen strategy's programs are the ones valued — for
+         "I have brands I like", only if they're among those brands. */
+      const st = travel.strategy;
+      if (st) {
+        valuedAirlines = [...new Set([...airlines, ...st.airlines])];
+        const fits = travel.hotelChoice === "manual" ? st.hotels.filter((h) => hotelsPicked.includes(h)) : st.hotels;
+        if (fits.length || !st.hotels.length) hotels = fits;
+        /* "We'd pick …" names the program actually valued. */
+        const row = pick?.rows?.find((r) => r.program === hotels[0]);
+        if (pick && row && row.program !== pick.program) shown = { ...pick, program: row.program, sentence: row.sentence, why: `${row.sentence}.` };
+      }
+      return { airlines: valuedAirlines, airlinesPicked, hotels, hotelsPicked, hotelPick: shown ? { program: shown.program, why: shown.why, sentence: shown.sentence, rows: shown.rows } : null,
       everyday: lower(p.brands?.everyday),
       perks: lower(p.brands?.perks),
       perksMaybe: lower(p.brands?.perksMaybe).filter((k) => !lower(p.brands?.perks).includes(k)),

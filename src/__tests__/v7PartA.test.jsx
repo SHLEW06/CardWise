@@ -125,12 +125,14 @@ describe("A4 · loyalty strategy helper", () => {
     expect(s.length).toBeLessThanOrEqual(3);
     for (const x of s) expect(Number.isFinite(x.net)).toBe(true);
     expect(s.some((x) => x.hotels.length > 1)).toBe(true);
-    expect(s.find((x) => x.hotels.includes("hyatt"))?.sentence).toMatch(/Hyatt \(1:1 with the Sapphire Reserve, 4:3 with Preferred or Ink\)/);
+    expect(s.find((x) => x.hotels.includes("hyatt"))?.lines).toContain("Chase → Hyatt: 1:1 with the Sapphire Reserve, 4:3 with the Sapphire Preferred or Ink");   // v7c 2.2
   });
-  it("using a strategy picks its programs and replaces 'Not sure'", () => {
-    const patch = applyStrategy({ ...ME, brands: { airlines: [], hotels: ["unsure"] } }, { airlines: ["delta"], hotels: ["hyatt"], feeders: [] });
-    expect(patch.brands.airlines).toEqual(["delta"]);
-    expect(patch.brands.hotels).toEqual(["hyatt"]);
+  it("using a strategy saves ONE choice; its programs are the ones valued (v7c 2.1)", () => {
+    const patch = applyStrategy({ ...ME, brands: { airlines: [], hotels: ["unsure"] } }, { key: "delta+hyatt", airlines: ["delta"], hotels: ["hyatt"], feeders: [] });
+    expect(patch.travel.strategy).toEqual({ key: "delta+hyatt", airlines: ["delta"], hotels: ["hyatt"], auto: false });
+    const p = normalizeProfile({ ...ME, brands: { airlines: [], hotels: ["unsure"] }, ...patch });
+    expect(p.brands.airlines).toContain("delta");
+    expect(p.brands.hotels).toEqual(["hyatt"]);
   });
 });
 
@@ -163,18 +165,18 @@ describe("Part A screens", () => {
     cont();
     expect(loadV5Profile().travel).toMatchObject({ lounges: "bundle", loungeChoice: "manual", loungeNetworks: ["prioritypass"] });
   });
-  it("hotels: 'Not sure — help me choose' opens the strategy helper; using one picks the programs", () => {
+  it("hotels: the strategy list shows on the travel step; using one saves it", async () => {
     saveV5Profile(ME);
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("button", { name: /Help me pick/ }));
     const helper = screen.getByTestId("strategy-helper");
-    const first = within(helper).getAllByRole("button", { name: /Use this strategy|Using this/ })[0];
-    fireEvent.click(first);
+    const other = (await within(helper).findAllByRole("radio", { name: "Use this instead" }, { timeout: 8000 }))[0];
+    fireEvent.click(other);
     cont();
-    const p = loadV5Profile();
+    const p = normalizeProfile(loadV5Profile());
+    expect(p.travel.strategy.auto).toBe(false);
     expect(p.brands.hotels).not.toContain("unsure");
     expect(p.brands.airlines).toContain("delta");
-  });
+  }, 20000);
   it("fee: 'Whatever gives me the most back' shows the ladder; picking a rung sets the budget", () => {
     saveV5Profile(ME);
     render(<Survey initialMode="quick" initialStepId="fee" initialProfile={loadV5Profile()} />);

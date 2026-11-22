@@ -643,37 +643,64 @@ function LoungeCompare({ d }) {
   );
 }
 
-/* v7 A4: loyalty strategy helper — 2–3 named airline + hotel strategies
-   with their net value; "Use this" picks those programs. */
-export function StrategyHelper({ d, set, open: startOpen = false }) {
-  const [open, setOpen] = useState(startOpen);
-  useEffect(() => { if (startOpen) setOpen(true); }, [startOpen]);
-  const list = useMemo(() => (open ? loyaltyStrategies(d) : []), [open, d]);
-  if (!open) {
-    return (
-      <div className="helper-cta">
-        <button type="button" className="btn btn-quiet btn-small" onClick={() => setOpen(true)}>Not sure which airline or hotel program? Help me pick</button>
-      </div>
-    );
-  }
-  const isOn = (st) => st.airlines.every((a) => d.brands.airlines.includes(a)) && st.hotels.every((h) => d.brands.hotels.includes(h)) && !d.brands.hotels.includes("unsure");
+/* v7c Part 2: the loyalty strategy is ONE choice. The highest-value
+   strategy is the default ("Using this"); the others say "Use this
+   instead". Each shows the smallest set of cards that delivers it within
+   the fee budget, its net value after fees, its total fees, the transfers
+   one partner per line, and "Why these cards?". Computed after the step
+   draws (the optimizer runs once per strategy). */
+const stripStrategy = (d) => ({ ...d, travel: { ...d.travel, strategy: null } });
+export function StrategyHelper({ d, set }) {
+  const basis = useMemo(() => stripStrategy(d), [d]);
+  const sig = useMemo(() => JSON.stringify(basis), [basis]);
+  const [list, setList] = useState(null);
+  const [why, setWhy] = useState(null);
+  useEffect(() => {
+    const id = setTimeout(() => setList(loyaltyStrategies(basis)), 30);
+    return () => clearTimeout(id);
+  }, [sig]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const saved = d.travel.strategy;
+  /* Default = the highest-value strategy; re-picked while it's the default
+     or when the saved one no longer applies. */
+  useEffect(() => {
+    if (!list?.length) return;
+    const stillThere = saved && list.some((st) => st.key === saved.key);
+    if ((!saved || saved.auto || !stillThere) && saved?.key !== list[0].key) set(applyStrategy(d, list[0], { auto: true }));
+  }, [list]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const flies = d.travel.trips > 0 || (d.travel.airports || []).some((a) => a.trips > 0) || (d.travel.hotelNights || 0) > 0;
+  if (!flies) return null;
+  const chosen = saved && list?.some((st) => st.key === saved.key) ? saved.key : list?.[0]?.key;
   return (
     <section className="helper" aria-labelledby="helper-h" data-testid="strategy-helper">
       <div>
-        <h2 className="t-h3" id="helper-h">Pick a loyalty strategy</h2>
-        <p className="t-caption">From your home airport, trips and hotel nights: one airline and one hotel program (or a few, if you travel a lot), and the flexible points that feed them. Each is valued at your fee budget.</p>
+        <h2 className="t-h3" id="helper-h">Your loyalty strategy</h2>
+        <p className="t-caption">From where you fly and your hotel nights: one airline and hotel program (or a few, if you travel a lot), with the smallest set of cards that earns them within your fee budget.</p>
       </div>
-      <ul className="helper-list">
-        {list.map((st) => (
-          <li key={st.key} className={`strategy${isOn(st) ? " is-on" : ""}`}>
-            <span className="strategy-name">{st.label}</span>
-            <span className="strategy-net t-value">{fmt(st.net)} a year</span>
-            <p className="t-caption">{st.sentence}</p>
-            <div className="strategy-cards">{st.wallet.map((id) => <span key={id} className="tag">{cardDisplayName(BY_ID[id])}</span>)}</div>
-            <button type="button" className="btn btn-quiet btn-small" aria-pressed={isOn(st)} onClick={() => set(applyStrategy(d, st))}>{isOn(st) ? "Using this" : "Use this strategy"}</button>
-          </li>
-        ))}
-      </ul>
+      {!list ? <p className="t-caption" role="status">Working out your strategies…</p> : (
+        <ul className="helper-list" role="radiogroup" aria-labelledby="helper-h">
+          {list.map((st) => {
+            const on = st.key === chosen;
+            return (
+              <li key={st.key} className={`strategy${on ? " is-on" : ""}`} data-strategy={st.key}>
+                <span className="strategy-name">{st.label}</span>
+                <span className="strategy-net t-value">{fmt(st.net)} a year after fees</span>
+                <span className="t-caption">{fmt(st.fees)} in yearly fees · {st.wallet.length} card{st.wallet.length === 1 ? "" : "s"}</span>
+                <div className="strategy-cards">{st.wallet.map((id) => <span key={id} className="tag">{cardDisplayName(BY_ID[id])}</span>)}</div>
+                <p className="t-caption">{st.sentence}</p>
+                {st.lines.length > 0 && <ul className="t-caption transfer-lines">{st.lines.map((l) => <li key={l}>{l}</li>)}</ul>}
+                <button type="button" className="link" aria-expanded={why === st.key} onClick={() => setWhy(why === st.key ? null : st.key)}>Why these cards?</button>
+                {why === st.key && (
+                  <ul className="t-caption why-list" data-testid={`why-${st.key}`}>
+                    {st.why.map((w) => <li key={w.cardId}>{w.line}</li>)}
+                    {st.dropped.map((w) => <li key={w.cardId} className="is-dropped">Left out — {w.line}</li>)}
+                  </ul>
+                )}
+                <button type="button" role="radio" aria-checked={on} className="btn btn-quiet btn-small" onClick={() => !on && set(applyStrategy(d, st))}>{on ? "Using this" : "Use this instead"}</button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

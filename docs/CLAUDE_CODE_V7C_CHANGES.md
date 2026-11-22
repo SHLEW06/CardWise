@@ -184,6 +184,20 @@ these mean, and some can't be answered by a chip at all.
 4. **Fix the icons:** the dining credit currently shows a bed icon. Each
    benefit type gets its own icon.
 
+5. **Hotel and airline cards earn their big multiplier only on spending at
+   that brand.**
+   - Example: Marriott Bonvoy Brilliant, 6x at Marriott. Use the hotel
+     spending from the trips step, assigned to the hotel program picked in
+     the hotels question, and value it at that program's point value.
+   - If the person has no stays with that brand, "Earning it adds" is
+     correctly $0. Show a one-line reason, e.g. "No Marriott stays in your
+     trips, and your other cards beat 3x dining / 2x everything else."
+   - Elite-status bonus points count $0 (same rule as status).
+6. **Recheck "Worth applying?"** after these changes:
+   - The verdict uses only counted value: picked credits, a realistic free
+     night, earning, minus the fee and application costs.
+   - If the net is ≤ $0, say "Not worth it for you", with the top reason.
+
 ## 5c. Points screen and earn-rate fixes
 
 1. **"Here's what your points can do":**

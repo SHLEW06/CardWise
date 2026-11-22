@@ -1086,3 +1086,31 @@ Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
   changed. `npm run golden`: identical before → after.
 - Tests: `v7cPart1.test.jsx` (7); updated travel tests in v6Survey,
   v7PartA, v7bPart3.
+
+## Part 2 — loyalty strategy (2026-11-22)
+
+- **One choice.** The travel step always lists 2–3 strategies (computed
+  just after the step draws). The highest net value is the default and says
+  **Using this**; the others say **Use this instead**. The choice is saved as
+  `travel.strategy` ({key, airlines, hotels, auto}); `auto` = still the
+  default, re-picked when the answers change. Its programs are the ones
+  valued (normalizeProfile) — for "I have brands I like" only if they're
+  among those brands. "We'd pick …" names the program actually valued.
+- **Transfer wording**, one partner per line (`transferLine`): "Chase →
+  Hyatt: 1:1 with the Sapphire Reserve, 4:3 with the Sapphire Preferred or
+  Ink"; "Chase → Marriott: 1:1 from any Chase card that can transfer". The
+  old "Chase UR → Marriott / Hyatt (1:1 with the Sapphire Reserve…)" read as
+  if the Hyatt ratio applied to Marriott. Bank names are plain ("Chase",
+  "Amex"), no "UR" / "MR".
+- **Smallest set** (`smallestSet`): from the optimizer's wallet keep held
+  cards and new cards with "Worth applying? Yes"; a second card from the same
+  airline or hotel program stays only if its gain beside the first beats its
+  application hurdle, and its why-line says so ("adds $183 a year beside the
+  Marriott Bonvoy Brilliant"). For the test profile the Boundless does add
+  $183 beside the Brilliant (its free night), so it stays — with that line.
+- Each strategy shows its net after fees, total fees, card count, and
+  **Why these cards?** (one line per card; anything left out says why).
+- Candidates: airlines from where they fly (route inference), hotels from
+  their brands ("I have brands I like") or the three strongest where they
+  go ("Let CardWise pick").
+- Tests: `v7cPart2.test.jsx` (6); v7PartA strategy tests updated.
