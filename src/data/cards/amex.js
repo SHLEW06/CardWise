@@ -96,6 +96,9 @@ export const CARDS = [
   },
   {
     id: "amex-plat", name: "Amex Platinum", issuer: "American Express", network: "AMEX",
+    /* v7d Part 5: presale tickets and event access (Amex Experiences) — no
+       statement credit, so $0, listed under Nice extras. */
+    niceExtras: ["Ticket presales and event access (Amex Experiences)"],
     annualFee: 895, currency: "Amex MR", pointCurrency: "amex",
     earnRates: { Flights: 5, General: 1 }, portalMultipliers: { Hotels: 5 },
     earnCaps: [{ keys: ["Flights"], annual: 500000, after: 1 }],

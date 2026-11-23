@@ -202,7 +202,7 @@ export const CARDS = [
     earnRates: { AA: 3, Dining: 2, Transit: 2, General: 1 }, portalMultipliers: { Hotels: 6 },
     credits: [
       cred("$240 Turo credit ($30 per trip)", 240, "HARD", "merchant", "annual"),
-      cred("$100 Splurge credit", 100, "MEDIUM", "merchant", "annual"),
+      cred("$100 Splurge credit (pick 2: 1stDibs, AAdvantage Hotels, Future, Live Nation)", 100, "MEDIUM", "merchant", "annual", { source: "https://www.citi.com/credit-cards/citi-aadvantage-globe-mastercard", checked: "2026-11-23" }),
       cred("$100 inflight purchase credit", 100, "MEDIUM", "airline", "annual"),
       cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr"),
     ],

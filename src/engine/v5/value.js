@@ -29,7 +29,7 @@ import { VAL } from "../../data/valuations.js";
 import { loungeCoverage } from "../airportFit.js";
 import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
-import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree } from "../../data/perkHabits.js";
+import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree, habitSpend, creditDraws, poolsForCredit, creditPick, sharePools } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -108,6 +108,7 @@ function keysFor(card, category, profile) {
     case "online": return ["Online"];
     case "phone": return ["Wireless", "Internet", "Utilities", "Mobile", ...(profile.brands.everyday.includes("t-mobile") ? ["TMobile"] : [])];
     case "rent": return ["Rent"];
+    case "tickets": return ["Entertainment"];       // v7d Part 5
     default: return [];
   }
 }
@@ -211,7 +212,35 @@ export function buckets(profile) {
   const costcoShare = profile.gasAt === "costco" ? 1 : profile.gasAt === "both" ? 0.5 : 0;
   out.gas = a.gas * (1 - costcoShare);
   out.gasCostco = a.gas * costcoShare;
+  /* v7d Part 5: event tickets get their own bucket, taken out of
+     "everything else" (the spending step has no ticket question). */
+  const t = profile.brands?.habits?.tickets;
+  const tickets = t ? habitSpend(HABIT_BY_KEY.tickets, t).yearly : 0;
+  if (tickets > 0) { out.tickets = tickets; out.other = Math.max(0, (out.other || 0) - tickets); }
   return out;
+}
+
+/**
+ * v7d Part 5: ticket spending the wallet's credits pay back (StubHub /
+ * viagogo, Citi Splurge with Live Nation …), shared so no dollar is paid back
+ * twice. Credits come first; what's left earns at the best card's rate.
+ *   → { total, byCard: { cardId: [{ credit, value, pools }] } }
+ */
+export function ticketCreditCover(cards, profile) {
+  const pools = profilePools(profile);
+  const ticketPools = Object.fromEntries(Object.entries(pools).filter(([k]) => k.startsWith("tickets:")));
+  if (!Object.keys(ticketPools).length) return { total: 0, byCard: {} };
+  const items = [];
+  for (const c of cards) for (const cr of c.credits || []) {
+    if (cr.unverified || creditClass(cr) === "spend-gated" || !creditDraws(cr).some((d) => d.habit === "tickets")) continue;
+    const ids = poolsForCredit(cr, ticketPools);
+    const r = poolCreditValue(cr, ids, ticketPools, { pick: creditPick(cr) });
+    if (r.value > 0) items.push({ id: `${c.id}#${cr.name}`, cardId: c.id, credit: cr.name, face: cr.annual, value: r.value, pools: r.pools, pick: r.pick });
+  }
+  const shared = sharePools(items, ticketPools).filter((x) => x.value > 0);
+  const byCard = {};
+  for (const x of shared) (byCard[x.cardId] ||= []).push(x);
+  return { total: shared.reduce((s, x) => s + x.value, 0), byCard };
 }
 
 /** Cents per point for each card IN this wallet (value depends on the wallet). */
@@ -226,7 +255,12 @@ export function walletCpp(cards, profile) {
  *           perCard: { cardId: { value, dollars } }, cpp: { cardId: cpp } }
  */
 export function allocateSpend(cards, profile, opts = {}) {
-  const spend = opts.spend || buckets(profile);
+  let spend = opts.spend || buckets(profile);
+  /* v7d Part 5: ticket credits pay back their share first; the rest earns. */
+  if (spend.tickets > 0) {
+    const cover = ticketCreditCover(cards, profile).total;
+    if (cover > 0) spend = { ...spend, tickets: Math.max(0, spend.tickets - cover) };
+  }
   const cpp = opts.cpp || walletCpp(cards, profile);
   const lanes = [];
   for (const c of cards) for (const l of (opts.lanes?.[c.id] || lanesFor(c, profile, spend))) lanes.push({ ...l, pct: l.rate * cpp[c.id] });
@@ -436,7 +470,7 @@ export function creditUsage(card, credit, profile) {
        amount per period. Shared across the wallet by pool. */
     const r = habitCreditValue(credit, pools);
     const label = HABIT_BY_KEY[rule.asked[0]]?.label || "that";
-    if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "pool", habit: r, perk: "use" };
+    if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "pool", pick: r.pick || null, habit: r, perk: "use" };
     /* Owner, 2026-11-23: "Would start if free" counts $0 — only what they'd
        pay for anyway. Listed under "Nice extras" instead. */
     if (rule.asked.some((k) => triesIfFree(HABIT_BY_KEY[k], habits[k]))) return { factor: 0, reason: "You'd try it if free", tryIfFree: true };
@@ -672,7 +706,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
        already pays back). */
     const type = creditType(c);
     if (value <= 0 && u.tryIfFree) { tryFree.push({ id, label: `${noDollars(c.name)}: you'd try it if free`, face: c.annual, kind: "tryFree" }); continue; }
-    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, dedupe: u.dedupe || null, pools: u.pools || null, single: !!u.single, habit: u.habit || null, note: u.note || null, split: !!u.split, planned: !!u.planned, perk: u.perk || null });
+    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, dedupe: u.dedupe || null, pools: u.pools || null, single: !!u.single, pick: u.pick || null, habit: u.habit || null, note: u.note || null, split: !!u.split, planned: !!u.planned, perk: u.perk || null });
     else unused.push({ id, label: c.name, face: c.annual, type, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
 
@@ -737,6 +771,8 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   }
 
   for (const p of protectionsOf(card)) extras.push({ id: `${card.id}#${p.key}`, label: p.label, kind: "protection" });
+  /* v7d Part 5: perks with no statement credit (Platinum ticket presales). */
+  for (const [i, label] of (card.niceExtras || []).entries()) extras.push({ id: `${card.id}#extra-${i}`, label, kind: "access" });
   /* Owner, 2026-11-23: subscriptions they'd only start if free count $0. */
   extras.push(...tryFree);
 

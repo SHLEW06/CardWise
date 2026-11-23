@@ -65,6 +65,7 @@ export const HABIT_GROUPS = [
   { key: "shopping", label: "Shopping & wellness" },
   { key: "streaming", label: "Streaming & news" },
   { key: "travel", label: "Travel services" },
+  { key: "going", label: "Going out" },        // v7d Part 5
 ];
 
 /* key · label · group · type ("freq" | "sub" | "tt") · size ($ per order,
@@ -90,8 +91,6 @@ export const HABITS = [
   { key: "peloton", label: "Peloton membership", group: "shopping", type: "sub", price: 528, brands: ["peloton"] },
   { key: "walmartplus", label: "Walmart+", group: "shopping", type: "sub", price: 155, brands: ["walmart+"] },
   { key: "bestbuy", label: "Best Buy", group: "shopping", type: "freq", size: 150, brands: ["best buy"] },
-  { key: "stubhub", label: "StubHub / viagogo tickets", group: "shopping", type: "freq", size: 150, brands: ["stubhub"] },
-  { key: "livenation", label: "Live Nation / Ticketmaster concerts", group: "shopping", type: "freq", size: 120, brands: ["live nation"] },
   { key: "1stdibs", label: "1stDibs", group: "shopping", type: "freq", size: 500, brands: ["1stdibs"] },
   { key: "future", label: "Future fitness coaching", group: "shopping", type: "sub", price: 1788, brands: ["future"] },
   { key: "disney", label: "Disney+ / Hulu / ESPN+", group: "streaming", type: "sub", price: 132, brands: ["disney+"] },
@@ -106,11 +105,17 @@ export const HABITS = [
   { key: "avis", label: "Avis / Budget car rentals", group: "travel", type: "freq", size: 150, brands: ["avis"] },
   { key: "turo", label: "Turo car rentals", group: "travel", type: "freq", size: 150, brands: ["turo"] },
   { key: "jsx", label: "JSX flights", group: "travel", type: "freq", size: 250, brands: ["jsx"] },
+  /* v7d Part 5: one grouped row for event tickets (was two shopping rows:
+     StubHub, Live Nation). Spending, not a subscription — "Never" = $0.
+     $150 a ticket order is an estimate. */
+  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order",
+    apps: [{ key: "stubhub", label: "StubHub / viagogo" }, { key: "ticketmaster", label: "Ticketmaster / Live Nation" }, { key: "other", label: "Other sites" }],
+    anyLabel: "Any, I'd buy where my card gives a credit" },
 ];
 export const HABIT_BY_KEY = Object.fromEntries(HABITS.map((h) => [h.key, h]));
 
 /* Grouped services → the brand keys (creditBrands) of each app. */
-const APP_BRAND = { ubereats: "uber", doordash: "doordash", grubhub: "grubhub", uber: "uber", lyft: "lyft" };
+const APP_BRAND = { ubereats: "uber", doordash: "doordash", grubhub: "grubhub", uber: "uber", lyft: "lyft", stubhub: "stubhub", ticketmaster: "live nation" };
 
 /* ── which spending a credit can be used on ─────────────────────────────── */
 
@@ -130,8 +135,11 @@ export function creditDraws(credit) {
   if (/uber cash/i.test(name)) return [{ habit: "rideshare", app: "uber" }, { habit: "takeout", app: "ubereats" }];
   if (/rideshare/i.test(name)) return [{ habit: "rideshare", app: "uber" }, { habit: "rideshare", app: "lyft" }];
   if (/\blyft\b/i.test(name)) return [{ habit: "rideshare", app: "lyft" }];
+  /* v7d Part 5: ticket credits by site. */
+  if (/stubhub|viagogo/i.test(name)) return [{ habit: "tickets", app: "stubhub" }];
   const out = [];
   if (/grubhub/i.test(name)) out.push({ habit: "takeout", app: "grubhub" });
+  if (/live nation|ticketmaster/i.test(name)) out.push({ habit: "tickets", app: "ticketmaster" });
   const brands = new Set(brandsForCredit(credit));
   for (const h of HABITS) if ((h.brands || []).some((b) => brands.has(b))) out.push({ habit: h.key });
   return out;
@@ -247,17 +255,24 @@ export function unionMonths(list) {
  *   one airline); `single` = the credit can be used on only one of the pools
  *   (Amex: "one airline you pick").
  */
-export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = null, single = false } = {}) {
+/** v7d Part 5: credits usable on only N chosen brands — Citi's Splurge
+    credit ("your choice of up to 2 brands"): count the best two. */
+export const creditPick = (credit) => (/splurge/i.test(String(credit?.name || "")) ? 2 : null);
+
+export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = null, single = false, pick = null } = {}) {
   ids = ids.filter((id) => pools[id]);
   const face = credit.annual || 0;
   if (!ids.length) return { value: 0, pools: [], spend: 0, months: 0, periodCap: 0 };
-  const spend = single ? Math.max(...ids.map((id) => pools[id].yearly)) : ids.reduce((t, id) => t + pools[id].yearly, 0);
-  const m = months ?? (single ? Math.max(...ids.map((id) => pools[id].months)) : unionMonths(ids.map((id) => pools[id].months)));
+  const n = single ? 1 : pick;
+  /* one (or N) chosen pools: the ones with the most spending */
+  if (n && ids.length > n) ids = [...ids].sort((a, b) => pools[b].yearly - pools[a].yearly).slice(0, n);
+  const spend = ids.reduce((t, id) => t + pools[id].yearly, 0);
+  const m = months ?? (n === 1 ? pools[ids[0]].months : unionMonths(ids.map((id) => pools[id].months)));
   const cad = credit.cadence || "annual";
   const per = face / (PERIODS[cad] || 1);
   const periodCap = per * periodsUsed(cad, m);
   const value = Math.max(0, Math.min(face, spend, cap, periodCap));
-  return { value, pools: ids, spend, months: m, periodCap, single };
+  return { value, pools: ids, spend, months: m, periodCap, single, pick: n && n > 1 ? n : null };
 }
 
 /* ── v7d Part 2: which limit binds, in plain words ─────────────────────── */
@@ -291,7 +306,7 @@ export function creditLimit(credit, r, answer) {
 
 /** What one habit-asked credit is worth to this person on its own. */
 export function habitCreditValue(credit, pools) {
-  return poolCreditValue(credit, poolsForCredit(credit, pools), pools);
+  return poolCreditValue(credit, poolsForCredit(credit, pools), pools, { pick: creditPick(credit) });
 }
 
 /**
@@ -305,10 +320,14 @@ export function sharePools(items, pools) {
   for (const it of [...items].sort((a, b) => b.value - a.value || (a.id < b.id ? -1 : 1))) {
     let want = it.value;
     let got = 0;
-    if (it.single) {
-      /* usable on one pool only: the one with the most spending left */
-      const id = [...(it.pools || [])].sort((a, b) => (left[b] ?? 0) - (left[a] ?? 0))[0];
-      if (id) { got = Math.min(want, Math.max(0, left[id] ?? 0)); left[id] = (left[id] ?? 0) - got; }
+    if (it.single || it.pick) {
+      /* usable on one (or N chosen) pools only: the ones with the most
+         spending left */
+      for (const id of [...(it.pools || [])].sort((a, b) => (left[b] ?? 0) - (left[a] ?? 0)).slice(0, it.single ? 1 : it.pick)) {
+        const take = Math.max(0, Math.min(want, left[id] ?? 0));
+        left[id] = (left[id] ?? 0) - take; want -= take; got += take;
+        if (want <= 0) break;
+      }
       out.push({ ...it, value: Math.round(got) });
       continue;
     }
@@ -358,7 +377,7 @@ const OLD_CHIP = {
   doordash: [["takeout", "doordash"]], dashpass: [["dashpass"]], grubhub: [["takeout", "grubhub"]],
   "five guys": [["fastcasual"]], "cheesecake factory": [["fastcasual"]], dunkin: [["dunkin"]], resy: [["resy"]],
   opentable: [["opentable"]], inkind: [["inkind"]], lululemon: [["lululemon"]], oura: [["oura"]], peloton: [["peloton"]],
-  "walmart+": [["walmartplus"]], "best buy": [["bestbuy"]], stubhub: [["stubhub"]], "live nation": [["livenation"]],
+  "walmart+": [["walmartplus"]], "best buy": [["bestbuy"]], stubhub: [["tickets", "stubhub"]], "live nation": [["tickets", "ticketmaster"]],
   "1stdibs": [["1stdibs"]], future: [["future"]], "disney+": [["disney"]], peacock: [["peacock"]], "paramount+": [["paramount"]],
   youtube: [["youtube"]], nyt: [["nyt"]], wsj: [["wsj"]], clear: [["clear"]], globalentry: [["globalentry"]],
   loungebuddy: [["loungebuddy"]], avis: [["avis"]], turo: [["turo"]], jsx: [["jsx"]],
@@ -446,10 +465,24 @@ export function habitMathLines(poolIds = [], habits = {}) {
 }
 
 /** Plain-words label for a service answer, e.g. "About monthly · DoorDash". */
+/** v7d Part 5: saved v7c answers for the old StubHub / Live Nation rows →
+    the grouped tickets row. */
+export function migrateTicketHabits(saved = {}) {
+  if (saved.tickets || !(saved.stubhub || saved.livenation)) return saved;
+  const rank = (x) => ["never", "few", "monthly", "weekly"].indexOf(x?.answer);
+  const parts = [["stubhub", saved.stubhub], ["ticketmaster", saved.livenation]].filter(([, a]) => a && rank(a) > 0);
+  const out = { ...saved };
+  delete out.stubhub; delete out.livenation;
+  if (!parts.length) return out;
+  const answer = parts.map(([, a]) => a).sort((x, y) => rank(y) - rank(x))[0].answer;
+  out.tickets = { answer, apps: parts.map(([k]) => k) };
+  return out;
+}
+
 export function habitSummary(h, a) {
   if (!isOn(h, a)) return null;
   const ans = [...FREQ_ANSWERS, ...SUB_ANSWERS, ...TT_ANSWERS].find((x) => x.key === a.answer)?.label;
-  const apps = h.apps ? (a.apps || [ANY_APP]).map((k) => (k === ANY_APP ? "any app" : h.apps.find((x) => x.key === k)?.label)).filter(Boolean).join(", ") : "";
+  const apps = h.apps ? (a.apps || [ANY_APP]).map((k) => (k === ANY_APP ? (h.key === "tickets" ? "any site" : "any app") : h.apps.find((x) => x.key === k)?.label)).filter(Boolean).join(", ") : "";
   return `${h.label}: ${ans}${apps ? ` · ${apps}` : ""}`;
 }
 export { isOn as habitOn };

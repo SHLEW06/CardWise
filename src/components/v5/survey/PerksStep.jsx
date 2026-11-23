@@ -124,10 +124,10 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
       </div>
       {on && h.apps && (
         <div className="habit-apps">
-          <p className="t-caption" id={`${qid}-apps`}>Which app?</p>
+          <p className="t-caption" id={`${qid}-apps`}>{h.key === "tickets" ? "Which site?" : "Which app?"}</p>
           <div className="chip-wrap" role="group" aria-labelledby={`${qid}-apps`}>
             {h.apps.map((x) => <Choice key={x.key} pill selected={apps.includes(x.key)} onSelect={() => setApps(x.key)}>{x.label}</Choice>)}
-            <Choice pill selected={apps.includes(ANY_APP)} onSelect={() => setApps(ANY_APP)}>Any, I'd switch to whichever my card covers</Choice>
+            <Choice pill selected={apps.includes(ANY_APP)} onSelect={() => setApps(ANY_APP)}>{h.anyLabel || "Any, I'd switch to whichever my card covers"}</Choice>
           </div>
         </div>
       )}
@@ -145,7 +145,7 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
       )}
       {on && h.type === "freq" && a?.spend == null && (
         <label className="habit-adjust t-caption" data-testid={`habit-size-${h.key}`}>
-          Your average {h.key === "rideshare" ? "ride" : "order"}: $
+          Your average {h.sizeWord || (h.key === "rideshare" ? "ride" : "order")}: $
           <input inputMode="numeric" aria-label={`Your average order: ${h.label}`} value={a?.size ?? ""} placeholder={String(h.size)}
             onChange={(e) => { const n = parseInt(e.target.value.replace(/\D/g, ""), 10); onChange({ size: Number.isFinite(n) && n > 0 ? n : null }); }} />
           <span>{Number.isFinite(a?.size) && a.size > 0 ? "your figure" : `typical $${h.size}, an estimate`}</span>

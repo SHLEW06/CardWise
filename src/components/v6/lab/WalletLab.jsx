@@ -20,7 +20,7 @@ import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js"
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
-import { alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
+import { ticketCreditText, alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
 import CardFace from "../../v5/CardFace.jsx";
@@ -167,6 +167,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
                   <button className="link" onClick={() => openCard(r.cardId, r.key)}>{cardDisplayName(BY_ID[r.cardId])}</button>
                   {r.programBase && <span className="t-caption uw-note"> + {r.programBase.perDollar}x {partnerShortName(r.programBase.program)} member points booking direct (≈ {Math.round(r.programBase.pct * 10) / 10}% more, any card)</span>}
                   {r.beats.length > 0 && <span className="t-caption uw-note"> · {sharedText(r)}</span>}
+                  {r.credits?.map((c) => <span key={c.credit} className="t-caption uw-note" data-testid="ticket-credit"><br />{ticketCreditText(c)}</span>)}
                 </td>
                 <td className="num-ui">{Math.round(r.pct * 10) / 10}%</td>
                 <td><button className="btn btn-quiet btn-small" onClick={() => setSheet(r.key)} aria-label={`${r.label}: ${cardDisplayName(BY_ID[r.cardId])}. See alternatives`}>Alternatives</button></td>

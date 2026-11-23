@@ -567,6 +567,7 @@ export const SLOT_DEFS = [
   { key: "flights", label: "Flights", buckets: ["flights"] },
   { key: "hotels", label: "Hotels", buckets: ["hotels", "rentals"] },
   { key: "online", label: "Online shopping", buckets: ["online"] },
+  { key: "tickets", label: "Tickets & events", buckets: ["tickets"] },   // v7d Part 5
   { key: "rotating", label: "Rotating 5%" },
   { key: "rent", label: "Rent", buckets: ["rent"] },
 ];

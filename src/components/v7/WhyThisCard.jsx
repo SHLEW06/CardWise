@@ -19,7 +19,7 @@ const pct = (n) => `${(Math.round(n * 10) / 10).toFixed(1)}%`;
 export const BUCKET_LABEL = {
   dining: "Dining", groceries: "Groceries", warehouse: "Costco / wholesale", gas: "Gas", gasCostco: "Costco gas", ev: "EV charging",
   transit: "Rides & transit", flights: "Flights", hotels: "Hotels", rentals: "Vacation rentals", streaming: "Streaming",
-  drugstores: "Drugstores", online: "Online shopping", rent: "Rent", phone: "Phone & utilities", other: "Everything else",
+  drugstores: "Drugstores", online: "Online shopping", rent: "Rent", phone: "Phone & utilities", other: "Everything else", tickets: "Tickets & events",
 };
 
 export function whySentence(e) {

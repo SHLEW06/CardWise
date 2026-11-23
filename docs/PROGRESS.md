@@ -1829,6 +1829,46 @@ Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
   ($400 fees, N +$1,881).
 - Tests: `v7dPart4.test.jsx` (7).
 
+## v7d Part 5 · concerts and live events (2026-11-23)
+
+- **New row** in a new group "Going out": "Concert, sports and show tickets"
+  (Never / A few times a year / About monthly / Weekly+), "Which site?" —
+  StubHub / viagogo, Ticketmaster / Live Nation, Other sites, or "Any, I'd
+  buy where my card gives a credit"; "Your average ticket order: $__",
+  typical $150 marked as an estimate. The v7c "StubHub / viagogo tickets"
+  and "Live Nation / Ticketmaster concerts" shopping rows are gone; saved
+  answers move to the new row (`migrateTicketHabits`).
+- **Credits by site, checked on the issuer pages (2026-11-23):**
+  - Sapphire Reserve: "$300 in StubHub credits" — "up to $150 in statement
+    credits from January through June and again from July through
+    December", activation required, through 12/31/2027. **The page still
+    shows half-year periods**, not "any time of the year"; kept semiannual
+    (the timing reason and plan-around toggle from Part 2 apply). Uses the
+    "StubHub / viagogo" or "Any" pool. (The card's audit record keeps its
+    2026-11-22 source date; this credit was re-read 2026-11-23.)
+  - Citi Strata Elite: "Up to $200 Splurge Credit" — "your choice of up to 2"
+    of 1stDibs, American Airlines, Best Buy, Future Personal Training, Live
+    Nation; every calendar year. Live Nation → "Ticketmaster / Live Nation"
+    or "Any" pool; **counts the best two** brands the person uses (shared
+    with their Best Buy / 1stDibs / Future answers).
+  - Citi / AAdvantage Globe: "Up to $100 Annual Splurge Credit" — up to 2 of
+    1stDibs, AAdvantage Hotels, Future, Live Nation; calendar year
+    (citi.com/credit-cards/citi-aadvantage-globe-mastercard; the old
+    …-globe-credit-card URL is a "Page Not Found"). The data named no brands
+    before, so it counted $0; now it maps like the Strata Elite.
+  - Amex Platinum: presales / event access only → $0, "Ticket presales and
+    event access (Amex Experiences)" under Nice extras.
+- **Allocation:** ticket spending is its own bucket (taken out of
+  "everything else"); credits pay back first (pools shared across the
+  wallet), then the rest goes to the best earner there (`Entertainment` key —
+  Savor / SavorOne 3x — else each card's base rate). Example: $600 on
+  StubHub with the CSR → credit $300, the other $300 earns at the CSR's 1x.
+- **Shown:** card detail (the credit row with its estimate math; "Tickets &
+  events" in the earning list) and "Which card to use where" ("StubHub →
+  Chase Sapphire Reserve ($300 credit covers your first $300)").
+- Golden: unchanged (no golden profile answers the tickets row).
+- Tests: `v7dPart5.test.jsx` (10).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

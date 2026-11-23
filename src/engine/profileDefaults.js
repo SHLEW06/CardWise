@@ -14,7 +14,7 @@ import { inferTrips, rowsFromAirports, knownPlace, isIntl, destKeyOf, placeShort
 import { pickHotelProgram } from "./v5/hotelPick.js";
 import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
 import { SPEND_BRAND } from "../data/perkChips.js";
-import { HABITS, HABIT_BY_KEY, cleanHabit, chipsFromHabits, habitsFromChips, OLD_PORTAL_CHIPS } from "../data/perkHabits.js";
+import { HABITS, HABIT_BY_KEY, cleanHabit, chipsFromHabits, habitsFromChips, OLD_PORTAL_CHIPS, migrateTicketHabits } from "../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../data/creditBrands.js";
 import { cleanGrowth } from "../data/growth.js";
 
@@ -352,7 +352,7 @@ export function normalizeProfile(p = {}) {
         }
         strong = [...new Set([...strong, ...legacy])];
         const habits = {};
-        const saved = p.brands?.habits && typeof p.brands.habits === "object" ? p.brands.habits : {};
+        const saved = migrateTicketHabits(p.brands?.habits && typeof p.brands.habits === "object" ? p.brands.habits : {});
         for (const h of HABITS) { const a = cleanHabit(h, saved[h.key]); if (a) habits[h.key] = a; }
         const implied = chipsFromHabits(habits);
         const extra = habitsFromChips(strong.filter((k) => !implied.perks.includes(k)), weak.filter((k) => !implied.perks.includes(k) && !implied.perksMaybe.includes(k)));

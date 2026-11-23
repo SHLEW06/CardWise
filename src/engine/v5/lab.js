@@ -10,7 +10,8 @@
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
 import { walletValue, slotsFor, eligibility, isChase, SLOT_DEFS } from "./methodology.js";
-import { cardFee, lanesFor, buckets, rolesFor, benefitBreakdown, earnRate } from "./value.js";
+import { cardFee, lanesFor, buckets, rolesFor, benefitBreakdown, earnRate, ticketCreditCover } from "./value.js";
+import { HABIT_BY_KEY, habitOn } from "../../data/perkHabits.js";
 import { pctBack } from "./valuation.js";
 import { applicationHurdle, airlineKeeperValue } from "./apply.js";
 import { cardPointValue } from "./pointValues.js";
@@ -174,9 +175,24 @@ const HOTEL_OR_AIRLINE = new Set(["marriott", "hilton", "hyatt", "ihg", "choice"
 /** "Which card to use where": one row per spending category. */
 export function useWhereRows(value, rawProfile) {
   const profile = normalizeProfile(rawProfile);
-  return slotsFor(value, profile).filter((s) => SLOT_DEFS.find((d) => d.key === s.key)?.buckets || s.key === "rotating").filter((s) => s.cardId)
-    .map((s) => ({ key: s.key, label: s.label, cardId: s.cardId, pct: s.pct, programBase: s.programBase || null, beats: s.beats || [], dollars: s.dollars || 0 }));
+  const rows = slotsFor(value, profile).filter((s) => SLOT_DEFS.find((d) => d.key === s.key)?.buckets || s.key === "rotating").filter((s) => s.cardId)
+    .map((s) => ({ key: s.key, label: s.label, cardId: s.cardId, pct: s.pct, programBase: s.programBase || null, beats: s.beats || [], dollars: s.dollars || 0, credits: [] }));
+  /* v7d Part 5: "StubHub → Sapphire Reserve ($300 credit covers your first $300)" */
+  const t = profile.brands?.habits?.tickets;
+  if (t && habitOn(HABIT_BY_KEY.tickets, t)) {
+    const cover = ticketCreditCover(value.cards.map((id) => BY_ID[id]).filter(Boolean), profile);
+    const credits = Object.entries(cover.byCard).flatMap(([cardId, xs]) => xs.map((x) => ({ cardId, value: x.value, face: x.face, credit: x.credit, site: siteOf(x.pools) })));
+    const row = rows.find((r) => r.key === "tickets");
+    if (row) row.credits = credits;
+    else if (credits.length) rows.push({ key: "tickets", label: "Tickets & events", cardId: credits[0].cardId, pct: 0, programBase: null, beats: [], dollars: 0, credits });
+  }
+  return rows;
 }
+
+const SITE = { stubhub: "StubHub", ticketmaster: "Ticketmaster / Live Nation", any: "Tickets", other: "Other sites" };
+const siteOf = (pools = []) => [...new Set(pools.map((p) => SITE[p.split(":")[1]] || p))].join(" / ");
+/** "StubHub → Chase Sapphire Reserve ($300 credit covers your first $300)" */
+export const ticketCreditText = (c) => `${c.site} → ${cardDisplayName(BY_ID[c.cardId])} (${money(c.face)} credit covers your first ${money(c.value)})`;
 
 /**
  * v7c 5d-2.1: held cards the setup leaves out, and held cards that cost more
