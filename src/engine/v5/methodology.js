@@ -17,8 +17,9 @@ import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile, totalAnnualSpend, annualSpend } from "../profileDefaults.js";
 import {
   allocateSpend, lanesFor, buckets, walletCpp, benefitBreakdown, cardFee, loungeTotal,
-  rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, directBase,
+  rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, directBase, profilePools,
 } from "./value.js";
+import { sharePools } from "../../data/perkHabits.js";
 import { cardPointValue, isUnlocked, CASH_LIKE } from "./pointValues.js";
 import { TRANSFER_RULES } from "../../data/programs.js";
 import { BANK_CURRENCIES, backPct } from "./valuation.js";
@@ -109,13 +110,15 @@ export const baseline = (profile) => {
 /** Welcome bonus $ (shown as "Year-one bonus"; only in N when includeBonus). */
 export const bonusValue = (card) => (card.sub?.estimatedValueUsd || 0);
 
-function dedupeBenefits(perCard) {
+function dedupeBenefits(perCard, profile) {
   const plain = [];
   const groups = {};
   const networks = {};
+  const pooled = [];
   for (const { cardId, items } of perCard) {
     for (const it of items) {
-      if (it.dedupe === "lounge") {
+      if (it.dedupe === "habit") pooled.push({ ...it, cardId });
+      else if (it.dedupe === "lounge") {
         for (const [k, v] of Object.entries(it.networks || {})) networks[k] = Math.max(networks[k] || 0, v);
         (groups.lounge ||= []).push({ ...it, cardId });
       } else if (it.dedupe) {
@@ -125,6 +128,11 @@ function dedupeBenefits(perCard) {
   }
   let total = plain.reduce((t, i) => t + i.value, 0);
   const counted = [...plain];
+  /* v7c Part 4: habit credits share each spending pool across the wallet. */
+  if (pooled.length) {
+    const shared = pooled.length > 1 ? sharePools(pooled, profilePools(profile)) : pooled;
+    for (const it of shared) if (it.value > 0) { total += it.value; counted.push(it); }
+  }
   for (const [key, list] of Object.entries(groups)) {
     const best = [...list].sort((a, b) => b.value - a.value)[0];
     const value = key === "lounge" ? Math.round(loungeTotal(networks)) : best.value;
@@ -144,7 +152,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
     const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids });
     return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [] };
   });
-  const U = dedupeBenefits(perCard);
+  const U = dedupeBenefits(perCard, profile);
   const F = cards.reduce((t, c) => t + cardFee(c, profile), 0);
   const E = alloc.total;
   const base = baseline(profile);
@@ -185,7 +193,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
       const cpp = optCpp || walletCpp(set, profile);
       const alloc = allocateSpend(set, profile, { spend, lanes, cpp });
       const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, wallet: ids }).items }));
-      const U = dedupeBenefits(perCard).total;
+      const U = dedupeBenefits(perCard, profile).total;
       const F = set.reduce((t, c) => t + fees[c.id], 0);
       const bonus = profile.includeBonus ? set.reduce((t, c) => t + (profile.cardsHeld.includes(c.id) ? 0 : bonusValue(c)), 0) : 0;
       const N = alloc.total + U - F - base + bonus;

@@ -151,29 +151,29 @@ describe("3 · travel", () => {
 });
 
 describe("4 · brands (perks)", () => {
-  it("v7c: one step — perks you'd use, then 'Do you already spend on any of these?' for the picked ones only", () => {
+  it("v7c Part 4: one habit question per service, 'Which app?' for grouped ones, PreCheck follow-up, saved as habits", () => {
     saveV5Profile({ cardsHeld: ["amex-gold"] });
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={loadV5Profile()} />);
-    expect(heading()).toBe("Which of these would you actually use if a card included them?");
-    for (const g of ["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras", "Travel credits"]) expect(screen.getByText(g)).toBeInTheDocument();
-    expect(screen.queryByTestId("perks-spend")).toBeNull();
-    const food = screen.getByRole("group", { name: "Food & delivery: would use" });
-    const more = within(food).queryByRole("button", { name: /^Show all/ });
-    if (more) fireEvent.click(more);
-    fireEvent.click(within(food).getByRole("button", { name: "Dunkin' credit" }));
-    fireEvent.click(within(food).getByRole("button", { name: "Resy dining credit" }));
-    const spend = within(screen.getByTestId("perks-spend")).getByRole("group", { name: "Already spend on" });
-    expect(within(spend).getAllByRole("button").map((b) => b.textContent)).toEqual(["Dunkin'", "Resy restaurants"]);   // brand names, no "credit"
-    fireEvent.click(within(spend).getByRole("button", { name: "Dunkin'" }));
-    fireEvent.click(within(screen.getByRole("group", { name: "Travel extras: would use" })).getByRole("button", { name: "TSA PreCheck / Global Entry / NEXUS fee credit" }));
+    expect(heading()).toBe("Which of these do you use, and how often?");
+    for (const g of ["Food & takeout", "Rides", "Shopping & wellness", "Streaming & news", "Travel services"]) expect(screen.getByText(g)).toBeInTheDocument();
+    expect(screen.queryByText("Travel credits")).toBeNull();
+    const dunkin = screen.getByTestId("habit-dunkin");
+    fireEvent.click(within(dunkin).getByRole("radio", { name: "About monthly" }));
+    expect(within(dunkin).getByTestId("habit-result-dunkin").textContent).toMatch(/You'd use about \$84 of the \$84 a year the Amex Gold gives for this/);
+    const takeout = screen.getByTestId("habit-takeout");
+    expect(within(takeout).queryByText("Which app?")).toBeNull();
+    fireEvent.click(within(takeout).getByRole("radio", { name: "A few times a year" }));
+    expect(within(takeout).getByText("Which app?")).toBeInTheDocument();
+    fireEvent.click(within(takeout).getByRole("button", { name: "DoorDash" }));
+    fireEvent.click(within(screen.getByTestId("habit-globalentry")).getByRole("radio", { name: "Have it or would get it" }));
     fireEvent.click(within(screen.getByTestId("precheck")).getByRole("radio", { name: "No" }));
     expect(screen.getByRole("heading", { name: "Your cards already give you" })).toBeInTheDocument();
-    expect(screen.getAllByText("Uber Cash (Uber rides + Uber Eats)").length).toBeGreaterThan(0);   // Amex Gold pays it
     cont();
     const b = loadV5Profile().brands;
-    expect(b.perksUse).toEqual(["dunkin", "resy", "globalentry"]);
-    expect(b.perks).toEqual(["dunkin", "globalentry"]);   // picked + already spend (PreCheck: picked)
-    expect(b.perksMaybe).toEqual(["resy"]);               // picked, not spending there today
+    expect(b.habits.dunkin).toEqual({ answer: "monthly" });
+    expect(b.habits.takeout).toEqual({ answer: "few", apps: ["doordash"] });
+    expect(b.habits.globalentry).toEqual({ answer: "pay" });
+    expect(b.portalHotels).toBe(false);
     expect(b.precheck).toEqual({ has: false, renewIn: null });
     expect(heading()).toBe("Most you'd pay in yearly card fees, all cards combined.");   // no second perk step
   });

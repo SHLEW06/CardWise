@@ -1,0 +1,15 @@
+/* v7c — perk habits (Part 4), benefit rows (5b), Wallet Lab tiles + table (5d-2),
+   plan tab (5e). Builds on the v7b navy tokens. */
+
+/* Part 4: one row per service — label, who pays for it, one question. */
+.v5 .habit-group { gap: 0; }
+.v5 .habit-row { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--hair); }
+.v5 .habit-group .habit-row:first-of-type { border-top: 0; padding-top: 0; }
+.v5 .habit-label { margin: 0; font-weight: 600; }
+.v5 .habit-givers { margin: -4px 0 0; color: var(--ink-3, #6b7280); }
+.v5 .habit-apps { display: grid; gap: 6px; padding-left: 12px; border-left: 2px solid var(--hair); }
+.v5 .habit-apps .t-caption { margin: 0; }
+.v5 .habit-result { margin: 0; }
+.v5 .habit-adjust { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.v5 .habit-adjust input { width: 7em; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+.v5 .link-btn { background: none; border: 0; padding: 0; color: var(--signal, #2b59c3); text-decoration: underline; cursor: pointer; font: inherit; }

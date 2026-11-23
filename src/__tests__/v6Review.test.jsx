@@ -117,7 +117,7 @@ describe("5 · Checkout lists every wallet card and the best card you don't have
     expect(rankPurchase({ store: matchStore("lululemon") }, P).bestElsewhere?.credit).toBeFalsy();
     const r = rankPurchase({ store: matchStore("lululemon") }, { ...P, brands: { perks: ["lululemon"] } });
     expect(r.bestElsewhere.cardId).toBe("amex-plat");
-    expect(r.bestElsewhere.credit.value).toBe(180);   // $300 quarterly × 0.6
+    expect(r.bestElsewhere.credit.value).toBe(300);   // v7c Part 4: a purchase a month uses every quarter of the $300
   });
 });
 

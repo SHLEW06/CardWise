@@ -17,17 +17,17 @@ import {
   CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP,
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
-  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS, INTERESTED_FACTOR,
+  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS,
   LOUNGE_BUNDLE_FACTOR, WORK_STATUS_FACTOR, WORK_LOUNGE_FACTOR, STAY_STYLE_FACTOR,
 } from "../../data/benefitUsage.js";
 import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
 import { pctBack, BANK_CURRENCIES } from "./valuation.js";
 import { cardPointValue } from "./pointValues.js";
 import { VAL } from "../../data/valuations.js";
-import { isBrandCredit, isGeneralCredit, brandsForCredit, creditPicked, creditMaybe, PERK_BY_KEY } from "../../data/creditBrands.js";
 import { loungeCoverage } from "../airportFit.js";
-import { perkChipsFor, TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
+import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
+import { derivedRule, habitPools, habitCreditValue, HABIT_BY_KEY, habitOn } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -306,28 +306,49 @@ function travelBrandOf(card, credit) {
  * How much of a credit this person gets: { factor, reason, split, brands, planned }.
  * `reason` is plain words for "Benefits you wouldn't use".
  */
+/* v7c Part 4: spending pools from the habit answers, once per profile. */
+const POOLS = new WeakMap();
+export function profilePools(profile) {
+  const key = profile.brands;
+  if (key && POOLS.has(key)) return POOLS.get(key);
+  const pools = habitPools(profile.brands?.habits || {});
+  if (key) POOLS.set(key, pools);
+  return pools;
+}
+
 export function creditUsage(card, credit, profile) {
   const trips = profile.travel.trips;
   const nights = hotelNights(profile);
   const id = creditId(card, credit);
   const cad = credit.cadence || "annual";
-  if (isBrandCredit(credit)) {
-    const brands = brandsForCredit(credit);
-    const f = (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * (credit.kind === "promo" ? PROMO_FACTOR : 1);
-    if (creditPicked(credit, profile)) return { factor: f, reason: null, brands, perk: "use" };
-    /* v7 A5b: "would use if a card paid for it" counts at a lower factor. */
-    if (creditMaybe(credit, profile)) return { factor: f * INTERESTED_FACTOR, reason: null, brands, perk: "maybe" };
-    const label = PERK_BY_KEY[brands[0]]?.label || "that brand";
-    return { factor: 0, reason: `You didn't pick ${label}`, brands };
-  }
-  if (isGeneralCredit(credit)) return { factor: BRAND_CREDIT_CADENCE[cad] ?? 0.9, reason: null, brands: [] };
-  if (credit.kind === "membership" && TRAVEL_MEMBERSHIP.test(credit.name)) {
-    /* v7 A5: TSA PreCheck / Global Entry / NEXUS is a "Travel extras" pick. */
+  const rule = derivedRule(credit);
+  const habits = profile.brands.habits || {};
+  if (rule.asked?.includes("globalentry")) {
+    /* v7 A5 / v7c 4.6: TSA PreCheck / Global Entry / NEXUS — $24 a year
+       ($120 every 5 years), counted once per wallet. */
     if (!trips) return { factor: 0, reason: "You don't fly", dedupe: "globalEntry" };
-    /* v7c 4.5: $24 a year ($120 every 5 years), counted once per wallet. */
-    const pick = profile.brands.perks.includes("globalentry") ? 1 : profile.brands.perksMaybe.includes("globalentry") ? INTERESTED_FACTOR : 0;
-    const factor = credit.annual ? Math.min(1, TRUSTED_TRAVELER_YEARLY / credit.annual) * pick : 0;
-    return pick ? { factor, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You didn't pick TSA PreCheck / Global Entry / NEXUS", dedupe: "globalEntry" };
+    const on = habitOn(HABIT_BY_KEY.globalentry, habits.globalentry);
+    const factor = credit.annual ? Math.min(1, TRUSTED_TRAVELER_YEARLY / credit.annual) : 0;
+    return on ? { factor, reason: null, dedupe: "globalEntry" } : { factor: 0, reason: "You said you don't need TSA PreCheck / Global Entry / NEXUS", dedupe: "globalEntry" };
+  }
+  if (rule.asked) {
+    /* v7c Part 4: asked as a habit — 100% of the lesser of the face value,
+       the spending it can be used on, and the periods with spending × the
+       amount per period. Shared across the wallet by pool. */
+    const r = habitCreditValue(credit, profilePools(profile));
+    const label = HABIT_BY_KEY[rule.asked[0]]?.label || "that";
+    if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "habit", habit: r, perk: "use" };
+    const on = rule.asked.some((k) => habitOn(HABIT_BY_KEY[k], habits[k]));
+    return { factor: 0, reason: on ? `Your ${label.toLowerCase()} is on other apps` : `You said you don't use ${label}` };
+  }
+  if (rule.rule === "general") return { factor: BRAND_CREDIT_CADENCE[cad] ?? 0.9, reason: null, brands: [] };
+  if (rule.rule === "portal") {
+    /* v7c 4.4: one yes/no — "Would you book hotels or trips through a card's
+       travel site …?" No (the default) = $0 for every portal-tied credit. */
+    if (!profile.brands.portalHotels) return { factor: 0, reason: "You'd rather not book through a card's travel site" };
+    if (!trips && !nights) return { factor: 0, reason: "You don't travel" };
+    if (isSplitCredit(credit)) return nights >= SPLIT_MIN_NIGHTS ? { factor: SPLIT_CREDIT_FACTOR, reason: null, split: true } : { factor: 0, reason: "Needs 4+ paid hotel nights a year", split: true };
+    return { factor: CREDIT_USAGE.portal({ trips: Math.max(trips, nights ? 1 : 0) }), reason: null };
   }
   if (isSplitCredit(credit)) {
     const brand = travelBrandOf(card, credit);
@@ -338,30 +359,19 @@ export function creditUsage(card, credit, profile) {
     const why = !brandOk ? `You didn't pick ${brand}` : !enough ? (credit.kind === "airline" ? "Needs 2+ trips a year" : "Needs 4+ paid hotel nights a year") : "Split credit — $0 unless you plan around it";
     return { factor: 0, reason: why, split: true, planned, canPlan: brandOk && enough };
   }
-  /* v7b 4: a travel-credit chip picked in Step A ("already use") raises the
-     credit to full use; Step B ("would use") to half; unpicked keeps the
-     trip-based estimate. A credit tied to an airline or hotel they don't
-     use stays $0 either way. */
-  const chips = perkChipsFor(credit);
-  const chipFloor = chips.some((k) => profile.brands.perks.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9)
-    : chips.some((k) => profile.brands.perksMaybe.includes(k)) ? (BRAND_CREDIT_CADENCE[cad] ?? 0.9) * INTERESTED_FACTOR : 0;
-  const lift = (u) => (u.factor > 0 || chipFloor > 0 ? { ...u, factor: Math.max(u.factor, chipFloor), reason: Math.max(u.factor, chipFloor) > 0 ? null : u.reason } : u);
-  if (credit.kind === "portal" || creditClass(credit) === "niche") {
-    /* v7c 5.3: niche or portal-tied credits count only if they picked them. */
-    const brand = travelBrandOf(card, credit);
-    if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
-    return chipFloor > 0 ? { factor: chipFloor, reason: null } : { factor: 0, reason: "Tied to booking through the card's travel site — $0 unless you pick it" };
-  }
-  if (credit.kind === "broad") return lift({ factor: trips > 0 ? 0.95 : 0.6, reason: null });
+  /* v7c 4.4: travel credits aren't asked about — they come from the trips
+     and hotels answers. */
+  if (credit.kind === "broad") return trips > 0 || nights > 0 ? { factor: 0.95, reason: null } : { factor: 0, reason: "You don't travel" };
   if (credit.kind === "hotel") {
     const brand = travelBrandOf(card, credit);
-    return brand && !pickedBrand(profile, brand) ? { factor: 0, reason: `You didn't pick ${brand}` } : lift({ factor: nights >= 2 ? 0.8 : 0, reason: nights >= 2 ? null : "You rarely stay in hotels" });
+    if (creditClass(credit) === "niche") return { factor: 0, reason: "Tied to one hotel brand's own properties — $0 unless you stay there" };
+    return brand && !pickedBrand(profile, brand) ? { factor: 0, reason: `You didn't pick ${brand}` } : { factor: nights >= 2 ? 0.8 : 0, reason: nights >= 2 ? null : "You rarely stay in hotels" };
   }
   if (credit.kind === "airline") {
     const brand = travelBrandOf(card, credit);
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
     if (!trips) return { factor: 0, reason: "You don't fly" };
-    return lift({ factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null });
+    return { factor: CREDIT_USAGE.airline({ trips }) * (credit.use === "HARD" ? HARD_TO_USE : 1), reason: null };
   }
   const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
   return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
@@ -526,11 +536,11 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     /* v7c Part 6: a credit the issuer page doesn't show counts $0. */
     const u = c.unverified ? { factor: 0, reason: "Not on the issuer's page — counted $0" } : creditUsage(card, c, profile);
     const id = creditId(card, c);
-    const value = Math.round(c.annual * u.factor);
-    /* v7 A5c: one brand's perk counts once per wallet (a new card isn't
-       credited for an Uber credit the person already gets). */
-    const perkKey = u.brands?.length ? `perk:${u.brands[0]}` : null;
-    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", dedupe: u.dedupe || (brandsForCredit(c).includes("clear") ? "clear" : perkKey), split: !!u.split, perk: u.perk || null });
+    const value = Math.round(u.value ?? c.annual * u.factor);
+    /* v7c Part 4: habit credits share their spending pools across the
+       wallet (a new card isn't credited for Uber spending another card
+       already pays back). */
+    if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", dedupe: u.dedupe || null, pools: u.pools || null, habit: u.habit || null, split: !!u.split, perk: u.perk || null });
     else unused.push({ id, label: c.name, face: c.annual, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
 

@@ -65,18 +65,20 @@ describe("card detail", () => {
     expect(within(dlg).getByRole("heading", { name: "Benefits you'd use" })).toBeInTheDocument();
     expect(within(dlg).getAllByText(/Resy/).length).toBeGreaterThan(0);
     fireEvent.click(within(dlg).getByRole("button", { name: /Benefits you wouldn't use/ }));
-    expect(within(dlg).getByText(/You didn't pick Dunkin'/)).toBeInTheDocument();
+    expect(within(dlg).getByText(/You said you don't use Dunkin'/)).toBeInTheDocument();
     expect(within(dlg).getByRole("heading", { name: "Earning, for how you spend" })).toBeInTheDocument();
     expect(within(dlg).getByRole("heading", { name: "In your wallet" })).toBeInTheDocument();
     expect(within(dlg).getByText(/^Points ≈ /)).toBeInTheDocument();
   });
   it("split credits: 'Why this counts as $0' with the opt-in toggle", () => {
     const onProfileChange = vi.fn();
-    render(<CardDetail cardId="csr" profile={{ ...P, travel: { ...P.travel, hotelNights: 8 } }} onClose={() => {}} onProfileChange={onProfileChange} />);
+    /* v7c Part 4: portal-tied credits (The Edit) follow the travel-site
+       question now; a hotel chain's split credit still has the opt-in. */
+    render(<CardDetail cardId="hilton-aspire" profile={{ ...P, travel: { ...P.travel, hotelNights: 8 }, brands: { ...P.brands, hotels: ["hilton"] } }} onClose={() => {}} onProfileChange={onProfileChange} />);
     fireEvent.click(screen.getByRole("button", { name: /Benefits you wouldn't use/ }));
-    expect(screen.getByText(/Split credits count \$0 unless you'd plan trips around them/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Split credits count \$0 unless you'd plan trips around them/).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole("button", { name: "I'd plan around this" })[0]);
-    expect(onProfileChange.mock.calls[0][0].planAround[0]).toMatch(/^csr#/);
+    expect(onProfileChange.mock.calls[0][0].planAround[0]).toMatch(/^hilton-aspire#/);
   });
   it("consumer copy has no jargon outside See the math", () => {
     render(<CardDetail cardId="csr" profile={P} onClose={() => {}} />);

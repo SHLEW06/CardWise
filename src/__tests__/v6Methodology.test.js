@@ -131,19 +131,18 @@ describe("earning E(W): best net card per dollar, caps respected", () => {
 /* ── Part G 2 — benefits ──────────────────────────────────────────────── */
 describe("benefits U(W)", () => {
   const gold = BY_ID["amex-gold"];
-  it("brand credits count only if the brand was picked; cadence factors 0.9 / 0.75 / 0.6 / 0.5", () => {
-    expect(BRAND_CREDIT_CADENCE).toMatchObject({ annual: 0.9, semiannual: 0.75, quarterly: 0.6, monthly: 0.5 });
-    const dunkin = gold.credits.find((c) => /Dunkin/.test(c.name));
+  it("v7c Part 4: brand credits count only for habits they told us — the lesser of face, spending and months used", () => {
+    const dunkin = gold.credits.find((c) => /Dunkin/.test(c.name));   // $7 a month
     expect(creditUsage(gold, dunkin, P()).factor).toBe(0);
-    expect(creditUsage(gold, dunkin, P()).reason).toMatch(/didn't pick Dunkin/);
-    expect(creditUsage(gold, dunkin, P({ brands: { perks: ["dunkin"] } })).factor).toBe(0.5);
+    expect(creditUsage(gold, dunkin, P()).reason).toMatch(/don't use Dunkin/);
+    expect(creditUsage(gold, dunkin, P({ brands: { habits: { dunkin: { answer: "weekly" } } } })).value).toBe(84);
+    expect(creditUsage(gold, dunkin, P({ brands: { habits: { dunkin: { answer: "few" } } } })).value).toBe(21);   // 3 months × $7
   });
   it("split hotel / travel credits are $0 by default", () => {
     for (const [id, re] of [["csr", /The Edit/], ["amex-plat", /Fine Hotels/], ["hilton-aspire", /resort/]]) {
       const c = BY_ID[id].credits.find((x) => re.test(x.name));
       const u = creditUsage(BY_ID[id], c, P({ travel: { trips: 6, hotelNights: 10 }, brands: { hotels: ["hilton"] } }));
       expect(u.factor, id).toBe(0);
-      expect(u.split).toBe(true);
     }
   });
   it(`…and count (≤ ${SPLIT_CREDIT_FACTOR}) only with the brand picked, ≥ ${SPLIT_MIN_NIGHTS} paid nights, and "I'd plan around this"`, () => {
@@ -378,15 +377,14 @@ describe("golden profiles", () => {
     const v = heldCardVerdicts({ cardsHeld: ["amex-plat"], travel: { trips: 0 } })[0];
     expect(["cancel", "downgrade"]).toContain(v.action);
   });
-  it("8. split hotel credits: $0 by default, > 0 after opting in with ≥ 4 nights", () => {
+  it("8. portal-tied split hotel credits: $0 by default, > 0 after 'Yes' to booking through a card's travel site", () => {
     const csr = BY_ID.csr;
-    const edit = csr.credits.find((c) => /The Edit/.test(c.name));
     const p = { travel: { trips: 4, hotelNights: 6 } };
     const before = benefitBreakdown(csr, normalizeProfile(p));
     expect(before.items.find((i) => /The Edit/.test(i.label))).toBeUndefined();
-    expect(before.unused.find((i) => /The Edit/.test(i.label))).toMatchObject({ split: true, canPlan: true });
-    const after = benefitBreakdown(csr, normalizeProfile({ ...p, planAround: [creditId(csr, edit)] }));
-    expect(after.items.find((i) => /The Edit/.test(i.label)).value).toBe(Math.round(500 * 0.6));
+    expect(before.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/travel site/);
+    const after = benefitBreakdown(csr, normalizeProfile({ ...p, brands: { portalHotels: true } }));
+    expect(after.items.find((i) => /The Edit/.test(i.label)).value).toBeGreaterThan(0);
   });
 });
 

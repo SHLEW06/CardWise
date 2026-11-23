@@ -14,6 +14,8 @@ import { inferTrips, rowsFromAirports, knownPlace, isIntl, destKeyOf, placeShort
 import { pickHotelProgram } from "./v5/hotelPick.js";
 import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
 import { SPEND_BRAND } from "../data/perkChips.js";
+import { HABITS, HABIT_BY_KEY, cleanHabit, chipsFromHabits, habitsFromChips, OLD_PORTAL_CHIPS } from "../data/perkHabits.js";
+import { LEGACY_PERK_ALIASES } from "../data/creditBrands.js";
 
 /* v7c 1: answers that used to mean "let CardWise pick" as a hotel chip. */
 const HOTEL_AUTO_CHIPS = ["independent", "unsure"];
@@ -328,25 +330,34 @@ export function normalizeProfile(p = {}) {
       }
       return { airlines: valuedAirlines, airlinesPicked, hotels, hotelsPicked, hotelPick: shown ? { program: shown.program, why: shown.why, sentence: shown.sentence, rows: shown.rows } : null,
       everyday: lower(p.brands?.everyday),
-      /* v7c Part 4: one list of perks they'd use (`perksUse`) and the brands
-         they already spend on (`perksSpend`). Picked + already spend → near
-         full value (`perks`); picked, not spending there today → reduced
-         (`perksMaybe`); not picked → $0. PreCheck has no spend question:
-         picked = full. Profiles from before v7c keep their two lists. */
+      /* v7c Part 4 (revised): habits, not chips. `habits` holds one answer
+         per service ({ answer, apps?, spend? } — perkHabits.js); `perks` /
+         `perksMaybe` are derived from it for screens that still list chips.
+         Older profiles (chip lists, or the first v7c cut's perksUse /
+         perksSpend) migrate: use now / already spend → About monthly or
+         Already pay for it; would use → A few times a year or Would start if
+         free. A caller that sets chip lists directly adds to the habits. */
       ...(() => {
-        /* A caller that sets `perks` / `perksMaybe` directly (older code,
-           tests) wins over a stale `perksUse` that doesn't contain them. */
-        const listed = [...lower(p.brands?.perks), ...lower(p.brands?.perksMaybe)];
-        if (!Array.isArray(p.brands?.perksUse) || listed.some((k) => !lower(p.brands.perksUse).includes(k))) {
-          const perks = lower(p.brands?.perks);
-          const maybe = lower(p.brands?.perksMaybe).filter((k) => !perks.includes(k));
-          const spend = [...new Set(perks.map((k) => SPEND_BRAND[k]?.[0]).filter(Boolean))];
-          return { perks, perksMaybe: maybe, perksUse: [...new Set([...perks, ...maybe])], perksSpend: spend };
+        const legacy = lower(p.brands?.everyday).flatMap((k) => LEGACY_PERK_ALIASES[k] || []);
+        let strong = lower(p.brands?.perks);
+        let weak = lower(p.brands?.perksMaybe);
+        if (Array.isArray(p.brands?.perksUse) && !p.brands?.habits) {
+          const use = lower(p.brands.perksUse);
+          const spend = lower(p.brands?.perksSpend);
+          const full = (k) => k === "globalentry" || spend.includes(SPEND_BRAND[k]?.[0]);
+          strong = [...new Set([...strong, ...use.filter(full)])];
+          weak = [...new Set([...weak, ...use.filter((k) => !full(k))])];
         }
-        const use = [...new Set(lower(p.brands.perksUse))];
-        const spend = [...new Set(lower(p.brands?.perksSpend))];
-        const full = (k) => k === "globalentry" || spend.includes(SPEND_BRAND[k]?.[0]);
-        return { perksUse: use, perksSpend: spend, perks: use.filter(full), perksMaybe: use.filter((k) => !full(k)) };
+        strong = [...new Set([...strong, ...legacy])];
+        const habits = {};
+        const saved = p.brands?.habits && typeof p.brands.habits === "object" ? p.brands.habits : {};
+        for (const h of HABITS) { const a = cleanHabit(h, saved[h.key]); if (a) habits[h.key] = a; }
+        const implied = chipsFromHabits(habits);
+        const extra = habitsFromChips(strong.filter((k) => !implied.perks.includes(k)), weak.filter((k) => !implied.perks.includes(k) && !implied.perksMaybe.includes(k)));
+        for (const [k, a] of Object.entries(extra)) if (!habits[k]) habits[k] = cleanHabit(HABIT_BY_KEY[k], a);
+        const chips = chipsFromHabits(habits);
+        const portal = p.brands?.portalHotels === true || [...strong, ...weak].some((k) => OLD_PORTAL_CHIPS.has(k));
+        return { habits, portalHotels: portal, perks: chips.perks, perksMaybe: chips.perksMaybe };
       })(),
       /* v7c 4.5: "Already have PreCheck or Global Entry?" — { has, renewIn }. */
       precheck: p.brands?.precheck && typeof p.brands.precheck === "object"

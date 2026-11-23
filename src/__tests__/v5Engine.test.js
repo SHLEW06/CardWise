@@ -276,16 +276,17 @@ describe("output", () => {
 describe("store credits and held premium cards", () => {
   /* v6 §22: brand credits count only when picked (unpicked $0); picked by
      cadence 0.9 / 0.75 / 0.6 / 0.5. */
-  it("unpicked brand credits count $0; picked ones by how often they reset", () => {
+  it("v7c Part 4: credits for services they don't use count $0; used ones at 100% of what they'd spend", () => {
     const none = normalizeProfile({});
-    const picks = normalizeProfile({ brands: { perks: ["uber", "resy", "lululemon", "oura", "dunkin"] } });
+    const habits = { rideshare: { answer: "monthly", apps: ["uber"] }, resy: { answer: "monthly" }, lululemon: { answer: "monthly" }, oura: { answer: "few" }, dunkin: { answer: "weekly" } };
+    const picks = normalizeProfile({ brands: { habits } });
     const gold = BY_ID["amex-gold"], plat = BY_ID["amex-plat"];
     const uber = gold.credits.find((c) => /Uber/.test(c.name));
     expect(creditUsage(gold, uber, none).factor).toBe(0);
-    expect(creditUsage(gold, uber, picks).factor).toBe(0.5);                                   // monthly
-    expect(creditUsage(gold, gold.credits.find((c) => /Resy/.test(c.name)), picks).factor).toBe(0.75);   // semiannual
-    expect(creditUsage(plat, plat.credits.find((c) => /lululemon/.test(c.name)), picks).factor).toBe(0.6); // quarterly
-    expect(creditUsage(plat, plat.credits.find((c) => /Oura/.test(c.name)), picks).factor).toBe(0.9);     // annual
+    expect(creditUsage(gold, uber, picks).value).toBe(120);                                          // $10 × 12 months ≤ 12 rides × $25
+    expect(creditUsage(gold, gold.credits.find((c) => /Resy/.test(c.name)), picks).value).toBe(100);   // a dinner a month covers $50 in each half
+    expect(creditUsage(plat, plat.credits.find((c) => /lululemon/.test(c.name)), picks).value).toBe(300); // $75 every quarter, $100 a month spent
+    expect(creditUsage(plat, plat.credits.find((c) => /Oura/.test(c.name)), picks).value).toBe(200);      // once a year
   });
   it("Platinum holder, 0 trips, no brands picked → cancel or switch (Gold downgrade path)", () => {
     const r = optimizeWallet({ cardsHeld: ["amex-plat"], travel: { trips: 0 } });

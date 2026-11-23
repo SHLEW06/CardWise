@@ -58,7 +58,8 @@ describe("5.1 swap drawer", () => {
 
 describe("5.3 all your benefits", () => {
   it("every benefit with its source card and value, biggest first; Overlap / Surplus / Not used flags", () => {
-    const p = { cardsHeld: ["amex-gold", "amex-plat"], brands: { perks: ["uber"] }, travel: { trips: 4 } };
+    /* v7c Part 4: Dunkin' a few times a year uses $21 of $84 → Surplus. */
+    const p = { cardsHeld: ["amex-gold", "amex-plat"], brands: { perks: ["uber"], perksMaybe: ["dunkin"] }, travel: { trips: 4 } };
     const rows = allBenefits(walletValue(["amex-gold", "amex-plat"], p));
     for (let i = 1; i < rows.length; i++) if (rows[i].value) expect(rows[i - 1].value).toBeGreaterThanOrEqual(rows[i].value);
     expect(rows.some((r) => r.flags.includes("Overlap") && /Uber/.test(r.label))).toBe(true);

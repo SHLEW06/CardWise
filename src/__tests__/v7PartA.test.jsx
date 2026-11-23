@@ -77,18 +77,22 @@ describe("A2 · travel details", () => {
 });
 
 describe("A5 · perks: already use, would use, already have", () => {
-  it("'would use if a card paid for it' counts at the interested factor", () => {
+  it("v7c Part 4: an older 'would use' pick becomes 'a few times a year' — counted for the quarters it's used", () => {
     const card = BY_ID["amex-plat"];
-    const oura = (p) => benefitBreakdown(card, normalizeProfile(p)).items.find((i) => /Oura/.test(i.label))?.value || 0;
-    const full = oura({ brands: { perks: ["oura"] } });
-    expect(full).toBeGreaterThan(0);
-    expect(oura({ brands: { perksMaybe: ["oura"] } })).toBe(Math.round(200 * 0.9 * INTERESTED_FACTOR));
-    expect(oura({})).toBe(0);
+    const lulu = (p) => benefitBreakdown(card, normalizeProfile(p)).items.find((i) => /lululemon/.test(i.label))?.value || 0;
+    const full = lulu({ brands: { perks: ["lululemon"] } });
+    expect(full).toBe(300);                                   // about monthly: every quarter's $75
+    const few = lulu({ brands: { perksMaybe: ["lululemon"] } });
+    expect(few).toBeGreaterThan(0);
+    expect(few).toBeLessThan(full);                           // three purchases reach about 2.5 of 4 quarters
+    expect(lulu({})).toBe(0);
   });
-  it("a picked perk is credited once per wallet (no second Uber credit for a new card)", () => {
-    const p = { brands: { perks: ["uber"] } };
+  it("v7c Part 4: cards share the spending — two Uber credits never pay back more than is spent on Uber", () => {
+    const p = normalizeProfile({ brands: { perks: ["uber"] } });   // → rideshare about monthly on Uber: 12 × $25
     const v = walletValue(["amex-gold", "amex-plat"], p);
-    expect(v.benefits.filter((b) => /Uber Cash/.test(b.label))).toHaveLength(1);
+    const uber = v.benefits.filter((b) => /Uber Cash/.test(b.label)).reduce((t, b) => t + b.value, 0);
+    expect(uber).toBeLessThanOrEqual(300);
+    expect(uber).toBeGreaterThan(200);
   });
   it("TSA PreCheck / Global Entry counts only when picked (travel extras)", () => {
     const card = BY_ID["boa-premium"];   // has a Global Entry / TSA PreCheck credit

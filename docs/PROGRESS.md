@@ -1181,6 +1181,55 @@ Started 2026-11-22 on top of v7b (finished: see the acceptance run above).
 - Tests: `v7cPart4.test.jsx` (10, incl. "every credit maps to a chip the
   survey shows"); step-count and perk-screen tests updated.
 
+## Part 4 (revised) — habits, grouped services, no "credit" (2026-11-22)
+
+The brief's Part 4 was rewritten after the first cut (above): ask about
+habits, never about value, and never say "credit".
+
+- **One question per service**, by plain name, grouped (Food & takeout,
+  Rides, Shopping & wellness, Streaming & news, Travel services): *Never / A
+  few times a year / About monthly / Weekly+*, or for subscriptions *Already
+  pay for it / Would start if free / No*. Built from the card data — a row
+  shows only if an open consumer card pays for it (`HABIT_ROWS`).
+- **Look-alikes are one row:** "Takeout / food delivery" (Uber Eats,
+  DoorDash, Grubhub) and "Rideshare" (Uber, Lyft). Once answered, "Which
+  app?" — named apps, or "Any, I'd switch to whichever my card covers" (Any
+  and named apps never sit together).
+- Under each row a grey line: which cards pay for it and how much ("Amex
+  Platinum · up to $300/yr; Sapphire Reserve · up to $120/yr; +3 more cards").
+- After an answer, the result in plain words — "You'd use about $21 of the
+  $84 a year the Amex Gold gives for this." — with **Adjust** (type the
+  yearly spending yourself).
+- **Engine** (`src/data/perkHabits.js`): answers → yearly $ (orders 0 / 3 /
+  12 / 52 × typical order size, or the subscription price) and months with
+  spending (0 / 3 / 12 / 12). Each credit = 100% of min(face, spending it can
+  be used on, periods with spending × per-period amount). Brief's example
+  checked in tests: monthly takeout $420 → $120 DoorDash credit in full; a
+  few times a year $105 → 3 × $10 = $30. Spending pools are **shared across
+  the wallet** (Gold + Platinum Uber Cash can't exceed Uber spending), and
+  the cut-back card is flagged Overlap.
+- **Generic credit chips removed.** Broad travel credit counts if they
+  travel; airline incidental / ticket credits from the trips step; hotel-chain
+  credits only for a picked chain; **portal-tied hotel credits from one
+  yes/no**: "Would you book hotels or trips through a card's travel site to
+  get money back?" (No by default → $0 for The Edit, FHR, Chase Travel, Delta
+  Stays, Renowned, Citi / Bilt / United Hotels, Capital One Travel).
+- TSA PreCheck / Global Entry / NEXUS: "Have it or would get it / No", then
+  "Already have PreCheck or Global Entry?". Still $24 a year, once per wallet.
+- "Your cards already give you" now names the service, not the credit.
+- Older answers migrate (chips, or the first cut's perksUse / perksSpend):
+  use now / already spend → About monthly / Already pay for it; would use →
+  A few times a year / Would start if free; old portal chips → Yes.
+- Tests: `v7cPart4.test.jsx` rewritten (24): grouped rows and apps, no
+  "credit" in any perk-step label (and in every other step's labels except
+  the credit-score step, whose subject is credit), frequency → dollars, apps
+  and "Any", shared pools, portal yes/no, every credit maps to a row shown or
+  a derived rule, migration, PreCheck. Old tests that asserted the cadence
+  factors / ×0.5 / once-per-brand moved to the new rules.
+- Golden (`npm run golden`): only **3 foodie** moves, N +$868 → **+$995**: its
+  Dunkin', Resy and Uber picks ("use now" → about monthly) count at what
+  they'd spend, not 0.5–0.75 of face.
+
 ## Part 5 — credit realism (2026-11-22)
 
 - **Credit classes** (`src/data/creditClass.js`): automatic · easy · niche

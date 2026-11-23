@@ -1,95 +1,233 @@
 // @vitest-environment jsdom
-/* v7c Part 4 — perks: one step + "Do you already spend on any of these?";
-   picked + spend ≈ full, picked only reduced, not picked $0; TSA PreCheck /
-   Global Entry / NEXUS back, $24 a year, once per wallet, Overlap flagged. */
-import { describe, it, expect } from "vitest";
+/* v7c Part 4 (revised) — perks: ask about brands and habits, never about
+   "credits". Grouped look-alike services with "Which app?"; one frequency or
+   subscription question per service; credits count at 100% of the lesser of
+   face, spending and months used; generic travel credits worked out from
+   other answers; portal-tied hotel credits from one yes/no; TSA PreCheck /
+   Global Entry / NEXUS at $24 a year, once per wallet. */
+import React from "react";
+import { describe, it, expect, beforeEach } from "vitest";
+import { render, screen, within, fireEvent, cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 import { CARDS, BY_ID } from "../data/cards/index.js";
-import { PERK_CHIPS, CHIP_BY_KEY, perkChipsFor, SPEND_BRAND, spendBrandsFor, TRUSTED_TRAVELER_YEARLY } from "../data/perkChips.js";
-import { PERK_CHIP_GROUPS } from "../components/v5/survey/Survey.jsx";
-import { STEP_DEFS } from "../state/surveyAnswers.js";
+import {
+  HABITS, HABIT_BY_KEY, HABIT_GROUPS, FREQ_ANSWERS, SUB_ANSWERS, TT_ANSWERS, derivedRule, creditDraws,
+  habitPools, habitCreditValue, periodsUsed, habitsFromChips,
+} from "../data/perkHabits.js";
+import { TRUSTED_TRAVELER_YEARLY } from "../data/perkChips.js";
+import Survey, { HABIT_ROWS, habitResult } from "../components/v5/survey/Survey.jsx";
+import { STEP_DEFS, stepsFor } from "../state/surveyAnswers.js";
+import { saveV5Profile, loadV5Profile } from "../state/v5Profile.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
 import { benefitBreakdown } from "../engine/v5/value.js";
 import { walletValue } from "../engine/v5/methodology.js";
 import { allBenefits } from "../engine/v5/lab.js";
-import { BRAND_CREDIT_CADENCE, INTERESTED_FACTOR } from "../data/benefitUsage.js";
 
-const shown = new Set(PERK_CHIP_GROUPS.flatMap((g) => g.chips.map((c) => c.key)));
+const shown = new Set(HABIT_ROWS.flatMap((g) => g.habits.map((h) => h.key)));
+const credit = (cardId, re) => BY_ID[cardId].credits.find((c) => re.test(c.name));
+const valueOf = (cardId, re, habits, extra = {}) => {
+  const p = normalizeProfile({ travel: { trips: 2 }, ...extra, brands: { habits, ...(extra.brands || {}) } });
+  return benefitBreakdown(BY_ID[cardId], p).items.filter((i) => re.test(i.label)).reduce((t, i) => t + i.value, 0);
+};
 
-describe("4.1 / 4.4 · one perk step", () => {
-  it("the separate step is gone", () => {
-    expect(STEP_DEFS.map((s) => s.id)).not.toContain("perksMaybe");
+beforeEach(() => { cleanup(); localStorage.clear(); });
+
+describe("4.1 · plain brand names, grouped look-alikes, never the word 'credit'", () => {
+  it("one perk step", () => {
     expect(STEP_DEFS.filter((s) => s.title.match(/perk/i))).toHaveLength(1);
   });
-  it("chips are named the way the card gives them, grouped, built from card data", () => {
-    for (const label of ["Uber Cash (Uber rides + Uber Eats)", "DoorDash credit", "lululemon credit", "Walmart+ membership"]) expect(PERK_CHIPS.some((c) => c.label === label)).toBe(true);
-    expect(PERK_CHIP_GROUPS.map((g) => g.label)).toEqual(expect.arrayContaining(["Food & delivery", "Rides", "Shopping & wellness", "Streaming & news", "Travel extras"]));
+  it("look-alike services are one row: 'Takeout / food delivery' and 'Rideshare', each with its apps", () => {
+    expect(HABIT_BY_KEY.takeout.label).toBe("Takeout / food delivery");
+    expect(HABIT_BY_KEY.takeout.apps.map((a) => a.label)).toEqual(["Uber Eats", "DoorDash", "Grubhub"]);
+    expect(HABIT_BY_KEY.rideshare.label).toBe("Rideshare");
+    expect(HABIT_BY_KEY.rideshare.apps.map((a) => a.label)).toEqual(["Uber", "Lyft"]);
+    for (const separate of ["doordash", "grubhub", "uber", "lyft", "ubereats"]) expect(HABIT_BY_KEY[separate]).toBeUndefined();
+  });
+  it("no label, group, answer or question in the perk step contains 'credit'", () => {
+    for (const x of [...HABITS, ...HABIT_GROUPS, ...FREQ_ANSWERS, ...SUB_ANSWERS, ...TT_ANSWERS]) expect(x.label).not.toMatch(/credit/i);
+    for (const h of HABITS) for (const a of h.apps || []) expect(a.label).not.toMatch(/credit/i);
+    saveV5Profile({ cardsHeld: ["amex-gold", "amex-plat"] });
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={loadV5Profile()} />);
+    fireEvent.click(within(screen.getByTestId("habit-takeout")).getByRole("radio", { name: "About monthly" }));
+    fireEvent.click(within(screen.getByTestId("habit-globalentry")).getByRole("radio", { name: "Have it or would get it" }));
+    const step = document.querySelector(".survey-step");
+    const labels = [...step.querySelectorAll("h1, h2, h3, legend, button, label, .habit-label, [role=radio]")].map((n) => n.textContent);
+    expect(labels.length).toBeGreaterThan(40);
+    expect(labels.filter((t) => /credit/i.test(t))).toEqual([]);
+  });
+  it("every survey step's questions and options avoid 'credit' — except the credit-score step itself", () => {
+    saveV5Profile({ cardsHeld: ["amex-gold"], travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 3 }] } });
+    for (const id of stepsFor("thorough").filter((s) => !["credit", "reveal"].includes(s))) {
+      cleanup();
+      render(<Survey initialMode="thorough" initialStepId={id} initialProfile={loadV5Profile()} />);
+      const step = document.querySelector(".survey-step");
+      const labels = [...step.querySelectorAll("h1, h2, h3, legend, button, label, .habit-label")].map((n) => n.textContent);
+      expect(labels.filter((t) => /\bcredits?\b/i.test(t)), id).toEqual([]);
+    }
   });
 });
 
-describe("4.6 · every credit and membership in the card data maps to a chip the survey shows", () => {
+describe("4.2 · one habit question per service", () => {
+  it("services ask how often; subscriptions ask Already pay / Would start if free / No", () => {
+    expect(FREQ_ANSWERS.map((a) => a.label)).toEqual(["Never", "A few times a year", "About monthly", "Weekly+"]);
+    expect(SUB_ANSWERS.map((a) => a.label)).toEqual(["Already pay for it", "Would start if free", "No"]);
+    expect(HABIT_BY_KEY.peacock.type).toBe("sub");
+    expect(HABIT_BY_KEY.takeout.type).toBe("freq");
+  });
+  it("'Which app?' shows only once the service is used; 'Any' and named apps never sit together", () => {
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
+    const row = screen.getByTestId("habit-rideshare");
+    expect(within(row).queryByText("Which app?")).toBeNull();
+    fireEvent.click(within(row).getByRole("radio", { name: "About monthly" }));
+    const any = within(row).getByRole("button", { name: /^Any, I'd switch to whichever my card covers/ });
+    expect(any).toHaveAttribute("aria-pressed", "true");          // default
+    fireEvent.click(within(row).getByRole("button", { name: "Lyft" }));
+    expect(any).toHaveAttribute("aria-pressed", "false");
+    expect(within(row).getByRole("button", { name: "Lyft" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(any);
+    expect(within(row).getByRole("button", { name: "Lyft" })).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(within(row).getByRole("radio", { name: "Never" }));
+    expect(within(row).queryByText("Which app?")).toBeNull();
+  });
+  it("each row says which cards pay for it, in grey: 'Amex Platinum · up to $300/yr'", () => {
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
+    expect(within(screen.getByTestId("habit-lululemon")).getByText(/Amex Platinum · up to \$300\/yr/)).toBeInTheDocument();
+    expect(within(screen.getByTestId("habit-takeout")).getByText(/up to \$\d+\/yr/)).toBeInTheDocument();
+  });
+  it("shows the result in plain words and lets the person adjust it", () => {
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({ cardsHeld: ["amex-gold"] })} />);
+    const row = screen.getByTestId("habit-dunkin");
+    fireEvent.click(within(row).getByRole("radio", { name: "A few times a year" }));
+    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/You'd use about \$21 of the \$84 a year the Amex Gold gives for this/);
+    fireEvent.click(within(row).getByRole("button", { name: "Adjust" }));
+    fireEvent.change(within(row).getByLabelText(/Yearly spending: Dunkin'/), { target: { value: "12" } });
+    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/about \$12 of the \$84/);
+  });
+});
+
+describe("4.2 · the engine turns habits into yearly dollars", () => {
+  const doordash = credit("csp", /DoorDash/);       // $10 a month
+  it("the brief's example: 'About monthly' takeout ≈ $420 a year → a $120 ($10 a month) credit counts in full", () => {
+    const pools = habitPools({ takeout: { answer: "monthly", apps: ["doordash"] } });
+    expect(pools["takeout:doordash"].yearly).toBe(420);
+    expect(habitCreditValue(doordash, pools).value).toBe(120);
+  });
+  it("'A few times a year' ≈ $105 a year, but only the months with orders: 3 × $10 = $30", () => {
+    const pools = habitPools({ takeout: { answer: "few", apps: ["doordash"] } });
+    expect(pools["takeout:doordash"].yearly).toBe(105);
+    expect(habitCreditValue(doordash, pools).value).toBe(30);
+  });
+  it("a credit counts only for the apps picked; 'Any' counts all of them", () => {
+    expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["ubereats"] } })).toBe(0);
+    expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
+    expect(valueOf("amex-gold", /Uber Cash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
+  });
+  it("subscriptions count up to their price; 'No' or 'Never' = $0", () => {
+    expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "pay" } })).toBe(155);
+    expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "free" } })).toBe(155);
+    expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "no" } })).toBe(0);
+    expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" } })).toBe(132);    // one $132 subscription
+    expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" }, nyt: { answer: "pay" } })).toBe(300);
+  });
+  it("periods used: an annual credit needs one order; a quarterly one ~2.5 quarters from 3 orders", () => {
+    expect(periodsUsed("annual", 3)).toBe(1);
+    expect(periodsUsed("monthly", 3)).toBeCloseTo(3, 5);
+    expect(periodsUsed("quarterly", 3)).toBeCloseTo(2.47, 2);
+    expect(periodsUsed("semiannual", 12)).toBe(2);
+  });
+  it("two cards share one pool: they can't pay back more than is spent there", () => {
+    const habits = { rideshare: { answer: "few", apps: ["uber"] } };   // 3 rides × $25 = $75, 3 months
+    const v = walletValue(["amex-gold", "amex-plat"], normalizeProfile({ brands: { habits } }));
+    const uber = v.benefits.filter((b) => /Uber Cash/.test(b.label)).reduce((t, b) => t + b.value, 0);
+    expect(uber).toBeLessThanOrEqual(75);
+    const rows = allBenefits(v).filter((r) => /Uber Cash/.test(r.label));
+    expect(rows.some((r) => r.flags.includes("Overlap"))).toBe(true);
+  });
+  it("the result line matches the engine", () => {
+    const habits = { takeout: { answer: "few", apps: ["any"] } };
+    const r = habitResult("takeout", habits, ["amex-gold"]);
+    expect(r.cardId).toBe("amex-gold");
+    expect(r.value).toBe(Math.round(habitCreditValue(BY_ID[r.cardId].credits.find((c) => c.annual === r.face && creditDraws(c).some((d) => d.habit === "takeout")), habitPools(habits)).value));
+  });
+});
+
+describe("4.4 · generic credit chips are gone — worked out from other answers", () => {
+  it("broad travel credit counts if they travel at all, with no question", () => {
+    expect(valueOf("csr", /\$300 travel credit/, {}, { travel: { trips: 2 } })).toBeGreaterThan(0);
+    expect(valueOf("csr", /\$300 travel credit/, {}, { travel: { trips: 0 } })).toBe(0);
+  });
+  it("airline incidental credit comes from the trips step", () => {
+    expect(valueOf("amex-plat", /airline fee credit/, {}, { travel: { trips: 4 } })).toBeGreaterThan(0);
+    expect(valueOf("amex-plat", /airline fee credit/, {}, { travel: { trips: 0 } })).toBe(0);
+  });
+  it("hotel-chain credit counts only if that chain is picked", () => {
+    const P = { travel: { trips: 4, hotelNights: 8, hotelChoice: "manual" } };
+    expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["marriott"] } })).toBeGreaterThan(0);
+    expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["hilton"] } })).toBe(0);
+  });
+  it("portal-tied hotel credits: one yes/no, No by default = $0 for all of them", () => {
+    const P = { travel: { trips: 4, hotelNights: 6 } };
+    expect(normalizeProfile({}).brands.portalHotels).toBe(false);
+    for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["united-quest", /Renowned/], ["amex-plat", /Fine Hotels/]]) {
+      expect(valueOf(id, re, {}, P), id).toBe(0);
+      expect(valueOf(id, re, {}, { ...P, brands: { portalHotels: true } }), id).toBeGreaterThan(0);
+    }
+  });
+  it("the step shows the yes/no question and no travel-credit chips", () => {
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
+    const q = screen.getByTestId("portal-hotels");
+    expect(within(q).getByRole("radio", { name: "No" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByText(/Airline incidental|Hotel credit|Travel credit \(any/)).toBeNull();
+  });
+});
+
+describe("4.7 · every credit and membership maps to a habit row the survey shows, or a derived rule", () => {
   it("no perk is dropped again", () => {
     const missing = [];
-    for (const c of CARDS) {
-      for (const cr of c.credits || []) {
-        const chips = perkChipsFor(cr);
-        const general = chips.length && chips.every((k) => CHIP_BY_KEY[k]?.group === "general");
-        if (!chips.length || !chips.every((k) => CHIP_BY_KEY[k])) missing.push(`${c.id}: ${cr.name} (no chip)`);
-        else if (!general && !chips.some((k) => shown.has(k))) missing.push(`${c.id}: ${cr.name} (chip not shown)`);
-      }
+    for (const c of CARDS) for (const cr of c.credits || []) {
+      const r = derivedRule(cr);
+      if (r.asked) { if (!r.asked.every((k) => HABIT_BY_KEY[k]) || (c.cardType !== "business" && !r.asked.some((k) => shown.has(k)))) missing.push(`${c.id}: ${cr.name} (row not shown)`); }
+      else if (!r.rule) missing.push(`${c.id}: ${cr.name} (no rule)`);
     }
     expect(missing).toEqual([]);
   });
-  it("Travel extras includes the TSA PreCheck / Global Entry / NEXUS fee credit", () => {
-    const travel = PERK_CHIP_GROUPS.find((g) => g.key === "travel");
-    expect(travel.chips.map((c) => c.label)).toContain("TSA PreCheck / Global Entry / NEXUS fee credit");
-  });
-  it("every chip that asks 'already spend' has a plain brand name (no 'credit')", () => {
-    for (const k of shown) if (k !== "globalentry") {
-      expect(SPEND_BRAND[k], k).toBeTruthy();
-      expect(SPEND_BRAND[k][1]).not.toMatch(/credit/i);
-    }
-    expect(spendBrandsFor(["uber", "uber one"])).toEqual([{ key: "uber", label: "Uber", chips: ["uber", "uber one"] }]);
+  it("Travel services includes TSA PreCheck / Global Entry / NEXUS", () => {
+    expect(HABIT_ROWS.find((g) => g.key === "travel").habits.map((h) => h.label)).toContain("TSA PreCheck / Global Entry / NEXUS");
   });
 });
 
-describe("4.3 · value", () => {
-  const gold = (brands) => benefitBreakdown(BY_ID["amex-gold"], normalizeProfile({ travel: { trips: 2 }, brands })).items.filter((i) => /Dunkin/.test(i.label)).reduce((t, i) => t + i.value, 0);
-  it("picked + already spend → near full; picked only → reduced; not picked → $0", () => {
-    const face = BY_ID["amex-gold"].credits.find((c) => /Dunkin/.test(c.name)).annual;
-    const full = gold({ perksUse: ["dunkin"], perksSpend: ["dunkin"] });
-    const maybe = gold({ perksUse: ["dunkin"], perksSpend: [] });
-    expect(full).toBe(Math.round(face * BRAND_CREDIT_CADENCE.monthly));   // the monthly-drip factor, nothing more
-    expect(maybe).toBe(Math.round(full * INTERESTED_FACTOR));
-    expect(gold({ perksUse: [], perksSpend: ["dunkin"] })).toBe(0);
+describe("4.3 · older answers migrate", () => {
+  it("use now → About monthly / Already pay; would use → A few times a year / Would start if free", () => {
+    expect(habitsFromChips(["doordash", "peacock"], ["lululemon", "nyt"])).toEqual({
+      lululemon: { answer: "few" }, nyt: { answer: "free" },
+      takeout: { answer: "monthly", apps: ["doordash"] }, peacock: { answer: "pay" },
+    });
+    const b = normalizeProfile({ brands: { perksUse: ["dunkin", "resy"], perksSpend: ["dunkin"] } }).brands;
+    expect(b.habits.dunkin).toEqual({ answer: "monthly" });
+    expect(b.habits.resy).toEqual({ answer: "few" });
+    expect(normalizeProfile({ brands: { perks: ["hotel-portal"] } }).brands.portalHotels).toBe(true);
   });
 });
 
-describe("4.5 · TSA PreCheck / Global Entry / NEXUS", () => {
-  const P = { travel: { trips: 4 }, brands: { perksUse: ["globalentry"] } };
+describe("4.6 · TSA PreCheck / Global Entry / NEXUS", () => {
+  const P = { travel: { trips: 4 }, brands: { habits: { globalentry: { answer: "pay" } } } };
   it("≈ $24 a year ($120 every five years, CBP / TSA pages read 2026-11-22)", () => {
     expect(TRUSTED_TRAVELER_YEARLY).toBe(24);
-    const it = benefitBreakdown(BY_ID.csp, normalizeProfile(P)).items.find((i) => /Global Entry/.test(i.label));
-    expect(it.value).toBe(24);
+    expect(benefitBreakdown(BY_ID.csp, normalizeProfile(P)).items.find((i) => /Global Entry/.test(i.label)).value).toBe(24);
     expect(benefitBreakdown(BY_ID.csp, normalizeProfile({ travel: { trips: 4 } })).items.some((i) => /Global Entry/.test(i.label))).toBe(false);
   });
   it("counted once per wallet; the second card's is flagged Overlap", () => {
-    const v = walletValue(["csp", "venture-x-rewards" in BY_ID ? "venture-x-rewards" : "ihg-premier"], P);
-    const ge = v.benefits.filter((b) => b.dedupe === "globalEntry");
-    expect(ge).toHaveLength(1);
+    const v = walletValue(["csp", "ihg-premier"], P);
+    expect(v.benefits.filter((b) => b.dedupe === "globalEntry")).toHaveLength(1);
     const rows = allBenefits(v).filter((r) => /Global Entry/.test(r.label));
-    expect(rows.length).toBe(2);
     expect(rows.filter((r) => r.value > 0)).toHaveLength(1);
     expect(rows.find((r) => r.value === 0).flags).toContain("Overlap");
   });
-  it("adds $0 to a new card when a card they have covers it", () => {
-    const P2 = { ...P, cardsHeld: ["csp"] };
-    const withNew = walletValue(["csp", "ihg-premier"], P2).U;
-    const alone = walletValue(["csp"], P2).U;
-    const ihgOnly = walletValue(["ihg-premier"], P2).benefits.filter((b) => b.dedupe !== "globalEntry").reduce((t, b) => t + b.value, 0);
-    expect(withNew - alone).toBeLessThanOrEqual(ihgOnly);   // no second $24
-  });
-  it("'Already have PreCheck or Global Entry?' is saved only when picked", () => {
-    expect(normalizeProfile({ brands: { perksUse: ["globalentry"], precheck: { has: true, renewIn: 3 } } }).brands.precheck).toEqual({ has: true, renewIn: 3 });
-    expect(normalizeProfile({ brands: { precheck: { has: false } } }).brands.precheck).toEqual({ has: false, renewIn: null });
+  it("'Already have PreCheck or Global Entry?' shows only when picked, and is saved", () => {
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
+    expect(screen.queryByTestId("precheck")).toBeNull();
+    fireEvent.click(within(screen.getByTestId("habit-globalentry")).getByRole("radio", { name: "Have it or would get it" }));
+    expect(screen.getByTestId("precheck")).toBeInTheDocument();
+    expect(normalizeProfile({ brands: { precheck: { has: true, renewIn: 3 } } }).brands.precheck).toEqual({ has: true, renewIn: 3 });
   });
 });

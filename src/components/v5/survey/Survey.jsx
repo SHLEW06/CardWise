@@ -16,9 +16,8 @@ import {
   FLIGHT_OPTIONS, NIGHT_OPTIONS, LOUNGE_OPTIONS, INTL_OPTIONS, AIRLINE_GROUPS, HOTEL_BRANDS, SCORE_OPTIONS, NEW_CARD_OPTIONS, MEMBERSHIPS,
   LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS, STAY_STYLES,
 } from "../../../data/surveyOptions.js";
-import { PERK_CHIPS, PERK_GROUPS, CHIP_BY_KEY, perkChipsFor, spendBrandsFor } from "../../../data/perkChips.js";
-import { TRAVEL_MEMBERSHIP } from "../../../data/benefitUsage.js";
-import { creditClass } from "../../../data/creditClass.js";
+import PerksStep from "./PerksStep.jsx";
+import Head from "./SurveyHead.jsx";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
 import { searchPlaces, placeName, placeShort, isIntl, suggestRoutes, ROUTE_DATA_SOURCE } from "../../../engine/v5/tripRoutes.js";
@@ -105,16 +104,6 @@ export default function Survey({ initialProfile, initialStepId = null, editOnly 
         </div>
       )}
     </div>
-  );
-}
-
-function Head({ headRef, title, sub, eyebrow }) {
-  return (
-    <header className="survey-head">
-      {eyebrow && <p className="t-eyebrow">{eyebrow}</p>}
-      <h1 id="survey-q" className="t-h1" tabIndex={-1} ref={headRef}>{title}</h1>
-      {sub && <p className="t-lead">{sub}</p>}
-    </header>
   );
 }
 
@@ -722,107 +711,8 @@ export function StrategyHelper({ d, set }) {
   );
 }
 
-/* ── Steps 4a / 4b: card perks (v7b Part 4) ─────────────────────────── */
-
-/* Chips actually paid by some card in the catalog, grouped; named exactly. */
-const USED_CHIPS = new Set(CARDS.flatMap((c) => (c.credits || []).flatMap(perkChipsFor)));
-export const PERK_CHIP_GROUPS = PERK_GROUPS.filter((g) => !g.hidden)
-  .map((g) => ({ ...g, chips: PERK_CHIPS.filter((c) => c.group === g.key && USED_CHIPS.has(c.key)) }))
-  .filter((g) => g.chips.length);
-
-/** Perks the cards they hold already pay for (one row per credit). */
-export function perksFromHeld(cardsHeld) {
-  const out = [];
-  for (const id of cardsHeld) {
-    const c = BY_ID[id];
-    for (const cr of c?.credits || []) {
-      /* v7c: a spend-gated or unverified credit isn't something they already get. */
-      if (cr.unverified || creditClass(cr) === "spend-gated") continue;
-      const chips = perkChipsFor(cr).filter((k) => CHIP_BY_KEY[k]);
-      if (!chips.length) continue;
-      out.push({ cardId: id, credit: cr.name, annual: cr.annual, chips, label: CHIP_BY_KEY[chips[0]].label });
-    }
-  }
-  return out;
-}
-
-function PerkGroups({ picked, onChange, exclude = [], suffix }) {
-  return PERK_CHIP_GROUPS.map((g) => {
-    const chips = g.chips.filter((c) => !exclude.includes(c.key)).map((c) => ({ key: c.key, label: c.label }));
-    if (!chips.length) return null;
-    return (
-      <fieldset key={g.key} className="survey-group">
-        <legend className="t-caption">{g.label}</legend>
-        <ToggleChips options={chips} picked={picked} onChange={onChange} label={`${g.label}: ${suffix}`} />
-      </fieldset>
-    );
-  });
-}
-
-/* v7c Part 4: one perk step. "Which of these would you actually use if a
-   card included them?" (chips named the way the card names them, grouped,
-   built from the card data), then — about the picked perks only — "Do you
-   already spend on any of these?" in plain brand names. Picked + already
-   spend → near full value; picked only → reduced; not picked → $0. PreCheck
-   asks whether they already have it. */
-function PerksStep({ d, set, headRef }) {
-  const use = d.brands.perksUse ?? [...new Set([...(d.brands.perks || []), ...(d.brands.perksMaybe || [])])];
-  const spend = d.brands.perksSpend ?? [];
-  const have = useMemo(() => perksFromHeld(d.cardsHeld), [d.cardsHeld]);
-  const brandsAsked = spendBrandsFor(use);
-  const setBrands = (patch) => set({ brands: { ...d.brands, perksUse: use, perksSpend: spend, ...patch } });
-  const setUse = (perksUse) => setBrands({ perksUse, perksSpend: spend.filter((b) => spendBrandsFor(perksUse).some((x) => x.key === b)) });
-  const pc = d.brands.precheck;
-  return (
-    <>
-      <Head headRef={headRef} eyebrow="Card perks" title="Which of these would you actually use if a card included them?"
-        sub="Statement credits and memberships some cards include, named the way the card names them. Premium cards bundle many of these — pick only the ones you'd really use." />
-      <section className="perk-section" aria-labelledby="perks-a">
-        <h2 className="sr-only" id="perks-a">Perks you'd use</h2>
-        <PerkGroups picked={use} onChange={setUse} suffix="would use" />
-      </section>
-      {brandsAsked.length > 0 && (
-        <fieldset className="survey-group" data-testid="perks-spend">
-          <legend className="t-h3">Do you already spend on any of these?</legend>
-          <p className="t-caption">A perk you'd use where you already spend counts at nearly full value; one you'd have to start using counts for less.</p>
-          <ToggleChips options={brandsAsked} picked={spend} onChange={(perksSpend) => setBrands({ perksSpend })} label="Already spend on" limit={brandsAsked.length} />
-        </fieldset>
-      )}
-      {use.includes("globalentry") && (
-        <fieldset className="survey-group" data-testid="precheck">
-          <legend className="t-h3" id="q-precheck">Already have PreCheck or Global Entry?</legend>
-          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-precheck">
-            <Choice radio pill selected={pc ? !pc.has : false} onSelect={() => setBrands({ precheck: { has: false } })}>No</Choice>
-            <Choice radio pill selected={!!pc?.has} onSelect={() => setBrands({ precheck: { has: true, renewIn: pc?.renewIn ?? 2 } })}>Yes, renewing in…</Choice>
-            {pc?.has && (
-              <select aria-label="Years until you renew" value={pc.renewIn ?? 2} onChange={(e) => setBrands({ precheck: { has: true, renewIn: Number(e.target.value) } })}>
-                {[0, 1, 2, 3, 4, 5].map((y) => <option key={y} value={y}>{y === 0 ? "this year" : `${y} year${y === 1 ? "" : "s"}`}</option>)}
-              </select>
-            )}
-          </div>
-          <p className="t-caption">Worth about $24 a year: the $120 fee is paid once every five years. Counted once, however many cards offer it.</p>
-        </fieldset>
-      )}
-      <section className="perk-section" aria-labelledby="perks-c">
-        <h2 className="t-h3" id="perks-c">Your cards already give you</h2>
-        {have.length ? (
-          <>
-            <p className="t-caption">A new card isn't credited for a perk you already get.</p>
-            <ul className="have-list">
-              {have.map((h) => (
-                <li key={`${h.cardId}-${h.credit}`}>
-                  <span>{h.label}</span>
-                  <span className="t-caption">{fmt(h.annual)} a year</span>
-                  <span className="t-caption">{cardDisplayName(BY_ID[h.cardId])} · {h.credit}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : <p className="t-caption">{d.cardsHeld.length ? "None of your cards pay for these perks." : "Add your cards in step 1 to see the perks they already include."}</p>}
-      </section>
-    </>
-  );
-}
+/* ── Step 4: card perks — v7c Part 4 (revised), components/v5/survey/PerksStep.jsx ── */
+export { perksFromHeld, HABIT_ROWS, habitResult, giversLine } from "./PerksStep.jsx";
 
 /* ── Step 6: credit profile ──────────────────────────────────────────── */
 

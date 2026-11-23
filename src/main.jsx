@@ -25,6 +25,7 @@ import "./styles/v7/app.css";
 import "./styles/v7/partA.css";
 import "./styles/v7/partD.css";
 import "./styles/v7/v7b.css";
+import "./styles/v7/v7c.css";
 
 /* v7 Part 0: the "Ink & Stone" style tile lives at /styletile in dev only
    (REDESIGN_SPEC §9.11). In a production build the condition is false at
