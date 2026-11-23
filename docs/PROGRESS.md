@@ -1905,14 +1905,7 @@ Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
 - Citi Strata Elite: not in the plan; −$653 → **−$653** (the Splurge credit
   needs a Live Nation / Best Buy / 1stDibs / Future habit; none answered).
 
-## Questions for the owner (v7c)
-7. **v7d 3.4 — Delta TakeOff 15 threshold:** counted when Delta flies ≥ 70%
-   of the trips (same share as route close calls). When it counts, Delta is
-   1.2 ÷ 0.85 ≈ 1.41¢ — higher than the old 1.35¢, because the base is now
-   1.2¢. OK, or should a justified Delta stay at 1.35¢?
-8. **v7d Part 5 — ticket spending** is taken out of "everything else" (the
-   spending step has no ticket question). If someone's "everything else" is
-   smaller than their ticket answer, total spending goes up a little. OK?
+## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
    you see them on your account / statement? (The Visa Infinite benefits PDF
@@ -1931,3 +1924,10 @@ Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
    rates are on the Robinhood **Platinum** page. Kept as a "Robinhood Travel
    only" note, not counted. Do you see 5% on Gold bookings in the app? If
    so, where is it stated?
+7. **v7d 3.4 — Delta TakeOff 15 threshold:** counted when Delta flies ≥ 70%
+   of the trips (same share as route close calls). When it counts, Delta is
+   1.2 ÷ 0.85 ≈ 1.41¢ — higher than the old 1.35¢, because the base is now
+   1.2¢. OK, or should a justified Delta stay at 1.35¢?
+8. **v7d Part 5 — ticket spending** is taken out of "everything else" (the
+   spending step has no ticket question). If someone's "everything else" is
+   smaller than their ticket answer, total spending goes up a little. OK?
