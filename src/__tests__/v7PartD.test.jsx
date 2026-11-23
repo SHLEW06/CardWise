@@ -26,7 +26,9 @@ describe("D4 · slot % (Robinhood showed 2.3% in Online shopping)", () => {
     /* overall = every row's $ ÷ the slot's dollars — no dollars without their value. */
     const rows = v.earning.byBucket.online;
     expect(online.overall).toBeCloseTo(backPct(rows.reduce((t, r) => t + r.value, 0), rows.reduce((t, r) => t + r.dollars, 0)), 9);
-    expect(sharedText(online)).toMatch(/^This slot overall: 3\.\d% \(Robinhood Gold Card 3% \+ Chase Freedom Flex 5% on rotating categories\)$/);
+    /* v7c 5d.4: one card and its rate; the rotating 5% has its own slot, so
+       no second card is named here. */
+    expect(sharedText(online)).toBeNull();
   });
   it("one formatter for every '≈ % back'", () => {
     expect(formatPctBack(3)).toBe("≈ 3% back");

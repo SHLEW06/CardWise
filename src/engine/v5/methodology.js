@@ -16,7 +16,7 @@
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile, totalAnnualSpend, annualSpend } from "../profileDefaults.js";
 import {
-  allocateSpend, lanesFor, buckets, walletCpp, benefitBreakdown, cardFee, loungeTotal,
+  allocateSpend, lanesFor, buckets, walletCpp, benefitBreakdown, cardFee, loungeTotal, earnRate,
   rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, directBase, profilePools,
 } from "./value.js";
 import { sharePools } from "../../data/perkHabits.js";
@@ -550,15 +550,32 @@ export function slotsFor(value, rawProfile) {
         byCard[k].dollars += r.dollars; byCard[k].value += r.value;
       }
       const parts = Object.values(byCard).sort((a, b) => (a.rotating ? 1 : 0) - (b.rotating ? 1 : 0) || b.dollars - a.dollars);
-      const lead = parts.find((x) => !x.rotating) || parts[0];
+      /* v7c 5d.3: the slot's card is the one that earns the most (at counted
+         point values) on the slot's main spending — not just the one with
+         the most dollars routed to it. */
+      const main = [...s.buckets].sort((a, b) => (spend[b] || 0) - (spend[a] || 0))[0];
+      const pctIn = (cardId, b) => earnRate(BY_ID[cardId], b, profile) * (value.earning.cpp?.[cardId] ?? 1);
+      const mainRows = (value.earning.byBucket[main] || []).filter((r) => !r.rotating);
+      const leadId = [...mainRows].sort((a, b) => b.pct - a.pct || b.dollars - a.dollars)[0]?.cardId || (parts.find((x) => !x.rotating) || parts[0])?.cardId;
+      const lead = leadId ? (byCard[leadId] || { cardId: leadId, dollars: 0, value: 0 }) : null;
+      const leadMainPct = leadId ? (mainRows.find((r) => r.cardId === leadId)?.pct ?? pctIn(leadId, main)) : 0;
+      /* v7c 5d.4: a second card is named only where it beats the first on a
+         sub-category ("Freedom Unlimited earns more on drugstores: 3%"). */
+      const beats = [];
+      if (leadId) for (const b of s.buckets) {
+        if (!(spend[b] > 0)) continue;
+        const top = [...(value.earning.byBucket[b] || [])].filter((r) => !r.rotating).sort((x, y) => y.pct - x.pct)[0];
+        if (top && top.cardId !== leadId && top.pct > pctIn(leadId, b) + 1e-9) beats.push({ cardId: top.cardId, bucket: b, pct: top.pct });
+      }
       const earned = parts.reduce((t, x) => t + x.value, 0);
       const covered = parts.reduce((t, x) => t + x.dollars, 0);
       const base = ["hotels", "flights"].includes(s.key) ? directBase(profile, s.key, value.cards) : null;
       out.push({
         key: s.key, label: s.label, cardId: lead?.cardId || null,
-        pct: lead ? backPct(lead.value, lead.dollars) : 0,
+        pct: lead ? leadMainPct : 0,
         overall: backPct(earned, covered || dollars),
         shared: parts.length > 1 ? parts.map((x) => ({ cardId: x.cardId, rotating: x.rotating, dollars: Math.round(x.dollars), pct: backPct(x.value, x.dollars) })) : null,
+        beats,
         programBase: base, dollars, value: Math.round(earned),
       });
     } else if (s.key === "rotating") {
@@ -598,7 +615,20 @@ export function slotsFor(value, rawProfile) {
       if (opts.length) out.push({ key: s.key, label: s.label, cardId: null, pct: null, value: 0, suggestions: opts });
     }
   }
-  return out;
+  /* v7c 5d.1: one card, one role slot. A card that would fill several role
+     slots (Keeper hotel + Lounge — the Brilliant) keeps only the one where
+     it's worth most; its other jobs become tags on that slot. */
+  const ROLE = new Set(["hotelKeeper", "airlineKeeper", "lounge"]);
+  const byCardRole = {};
+  for (const s of out) if (ROLE.has(s.key) && s.cardId) (byCardRole[s.cardId] ||= []).push(s);
+  const drop = new Set();
+  for (const list of Object.values(byCardRole)) {
+    if (list.length < 2) continue;
+    const [keep, ...rest] = [...list].sort((a, b) => (b.value || 0) - (a.value || 0));
+    keep.tags = [...(keep.tags || []), ...rest.map((r) => r.label)];
+    for (const r of rest) drop.add(r);
+  }
+  return out.filter((s) => !drop.has(s));
 }
 
 /* ── sample wallets (Part F) ─────────────────────────────────────────────── */

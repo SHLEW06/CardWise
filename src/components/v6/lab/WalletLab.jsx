@@ -37,11 +37,13 @@ import { partnerShortName } from "../../../engine/v5/pointValues.js";
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const signed = (n) => `${n >= 0 ? "+" : "−"}${money(n)}`;
 const pctText = (p) => formatPctBack(p);   // v7 G: one formatter for every "≈ % back"
-/** "This slot overall: 3.4% (Robinhood Gold 3% + Freedom Flex 5% on rotating categories)". */
+const BUCKET_WORDS = { other: "everything else", phone: "phone and utilities", transit: "rides and transit", drugstores: "drugstores", streaming: "streaming", gas: "gas", gasCostco: "gas at Costco", ev: "EV charging", hotels: "hotels", rentals: "vacation rentals" };
+/** v7c 5d.4: the slot shows its single best card and rate; a second card
+    is named only where it beats the first on a sub-category —
+    "Freedom Unlimited earns more on drugstores: 3%". No "overall" blend. */
 export function sharedText(s) {
-  if (!s.shared) return null;
-  const parts = s.shared.map((x) => `${cardDisplayName(BY_ID[x.cardId])} ${(Math.round(x.pct * 10) / 10)}%${x.rotating ? " on rotating categories" : ""}`);
-  return `This slot overall: ${(Math.round(s.overall * 10) / 10)}% (${parts.join(" + ")})`;
+  if (!s.beats?.length) return null;
+  return s.beats.map((b) => `${cardDisplayName(BY_ID[b.cardId])} earns more on ${BUCKET_WORDS[b.bucket] || b.bucket}: ${Math.round(b.pct * 10) / 10}%`).join(" · ");
 }
 
 export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard }) {
@@ -130,7 +132,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
       <Reveal i={2} as="ul" className="slots" aria-label="Slots">
         {slots.map((s) => {
           const card = s.cardId ? BY_ID[s.cardId] : null;
-          const also = card ? slots.filter((x) => x.cardId === s.cardId && x.key !== s.key).map((x) => x.label) : [];
+          const also = card ? [...new Set([...(s.tags || []), ...slots.filter((x) => x.cardId === s.cardId && x.key !== s.key).map((x) => x.label)])] : [];
           const shared = sharedText(s);
           return (
             <li key={s.key} id={`slot-${s.key}`} className="slot-item">
@@ -307,19 +309,21 @@ function SlotSheet({ slotKey, setup, profile, onClose, onSwap, onOpenCard }) {
                 <span />
               </div>
             )}
-            {!list.length && <p className="t-caption">No card fits these filters within your fee budget.</p>}
+            {!list.length && <p className="t-caption">No card fits these filters.</p>}
             <ul className="rows alt-rows alt-scroll" aria-label={`Cards that could fill ${label}`}>
               {list.map((a) => (
-                <li key={a.cardId} className="alt-row">
+                <li key={a.cardId} className={`alt-row${a.held ? " is-held" : ""}`} data-testid={`alt-${a.cardId}`}>
                   <button className="alt-photo" onClick={() => onOpenCard?.(a.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[a.cardId])}`}><CardFace card={BY_ID[a.cardId]} /></button>
                   <div className="alt-copy">
                     <span className="alt-name">{cardDisplayName(BY_ID[a.cardId])}</span>
-                    <span className="t-caption">{a.mode === "add" ? "Added alongside" : <>Replaces {cardDisplayName(BY_ID[a.displaced])}</>}</span>
+                    <span className="t-caption">{a.held ? "You have this card" : a.mode === "add" ? "Added alongside" : <>Replaces {cardDisplayName(BY_ID[a.displaced])}</>}</span>
                   </div>
                   <span className={`num-ui alt-delta ${a.slotChange && a.slotChange.usd < 0 ? "down" : a.slotChange && a.slotChange.usd > 0 ? "up" : ""}`} data-testid="slot-change">{slotChangeText(a.slotChange)}</span>
-                  <span className={`num-ui alt-delta ${a.delta >= 0 ? "up" : "down"}`}>{signed(a.delta)}/yr</span>
+                  <span className={`num-ui alt-delta ${a.delta >= 0 ? "up" : "down"}`} data-testid="alt-net">{signed(a.delta)}/yr after its {money(a.fee)} fee</span>
                   <span className="num-ui">{a.feeDelta ? signed(a.feeDelta) : "$0"}</span>
-                  <button className="btn btn-quiet btn-small" onClick={() => setPick(a.cardId)}>Compare</button>
+                  {a.held
+                    ? <button className="btn btn-signal btn-small" onClick={() => onSwap({ ...a, ...(a.add || a.replace) }, slotKey)}>Put it back</button>
+                    : <button className="btn btn-quiet btn-small" onClick={() => setPick(a.cardId)}>Compare</button>}
                 </li>
               ))}
             </ul>

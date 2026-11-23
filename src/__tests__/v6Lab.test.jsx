@@ -17,14 +17,14 @@ const spend = (o) => ({ dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, tr
 const P = { cardsHeld: ["amex-gold", "csp"], feeBudget: 500, spend: spend({ dining: 600, groceries: 600, gas: 150 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
 
 describe("lab engine", () => {
-  it("alternatives: ranked by the setup's value, each with fee change and what it displaces, within the budget", () => {
+  it("alternatives: ranked by the setup's value, each with fee change and what it displaces (v7c: no fee budget)", () => {
     const setup = optimalWallet(P).wallet;
     const r = alternativesForSlot(setup, "dining", P);
     expect(r.alternatives.length).toBeGreaterThan(0);
-    const Ns = r.alternatives.map((a) => a.N);
+    const Ns = r.alternatives.filter((a) => !a.held).map((a) => a.N);
     expect(Ns).toEqual([...Ns].sort((a, b) => b - a));
+    expect(r.alternatives.some((a) => walletValue(a.setup, P).F > 500)).toBe(true);   // fees above the old budget still show
     for (const a of r.alternatives) {
-      expect(walletValue(a.setup, P).F).toBeLessThanOrEqual(500);
       expect(a.setup.length).toBeLessThanOrEqual(6);
       expect(a.delta).toBe(a.N - r.before.N);
     }

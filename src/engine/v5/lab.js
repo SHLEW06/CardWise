@@ -25,7 +25,10 @@ function slotPct(card, slotKey, profile, wallet) {
   const spend = buckets(profile);
   const cpp = cardPointValue(card, profile, [...wallet, card.id]).cpp;
   let best = 0;
-  for (const l of lanesFor(card, profile, spend)) if (def.buckets.includes(l.bucket)) best = Math.max(best, l.rate * cpp);
+  /* Rotating 5% has its own slot: it isn't a card's rate here (it made the
+     Freedom Flex look like 5% on dining, so a 4x Amex Gold read as worse). */
+  const def2 = def.key === "rotating" ? null : def;
+  for (const l of lanesFor(card, profile, spend)) if (def.buckets.includes(l.bucket) && (!def2 || !l.rotating)) best = Math.max(best, l.rate * cpp);
   return best;
 }
 
@@ -53,7 +56,11 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
   /* v7 D2: two ways in. "Add alongside" (default) keeps every card and lets
      the newcomer take only the lanes where it wins. "Replace" removes the
      slot's card everywhere — and says which other slots that costs. */
-  const fits = (next) => next.length <= max && next.reduce((t, id) => t + cardFee(BY_ID[id], profile), 0) <= B;
+  /* v7c 5d-2.5: no fee budget — a card is shown whatever the wallet's total
+     fees; its net (after its fee) decides. (The budget hid the Amex Gold
+     from Groceries once the Brilliant's $650 had used it up.) */
+  void B;
+  const fits = (next) => next.length <= max;
   const lostWithout = current ? slots.filter((s) => s.cardId === current && s.key !== slotKey).map((s) => s.label) : [];
   const variant = (next, c, displaced) => {
     const v = walletValue(next, profile, { normalized: true });
@@ -97,10 +104,15 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
     const pick = add || replace;
     if (!pick) continue;
     const hurdle = applicationHurdle(c, profile, pick.setup).total;
-    out.push({ cardId: c.id, ...pick, mode: add ? "add" : "replace", add, replace, hurdle, slotChange: slotChangeOf(c, pick.setup), fee: cardFee(c, profile) });
+    const held = profile.cardsHeld.includes(c.id);
+    /* net = what the whole wallet gains a year with it, after its fee (and
+       the application cost for a card they'd apply for). */
+    out.push({ cardId: c.id, ...pick, mode: add ? "add" : "replace", add, replace, hurdle, held, net: Math.round(pick.delta - hurdle), slotChange: slotChangeOf(c, pick.setup), fee: cardFee(c, profile) });
   }
-  /* Sorted by net change for the whole wallet (the default "best for you"). */
-  out.sort((a, b) => b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
+  /* Sorted by net change for the whole wallet (the default "best for you");
+     v7c 5d-2.5: cards they already own, left out of this setup, go first
+     ("You have this card · Put it back"). */
+  out.sort((a, b) => (b.held ? 1 : 0) - (a.held ? 1 : 0) || b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
   return { current, before, pinned, slot, alternatives: out.slice(0, limit) };
 }
 

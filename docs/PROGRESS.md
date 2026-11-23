@@ -1371,6 +1371,34 @@ portal credits explicitly; bag test uses the verified two domestic bags.
 - Tests: `v7cPart5c.test.jsx` (9); two older tests that asserted the blended
   % moved to the new rows. Golden: unchanged (display only).
 
+## 5d — wallet slots: bugs from the owner's results page (2026-11-22)
+
+- **One card, one role slot** (`slotsFor`): a card that would fill several
+  role slots (Keeper hotel + Lounge — the Brilliant) keeps the one where it's
+  worth most; the others become tags on it. (5d-2 replaces role slots with
+  card tiles altogether.)
+- **The Amex Gold for the owner's three cards** (FU, Robinhood Gold, Delta
+  Gold): the Groceries and Dining sheets list it with its slot gain (+1.3%:
+  4x at ≈ 1.08¢ vs Robinhood's 3% / Freedom Flex's 3%) and its whole-wallet
+  net after its $325 fee (−$220 for the owner-like test profile, so it isn't
+  recommended). The fee-budget check in `alternativesForSlot` is gone (5d-2.5).
+- **Bug found:** the sheet compared a card with the current card's
+  *rotating 5%* lane (`slotPct` took every lane), so on Dining the Freedom Flex
+  read as 5% and the Amex Gold as −0.7% worse. Rotating has its own slot;
+  it's excluded there now.
+- **Category slots use the best earner** at counted point values on the
+  slot's main spending (was: the card with the most dollars routed there).
+  Test: for every category, the slot card earns the most among the wallet's
+  cards; with the Amex Gold in the wallet it takes Dining and Groceries.
+- **The catch-all line** no longer says "This slot overall: 3% (Robinhood 3% +
+  Freedom Unlimited 3%)". The slot shows its one card and rate; a second card
+  is named only where it beats the first on a sub-category ("Chase Freedom
+  Unlimited earns more on drugstores: 3%").
+- Held cards left out of the setup are listed first in a sheet, "You have this
+  card", with **Put it back**.
+- Tests: `v7cPart5d.test.jsx` (9); two older tests moved (no budget cap on
+  swaps; no "overall" blend). Golden unchanged (display / sheet only).
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only
