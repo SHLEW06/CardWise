@@ -57,7 +57,17 @@ describe("5.2 · credits mapped to sites, from the card data", () => {
     const habits = { tickets: { answer: "monthly", apps: ["ticketmaster"], spend: 90 }, bestbuy: { answer: "few", spend: 60 }, "1stdibs": { answer: "few", spend: 40 } };
     const r = habitCreditValue(credit("citi-strata-elite", /Splurge/), habitPools(habits));
     expect(r.value).toBe(150);              // $90 Live Nation + $60 Best Buy (the third brand isn't counted)
-    expect(r.pools).toHaveLength(2);
+    expect(r.pools).toHaveLength(3);         // every usable brand stays listed for the wallet dedupe; the value uses the best two
+  });
+});
+
+describe("regression · 'one airline you pick' still picks an airline with fees left", () => {
+  it("beside a Delta Gold (Delta bags waived), the Platinum's airline fee credit uses United / American bag fees", () => {
+    const p = normalizeProfile({ cardsHeld: ["delta-gold"], brands: { airlines: ["delta"] }, travel: { airports: [
+      { code: "ATL", trips: 4, destinations: [{ key: "seoul", trips: 1 }] },
+      { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] }, { code: "BDL", trips: 1 }] } });
+    const fee = walletValue(["delta-gold", "amex-plat"], p).benefits.find((b) => /airline fee credit/.test(b.label));
+    expect(fee?.value).toBeGreaterThan(0);
   });
 });
 

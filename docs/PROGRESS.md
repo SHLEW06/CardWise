@@ -1869,7 +1869,50 @@ Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
 - Golden: unchanged (no golden profile answers the tickets row).
 - Tests: `v7dPart5.test.jsx` (10).
 
+## v7d Part 6 · acceptance re-run and report (2026-11-23)
+
+- `docs/ACCEPTANCE_REPORT.md` re-checked for every ID v7d touches (A7,
+  C10–C12, C15, C18, C19, D1, D2, D7, D8, E14, F1, F2, F6, G3, I1, I2). No
+  status changed: **63 PASS · 7 FIXED · 3 HOLD · 2 REPLACED · 0 FAIL**. C15
+  stays REPLACED (the optional limit is back, but not the v7 presets or the
+  fee ladder). Screenshots: `screenshots/v7d/`,
+  `docs/screenshots/card-faces/round-2/` (gitignored). 104 files / 1,673
+  tests; build OK.
+- **Regression found while running the owner's numbers, fixed:** Part 5's
+  "best N brands" change also narrowed "one airline you pick" credits to the
+  airline with the most bag fees *before* the wallet subtracted the bags
+  another card already waives — the Platinum's $200 airline fee credit beside
+  a Delta Gold fell from $70 to $0. A credit now lists every usable pool and
+  is valued on the best one(s); the wallet dedupe picks the one with spending
+  left. Regression test in `v7dPart5.test.jsx`.
+- Small copy fix: the tickets row says "a few orders a year" (not "visits").
+
+**Owner's profile, before (v7c follow-ups) → after (v7d)** — three cards
+(Freedom Unlimited, Robinhood Gold, Delta Gold), Light spending, ATL 4 / NYC 2
+/ BDL 1, Hyatt + Marriott + independent, lounges "I'd love it", growth in May
+2028:
+- Delta SkyMiles 1.35¢ → **1.2¢** (TakeOff 15 not justified: Delta flies 57%
+  of the trips).
+- Held wallet N +$333 → +$333; best from wallet / from scratch N +$707 →
+  +$707 (same cards: Robinhood Gold, Delta Gold, Bonvoy Boundless, World of
+  Hyatt, United Explorer, + Freedom Unlimited from wallet). Plan unchanged
+  (Boundless Nov 2026, United Explorer May 2027, Hyatt Nov 2027; Ritz upgrade
+  and Discover it from May 2028).
+- Sapphire Reserve: not in the plan; beside the best wallet −$49 → **−$49**
+  a year after the application cost (adds $26, $75 cost).
+- Amex Platinum: not in the plan; −$564 → **−$573** (Amex points moved to
+  Delta are worth less at 1.2¢).
+- Citi Strata Elite: not in the plan; −$653 → **−$653** (the Splurge credit
+  needs a Live Nation / Best Buy / 1stDibs / Future habit; none answered).
+
 ## Questions for the owner (v7c)
+7. **v7d 3.4 — Delta TakeOff 15 threshold:** counted when Delta flies ≥ 70%
+   of the trips (same share as route close calls). When it counts, Delta is
+   1.2 ÷ 0.85 ≈ 1.41¢ — higher than the old 1.35¢, because the base is now
+   1.2¢. OK, or should a justified Delta stay at 1.35¢?
+8. **v7d Part 5 — ticket spending** is taken out of "everything else" (the
+   spending step has no ticket question). If someone's "everything else" is
+   smaller than their ticket answer, total spending goes up a little. OK?
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
    you see them on your account / statement? (The Visa Infinite benefits PDF

@@ -108,7 +108,7 @@ export const HABITS = [
   /* v7d Part 5: one grouped row for event tickets (was two shopping rows:
      StubHub, Live Nation). Spending, not a subscription — "Never" = $0.
      $150 a ticket order is an estimate. */
-  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order",
+  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order", unit: "orders",
     apps: [{ key: "stubhub", label: "StubHub / viagogo" }, { key: "ticketmaster", label: "Ticketmaster / Live Nation" }, { key: "other", label: "Other sites" }],
     anyLabel: "Any, I'd buy where my card gives a credit" },
 ];
@@ -264,10 +264,13 @@ export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = n
   const face = credit.annual || 0;
   if (!ids.length) return { value: 0, pools: [], spend: 0, months: 0, periodCap: 0 };
   const n = single ? 1 : pick;
-  /* one (or N) chosen pools: the ones with the most spending */
-  if (n && ids.length > n) ids = [...ids].sort((a, b) => pools[b].yearly - pools[a].yearly).slice(0, n);
-  const spend = ids.reduce((t, id) => t + pools[id].yearly, 0);
-  const m = months ?? (n === 1 ? pools[ids[0]].months : unionMonths(ids.map((id) => pools[id].months)));
+  /* one (or N) chosen pools: valued on the ones with the most spending; every
+     usable pool stays listed so the wallet dedupe (sharePools) can choose
+     whichever still has spending left (an airline whose bags another card
+     already waives). */
+  const top = n && ids.length > n ? [...ids].sort((a, b) => pools[b].yearly - pools[a].yearly).slice(0, n) : ids;
+  const spend = top.reduce((t, id) => t + pools[id].yearly, 0);
+  const m = months ?? (n === 1 ? pools[top[0]].months : unionMonths(top.map((id) => pools[id].months)));
   const cad = credit.cadence || "annual";
   const per = face / (PERIODS[cad] || 1);
   const periodCap = per * periodsUsed(cad, m);
@@ -280,6 +283,8 @@ export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = n
 export const PLANNABLE = new Set(["monthly", "quarterly", "semiannual"]);
 const PERIOD_WORD = { monthly: ["month", "months"], quarterly: ["quarter", "quarters"], semiannual: ["half-year", "half-years"] };
 const VISITS_WORD = { few: "a few visits a year", monthly: "about one visit a month", weekly: "weekly visits" };
+/* "visits" for places you go (Resy, Dunkin'), "orders" for things you buy. */
+const ORDERS_WORD = { few: "a few orders a year", monthly: "about one order a month", weekly: "weekly orders" };
 const usd0 = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 
 /**
@@ -289,7 +294,7 @@ const usd0 = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
  *           about 2–3 quarters"
  *   spend   "limited by your ~$400 a year there"
  */
-export function creditLimit(credit, r, answer) {
+export function creditLimit(credit, r, answer, habitKey = null) {
   const face = credit?.annual || 0;
   if (!r || r.value >= face - 0.5) return { binding: "face", text: "" };
   const cad = credit.cadence || "annual";
@@ -299,7 +304,7 @@ export function creditLimit(credit, r, answer) {
     const p = periodsUsed(cad, r.months);
     const lo = Math.floor(p + 1e-9), hi = Math.ceil(p - 1e-9);
     const span = lo === hi ? `${lo} ${lo === 1 ? one : many}` : `${lo}–${hi} ${many}`;
-    return { binding: "timing", text: `it's ${usd0(face / n)} a ${one}, and ${VISITS_WORD[answer] || "your visits"} usually fall in about ${span}` };
+    return { binding: "timing", text: `it's ${usd0(face / n)} a ${one}, and ${(HABIT_BY_KEY[habitKey]?.unit === "orders" ? ORDERS_WORD : VISITS_WORD)[answer] || "your visits"} usually fall in about ${span}` };
   }
   return { binding: "spend", text: `limited by your ~${usd0(r.spend)} a year there` };
 }

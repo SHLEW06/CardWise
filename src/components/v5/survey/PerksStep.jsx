@@ -92,7 +92,7 @@ export function habitResult(key, habits, cardsHeld = []) {
   const r = habitCreditValue(g.credit, pools);
   const v = r.value;
   /* v7d 2.1: name the limit that binds */
-  const lim = creditLimit(g.credit, r, habits[key]?.answer);
+  const lim = creditLimit(g.credit, r, habits[key]?.answer, key);
   const base = `You'd use about ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives for this`;
   return { cardId: g.cardId, face: g.face, value: Math.round(v), credit: g.credit, limit: lim, text: lim.text ? `${base}: ${lim.text}.` : `${base}.` };
 }

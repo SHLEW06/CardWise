@@ -1,4 +1,4 @@
-# Acceptance report — 2026-11-20, v7c re-runs 2026-11-22 and 2026-11-23
+# Acceptance report — 2026-11-20, v7c re-runs 2026-11-22 and 2026-11-23, v7d re-run 2026-11-23
 
 Checklist: `docs/CLAUDE_CODE_V7_ACCEPTANCE.md`, run after v7 + v7b on branch
 `redesign`, against the running app (localhost:5173) with the checklist's test
@@ -37,6 +37,17 @@ the fee ladder — removed by 5d-2.5: no fee budget anywhere) and **E7**
 (keeper hotel / airline *slots* — removed by 5d-2: keeper cards are now card
 tiles whose tags are perk jobs).
 
+**v7d re-run (2026-11-23)** — after `docs/CLAUDE_CODE_V7D_FIXES.md` Parts 1–5
+(card faces, perk-row reasons, points copy, optional fee limit, event
+tickets). Re-checked every ID those parts touch: A7, C10–C12, C15, C18, C19,
+D1, D2, D7, D8, E14, F1, F2, F6, G3, I1, I2. Evidence: `screenshots/v7d/`
+and `docs/screenshots/card-faces/round-2/` (both gitignored; Playwright
+against the dev server, the owner's three cards with a $400 fee limit for
+the Lab shots) and the v7d tests. **104 files, 1,673 tests pass; `npx vite
+build` OK.** No status changed: C15 stays REPLACED (v7d brings back an
+optional limit, but not the v7 presets or fee ladder — the line says what
+exists now).
+
 **Totals now: 63 PASS · 7 FIXED · 3 HOLD · 2 REPLACED · 0 FAIL** (75 IDs).
 
 ## FIXED (failed when checked, fixed, re-checked)
@@ -50,7 +61,7 @@ tiles whose tags are perk jobs).
 - **G4** · FIXED · Same fix as E13 (wording kept: "Worth / Costs you ≈ $X a year to you after its $325 fee"). Evidence: `G4-held-card.png`.
 
 ## REPLACED (the v7c brief removed what the v7 item tests)
-- **C15** · REPLACED (v7c 5d-2.5) · The fee-budget question, "Whatever gives me the most back" and the survey's fee ladder are gone: the optimizer maximizes net value with no fee cap. The step is now "Memberships you already pay for" (memberships + Robinhood cash). The ladder stays in the engine as a what-if, on no screen. `v6Survey.ui.test.jsx` › "5 · memberships…", `v7PartA.test.jsx` › "v7c 5d-2.5: the fee step has no budget question or fee ladder", `v7cPart5d2.test.jsx` › "the survey has no fee-budget question". Screenshot: `screenshots/v7c-2/5e-growth-step.png` shows the step order.
+- **C15** · REPLACED (v7c 5d-2.5; v7d Part 4 partly back) · v7d adds an optional limit on the Memberships step: "Is there a most you'd pay in yearly card fees, in total?" — "No limit, show me the best value" (the v7 "Whatever gives me the most back") / "Up to $___ a year" (typed). No preset amounts and no fee ladder: instead the app says what the limit costs ("Your $400 limit keeps out the Chase Sapphire Reserve, which would add $312 a year. Remove limit"). `screenshots/v7d/C15-fee-limit-question.png`, `F1-lab-fee-limit.png`; `v7dPart4.test.jsx`.
 - **E7** · REPLACED (v7c 5d-2) · There are no "Keeper hotel / Keeper airline" slots any more. Keeper cards are "Your cards" tiles whose tags are perk jobs (Delta Gold: Rides, Bags; World of Hyatt: Free night); an airline card with bags stays (its bags are counted in full, 5b). `screenshots/v7c-2/F1-lab.png`; `v7cPart5d2.test.jsx` › "'Your cards': one tile per card…".
 
 ## HOLD (allowed by the checklist)
@@ -66,7 +77,7 @@ tiles whose tags are perk jobs).
 - **A4** · FIXED · (above)
 - **A5** · PASS · Borderless filled 40px chips, ivory selected, "Show all (N)" after ~6. `A5-chips.png`, `C3-travel.png`; `src/components/v7/ChipList.jsx`.
 - **A6** · PASS · Corners 0–4px, pills only on primary buttons. `v6Shell.ui.test.jsx` › "corners are 0–4px except pills and card photos".
-- **A7** · PASS · Real photos; the setting switches to rendered faces; every photographed card has a colour. `A7-photos.png`, `A7-rendered-faces.png`; `v7Materials.test.js`.
+- **A7** · PASS (v7d card faces) · On the dev server issuer photos show by default (Explore: 97 photos + 9 designed faces for cards with no file, listed in `docs/CARD_ART_MISSING.md`); a production build defaults to CardWise designs; Profile names the mode ("Card pictures: Issuer photos (only on this computer) / CardWise designs"). Designed faces rebuilt (materials, SVG chip + contactless, 3 size tiers; 40 cards checked against the issuer's card image). `docs/screenshots/card-faces/round-2/`; `cardFacesPart1.test.jsx`, `cardFacesPart2.test.jsx`; review log `docs/DESIGN_REVIEW.md`.
 - **A8** · PASS · `A8-home-1280/1440/1600.png`, `A8-lab-1280/1440/1600.png`. Phone works, not polished (agreed).
 
 ### B. Navigation and features kept
@@ -84,26 +95,26 @@ tiles whose tags are perk jobs).
 - **C7** · PASS (v7c) · Airlines per route from US DOT BTS T-100 (2025-09 → 2026-08, `docs/THIRD_PARTY.md`): "ATL→LAX: Delta (most flights)", "ATL→Seoul: Delta, Korean Air", "EWR→Taipei: United, EVA Air (one stop, via LAX)"; editable per row; picks only break close calls. `screenshots/v7c/C3-trips-step.png`; `v7cPart3.test.jsx` › 3.6–3.8 tests.
 - **C8** · PASS (v7c) · "How do you pick hotels?" — Let CardWise pick the best program for me (default) / I have brands I like → brand chips; "Where do you usually stay?" separate; loyalty strategy one choice ("Using this" / "Use this instead", highest value default). `screenshots/v7c/C8-hotel-strategy-why.png`; `v7cPart1.test.jsx`, `v7cPart2.test.jsx`.
 - **C9** · PASS (v7c) · "We'd pick Marriott: strong in 4 of your 4 destinations, incl. Seoul, Taipei and Tokyo" + Why?; strategies show net after fees, total fees, per-partner transfer lines (Chase → Hyatt 1:1 only with the Sapphire Reserve; Chase → Marriott 1:1), smallest card set and "Why these cards?". `screenshots/v7c/C8-hotel-strategy-why.png`; `v7cPart2.test.jsx` › 2.2–2.4.
-- **C10** · PASS (v7c Part 4 rule) · The "Step A / Step B" chips are replaced by one habit question per service, by plain name, grouped: Never / A few times a year / About monthly / Weekly+, or Already pay for it / Would start if free / No. Credits count 100% of min(face, spending, periods used × per-period amount): about monthly takeout → the $120 DoorDash credit in full; a few times a year → $30. `screenshots/v7c-2/C10-perk-habits.png`; `v7cPart4.test.jsx` › 4.2 tests.
-- **C11** · PASS (v7c Part 4 rule) · "Would use" is now an answer, not a step: "A few times a year" / "Would start if free", valued at what they'd spend. Look-alikes are grouped ("Takeout / food delivery", "Rideshare") with "Which app?" (or "Any, I'd switch to whichever my card covers"); each row shows who pays ("Amex Platinum · up to $300/yr") and the result in plain words with Adjust. `screenshots/v7c-2/C10-perk-habits.png`; `v7cPart4.test.jsx`.
-- **C12** · PASS (v7c) · Named by plain brand, never "credit" (test: no label in the perk step — or any step but the credit-score one — contains "credit"). Every credit and membership maps to a habit row the survey shows or a derived rule (travel, airline fees / tickets, hotel chain, portal yes/no, general spending). TSA PreCheck / Global Entry / NEXUS under Travel services. `v7cPart4.test.jsx` › 4.1, 4.7.
+- **C10** · PASS (v7c Part 4 rule; v7d) · One habit question per service; credits count 100% of the lesser of face, spending and periods used. v7d: the result line names the limit that binds ("You'd use about $247 of the $400 a year the Amex Platinum gives for this: it's $100 a quarter, and a few visits a year usually fall in about 2–3 quarters."), "I'd plan visits to use it every quarter" counts every period, and a spending change that doesn't move the value says why. "Would start if free" counts $0 (follow-up). `screenshots/v7d/C10-perks-v7d.png`; `v7dPart2.test.jsx`, `v7cFollowups.test.jsx`.
+- **C11** · PASS (v7c Part 4 rule; v7d) · "A few times a year" is valued at what they'd spend; "Would start if free" is now $0 and a Nice extra. Grouped look-alikes: Takeout, Rideshare and (v7d) "Concert, sports and show tickets" with "Which site?" (StubHub / viagogo, Ticketmaster / Live Nation, Other sites, "Any, I'd buy where my card gives a credit"). `v7dPart5.test.jsx`.
+- **C12** · PASS (v7c, re-checked v7d) · Plain names, no "credit" in the perk step (the tickets row and "Which site?" included; `v7cPart4.test.jsx` › no-credit labels still passes). Ticket credits mapped from the card data: CSR StubHub / viagogo, Strata Elite and AAdvantage Globe Splurge (Live Nation), read on the issuer pages 2026-11-23.
 - **C13** · PASS (v7c) · "Your cards already give you" names the service and card ("Rideshare · Delta SkyMiles Gold · up to $120 a year"). Dedupe is now by spending pool: two cards can't pay back more than is spent on that service; the cut-back card is flagged Overlap. `screenshots/v7c-2/C10-perk-habits.png`; `v7PartA.test.jsx` › "cards share the spending…", `v7cPart4.test.jsx` › "two cards share one pool".
 - **C14** · PASS · Three answers + networks (default best value). `C3-travel.png`; `v7PartA.test.jsx` › "lounges: three answers…".
 - **C15** · REPLACED · (above)
 - **C16** · PASS · `C16-credit-loan.png`; `v7PartC.test.jsx` › hurdle with loan.
 - **C17** · PASS (v7c re-run) · "Cash you'd keep at Robinhood" is on the Memberships step. `v7bPart3.test.jsx` › "3.10 Robinhood cash".
-- **C18** · PASS (v7c) · Habit rows are built from the card data (a row shows only if an open consumer card pays for it); airlines and hotels stay in the travel step. `v7cPart4.test.jsx` › "no perk is dropped again".
-- **C19** · PASS (v7c, re-checked) · No contradictory selections: "Which app?" never holds "Any" and a named app together; the travel-site question, the habit answers and "Will your spending change?" are radios; the mode question still comes first wherever "Let CardWise pick" exists. `acceptanceV7c.test.jsx` (6), `v7cPart4.test.jsx` › "'Which app?' shows only once…", `v7cPart5e.test.jsx` › 5e.1.
+- **C18** · PASS (v7c, re-checked v7d) · Habit rows come from the card data (the new tickets row shows because open cards pay for StubHub / Live Nation); the old StubHub and Live Nation rows are merged into it and saved answers migrate. `v7cPart4.test.jsx` › "no perk is dropped again"; `v7dPart5.test.jsx`.
+- **C19** · PASS (v7c, re-checked v7d) · No contradictory selections: "Which site?" never holds "Any" and a named site together; the fee-limit question is one radio group; the plan-around toggle is per row. `v7dPart4.test.jsx`, `v7dPart5.test.jsx`.
 
 ### D. Points and valuations
-- **D1** · PASS (v7c 5c) · Each currency row leads with "Worth X¢ per point", then each card's rates as % back ("Delta SkyMiles Gold: 2.4% at Delta, restaurants and groceries · 1.2% elsewhere"); no blended %; "How we got this" shows the math. Amex MR shows whenever an MR card is held — pinned by a test (the owner's three cards include none, which is why it wasn't on their screen). `screenshots/v7c-2/D1-points.png`; `v7cPart5c.test.jsx`.
-- **D2** · PASS (v7c re-run) · Freedom-only Chase: "Worth 1¢ per point" with "Freedom Unlimited: 3% at restaurants and drugstores · 1.5% elsewhere" (headline matches the small print), "Add a Sapphire Preferred and the same points move to …". `v5Points.test.js`, `v7cPart5c.test.jsx`; partner picker unchanged (`v7bPart2.test.jsx`).
+- **D1** · PASS (v7c 5c; v7d copy) · Every held currency appears; rows lead with "Worth X¢ per point" — cash rows now "Paid as cash: $1 = $1"; one line per row about what unlocks more (the duplicate Sapphire sentence is gone); Robinhood: "5% on Robinhood Travel bookings isn't counted here." (sourcing in Show the math). `v7dPart3.test.jsx`, `v5Points.test.js`.
+- **D2** · PASS (v7c re-run; v7d) · Freedom-only Chase: "Worth 1¢ per point", "Add a Sapphire Preferred and the same points move to Hyatt and United — both brands you picked." — said once. Every program's sentences are complete (test over every card). `v7dPart3.test.jsx`.
 - **D3** · PASS · `D1-point-values.png`; `v7bPart2.test.jsx` › "programs you could add".
 - **D4** · PASS (v7c 5f.7) · "Opens transfers to …" shows only when the card raises that currency's value: none for a Platinum beside a held Amex Gold / Green; shown for the owner's real three cards (the Platinum would be their first card that transfers). `v7cPart5f.test.jsx` › 5f.7.
 - **D5** · PASS · Modes + Hyatt 1.5 / 1.65 / 1.8 + "At conservative values … drops out". `D1-point-values.png`; `v7PartB.test.jsx` › B1 tests.
 - **D6** · PASS · `v7PartB.test.jsx` › "Hyatt's own value, then a Chase point at 4:3 and at 1:1".
-- **D7** · PASS · TakeOff 15 verified on delta.com (2026-11-20); Delta ≈ 1.35¢ with a Gold/Platinum/Reserve. `v7PartB.test.jsx` › "Delta miles are worth value ÷ 0.85…".
-- **D8** · PASS (v7c 5c) · Portals tied to the issuer everywhere (`bestPortal` now uses the card's issuer like `rankPortals`); test: no card earns a portal rate on another issuer's portal. Robinhood Gold has no portal rate (3% everywhere; the 5% is a "Robinhood Travel only" note, not counted). `v7cPart5c.test.jsx`.
+- **D7** · PASS (v7d 3.4 rule) · TakeOff 15 (delta.com, 2026-11-20) applies when the routes justify it: Delta flies ≥ 70% of the person's trips → 1.2 ÷ 0.85 ≈ 1.41¢; otherwise Delta is 1.2¢ (owner, 2026-11-23). The owner's profile (Delta 4 of 7 trips) → 1.2¢, and Profile says why ("…isn't counted: Delta flies 57% of your trips, under the 70%…"). The old 1.35¢ = 1.15¢ ÷ 0.85, logged in PROGRESS. One value per program on every screen (test). `v7dPart3.test.jsx`, `v7PartB.test.jsx`.
+- **D8** · PASS (v7c 5c; v7d copy) · Portals tied to the issuer; Robinhood Gold has no portal rate, with the plain note "5% on Robinhood Travel bookings isn't counted here." `v7cPart5c.test.jsx`.
 - **D9** · PASS · Only flexible currencies are edited (PartnerPicker); airline/hotel values standardized and sourced (`src/data/valueModes.js`, `partnerValuations.js`).
 - **D10** · HOLD (stopped for review, as the v7c brief says) · Full audit on issuer pages: groups 1 (owner's 4 cards) and 2 (16 recommended cards) done, 20 cards, each credit with the issuer's sentence; groups 3–4 wait for the owner's review. `docs/CARD_AUDIT.md` (v7c table), `src/data/cardAudit.js`; `v7cPart6.test.js`.
 
@@ -121,22 +132,22 @@ tiles whose tags are perk jobs).
 - **E11** · PASS (v7c re-run) · One % formatter; the Lab's table shows each category's best card and its own rate (no "overall" blend; a second card only where it beats the first); the points screen never blends a currency. `v7PartG.test.jsx`, `v7PartD.test.jsx`, `v7cPart5d.test.jsx` › 5d.4.
 - **E12** · FIXED (v7c re-run: holds) · Home 43 / best $1,607 = Wallet Lab "Your wallet now 43 · $1,011", "Best possible wallet for you $1,607". `screenshots/v7c-2/B3-home.png`, `F1-lab.png`; `v6Review.test.jsx` › "score = round(100 × shown extra ÷ shown best extra)".
 - **E13** · FIXED (v7c re-run: holds; 5f.5) · One number per idea: the detail headline, "Why this card?" and "Worth applying?" all show the net after the application cost (Brilliant: "Would add ≈ $68", "+$68 a year after that cost", "Yes — +$68 a year after the $75 application cost"); lanes say "adds $X over your current card", the earning list "earns $Y". `screenshots/v7c-2/G3-brilliant-detail.png`; `v7cPart5f.test.jsx` › 5f.5.
-- **E14** · PASS (v7c re-run) · All golden tests pass; golden before → after for each section in `docs/PROGRESS.md` (Part 4: foodie +$127; 5b: Hyatt, ATL Delta and owner-like move — Brilliant out; 5d-2: $0-budget student gets the SavorOne). METHODOLOGY §3 (5b table), §5 (no budget, one program per wallet), §5c (Lab), §8 (now vs later) updated.
+- **E14** · PASS (v7d re-run) · All golden tests pass. v7d moves only Part 3 (Delta 1.2¢ unless routes justify TakeOff 15): ATL Delta N +$707 → +$774 (Robinhood Gold joins), owner-like from wallet +$864 → +$829, held +$659 → +$624. Parts 1, 2, 4, 5 leave every golden result unchanged. `docs/PROGRESS.md` → v7d.
 
 ### F. Wallet Lab
-- **F1** · PASS (v7c 5d-2) · The budget control is gone (5d-2.5); the rest: a live spending drawer, "Built from your 3 cards" / "Starting from zero", "Your cards" tiles, "Which card to use where", sample wallets, "Best possible wallet for you". `screenshots/v7c-2/F1-lab.png`; `v7cPart5d2.test.jsx`, `v6Lab.test.jsx`.
-- **F2** · PASS (v7c re-run) · Every eligible card, no fee-budget filter (only an optional fee display filter), cards they own but left out listed first with "Put it back"; the owner's Groceries sheet lists the Amex Gold: "+1.3% → +$78/yr", "−$135/yr after its $325 fee". `screenshots/v7c-2/F2-groceries-sheet.png`; `v7cPart5d.test.jsx`, `v7cPart5d2.test.jsx`.
+- **F1** · PASS (v7c 5d-2; v7d Part 4) · Fee control back as an optional limit: "Fee limit: none ▾" chip (typed amount); with a limit, "Best possible wallet for you" is at the limit and the cost line gives the no-limit difference with "Remove limit". Spending drawer, "Your cards" tiles, "Which card to use where" (now with Tickets & events), sample wallets. `screenshots/v7d/F1-lab-fee-limit.png`; `v7dPart4.test.jsx`.
+- **F2** · PASS (v7c re-run; v7d Part 4) · Every eligible card is listed; with a fee limit, cards that would break it stay in the sheet under "Over your fee limit" with their total fees, how far over, and "Fits if you drop the … ($X fee)" when one swap is enough ("Chase Sapphire Reserve — $1,135 in fees, $735 over your $400 limit. No single swap makes it fit."). `screenshots/v7d/F2-over-limit-sheet.png`; `v7dPart4.test.jsx`.
 - **F3** · PASS · `F3-compare.png`; `v6Lab.test.jsx` › "tap a slot → alternatives → compare…".
 - **F4** · PASS · `v7PartD.test.jsx` › "D2 · add alongside vs replace".
 - **F5** · PASS (v7c re-run) · Card names in the table and tiles open the full detail; from a table row it's judged against the setup with "Other cards that could fill …". `v7bPart5.test.jsx` › "5.2 card detail from a slot".
-- **F6** · PASS (v7c re-run) · All your benefits: counted value with "Face up to $Y"; Overlap for PreCheck and for spending another card already pays back ("you'd use $100 of $120"); spend-gated items "Unlocks with spending"; status and protections listed under Nice extras with no $. `screenshots/v7c-2/F1-lab.png`; `v7cPart4.test.jsx`, `v7bPart5.test.jsx`.
+- **F6** · PASS (v7c re-run; v7d) · All benefits as before; Nice extras now also list "…: you'd try it if free" subscriptions and the Platinum's "Ticket presales and event access (Amex Experiences)" ($0). `v7cFollowups.test.jsx`, `v7dPart5.test.jsx`.
 - **F7** · PASS · `v7bPart5.test.jsx` › "…and the slot says why" (no Costco spend in the test profile, so no screen shot of this slot).
 - **F8** · PASS (v7c re-run) · Keep or cancel, when to apply (6 months), saved setups, plus a "Your plan" panel (5e). `screenshots/v7c-2/F1-lab.png`; `v7PartC.test.jsx`, `v7cPart5e.test.jsx`.
 
 ### G. Explore and card detail
 - **G1** · FIXED · (above)
 - **G2** · PASS · `G1-explore.png`; `v6Explore.ui.test.jsx` › tiles test.
-- **G3** · PASS (v7c re-run) · Benefits you'd use with "Counted $X" and a grey "Face up to $Y" on every row; icons by type (the dining credit has a fork and knife, not a bed); Nice extras with no $; Benefits you wouldn't use with reasons; Unlocks with spending; the stacked brand return ("≈13% back at Marriott (4.8% from this card)") when it's their program. `screenshots/v7c-2/G3-brilliant-detail.png`, `G3-delta-gold-detail.png`; `v7cPart5b.test.jsx`.
+- **G3** · PASS (v7c re-run; v7d) · Rows with "Counted $X" / "Face up to $Y"; See the math and "Why this card?" show the spending each perk was counted against, with typical figures marked "(estimate)"; Nice extras include presales and "you'd try it if free"; the earning list has "Tickets & events". `v7cFollowups.test.jsx`, `v7dPart5.test.jsx`.
 - **G4** · FIXED (v7c re-run: holds) · Held-card wording unchanged ("Worth ≈ $X a year to you after its fee"). `v6Review.test.jsx`.
 
 ### H. Checkout, Near me, Offers
@@ -148,8 +159,8 @@ tiles whose tags are perk jobs).
 - **H6** · HOLD · (above)
 
 ### I. Process rules
-- **I1** · PASS (v7c re-run) · `acceptance.test.jsx` › "no cpp / MR / UR / multiplier / breakage in visible strings"; the perk step also has no "credit".
-- **I2** · PASS (v7c re-run) · 1,614 tests pass; build OK; unverified items in `docs/PROGRESS.md` (Robinhood Gold's 5% added as owner question 6).
+- **I1** · PASS (v7d re-run) · `acceptance.test.jsx` › "no cpp / MR / UR / multiplier / breakage in visible strings" passes with the v7d copy; the perk step still has no "credit".
+- **I2** · PASS (v7d re-run) · 1,673 tests pass (104 files); build OK; v7d progress, derivations (Delta 1.35¢) and judgment calls in `docs/PROGRESS.md` → v7d.
 - **I3** · PASS · `acceptance.test.jsx` › ".gitignore covers card art, fonts, backgrounds, screenshots"; the connector stores only an encrypted session (`connector/README.md`), never passwords or card numbers.
 
 ### v7c 5e (no checklist ID) — now vs later
