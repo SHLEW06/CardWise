@@ -20,6 +20,7 @@ import {
   rolesFor, cardBrand, pickedBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, directBase, profilePools,
 } from "./value.js";
 import { sharePools } from "../../data/perkHabits.js";
+import { applyNightBudget } from "./hotelCredits.js";
 import { cardPointValue, isUnlocked, CASH_LIKE } from "./pointValues.js";
 import { TRANSFER_RULES } from "../../data/programs.js";
 import { BANK_CURRENCIES, backPct } from "./valuation.js";
@@ -153,6 +154,13 @@ function dedupeBenefits(perCard, profile) {
     total += value;
     counted.push({ ...best, value, dedupedFrom: list.map((l) => l.cardId) });
   }
+  /* v7e 3.4: hotel credits and free nights across the wallet share the nights
+     they actually stay — highest value first, the rest $0 with the reason. */
+  const nb = applyNightBudget(counted, profile);
+  if (nb.dropped.length) {
+    const out = nb.items.filter((i) => i.value > 0);
+    return { total: out.reduce((t, i) => t + i.value, 0), items: out, nightBudget: nb, droppedForNights: nb.items.filter((i) => !(i.value > 0)) };
+  }
   return { total, items: counted };
 }
 
@@ -179,6 +187,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
     net: Math.round(E + U.total - F),          // what the wallet is worth a year
     bonus: Math.round(bonus),
     earning: alloc, benefits: U.items, perCard,
+    nightBudget: U.nightBudget || null,       // v7e 3.4: credits that didn't fit the nights they stay
   };
 }
 

@@ -65,3 +65,15 @@ each segment goes to whichever partner has more mainline flights at its
 airports (a modeling choice, `src/engine/v5/tripRoutes.js`).
 
 OpenFlights is not used (out of date).
+
+## Premium hotel prices (v7e Part 3)
+
+`docs/data/premium_hotel_prices.csv` → `src/data/premiumHotels.generated.json`
+(`npm run hotels`). Nightly rates for Chase's The Edit, Amex Fine Hotels +
+Resorts and The Hotel Collection hotels in 10 cities, from nextcard's city
+guides (nextcard.com, articles checked Aug–Nov 2026; each row's URL and date
+is in the CSV and the JSON). Snapshots, not live quotes. The app uses the
+average nightly rate where the source gives one, otherwise lowest × 1.25 —
+never the lowest alone (a best-date figure). Used only to value hotel credits;
+no hotel names or prices are fetched at runtime.
+

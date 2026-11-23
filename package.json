@@ -30,6 +30,7 @@
     "audit:cards": "node scripts/card-audit.mjs",
     "golden": "node scripts/golden-report.mjs",
     "routes": "node scripts/build-routes.mjs",
+    "hotels": "node scripts/build-premium-hotels.mjs",
     "audit:v7c": "node scripts/card-audit-v7c.mjs"
   },
   "dependencies": {

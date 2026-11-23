@@ -71,3 +71,8 @@
 .v5 .habit-numbers input { width: 5.5em; }
 .v5 .habit-tag { color: var(--ink-3, #9C988F); font-size: .92em; }
 .v5 .habit-reset { margin-top: 6px; }
+
+/* v7e Part 3: hotel budget block */
+.v5 .hotel-cities { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 6px; }
+.v5 .hotel-budget .habit-adjust { margin: 6px 0; }
+.v5 .hotel-use { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }

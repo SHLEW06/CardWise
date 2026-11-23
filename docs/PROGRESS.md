@@ -1991,6 +1991,41 @@ disagrees with the research file, the page wins:
 - Golden report unchanged. Tests: `v7ePart2.test.jsx` (11); v7d tickets
   tests updated.
 
+## v7e Part 3 · hotel credits on what you'd pay anyway (2026-11-23)
+
+- **Survey (trips step):** "What you'd pay for hotels anyway" — "My usual
+  hotel budget: $___ a night", per destination "What do you normally pay per
+  night in …?" (city estimate until typed), "Hotel nights per trip"
+  (default 2 — the trips step has no trip length, so the brief's "trip
+  length − 1" isn't available), "Which months do you usually travel?"
+  (optional), "I'd pay for hotel breakfast anyway: $___ a day", "Would you
+  spend $100+ at the hotel anyway?", and the travel-site markup (10%).
+- **Data:** `npm run hotels` turns `docs/data/premium_hotel_prices.csv` into
+  `src/data/premiumHotels.generated.json` (+ a `.js` copy so plain Node can
+  import it); realistic rate = average, else lowest × 1.25. Source and date in
+  `docs/THIRD_PARTY.md`. Cities with no data (Taipei here) → "no price
+  data", $0.
+- **The formula** on every prepaid hotel credit, with the rules on the
+  credit (`hotelProgram` in the card data): Edit 2 × $250, 2 nights, a
+  separate stay each, calendar year (issuer page: no half-year split);
+  FHR/THC 2 × $300 by half-year, 2 nights (FHR from 1/1/2027); Gold THC $100
+  on-property; Delta Stays and Chase Travel any-hotel at a 10% markup. The
+  2026 "Select Hotels" $250 isn't on Chase's card page, so it isn't added.
+- **Night budget** across credits and free nights, highest value first, with
+  "You have ~N hotel nights a year; these need M."
+- **Card detail "Where you could use this":** per destination, the cheapest
+  eligible hotel, its realistic rate, the stay after the credit and the value
+  ("Hong Kong · Cordis Hong Kong (THC) · ~$256/night · 2 nights $512 − $300
+  = $212 out of pocket · worth $188 to you"), the program's search link and
+  the data date.
+- Research table check (B $200, 2 nights, exact P): Cordis $159 → $300,
+  Mondrian $230 → $240, Kimpton $242 → $166, Hoxton $306 → $88, The Strings
+  $330 → $0 — all match. With realistic rates the app counts less (Cordis
+  ~$256 → $188).
+- Golden: unchanged (no golden profile says Yes to travel-site bookings).
+  Tests: `v7ePart3.test.jsx` (18); three older tests moved to destinations
+  with price data.
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

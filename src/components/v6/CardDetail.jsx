@@ -31,6 +31,9 @@ import { alternativesForSlot } from "../../engine/v5/lab.js";
 import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
 import { ticketComparison } from "../../engine/v5/tickets.js";
+import { PROGRAM_LABEL, PROGRAM_SEARCH, nightBudgetText } from "../../engine/v5/hotelCredits.js";
+import { PREMIUM_HOTELS } from "../../data/premiumHotels.generated.js";
+const PROGRAM_SHORT = { edit: "The Edit", fhr: "FHR", thc: "THC" };
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
@@ -95,6 +98,15 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
   const [open, setOpen] = useState(null);
   const bestN = useMemo(() => optimalWallet(profile).value.N, [profile]);
   const d = useMemo(() => cardDetail(cardId, profile, bestN), [cardId, profile, bestN]);
+  /* v7e Part 3.5: hotel credits — where they could be used, at their budget. */
+  const hotelUses = useMemo(() => {
+    const c = BY_ID[cardId];
+    return [...(d.used || []), ...(d.unused || [])].filter((b) => b.hotelUse?.rows?.length).map((b) => {
+      const cr = (c?.credits || []).find((x) => x.name === b.label);
+      const prog = cr?.hotelProgram?.programs?.[0];
+      return { id: b.id, label: b.label, rows: b.hotelUse.rows, chunk: cr?.hotelProgram?.chunk || b.face, program: PROGRAM_LABEL[prog] || "", search: PROGRAM_SEARCH[prog] || null };
+    });
+  }, [cardId, d]);
   /* v7e Part 2: where to buy tickets, on cards with a ticket credit or presales. */
   const ticketCmp = useMemo(() => {
     const c = BY_ID[cardId];
@@ -161,6 +173,29 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
           <Reveal i={2} className="panel detail-block detail-why">
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
+
+          {/* v7e Part 3.5: where each hotel credit could be used, at their budget */}
+          {hotelUses.length > 0 && (
+            <Reveal i={2} className="panel detail-block" data-testid="hotel-use">
+              <h2 className="t-h3">Where you could use this</h2>
+              {hotelUses.map((h) => (
+                <div key={h.id}>
+                  <p className="t-caption"><strong>{h.label}</strong></p>
+                  <ul className="hotel-use">
+                    {h.rows.map((r) => (
+                      <li key={r.dest} className="t-caption" data-testid={`hotel-use-${r.dest}`}>
+                        {r.noData
+                          ? `${r.name} · no price data — counts $0 unless you'd book one yourself`
+                          : `${r.name} · ${r.hotel}${r.program !== "portal" ? ` (${PROGRAM_SHORT[r.program]})` : ""} · ~${money(r.rate)}/night · ${r.n} night${r.n === 1 ? "" : "s"} ${money(r.cost)} − ${money(h.chunk)} = ${money(r.after)} out of pocket · worth ${money(r.value)} to you (your ${money(r.budget)} a night${r.budgetBasis === "estimate" ? ", an estimate" : ""})`}
+                      </li>
+                    ))}
+                  </ul>
+                  {h.search && <p className="t-caption"><a className="link" href={h.search} target="_blank" rel="noreferrer">Search {h.program} hotels</a> · prices from {PREMIUM_HOTELS.checked} (nextcard city guides)</p>}
+                </div>
+              ))}
+              {d.nightBudget && <p className="t-caption" data-testid="night-budget">{nightBudgetText(d.nightBudget)}</p>}
+            </Reveal>
+          )}
 
           {ticketCmp && (
             <Reveal i={2} className="panel detail-block" data-testid="ticket-compare">

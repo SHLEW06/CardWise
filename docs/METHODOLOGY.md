@@ -624,3 +624,35 @@ for the …", the Sapphire 48-month rule, Amex once-per-lifetime bonuses.
 its net value at the spending level from then on (its gain in that phase's
 wallet − the application cost), and what to downgrade or cancel.
 
+## 9. Hotel credits on what you'd pay anyway (v7e Part 3)
+
+Every prepaid hotel-program credit — The Edit (Sapphire Reserve), Fine Hotels
++ Resorts / The Hotel Collection (Platinum), the Gold's THC $100, Delta Stays,
+the Sapphire Preferred's Chase Travel credit — is valued with
+
+> **value = clamp(C − n × max(0, P − B), 0, C)**
+
+- **C** — one credit "chunk" (Edit $250, FHR/THC $300 a half-year, Delta Stays
+  $100–$200, Chase Travel $100).
+- **B** — their nightly budget in that city: their per-city number → "My
+  usual hotel budget" → the city estimate (`src/data/cityHotelBudget.js`,
+  modeling defaults, marked "estimate").
+- **P** — the cheapest eligible hotel's **realistic** rate in a city they
+  travel to (`src/data/premiumHotels.generated.js`, from
+  `docs/data/premium_hotel_prices.csv`): the source's average nightly rate,
+  else lowest × 1.25 — never the lowest alone. A city with no data counts $0.
+- **n** — max(the program's minimum nights, the hotel's, 1).
+- **Any-hotel portals** (Delta Stays, Chase Travel): P = B × (1 + markup),
+  markup 10% by default and editable — value = C − markup × the stay.
+- **Timing:** semiannual credits (Platinum $300 + $300) count the second
+  half only with hotel nights in both halves of the year (their months, or
+  spread evenly); each Edit credit needs its own 2-night stay (one per trip).
+- **Perks:** the Gold's THC $100 is on-property (dining, spa) — $0 unless
+  they'd spend $100 at the hotel anyway; FHR breakfast counts only at the
+  breakfast price they'd pay anyway; upgrades are Nice extras ($0).
+- **Night budget:** hotel credits and free-night certificates share the
+  hotel nights from the trips step (`applyNightBudget`, per card and across
+  the wallet). The highest-value uses get nights first; the rest count $0:
+  "You have ~4 hotel nights a year; these need 7. …".
+- The v7c portal yes/no still gates all of these (No = $0).
+

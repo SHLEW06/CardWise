@@ -29,6 +29,7 @@ import { VAL } from "../../data/valuations.js";
 import { loungeCoverage } from "../airportFit.js";
 import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
+import { hotelProgramValue, fhrBreakfastValue, applyNightBudget } from "./hotelCredits.js";
 import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree, habitSpend, creditDraws, poolsForCredit, creditPick, sharePools } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
@@ -492,6 +493,13 @@ export function creditUsage(card, credit, profile) {
     if (!g) return { factor: 0, reason: "A business credit — not counted for personal wallets" };
     return fromPools(g[1], {}, "No spending it can pay back");
   }
+  /* v7e Part 3: prepaid hotel-program credits on what they'd pay anyway. */
+  if (credit.hotelProgram) {
+    const h = hotelProgramValue(card, credit, profile);
+    return h.value > 0
+      ? { value: h.value, factor: credit.annual ? h.value / credit.annual : 0, reason: null, note: h.note, nightUnits: h.chunks, hotelUse: h.use, hotelChunks: h.chunks }
+      : { factor: 0, reason: h.reason, hotelUse: h.use };
+  }
   if (rule.rule === "portal") {
     /* v7c 4.4: one yes/no — "Would you book hotels or trips through a card's
        travel site …?" No (the default) = $0 for every portal-tied credit. */
@@ -713,7 +721,14 @@ export function benefitBreakdown(card, profile, ctx = {}) {
        wallet (a new card isn't credited for Uber spending another card
        already pays back). */
     const type = creditType(c);
+    if (value <= 0 && u.hotelUse) { unused.push({ id, label: c.name, face: c.annual, type, reason: u.reason || "Unlikely to be used", hotelUse: u.hotelUse }); continue; }
     if (value <= 0 && u.tryIfFree) { tryFree.push({ id, label: `${noDollars(c.name)}: you'd try it if free`, face: c.annual, kind: "tryFree" }); continue; }
+    if (value > 0 && u.nightUnits) {
+      items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, note: u.note || null, nightUnits: u.nightUnits, hotelUse: u.hotelUse || null });
+      const bf = fhrBreakfastValue(card, { use: u.hotelUse, chunks: u.hotelChunks }, profile);
+      if (bf > 0) items.push({ id: `${card.id}#fhr-breakfast`, label: "Daily breakfast at Fine Hotels + Resorts stays", face: bf, value: bf, kind: "credit", type: "hotel", note: "Counted because you'd pay for breakfast anyway" });
+      continue;
+    }
     if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, dedupe: u.dedupe || null, pools: u.pools || null, single: !!u.single, pick: u.pick || null, habit: u.habit || null, note: u.note || null, split: !!u.split, planned: !!u.planned, perk: u.perk || null });
     else unused.push({ id, label: c.name, face: c.annual, type, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
@@ -728,7 +743,8 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     const id = `${card.id}#night-${slug(n.name)}`;
     if (n.spend) { gated.push({ id, label: n.name, face, spend: n.spend, kind: "freeNight" }); continue; }
     const p = pickedCardBrand && nights > 0 ? CERT_COUNTED_SHARE * stayFactor(profile) : 0;
-    if (p > 0) items.push({ id, label: n.name, face, value: Math.round(face * p), kind: "freeNight" });
+    /* v7e 3.4: a free night needs a night of their own */
+    if (p > 0) items.push({ id, label: n.name, face, value: Math.round(face * p), kind: "freeNight", nightUnits: [{ value: Math.round(face * p), nights: 1 }] });
     else unused.push({ id, label: n.name, face, reason: !pickedCardBrand ? `You didn't pick ${brand}` : "No hotel stays in your trips" });
   }
 
@@ -784,7 +800,11 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   /* Owner, 2026-11-23: subscriptions they'd only start if free count $0. */
   extras.push(...tryFree);
 
-  return { total: items.reduce((t, i) => t + i.value, 0), items, unused, gated, extras };
+  /* v7e 3.4: this card's hotel credits and free nights share the nights they stay */
+  const nb = applyNightBudget(items, profile);
+  const kept = nb.items.filter((i) => i.value > 0);
+  for (const i of nb.items) if (!(i.value > 0)) unused.push({ id: i.id, label: i.label, face: i.face, reason: i.nightNote || "Not enough hotel nights" });
+  return { total: kept.reduce((t, i) => t + i.value, 0), items: kept, unused, gated, extras, nightBudget: nb.dropped.length ? nb : null };
 }
 
 export const benefitValue = (card, profile) => benefitBreakdown(card, profile).total;

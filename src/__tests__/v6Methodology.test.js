@@ -388,7 +388,8 @@ describe("golden profiles", () => {
   });
   it("8. portal-tied split hotel credits: $0 by default, > 0 after 'Yes' to booking through a card's travel site", () => {
     const csr = BY_ID.csr;
-    const p = { travel: { trips: 4, hotelNights: 6 } };
+    /* v7e Part 3: valued at hotels in their destinations (Shanghai has Edit prices) */
+    const p = { travel: { hotelNights: 6, hotelBudget: 300, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };   // $300 a night anyway
     const before = benefitBreakdown(csr, normalizeProfile(p));
     expect(before.items.find((i) => /The Edit/.test(i.label))).toBeUndefined();
     expect(before.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/travel site/);

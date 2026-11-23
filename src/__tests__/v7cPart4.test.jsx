@@ -166,7 +166,8 @@ describe("4.4 · generic credit chips are gone — worked out from other answers
     expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["hilton"] } })).toBe(0);
   });
   it("portal-tied hotel credits: one yes/no, No by default = $0 for all of them", () => {
-    const P = { travel: { trips: 4, hotelNights: 6 } };
+    /* v7e Part 3: destinations with hotel price data (Hong Kong THC / FHR, Shanghai Edit) */
+    const P = { travel: { hotelNights: 6, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };
     expect(normalizeProfile({}).brands.portalHotels).toBe(false);
     for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["united-quest", /Renowned/], ["amex-plat", /Fine Hotels/]]) {
       expect(valueOf(id, re, {}, P), id).toBe(0);

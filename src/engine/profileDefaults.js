@@ -237,6 +237,15 @@ export function normalizeProfile(p = {}) {
      alone → independent; beside brands → a mix. */
   const hadIndependent = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).includes("independent");
   travel.stayStyle = STAY_STYLE_KEYS.includes(travel.stayStyle) ? travel.stayStyle : hadIndependent ? (realHotels.length ? "mix" : "independent") : null;
+  /* v7e Part 3: what they'd pay for hotels anyway (estimates until they type). */
+  const pos = (x) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Math.round(Number(x)) : null);
+  travel.hotelBudget = pos(travel.hotelBudget);
+  travel.cityBudgets = travel.cityBudgets && typeof travel.cityBudgets === "object" ? Object.fromEntries(Object.entries(travel.cityBudgets).map(([k, v]) => [k, pos(v)]).filter(([, v]) => v)) : {};
+  travel.nightsPerTrip = pos(travel.nightsPerTrip);
+  travel.months = Array.isArray(travel.months) ? [...new Set(travel.months.map(Number).filter((m) => m >= 1 && m <= 12))].sort((a, b) => a - b) : [];
+  travel.breakfast = Number.isFinite(Number(travel.breakfast)) && Number(travel.breakfast) > 0 ? Math.round(Number(travel.breakfast)) : 0;
+  travel.onProperty = travel.onProperty === true;
+  travel.portalMarkup = Number.isFinite(Number(travel.portalMarkup)) && Number(travel.portalMarkup) >= 0 && Number(travel.portalMarkup) <= 1 ? Number(travel.portalMarkup) : 0.1;
   travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
   /* v7c 1.6: lounges — "Let CardWise pick the best value" (auto) or "I'll
      choose" (networks). Auto ignores any saved networks. */

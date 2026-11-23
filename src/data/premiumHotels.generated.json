@@ -1,0 +1,496 @@
+{
+  "generatedFrom": "docs/data/premium_hotel_prices.csv",
+  "checked": "2026-11",
+  "sources": [
+    "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+    "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+    "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+    "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+    "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris",
+    "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+    "https://www.nextcard.com/articles/chase-edit-hotels-in-rome",
+    "https://www.nextcard.com/articles/chase-edit-hotels-in-milan",
+    "https://www.nextcard.com/articles/chase-edit-hotels-in-singapore",
+    "https://www.nextcard.com/articles/chase-edit-hotels-in-honolulu"
+  ],
+  "cities": {
+    "shanghai": {
+      "name": "Shanghai",
+      "country": "CN",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Kimpton Qiantan Shanghai by IHG",
+          "lowest": 242,
+          "avg": null,
+          "rate": 303,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Shanghai EDITION",
+          "lowest": 342,
+          "avg": null,
+          "rate": 428,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        }
+      ]
+    },
+    "seoul": {
+      "name": "Seoul",
+      "country": "KR",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Mondrian Seoul Itaewon",
+          "lowest": 281,
+          "avg": null,
+          "rate": 351,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Shilla Seoul",
+          "lowest": 304,
+          "avg": null,
+          "rate": 380,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        }
+      ]
+    },
+    "tokyo": {
+      "name": "Tokyo",
+      "country": "JP",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Kimpton Shinjuku Tokyo",
+          "lowest": 413,
+          "avg": null,
+          "rate": 516,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Strings by InterContinental Tokyo",
+          "lowest": 330,
+          "avg": 553,
+          "rate": 553,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Prince Gallery Tokyo Kioicho",
+          "lowest": 509,
+          "avg": null,
+          "rate": 636,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "BELLUSTAR TOKYO a Pan Pacific Hotel",
+          "lowest": 645,
+          "avg": null,
+          "rate": 806,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Tokyo EDITION Ginza",
+          "lowest": 741,
+          "avg": null,
+          "rate": 926,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "Palace Hotel Tokyo",
+          "lowest": 773,
+          "avg": null,
+          "rate": 966,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo",
+          "checked": "2026-09"
+        }
+      ]
+    },
+    "hongkong": {
+      "name": "Hong Kong",
+      "country": "HK",
+      "hotels": [
+        {
+          "program": "thc",
+          "hotel": "Cordis Hong Kong",
+          "lowest": 159,
+          "avg": 256,
+          "rate": 256,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "thc",
+          "hotel": "Mondrian Hong Kong",
+          "lowest": 230,
+          "avg": 313,
+          "rate": 313,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "thc",
+          "hotel": "The Hari Hong Kong",
+          "lowest": 259,
+          "avg": 357,
+          "rate": 357,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "thc",
+          "hotel": "Kerry Hotel Hong Kong",
+          "lowest": 252,
+          "avg": 406,
+          "rate": 406,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "thc",
+          "hotel": "Lanson Place Causeway Bay",
+          "lowest": 331,
+          "avg": 433,
+          "rate": 433,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "edit",
+          "hotel": "Island Shangri-La Hong Kong",
+          "lowest": 406,
+          "avg": null,
+          "rate": 508,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        },
+        {
+          "program": "fhr",
+          "hotel": "Grand Hyatt Hong Kong",
+          "lowest": 386,
+          "avg": 536,
+          "rate": 536,
+          "rateBasis": "average",
+          "minNights": 1,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong",
+          "checked": "2026-10"
+        },
+        {
+          "program": "edit",
+          "hotel": "Four Seasons Hotel Hong Kong",
+          "lowest": 694,
+          "avg": null,
+          "rate": 868,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Upper House",
+          "lowest": 769,
+          "avg": null,
+          "rate": 961,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia",
+          "checked": "2026-09"
+        }
+      ]
+    },
+    "london": {
+      "name": "London",
+      "country": "GB",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "The Standard London",
+          "lowest": 368,
+          "avg": null,
+          "rate": 460,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+          "checked": "2026-08"
+        },
+        {
+          "program": "edit",
+          "hotel": "Kimpton Fitzroy London",
+          "lowest": 498,
+          "avg": null,
+          "rate": 623,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+          "checked": "2026-08"
+        },
+        {
+          "program": "edit",
+          "hotel": "Dorset Square Hotel",
+          "lowest": 525,
+          "avg": null,
+          "rate": 656,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+          "checked": "2026-08"
+        },
+        {
+          "program": "edit",
+          "hotel": "The Ned",
+          "lowest": 539,
+          "avg": null,
+          "rate": 674,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+          "checked": "2026-08"
+        },
+        {
+          "program": "edit",
+          "hotel": "11 Cadogan Gardens",
+          "lowest": 546,
+          "avg": null,
+          "rate": 683,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london",
+          "checked": "2026-08"
+        }
+      ]
+    },
+    "paris": {
+      "name": "Paris",
+      "country": "FR",
+      "hotels": [
+        {
+          "program": "thc",
+          "hotel": "Hotel Florida Paris",
+          "lowest": 342,
+          "avg": 444,
+          "rate": 444,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+          "checked": "2026-08"
+        },
+        {
+          "program": "thc",
+          "hotel": "The Hoxton Paris",
+          "lowest": 306,
+          "avg": 445,
+          "rate": 445,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+          "checked": "2026-08"
+        },
+        {
+          "program": "thc",
+          "hotel": "Maison Albar Le Vendome",
+          "lowest": 354,
+          "avg": 518,
+          "rate": 518,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+          "checked": "2026-08"
+        },
+        {
+          "program": "edit",
+          "hotel": "Castille Paris",
+          "lowest": 489,
+          "avg": null,
+          "rate": 611,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "La Fantaisie",
+          "lowest": 518,
+          "avg": null,
+          "rate": 648,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris",
+          "checked": "2026-09"
+        },
+        {
+          "program": "edit",
+          "hotel": "Hotel Balzac Paris",
+          "lowest": 530,
+          "avg": null,
+          "rate": 663,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris",
+          "checked": "2026-09"
+        },
+        {
+          "program": "fhr",
+          "hotel": "La Fantaisie",
+          "lowest": 537,
+          "avg": 688,
+          "rate": 688,
+          "rateBasis": "average",
+          "minNights": 1,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+          "checked": "2026-08"
+        },
+        {
+          "program": "fhr",
+          "hotel": "SO/ Paris",
+          "lowest": 582,
+          "avg": 746,
+          "rate": 746,
+          "rateBasis": "average",
+          "minNights": 1,
+          "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris",
+          "checked": "2026-08"
+        }
+      ]
+    },
+    "rome": {
+      "name": "Rome",
+      "country": "IT",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Villa Agrippina a Gran Melia Hotel",
+          "lowest": 442,
+          "avg": null,
+          "rate": 553,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-rome",
+          "checked": "2026-11"
+        },
+        {
+          "program": "edit",
+          "hotel": "Sofitel Roma Villa Borghese",
+          "lowest": 404,
+          "avg": 787,
+          "rate": 787,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-rome",
+          "checked": "2026-11"
+        }
+      ]
+    },
+    "milan": {
+      "name": "Milan",
+      "country": "IT",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Radisson Collection Palazzo Touring Club",
+          "lowest": 503,
+          "avg": 599,
+          "rate": 599,
+          "rateBasis": "average",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-milan",
+          "checked": "2026-11"
+        },
+        {
+          "program": "edit",
+          "hotel": "Hotel Principe di Savoia",
+          "lowest": 612,
+          "avg": null,
+          "rate": 765,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-milan",
+          "checked": "2026-11"
+        }
+      ]
+    },
+    "singapore": {
+      "name": "Singapore",
+      "country": "SG",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "The Standard Singapore",
+          "lowest": 272,
+          "avg": null,
+          "rate": 340,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-singapore",
+          "checked": "2026-11"
+        }
+      ]
+    },
+    "hawaii": {
+      "name": "Honolulu",
+      "country": "US",
+      "hotels": [
+        {
+          "program": "edit",
+          "hotel": "Wayfinder Waikiki",
+          "lowest": 280,
+          "avg": null,
+          "rate": 350,
+          "rateBasis": "lowest × 1.25",
+          "minNights": 2,
+          "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-honolulu",
+          "checked": "2026-11"
+        }
+      ]
+    }
+  }
+}

@@ -29,6 +29,8 @@ export const AUDIT = {
     quotes: {
       "$120 dining credit ($10 a month at Grubhub, Buffalo Wild Wings, Five Guys, The Cheesecake Factory, Wonder)": "Earn up to a total of $10 in statement credits monthly when you pay with the Gold Card at Grubhub (including Seamless), Buffalo Wild Wings, Five Guys, The Cheesecake Factory, and Wonder. This can be an annual savings of up to $120.",
       "$120 Uber Cash ($10 a month)": "$120 Uber Cash — Get $10 in Uber Cash each month when you add your Gold Card to your Uber account.",
+      /* v7e Part 3 (read 2026-11-23) */
+      "$100 Hotel Collection on-property credit (dining, spa; 2+ night bookings)": "Book two nights or more with The Hotel Collection through AmexTravel.com and receive a $100 credit",
       "$100 Resy credit ($50 per half-year)": "Get up to $100 in statement credits each calendar year at over 10,000 qualifying U.S. Resy restaurants … up to $50 in statement credits from January through June and up to $50 …",
       "$84 Dunkin' credit ($7 a month)": "Earn up to $7 in monthly statement credits after you pay with the American Express® Gold Card at U.S. Dunkin' locations. ($84 Dunkin' Credit)",
     },
