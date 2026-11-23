@@ -28,6 +28,7 @@ import ScoreDial from "../ScoreDial.jsx";
 import PortalCalculator from "../PortalCalculator.jsx";
 import { Reveal, CountUp } from "../motion.jsx";
 import CompareTable from "../../v7/CompareTable.jsx";
+import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import { SpendRow } from "../../v5/survey/Survey.jsx";
 import { formatPctBack } from "../../../engine/v5/valuation.js";
 import { partnerShortName } from "../../../engine/v5/pointValues.js";
@@ -182,6 +183,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
       <div className="lab-panels">
         <Fold title="Keep or cancel"><KeepOrCancel profile={p} onOpenCard={openCard} /></Fold>
         <Fold title="When to apply"><WhenToApply setup={setup} profile={p} onOpenCard={openCard} /></Fold>
+        <Fold title="Your plan"><PlanTimeline profile={p} /></Fold>
         <Fold title="Credits you'd plan around"><PlanAround setup={setup} profile={draft} onChange={(planAround) => setDraft({ ...draft, planAround })} /></Fold>
         <Fold title="Welcome bonuses"><WelcomeBonuses setup={setup} profile={p} /></Fold>
         <Fold title="Saved setups"><SavedSetups setup={setup} profile={p} value={value} onLoad={(ids) => setCustom(ids)} /></Fold>

@@ -9,6 +9,7 @@ import { normalizeProfile, FEE_BUDGETS, TRIP_BUCKETS, SCORE_BUCKETS, NEW_CARD_BU
 export const STEP_DEFS = [
   { id: "cards", title: "Cards you have", star: true },
   { id: "spend", title: "Spending", star: true },
+  { id: "growth", title: "Will your spending change?", star: true },   // v7c 5e
   { id: "travel", title: "Travel", star: true },
   { id: "brands", title: "Card perks", star: true },
   { id: "fee", title: "Memberships", star: true },   // v7c 5d-2.5: was "Fee budget" (id kept for saved links)

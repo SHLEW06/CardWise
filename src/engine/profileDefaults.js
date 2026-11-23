@@ -16,6 +16,7 @@ import { METRO_AIRPORTS, DESTINATIONS } from "../data/routes.js";
 import { SPEND_BRAND } from "../data/perkChips.js";
 import { HABITS, HABIT_BY_KEY, cleanHabit, chipsFromHabits, habitsFromChips, OLD_PORTAL_CHIPS } from "../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../data/creditBrands.js";
+import { cleanGrowth } from "../data/growth.js";
 
 /* v7c 1: answers that used to mean "let CardWise pick" as a hotel chip. */
 const HOTEL_AUTO_CHIPS = ["independent", "unsure"];
@@ -383,6 +384,7 @@ export function normalizeProfile(p = {}) {
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
     valueMode: ["conservative", "typical", "optimistic"].includes(p.valueMode) ? p.valueMode : "typical",   // v7 B1
     bonusOffsetsHurdle: !!p.bonusOffsetsHurdle,   // v7 C1: count a welcome bonus against the application hurdle
+    growth: cleanGrowth(p.growth),   // v7c 5e: "Will your spending change?"
     /* v7b 3.10: cash they'd keep at Robinhood, and the two rates (editable). */
     robinhoodCash: num(p.robinhoodCash),
     rates: {

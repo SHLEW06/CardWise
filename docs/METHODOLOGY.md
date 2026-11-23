@@ -570,3 +570,38 @@ forced):
 - *3* — Gold wins only when MR is worth more than cash to them (airline
   partners picked) and spend is high; at 1¢ its 4x is 4%, matched by no-fee
   cards.
+
+## 8. Now vs later (v7c 5e)
+
+**Survey:** "Will your spending change?" right after spending. *About the
+same* (default) skips the rest. *It'll grow* asks when (a month, plus an
+optional "what happens then"), expected monthly spending per category —
+pre-filled with typical new-grad figures (modeling defaults, `NEW_GRAD_MONTHLY`
+in `src/data/growth.js`: dining $450, groceries $450, gas $150, rides $120,
+flights $200, hotels $100, streaming $45, drugstores $40, online $300, rent
+$1,800, phone $150, everything else $600) — and expected travel (round trips
+a year, default 6; cabin).
+
+**Future profile** (`futureProfile`): the same answers with that spending
+(× 12) and travel (trip rows scaled to the new trip count, the new cabin).
+
+**Plan** (`planRoadmap`): *Now* = today's best wallet ("From my wallet"
+when they hold cards), applications ordered by When to apply (Chase first
+while under 5/24, Amex Green → Gold → Platinum, 6 months apart). *Later* =
+the best wallet for the future profile, starting from the now-wallet as
+cards they hold (its new cards count toward 5/24). Cards only in the later
+wallet are **held back until the change** — that is how premium cards wait
+until the future spending pays for them ("Chase United Quest from May 2028,
+when the perks you'd use cover its $350 fee"). Within the later phase:
+upgrades, then Chase cards (5/24), then the card worth most; still one new
+card every 6 months. Now-wallet cards with a fee that the later wallet drops
+are marked *downgrade* (to an open no-fee card in the family) or *cancel*; an
+upgraded card isn't "dropped". Closed cards (Ritz-Carlton …) appear only as
+*Upgrade path: product-change your …*. Notes: "Apply while you're under 5/24
+(you'd be at n/24 after this)", "Uses one of your 5/24 slots — keep one free
+for the …", the Sapphire 48-month rule, Amex once-per-lifetime bonuses.
+
+**Each step:** its date window ("May 2028 – Oct 2028"), the card, why now,
+its net value at the spending level from then on (its gain in that phase's
+wallet − the application cost), and what to downgrade or cancel.
+

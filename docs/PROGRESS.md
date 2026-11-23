@@ -1489,6 +1489,31 @@ for itself). Everything else unchanged.
 - Tests: `v7cPart5f.test.jsx` (12); the score-text test moved to the new
   sentence. Golden unchanged.
 
+## 5e — now vs later (2026-11-22)
+
+- **Survey step "Will your spending change?"** right after Spending (Quick
+  and Thorough; 10 steps, Quick asks 7): *About the same* (default, skips
+  the rest) or *It'll grow* → when (month + optional "what happens then"),
+  expected monthly per category pre-filled with typical new-grad figures
+  (`src/data/growth.js`, modeling defaults), expected trips a year and cabin.
+  Saved as `profile.growth`.
+- **Results have two tabs** (the survey's last step): **Now** (today's best
+  wallet, as before) and **Your plan** (`PlanTimeline`); the Lab has a "Your
+  plan" panel too.
+- **Plan engine** (`src/engine/v5/futurePlan.js`, METHODOLOGY §8): now-wallet
+  by When to apply; later wallet = best for the future profile starting from
+  the now-wallet (whose new cards count toward 5/24); cards only in the later
+  wallet wait until the change (premium cards held back); 6-month spacing;
+  Chase first under 5/24 with slot notes; Sapphire 48-month and Amex lifetime
+  notes; closed cards only as "Upgrade path"; downgrade / cancel for fee cards
+  the later wallet drops. Each step: window, card, why now, net from then on,
+  drops.
+- Example (test profile: a student with Freedom Unlimited, low spend, growing
+  in May 2028): Now — World of Hyatt (Nov 2026). Your plan — United Quest
+  from May 2028 ("when the perks you'd use cover its $350 fee", +$759 a year),
+  Freedom Flex Nov 2028, Robinhood Gold May 2029.
+- Tests: `v7cPart5e.test.jsx` (11); step-count tests updated.
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only

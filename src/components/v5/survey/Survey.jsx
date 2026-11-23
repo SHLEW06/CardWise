@@ -16,6 +16,8 @@ import {
   LOUNGE_NETWORKS_NOTE, CABIN_OPTIONS, BOOKING_OPTIONS, AIRLINE_PERK_OPTIONS, BAGS_PER_TRIP, TRIPS_WITH_BAGS, LOAN_OPTIONS, STAY_STYLES,
 } from "../../../data/surveyOptions.js";
 import PerksStep from "./PerksStep.jsx";
+import GrowthStep from "./GrowthStep.jsx";
+import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import Head from "./SurveyHead.jsx";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
@@ -122,6 +124,7 @@ function Step({ id, d, set, mode, headRef }) {
   switch (id) {
     case "cards": return <CardsStep d={d} set={set} headRef={headRef} />;
     case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
+    case "growth": return <GrowthStep d={d} set={set} headRef={headRef} />;
     case "travel": return <TravelStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "brands": return <PerksStep d={d} set={set} headRef={headRef} />;
     case "fee":
@@ -808,6 +811,8 @@ function YourPointsStep({ d, headRef }) {
 /* ── Step 9: your best setup ─────────────────────────────────────────── */
 
 function RevealStep({ d, headRef }) {
+  /* v7c 5e.2: two tabs — Now (today's best wallet) and Your plan. */
+  const [tab, setTab] = useState("now");
   const s = useMemo(() => walletScore(d), [d]);
   const best = s.best;
   const has = d.cardsHeld.length > 0;
@@ -822,6 +827,11 @@ function RevealStep({ d, headRef }) {
       <Head headRef={headRef} eyebrow="Your best setup"
         title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
         sub="With the answers you gave. No fee limit: each card is in only if it pays for itself." />
+      <div className="segmented reveal-tabs" role="tablist" aria-label="Now or later">
+        <button role="tab" aria-selected={tab === "now"} className="segmented-item" onClick={() => setTab("now")}>Now</button>
+        <button role="tab" aria-selected={tab === "plan"} className="segmented-item" onClick={() => setTab("plan")}>Your plan</button>
+      </div>
+      {tab === "plan" ? <PlanTimeline profile={d} /> : (<>
       <div className="reveal-hero">
         {has && <ScoreDial score={s.score} caption="Wallet Score" />}
         <div className="reveal-numbers">
@@ -855,6 +865,7 @@ function RevealStep({ d, headRef }) {
           </ol>
         </>
       )}
+      </>)}
     </>
   );
 }

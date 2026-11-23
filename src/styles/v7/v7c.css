@@ -38,3 +38,15 @@
 .v5 .uw-table { width: 100%; margin-top: 8px; }
 .v5 .uw-table td, .v5 .uw-table th { vertical-align: top; padding: 8px 6px; text-align: left; }
 .v5 .uw-note { display: block; }
+
+/* 5e: "Will your spending change?" and "Your plan". */
+.v5 .growth-when { display: flex; flex-wrap: wrap; gap: 12px; }
+.v5 .growth-when label { display: grid; gap: 4px; }
+.v5 .growth-when input, .v5 .growth-row input { padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+.v5 .growth-grid { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.v5 .growth-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.v5 .growth-input input { width: 6em; }
+.v5 .reveal-tabs { margin: 12px 0 16px; }
+.v5 .plan-step { display: grid; gap: 4px; }
+.v5 .plan-photo { width: 72px; }
+.v5 .plan-net { font-weight: 600; }
