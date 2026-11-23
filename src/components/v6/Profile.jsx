@@ -34,6 +34,7 @@ export function answerSummaries(p) {
   return [
     { step: "cards", title: "Cards you have", value: list(p.cardsHeld.map((id) => cardDisplayName(BY_ID[id])).filter(Boolean), "No cards yet") },
     { step: "spend", title: "Spending", value: `${money(yearly / 12)} a month · ${money(yearly)} a year` },
+    { step: "growth", title: "Will your spending change?", value: p.growth?.change === "grow" ? `It'll grow${p.growth.label ? ` ${p.growth.label}` : ""}, from ${p.growth.when}` : "About the same" },
     { step: "travel", title: "Travel", value: p.travel.trips ? `${p.travel.trips} trips a year${p.travel.homeAirport ? ` from ${p.travel.homeAirport}` : ""}${p.brands.airlines.length ? ` · ${list(p.brands.airlines.map(cap))}` : ""}${p.brands.hotels.length ? ` · ${list(p.brands.hotels.map(cap))}` : ""} · lounges: ${LOUNGE_WORDS[p.travel.lounges] || p.travel.lounges}` : "You don't fly" },
     { step: "brands", title: "Card perks", value: (() => {
       /* v7c Part 4: the habit answers in plain words. */

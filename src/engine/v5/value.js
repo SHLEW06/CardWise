@@ -715,7 +715,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   const extras = [];
   const off = new Set(card.unverified || []);
   for (const [k, st] of [["hotelStatus", card.hotelStatus], ["airlineStatus", card.airlineStatus]]) {
-    if (off.has(k) || !st?.program || !st?.tier) continue;
+    if (off.has(k) || !st?.program || !st?.tier || /^none$/i.test(String(st.tier))) continue;
     const prog = String(st.program).split(/[+/]/).map((x) => x.charAt(0).toUpperCase() + x.slice(1)).join(" / ");
     extras.push({ id: `${card.id}#${k}`, label: `${st.tier} status (${prog})`, kind: "status" });
   }

@@ -63,7 +63,7 @@ function whyFor(id, wallet, profile, later, when) {
   const fee = cardFee(card, profile);
   const verb = what.startsWith("the perks") ? ["cover", "make"] : ["covers", "makes"];
   if (later) return `${cardDisplayName(card)} from ${when}, when ${what} ${fee ? `${verb[0]} its ${money(fee)} fee` : `${verb[1]} it pay`}.`;
-  if (lane && lane.delta > 0) return `Earns ${Math.round(lane.pct * 10) / 10}% on ${CAT[lane.bucket] || lane.bucket} spending today${fee ? `, more than its ${money(fee)} fee` : ""}.`;
+  if (lane && lane.delta > 0) return `Earns ${Math.round(lane.pct * 10) / 10}% on the ${CAT[lane.bucket] || lane.bucket} spending it takes over today${card.rotating && lane.rate >= card.rotating.rate ? " (its rotating 5% quarters)" : ""}${fee ? `, more than its ${money(fee)} fee` : ""}.`;
   return perk ? `Pays for itself today with the ${String(perk.label).replace(/\s*\(.*$/, "")}.` : "Fills a gap in your wallet today.";
 }
 

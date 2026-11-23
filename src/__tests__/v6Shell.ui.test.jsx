@@ -106,7 +106,7 @@ describe("Profile (§17)", () => {
     expect(screen.getByText("costco")).toBeInTheDocument();          // v7c: Memberships, not a fee budget
     fireEvent.click(screen.getByRole("button", { name: "Edit Travel" }));
     expect(onEdit).toHaveBeenCalledWith("travel");
-    expect(answerSummaries(loadV5Profile()).map((r) => r.step)).toEqual(["cards", "spend", "travel", "brands", "fee", "credit"]);
+    expect(answerSummaries(loadV5Profile()).map((r) => r.step)).toEqual(["cards", "spend", "growth", "travel", "brands", "fee", "credit"]);
   });
   it("has point values, banks, saved setups and settings — no fee budget (v7c 5d-2.5)", () => {
     render(<Profile />);

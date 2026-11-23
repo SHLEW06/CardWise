@@ -1604,6 +1604,27 @@ perks + "already spend", E2 Unlocks with spending, F6 Overlap).
 Also fixed from the screenshots: "Your cards already give you" no longer
 lists spend-gated or unverified credits.
 
+## v7c second acceptance re-run (2026-11-23)
+
+`docs/ACCEPTANCE_REPORT.md` updated for every ID that Part 4 (revised) and
+5b–5f / 5e touch. Totals: **63 PASS · 7 FIXED · 3 HOLD · 2 REPLACED · 0
+FAIL** (75 IDs). **REPLACED** = the v7 item tests something the v7c brief
+removed: C15 (fee budget + ladder, 5d-2.5) and E7 (keeper slots, 5d-2).
+Items whose v7 wording the brief rewrote (C10/C11 Step A/B, E2 "Step B
+reduced", E10 P(use), F1 budget control) were checked against the new rule.
+Screenshots: `screenshots/v7c-2/` (gitignored), taken with Playwright
+against the dev server using the owner's three cards. 97 files / 1,614 tests
+pass; build OK.
+
+Fixed from the screenshots: Nice extras listed "none status (Delta)" for
+cards whose data has `tier: "none"` (now skipped); the plan said "Earns 7.1%
+on grocery spending" for the Freedom Flex — now "on the grocery spending it
+takes over today (its rotating 5% quarters)"; Profile's answer list now
+includes "Will your spending change?" so it can be reopened.
+
+Not continued, as asked: the card audit (Part 6 groups 3–4) stays stopped
+for the owner's review.
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
