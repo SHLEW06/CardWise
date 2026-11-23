@@ -6,7 +6,7 @@ import { cardDisplayName } from "../../../data/cardNames.js";
 import { creditClass } from "../../../data/creditClass.js";
 import {
   HABITS, HABIT_GROUPS, HABIT_BY_KEY, FREQ_ANSWERS, SUB_ANSWERS, TT_ANSWERS, ANY_APP,
-  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn,
+  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree,
 } from "../../../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../../../data/creditBrands.js";
 
@@ -87,6 +87,8 @@ export function habitResult(key, habits, cardsHeld = []) {
   const held = givers.filter((g) => cardsHeld.includes(g.cardId));
   const g = (held.length ? held : givers)[0];
   if (!g) return null;
+  /* Owner, 2026-11-23: only what they'd pay for anyway counts. */
+  if (triesIfFree(h, habits[key])) return { cardId: g.cardId, face: g.face, value: 0, free: true, text: `Counted $0: only spending you'd have anyway counts. The ${cardDisplayName(BY_ID[g.cardId])} lists it as a nice extra you'd try if free.` };
   const v = habitCreditValue(g.credit, pools).value;
   return { cardId: g.cardId, face: g.face, value: Math.round(v), text: `You'd use about ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives for this.` };
 }
@@ -125,8 +127,16 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
       {res && (
         <p className="t-caption habit-result" data-testid={`habit-result-${h.key}`}>
           {res.text}{" "}
-          <button type="button" className="link-btn" onClick={() => setAdjust(!adjust)}>{adjust ? "Done" : "Adjust"}</button>
+          {!res.free && <button type="button" className="link-btn" onClick={() => setAdjust(!adjust)}>{adjust ? "Done" : "Adjust"}</button>}
         </p>
+      )}
+      {on && h.type === "freq" && a?.spend == null && (
+        <label className="habit-adjust t-caption" data-testid={`habit-size-${h.key}`}>
+          Your average {h.key === "rideshare" ? "ride" : "order"}: $
+          <input inputMode="numeric" aria-label={`Your average order: ${h.label}`} value={a?.size ?? ""} placeholder={String(h.size)}
+            onChange={(e) => { const n = parseInt(e.target.value.replace(/\D/g, ""), 10); onChange({ size: Number.isFinite(n) && n > 0 ? n : null }); }} />
+          <span>{Number.isFinite(a?.size) && a.size > 0 ? "your figure" : `typical $${h.size}, an estimate`}</span>
+        </label>
       )}
       {on && adjust && (
         <label className="habit-adjust t-caption">
@@ -149,6 +159,7 @@ export default function PerksStep({ d, set, headRef }) {
   const setHabit = (key, patch) => {
     const next = { ...(habits[key] || { answer: offAnswer(HABIT_BY_KEY[key]) }), ...patch };
     if (next.spend == null) delete next.spend;
+    if (next.size == null) delete next.size;
     setBrands({ habits: { ...habits, [key]: next } });
   };
   const pc = d.brands.precheck;

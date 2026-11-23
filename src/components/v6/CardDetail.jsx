@@ -29,6 +29,7 @@ import { cardDisplayName } from "../../data/cardNames.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 import { alternativesForSlot } from "../../engine/v5/lab.js";
 import { SLOT_DEFS } from "../../engine/v5/methodology.js";
+import { habitMathLines } from "../../data/perkHabits.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
@@ -40,7 +41,7 @@ export const BUCKET_LABEL = {
 
 /* v7c 5b.4: one icon per benefit type, from the engine's `kind` / `type`
    (the old word match put a bed on every "cr-edit" — the dining credit). */
-const KIND_ICON = { lounge: Armchair, bags: Luggage, freeNight: BedDouble, companion: Plane, protection: ShieldCheck, status: Star, points: Gift };
+const KIND_ICON = { lounge: Armchair, bags: Luggage, freeNight: BedDouble, companion: Plane, protection: ShieldCheck, status: Star, points: Gift, tryFree: Sparkles };
 const TYPE_ICON = { dining: Utensils, rides: Car, shopping: ShoppingBag, streaming: Tv, travelService: Ticket, security: ShieldCheck, hotel: BedDouble, airline: Plane, travel: Plane, lifestyle: Sparkles, other: Ticket };
 export function iconFor(item) {
   return KIND_ICON[item.kind] || TYPE_ICON[item.type] || Ticket;
@@ -306,7 +307,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
 
           <Reveal i={7} className="detail-block">
             <button className="link" onClick={() => setMath(!math)} aria-expanded={math}>See the math</button>
-            {math && <TheMath d={d} />}
+            {math && <TheMath d={d} habits={profile.brands?.habits} />}
           </Reveal>
         </div>
       </div>
@@ -316,7 +317,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
 }
 
 /** "See the math" — the card on its own, from walletValue (jargon allowed here). */
-export function TheMath({ d }) {
+export function TheMath({ d, habits = {} }) {
   const v = d.solo;
   const rows = Object.entries(v.earning.byBucket).flatMap(([bucket, rs]) => rs.map((x, i) => ({ key: `${bucket}${i}`, bucket, ...x })));
   const possible = d.used.reduce((t, b) => t + (b.face || 0), 0) + d.unused.reduce((t, b) => t + (b.face || 0), 0);
@@ -331,7 +332,7 @@ export function TheMath({ d }) {
           </React.Fragment>
         ))}
         <dt>Earning E</dt><dd>{money(v.E)}</dd>
-        {d.used.map((b) => <React.Fragment key={b.id}><dt>{b.label}</dt><dd>{money(b.face || b.value)} face → {money(b.value)} counted</dd></React.Fragment>)}
+        {d.used.map((b) => <React.Fragment key={b.id}><dt>{b.label}</dt><dd>{money(b.face || b.value)} face → {money(b.value)} counted{habitMathLines(b.pools, habits).map((t) => <span key={t} className="t-caption" data-testid="habit-math"><br />{t}</span>)}</dd></React.Fragment>)}
         <dt>Benefits U</dt><dd>{money(v.U)} realistic · {money(possible)} possible max</dd>
         <dt>Fees F</dt><dd>{money(v.F)}</dd>
         <dt>Net E + U − F</dt><dd>{money(v.net)}</dd>

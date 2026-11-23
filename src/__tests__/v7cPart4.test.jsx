@@ -122,9 +122,9 @@ describe("4.2 · the engine turns habits into yearly dollars", () => {
     expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
     expect(valueOf("amex-gold", /Uber Cash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
   });
-  it("subscriptions count up to their price; 'No' or 'Never' = $0", () => {
+  it("subscriptions count up to their price; 'Would start if free', 'No' or 'Never' = $0", () => {
     expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "pay" } })).toBe(155);
-    expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "free" } })).toBe(155);
+    expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "free" } })).toBe(0);   // owner, 2026-11-23
     expect(valueOf("amex-plat", /Walmart\+/, { walmartplus: { answer: "no" } })).toBe(0);
     expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" } })).toBe(132);    // one $132 subscription
     expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" }, nyt: { answer: "pay" } })).toBe(300);

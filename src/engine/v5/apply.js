@@ -135,7 +135,7 @@ export function explainCard(cardId, baseWallet, rawProfile, walletValue) {
     });
   }
   lanes.sort((a, b) => b.delta - a.delta);
-  const benefits = after.benefits.filter((b) => b.cardId === cardId).map((b) => ({ label: b.label, value: b.value, face: b.face, kind: b.kind }));
+  const benefits = after.benefits.filter((b) => b.cardId === cardId).map((b) => ({ label: b.label, value: b.value, face: b.face, kind: b.kind, pools: b.pools || null }));
   const lounge = card.loungeAccess ? loungeBreakdown(card, profile).filter((l) => l.value > 0 || l.visits > 0) : [];
   const fee = cardFee(card, profile);
   const gain = after.N - before.N;

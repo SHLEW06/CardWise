@@ -1625,6 +1625,46 @@ includes "Will your spending change?" so it can be reopened.
 Not continued, as asked: the card audit (Part 6 groups 3–4) stays stopped
 for the owner's review.
 
+## v7c follow-ups (2026-11-23)
+
+Owner's follow-ups to the v7c report.
+
+1. **"Would start if free" counts $0** (owner rule: only what I'd pay for
+   anyway). The answer adds no spending pool (`triesIfFree`,
+   `src/data/perkHabits.js`); the credit is listed under the card's **Nice
+   extras** as "*… : you'd try it if free*" (dollar amounts stripped from the
+   name) and as a "Nice extra" row in the Lab's All benefits. The survey's
+   result line says "Counted $0: only spending you'd have anyway counts."
+   Golden report: unchanged (no golden profile answers "Would start if
+   free").
+2. **Estimates labelled; own average.** Show the math (card detail "See the
+   math" and "Why this card?") now shows the spending each habit credit was
+   counted against, e.g. "Takeout / food delivery: 12 orders a year × $35 an
+   order (estimate) = $420 a year"; a subscription price shows "(estimate)",
+   the person's own numbers "(your average)" / "(your figure)". The perk step
+   asks "Your average order" (or "ride" for Rideshare) under every service
+   answered above Never, placeholder = the typical figure, captioned "typical
+   $35, an estimate". Saved as `habits.<key>.size`.
+3. **The plan with the owner's real profile.** Profile used: Freedom Unlimited,
+   Robinhood Gold, Delta Gold; student spending = the survey's *Light*
+   preset ($150 dining, $300 groceries, $60 gas, $30 rides, $25 streaming,
+   $20 drugstores, $100 online, $100 phone, $200 other a month); ATL 4 · NYC
+   2 · BDL 1 trips with Seoul, Taipei, Tokyo; lounges "I'd love it";
+   Hyatt, Marriott + independent; takeout monthly (any app), Uber a few
+   times a year, Dunkin' a few times, Peacock paid, Global Entry; growth "It'll
+   grow" from May 2028 with the new-grad defaults.
+   - Plan: Now — Marriott Bonvoy Boundless (Nov 2026), United Explorer (May
+     2027), World of Hyatt (Nov 2027). Later — Ritz-Carlton as an upgrade of
+     the Boundless (May 2028; downgrade Delta Gold → Delta Blue), Discover it.
+   - **Sapphire Reserve is not in the plan.** Added to today's wallet it
+     adds $26 a year, less the $75 application cost = **−$49 a year**; added
+     to the 2028 wallet, **−$85**. Counted benefits: DoorDash promos $420,
+     $300 travel credit $300, Global Entry $24, Priority Pass $23 (1/8 of
+     $469 × coverage); The Edit $0 (travel-site answer is No). Earning adds
+     $58 over the other cards. The earlier report's "Now" placement came
+     from the default *Typical* spending (there it nets +$56 a year).
+- Tests: `v7cFollowups.test.jsx` (10); `v7cPart4` updated ("free" → $0).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

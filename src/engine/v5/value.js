@@ -29,7 +29,7 @@ import { VAL } from "../../data/valuations.js";
 import { loungeCoverage } from "../airportFit.js";
 import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
-import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn } from "../../data/perkHabits.js";
+import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
 
@@ -437,6 +437,9 @@ export function creditUsage(card, credit, profile) {
     const r = habitCreditValue(credit, pools);
     const label = HABIT_BY_KEY[rule.asked[0]]?.label || "that";
     if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "pool", habit: r, perk: "use" };
+    /* Owner, 2026-11-23: "Would start if free" counts $0 — only what they'd
+       pay for anyway. Listed under "Nice extras" instead. */
+    if (rule.asked.some((k) => triesIfFree(HABIT_BY_KEY[k], habits[k]))) return { factor: 0, reason: "You'd try it if free", tryIfFree: true };
     const on = rule.asked.some((k) => habitOn(HABIT_BY_KEY[k], habits[k]));
     return { factor: 0, reason: on ? `Your ${label.toLowerCase()} is on other apps` : `You said you don't use ${label}` };
   }
@@ -639,6 +642,11 @@ export function protectionsOf(card) {
  * `ctx.cardSpend` = dollars this card gets in the wallet (spend-gated perks);
  * `ctx.wallet` = card ids beside it (for points value).
  */
+/* "Nice extras" carry no dollar amounts: "$120 DashPass membership (activate
+   by …)" → "DashPass membership (activate by …)"; "Peloton credit ($10 a
+   month, through 2027)" → "Peloton credit". */
+const noDollars = (name) => String(name).replace(/\s*\([^)]*\$[^)]*\)/g, "").replace(/^\$[\d,.]+\s+/, "").trim();
+
 export function benefitBreakdown(card, profile, ctx = {}) {
   const items = [];
   const unused = [];
@@ -648,6 +656,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   const pickedCardBrand = pickedBrand(profile, brand);
 
   const gated = [];
+  const tryFree = [];
   for (const c of card.credits || []) {
     /* v7c 5.1: spend-gated credits are never counted — listed apart. */
     if (creditClass(c) === "spend-gated") {
@@ -662,6 +671,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
        wallet (a new card isn't credited for Uber spending another card
        already pays back). */
     const type = creditType(c);
+    if (value <= 0 && u.tryIfFree) { tryFree.push({ id, label: `${noDollars(c.name)}: you'd try it if free`, face: c.annual, kind: "tryFree" }); continue; }
     if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, dedupe: u.dedupe || null, pools: u.pools || null, single: !!u.single, habit: u.habit || null, note: u.note || null, split: !!u.split, planned: !!u.planned, perk: u.perk || null });
     else unused.push({ id, label: c.name, face: c.annual, type, reason: u.reason || "Unlikely to be used", split: !!u.split, canPlan: !!u.canPlan, planned: !!u.planned });
   }
@@ -727,6 +737,8 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   }
 
   for (const p of protectionsOf(card)) extras.push({ id: `${card.id}#${p.key}`, label: p.label, kind: "protection" });
+  /* Owner, 2026-11-23: subscriptions they'd only start if free count $0. */
+  extras.push(...tryFree);
 
   return { total: items.reduce((t, i) => t + i.value, 0), items, unused, gated, extras };
 }

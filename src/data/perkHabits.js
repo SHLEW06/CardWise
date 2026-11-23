@@ -18,6 +18,11 @@
    Pools are shared across the wallet: two cards that both pay for Uber can't
    together pay back more than is spent on Uber.
 
+   "Would start if free" counts $0 (owner, 2026-11-23: only what they'd pay
+   for anyway); the card lists it under "Nice extras" as "you'd try it if
+   free". A service row's typical order size is an estimate the person can
+   replace with their own average ("Your average order").
+
    Credits that aren't asked about here are worked out from other answers
    (`derivedRule`): travel credits from the trips step, hotel-chain credits
    from the hotels question, portal-tied hotel credits from one yes/no
@@ -136,6 +141,13 @@ export function creditDraws(credit) {
 
 const isOn = (h, a) => !!a && (h.type === "freq" ? a.answer && a.answer !== "never" : a.answer === "pay" || a.answer === "free");
 
+/** True when a subscription answer is "Would start if free" — counted $0. */
+export const triesIfFree = (h, a) => !!h && h.type === "sub" && a?.answer === "free";
+
+/** Order size used for a service: the person's own average, else the
+    typical figure (an estimate). */
+export const orderSize = (h, a) => (h.type === "freq" && Number.isFinite(a?.size) && a.size > 0 ? a.size : h.size);
+
 /** Normalize one saved answer for a service. */
 export function cleanHabit(h, a) {
   if (!a || typeof a !== "object") return null;
@@ -149,15 +161,16 @@ export function cleanHabit(h, a) {
     out.apps = picked.includes(ANY_APP) || !picked.length ? [ANY_APP] : [...new Set(picked)];
   }
   if (Number.isFinite(Number(a.spend)) && a.spend !== null && a.spend !== "") out.spend = Math.max(0, Math.round(Number(a.spend)));
+  if (h.type === "freq" && a.size !== null && a.size !== "" && Number(a.size) > 0) out.size = Math.round(Number(a.size));
   return out;
 }
 
 /** Yearly $ and months with spending for one answered service. */
 export function habitSpend(h, a) {
-  if (!isOn(h, a)) return { yearly: 0, months: 0, orders: 0 };
+  if (!isOn(h, a) || triesIfFree(h, a)) return { yearly: 0, months: 0, orders: 0 };
   if (h.type === "freq") {
     const f = FREQ[a.answer];
-    const yearly = a.spend != null ? a.spend : f.orders * h.size;
+    const yearly = a.spend != null ? a.spend : f.orders * orderSize(h, a);
     return { yearly, months: yearly > 0 ? f.months : 0, orders: f.orders };
   }
   const yearly = a.spend != null ? a.spend : h.price;
@@ -174,7 +187,7 @@ export function habitPools(habits = {}) {
   const pools = {};
   for (const h of HABITS) {
     const a = habits[h.key];
-    if (!isOn(h, a)) continue;
+    if (!isOn(h, a) || triesIfFree(h, a)) continue;
     const s = habitSpend(h, a);
     if (!h.apps) { pools[h.key] = { yearly: s.yearly, months: s.months }; continue; }
     const apps = a.apps || [ANY_APP];
@@ -359,6 +372,43 @@ export function chipsFromHabits(habits = {}) {
   }
   for (const k of perks) maybe.delete(k);
   return { perks: [...perks], perksMaybe: [...maybe] };
+}
+
+const usd = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
+const FREQ_WORDS = { few: "3 orders a year", monthly: "12 orders a year", weekly: "52 orders a year" };
+
+/**
+ * "Show the math" lines for the spending a credit was counted against, with
+ * every typical figure marked as an estimate:
+ *   "Takeout / food delivery: 12 orders a year × $35 an order (estimate) = $420 a year"
+ *   "Takeout / food delivery: 12 orders a year × $28 an order (your average) = $336 a year"
+ *   "Peacock: $132 a year (estimate)" · "Rideshare: $600 a year (your figure)"
+ * Only service rows; other pools (dining, flights, bag fees) explain
+ * themselves elsewhere.
+ */
+export function habitMathLines(poolIds = [], habits = {}) {
+  const out = [];
+  const seen = new Set();
+  for (const id of poolIds || []) {
+    const [key, app] = String(id).split(":");
+    const h = HABIT_BY_KEY[key];
+    const a = habits[key];
+    if (!h || seen.has(key) || !isOn(h, a) || triesIfFree(h, a)) continue;
+    seen.add(key);
+    const s = habitSpend(h, a);
+    const apps = h.apps && app && app !== ANY_APP ? (a.apps || []).filter((x) => x !== ANY_APP).length : 0;
+    const split = apps > 1 ? `, split across ${apps} apps` : "";
+    if (a.spend != null) { out.push(`${h.label}: ${usd(s.yearly)} a year (your figure)${split}`); continue; }
+    if (h.type === "freq") {
+      const own = Number.isFinite(a.size) && a.size > 0;
+      out.push(`${h.label}: ${FREQ_WORDS[a.answer]} × ${usd(orderSize(h, a))} an order (${own ? "your average" : "estimate"}) = ${usd(s.yearly)} a year${split}`);
+    } else if (h.type === "tt") {
+      out.push(`${h.label}: $120 every 5 years = $24 a year`);
+    } else {
+      out.push(`${h.label}: ${usd(s.yearly)} a year (estimate)`);
+    }
+  }
+  return out;
 }
 
 /** Plain-words label for a service answer, e.g. "About monthly · DoorDash". */

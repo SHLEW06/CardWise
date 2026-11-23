@@ -11,6 +11,7 @@ import { walletValue } from "../../engine/v5/methodology.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { partnerShortName } from "../../engine/v5/pointValues.js";
+import { habitMathLines } from "../../data/perkHabits.js";
 
 const money = (n) => `${n < 0 ? "−" : ""}$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const signed = (n) => `${n >= 0 ? "+" : "−"}$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
@@ -75,7 +76,7 @@ export default function WhyThisCard({ cardId, wallet = [], profile, open: startO
             <caption className="t-caption">Benefits counted (after what your other cards already give)</caption>
             <tbody>
               {e.benefits.length ? e.benefits.map((b) => (
-                <tr key={b.label}><td>{b.label}</td><td className="num-ui">{b.face && b.face !== b.value ? `${money(b.face)} face` : ""}</td><td className="num-ui">{money(b.value)}</td></tr>
+                <tr key={b.label}><td>{b.label}{habitMathLines(b.pools, profile.brands?.habits).map((t) => <span key={t} className="t-caption why-habit-math" data-testid="habit-math"><br />{t}</span>)}</td><td className="num-ui">{b.face && b.face !== b.value ? `${money(b.face)} face` : ""}</td><td className="num-ui">{money(b.value)}</td></tr>
               )) : <tr><td>None you'd use</td><td /><td className="num-ui">$0</td></tr>}
             </tbody>
           </table>
