@@ -18,7 +18,7 @@ import { Reveal } from "./motion.jsx";
 import FeeBudget from "./FeeBudget.jsx";
 import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
 import { HABITS, habitSummary } from "../../data/perkHabits.js";
-import { useCardArtMode, setCardArtMode } from "../../state/cardArtMode.js";
+import { useCardArtMode, setCardArtMode, CARD_ART_LABEL } from "../../state/cardArtMode.js";
 import { RedemptionCalc, AirportFit } from "../v7/Tools.jsx";
 import { VALUE_MODES, MODE_LABEL, band, CO_BRAND_DISCOUNTS } from "../../data/valueModes.js";
 import { modeSensitivity } from "../../engine/v5/plans.js";
@@ -172,9 +172,9 @@ function CardArtSetting() {
   const mode = useCardArtMode();
   return (
     <div className="profile-row">
-      <span>Card pictures <span className="t-caption">· the issuer's photo, or our drawing of the card in its real colour</span></span>
+      <span>Card pictures: <strong data-testid="card-art-active">{CARD_ART_LABEL[mode]}</strong> <span className="t-caption">· issuer photos stay on this computer and are never uploaded</span></span>
       <div className="segmented" role="radiogroup" aria-label="Card pictures">
-        {[["issuer", "Issuer photos"], ["rendered", "Our drawings"]].map(([k, l]) => (
+        {[["issuer", CARD_ART_LABEL.issuer], ["rendered", CARD_ART_LABEL.rendered]].map(([k, l]) => (
           <button key={k} role="radio" aria-checked={mode === k} aria-selected={mode === k} className="segmented-item" onClick={() => setCardArtMode(k)}>{l}</button>
         ))}
       </div>

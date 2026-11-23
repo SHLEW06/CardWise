@@ -1665,6 +1665,50 @@ Owner's follow-ups to the v7c report.
      from the default *Typical* spending (there it nets +$56 a year).
 - Tests: `v7cFollowups.test.jsx` (10); `v7cPart4` updated ("free" → $0).
 
+# v7d — fixes from the 2026-11-23 review
+
+Brief: `docs/CLAUDE_CODE_V7D_FIXES.md` (Part 1 runs
+`docs/CLAUDE_CODE_CARD_FACES.md`).
+
+## v7d Part 1 · card faces — Part 1: issuer photos on localhost (2026-11-23)
+
+**Cause, checked in the order the brief gives:**
+1. `localStorage["cardwise.cardArt"]` in the owner's Chrome at
+   `localhost:5173`: **not set** (read from the app's own page; the other
+   CardWise keys are there, so it's the owner's real storage).
+2. `VITE_CARD_ART`: in no `.env*` file (`.env.local` has only the connector
+   values).
+3. `card.image.localImage`: **114 of 130 cards** have it; the manifest is
+   still wired into the card data (`cardSchema.manifestImage`), ids match the
+   files. 16 cards have no file (now listed in `docs/CARD_ART_MISSING.md`).
+4. Image requests on the dev server: `200 image/png` / `image/webp`. The
+   `firebase.json` `cards/**` ignore affects Hosting only.
+5. `onError`: the `failed` flag was sticky per component, but no request
+   failed.
+
+On the current code, localhost shows the issuer photos: Explore draws 97
+photos and 9 designed faces (the open cards with no file); Home and Wallet
+Lab draw photos only. **Not reproduced, so the cause isn't confirmed.** The
+code since 2026-11-20 has no change to the art mode. The setup that does
+show *every* card as a designed face is the **public site**: since the
+2026-11-23 deploy it has no photos (`cards/**` ignored), so every photo
+request got `index.html` back, failed to decode, and fell back. If the
+review screenshots came from the public site or a different browser
+profile, that's it.
+
+**Fixed anyway (the brief's rule):**
+- Default: dev server → "issuer" (per-card fallback when a card has no
+  photo); production build → "rendered" (`defaultCardArtMode`), so the
+  public site no longer requests photos that aren't there. `VITE_CARD_ART`
+  overrides the build default; the Profile switch overrides both.
+- A failed photo falls back for that file only (`failedSrc`), not as a sticky
+  flag for the component.
+- Profile shows the active mode: "Card pictures: **Issuer photos (only on
+  this computer)** / **CardWise designs**".
+- Tests: `cardFacesPart1.test.jsx` (every card has a manifest entry or is in
+  `CARD_ART_MISSING.md` — skipped where there are no photos, e.g. a fresh
+  clone; issuer mode renders an `<img>`; production defaults to rendered).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

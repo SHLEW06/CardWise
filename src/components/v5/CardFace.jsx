@@ -14,12 +14,15 @@ import { useCardArtMode } from "../../state/cardArtMode.js";
           tilt (≤ 3°, no sheen — v7 §9.11), eager (no lazy load, for heroes),
           label (accessible name; default cardDisplayName), className */
 export default function CardFace({ card, selected = false, label, className = "", tilt = false, eager = false }) {
-  const [failed, setFailed] = useState(false);
+  /* A failed photo falls back to the designed face for that card and that
+     file only (not a sticky flag: a new src gets its own try). */
+  const [failedSrc, setFailedSrc] = useState(null);
   const t = useTilt(3);
   const mode = useCardArtMode();
   if (!card) return null;
   /* v7: issuer photo, or our rendered face when the launch setting is on. */
-  const art = mode === "issuer" && card.image?.localImage && !failed ? card.image.localImage : null;
+  const src = card.image?.localImage || null;
+  const art = mode === "issuer" && src && src !== failedSrc ? src : null;
   const m = materialFor(card);
   const name = label || cardDisplayName(card);
 
@@ -34,7 +37,7 @@ export default function CardFace({ card, selected = false, label, className = ""
     >
       <div className={`v5-face-body ${art ? "has-art" : `is-designed finish-${m.finish}`}`} style={art ? undefined : { "--base": m.base, "--face-ink": m.ink }}>
         {art ? (
-          <img src={art} alt="" loading={eager ? "eager" : "lazy"} decoding="async" onError={() => setFailed(true)} />
+          <img src={art} alt="" loading={eager ? "eager" : "lazy"} decoding="async" onError={() => setFailedSrc(art)} />
         ) : (
           <>
             <span className="v5-face-wordmark">{wordmarkFor(card)}</span>

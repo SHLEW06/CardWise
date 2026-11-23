@@ -1,0 +1,39 @@
+city,country,program,hotel,lowest_nightly_usd,avg_nightly_usd,min_nights,select_hotels_2026,source,checked
+Shanghai,CN,Chase Edit,Kimpton Qiantan Shanghai by IHG,242,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Shanghai,CN,Chase Edit,The Shanghai EDITION,342,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Seoul,KR,Chase Edit,Mondrian Seoul Itaewon,281,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Seoul,KR,Chase Edit,The Shilla Seoul,304,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Tokyo,JP,Chase Edit,The Strings by InterContinental Tokyo,330,553,2,yes,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Tokyo,JP,Chase Edit,Kimpton Shinjuku Tokyo,413,,2,yes,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Tokyo,JP,Chase Edit,The Prince Gallery Tokyo Kioicho,509,,2,no,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Tokyo,JP,Chase Edit,BELLUSTAR TOKYO a Pan Pacific Hotel,645,,2,yes,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Tokyo,JP,Chase Edit,The Tokyo EDITION Ginza,741,,2,no,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Tokyo,JP,Chase Edit,Palace Hotel Tokyo,773,,2,no,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo,2026-09
+Hong Kong,HK,Chase Edit,Island Shangri-La Hong Kong,406,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Hong Kong,HK,Chase Edit,Four Seasons Hotel Hong Kong,694,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Hong Kong,HK,Chase Edit,The Upper House,769,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia,2026-09
+Hong Kong,HK,Amex THC,Cordis Hong Kong,159,256,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+Hong Kong,HK,Amex THC,Mondrian Hong Kong,230,313,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+Hong Kong,HK,Amex THC,Kerry Hotel Hong Kong,252,406,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+Hong Kong,HK,Amex THC,The Hari Hong Kong,259,357,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+Hong Kong,HK,Amex THC,Lanson Place Causeway Bay,331,433,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+Hong Kong,HK,Amex FHR,Grand Hyatt Hong Kong,386,536,1,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong,2026-10
+London,GB,Chase Edit,The Standard London,368,,2,,https://www.nextcard.com/articles/cheapest-edit-hotels-in-london,2026-08
+London,GB,Chase Edit,Kimpton Fitzroy London,498,,2,,https://www.nextcard.com/articles/cheapest-edit-hotels-in-london,2026-08
+London,GB,Chase Edit,Dorset Square Hotel,525,,2,,https://www.nextcard.com/articles/cheapest-edit-hotels-in-london,2026-08
+London,GB,Chase Edit,The Ned,539,,2,,https://www.nextcard.com/articles/cheapest-edit-hotels-in-london,2026-08
+London,GB,Chase Edit,11 Cadogan Gardens,546,,2,,https://www.nextcard.com/articles/cheapest-edit-hotels-in-london,2026-08
+Paris,FR,Chase Edit,Castille Paris,489,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris,2026-09
+Paris,FR,Chase Edit,La Fantaisie,518,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris,2026-09
+Paris,FR,Chase Edit,Hotel Balzac Paris,530,,2,,https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris,2026-09
+Paris,FR,Amex THC,The Hoxton Paris,306,445,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris,2026-08
+Paris,FR,Amex THC,Hotel Florida Paris,342,444,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris,2026-08
+Paris,FR,Amex THC,Maison Albar Le Vendome,354,518,2,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris,2026-08
+Paris,FR,Amex FHR,La Fantaisie,537,688,1,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris,2026-08
+Paris,FR,Amex FHR,SO/ Paris,582,746,1,,https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris,2026-08
+Rome,IT,Chase Edit,Sofitel Roma Villa Borghese,404,787,2,no,https://www.nextcard.com/articles/chase-edit-hotels-in-rome,2026-11
+Rome,IT,Chase Edit,Villa Agrippina a Gran Melia Hotel,442,,2,no,https://www.nextcard.com/articles/chase-edit-hotels-in-rome,2026-11
+Milan,IT,Chase Edit,Radisson Collection Palazzo Touring Club,503,599,2,,https://www.nextcard.com/articles/chase-edit-hotels-in-milan,2026-11
+Milan,IT,Chase Edit,Hotel Principe di Savoia,612,,2,,https://www.nextcard.com/articles/chase-edit-hotels-in-milan,2026-11
+Singapore,SG,Chase Edit,The Standard Singapore,272,,2,,https://www.nextcard.com/articles/chase-edit-hotels-in-singapore,2026-11
+Honolulu,US,Chase Edit,Wayfinder Waikiki,280,,2,no,https://www.nextcard.com/articles/chase-edit-hotels-in-honolulu,2026-11

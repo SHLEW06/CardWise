@@ -1,29 +1,42 @@
-/* Card pictures: issuer photos or our own rendered faces (REDESIGN_SPEC
-   §9.11). Issuer photos are for personal use today; the public launch flips
-   every card to the rendered face (the card's recorded material colour, see
-   PHOTO_MATERIALS in data/cardMaterials.js).
+/* Card pictures: issuer photos or CardWise's own designed faces
+   (REDESIGN_SPEC §9.11, CARD_FACES Part 1).
 
-   Precedence: a choice saved in Profile (localStorage) → the build setting
-   VITE_CARD_ART=rendered|issuer → "issuer". */
+   Issuer photos are personal-use only: they live in public/cards/ on the
+   owner's computer and are never uploaded (firebase.json ignores cards/**).
+
+   Default:
+     · dev server (`npm run dev`)      → "issuer" — a card without a photo
+                                         falls back to its designed face
+     · production build (Firebase)     → "rendered" — photos aren't there
+   VITE_CARD_ART=issuer|rendered overrides the build default; the Profile
+   switch (localStorage) overrides both. */
 import { useSyncExternalStore } from "react";
 
 export const CARD_ART_MODES = ["issuer", "rendered"];
+export const CARD_ART_LABEL = { issuer: "Issuer photos (only on this computer)", rendered: "CardWise designs" };
 const KEY = "cardwise.cardArt";
 const listeners = new Set();
 
+/** The build default, given the Vite env ({ DEV, VITE_CARD_ART }). */
+export function defaultCardArtMode(env = {}) {
+  if (CARD_ART_MODES.includes(env.VITE_CARD_ART)) return env.VITE_CARD_ART;
+  return env.DEV ? "issuer" : "rendered";
+}
+
 function buildDefault() {
+  try { return defaultCardArtMode(import.meta.env || {}); } catch { return "rendered"; }
+}
+
+/** The saved Profile choice, or null when none. */
+export function savedCardArtMode() {
   try {
-    const v = import.meta.env?.VITE_CARD_ART;
-    return CARD_ART_MODES.includes(v) ? v : "issuer";
-  } catch { return "issuer"; }
+    const v = typeof localStorage !== "undefined" ? localStorage.getItem(KEY) : null;
+    return CARD_ART_MODES.includes(v) ? v : null;
+  } catch { return null; }
 }
 
 export function getCardArtMode() {
-  try {
-    const v = typeof localStorage !== "undefined" ? localStorage.getItem(KEY) : null;
-    if (CARD_ART_MODES.includes(v)) return v;
-  } catch { /* storage blocked */ }
-  return buildDefault();
+  return savedCardArtMode() || buildDefault();
 }
 
 export function setCardArtMode(mode) {
@@ -35,5 +48,5 @@ export function setCardArtMode(mode) {
 function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 
 export function useCardArtMode() {
-  return useSyncExternalStore(subscribe, getCardArtMode, () => "issuer");
+  return useSyncExternalStore(subscribe, getCardArtMode, buildDefault);
 }
