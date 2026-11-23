@@ -77,11 +77,11 @@ export const HABITS = [
   { key: "takeout", label: "Takeout / food delivery", group: "food", type: "freq", size: 35,
     apps: [{ key: "ubereats", label: "Uber Eats" }, { key: "doordash", label: "DoorDash" }, { key: "grubhub", label: "Grubhub" }] },
   { key: "dashpass", label: "DashPass (DoorDash membership)", group: "food", type: "sub", price: 120 },
-  { key: "fastcasual", label: "Five Guys, Buffalo Wild Wings or The Cheesecake Factory", group: "food", type: "freq", size: 30, brands: ["five guys", "cheesecake factory"] },
-  { key: "dunkin", label: "Dunkin'", group: "food", type: "freq", size: 8, brands: ["dunkin"] },
-  { key: "resy", label: "Restaurants you book on Resy", group: "food", type: "freq", size: 100, brands: ["resy"] },
-  { key: "opentable", label: "Sapphire Reserve Exclusive Tables restaurants (OpenTable)", group: "food", type: "freq", size: 120, brands: ["opentable"] },
-  { key: "inkind", label: "inKind restaurants", group: "food", type: "freq", size: 60, brands: ["inkind"] },
+  { key: "fastcasual", unit: "visits", label: "Five Guys, Buffalo Wild Wings or The Cheesecake Factory", group: "food", type: "freq", size: 30, brands: ["five guys", "cheesecake factory"] },
+  { key: "dunkin", unit: "visits", label: "Dunkin'", group: "food", type: "freq", size: 8, brands: ["dunkin"] },
+  { key: "resy", unit: "visits", label: "Restaurants you book on Resy", group: "food", type: "freq", size: 100, brands: ["resy"] },
+  { key: "opentable", unit: "visits", label: "Sapphire Reserve Exclusive Tables restaurants (OpenTable)", group: "food", type: "freq", size: 120, brands: ["opentable"] },
+  { key: "inkind", unit: "visits", label: "inKind restaurants", group: "food", type: "freq", size: 60, brands: ["inkind"] },
   { key: "rideshare", label: "Rideshare", group: "rides", type: "freq", size: 25,
     apps: [{ key: "uber", label: "Uber" }, { key: "lyft", label: "Lyft" }] },
   { key: "uberone", label: "Uber One (Uber membership)", group: "rides", type: "sub", price: 96, brands: ["uber one"] },
@@ -108,7 +108,7 @@ export const HABITS = [
   /* v7d Part 5: one grouped row for event tickets (was two shopping rows:
      StubHub, Live Nation). Spending, not a subscription — "Never" = $0.
      $150 a ticket order is an estimate. */
-  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order", unit: "orders",
+  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order",
     apps: [{ key: "stubhub", label: "StubHub / viagogo" }, { key: "ticketmaster", label: "Ticketmaster / Live Nation" }, { key: "other", label: "Other sites" }],
     anyLabel: "Any, I'd buy where my card gives a credit" },
 ];
@@ -170,21 +170,41 @@ export function cleanHabit(h, a) {
   }
   if (Number.isFinite(Number(a.spend)) && a.spend !== null && a.spend !== "") out.spend = Math.max(0, Math.round(Number(a.spend)));
   if (h.type === "freq" && a.size !== null && a.size !== "" && Number(a.size) > 0) out.size = Math.round(Number(a.size));
+  /* v7e Part 1: "Over about ___ separate visits / purchases" */
+  if (a.count !== null && a.count !== "" && Number.isFinite(Number(a.count)) && Number(a.count) >= 0) out.count = Math.round(Number(a.count));
   /* v7d 2.2: "I'd plan visits to use it every quarter / month" */
   if (a.plan === true) out.plan = true;
   return out;
 }
 
-/** Yearly $ and months with spending for one answered service. */
+/** The estimate a frequency answer gives, before the person types numbers:
+    { spend, count } — spend = count × the typical order (an estimate). */
+export function habitEstimate(h, a) {
+  if (h.type === "freq") {
+    const f = FREQ[a?.answer] || FREQ.never;
+    const count = a?.count != null ? a.count : f.orders;
+    return { spend: Math.round(count * orderSize(h, a)), count: f.orders };
+  }
+  return { spend: h.price || 0, count: 12 };
+}
+
+/**
+ * Yearly $ and separate purchases for one answered service (v7e Part 1):
+ * the person's own numbers win; otherwise the frequency's estimate. `months`
+ * is kept as the purchase count (it caps how many monthly / quarterly
+ * periods a credit can use).
+ */
 export function habitSpend(h, a) {
   if (!isOn(h, a) || triesIfFree(h, a)) return { yearly: 0, months: 0, orders: 0 };
   if (h.type === "freq") {
     const f = FREQ[a.answer];
-    const yearly = a.spend != null ? a.spend : f.orders * orderSize(h, a);
-    return { yearly, months: yearly > 0 ? f.months : 0, orders: f.orders };
+    const count = a.count != null ? a.count : f.orders;
+    const yearly = a.spend != null ? a.spend : count * orderSize(h, a);
+    return { yearly, months: yearly > 0 ? count : 0, orders: count };
   }
+  const count = a.count != null ? a.count : 12;
   const yearly = a.spend != null ? a.spend : h.price;
-  return { yearly, months: yearly > 0 ? 12 : 0, orders: 12 };
+  return { yearly, months: yearly > 0 ? count : 0, orders: count };
 }
 
 /**
@@ -201,13 +221,13 @@ export function habitPools(habits = {}) {
     const s = habitSpend(h, a);
     /* v7d 2.2: planned visits land in every period → count every period
        (value = min(face, spend)). */
-    if (a.plan && s.yearly > 0) s.months = 12;
+    if (a.plan && s.yearly > 0) s.months = Infinity;
     if (!h.apps) { pools[h.key] = { yearly: s.yearly, months: s.months }; continue; }
     const apps = a.apps || [ANY_APP];
     if (apps.includes(ANY_APP)) { pools[`${h.key}:${ANY_APP}`] = { yearly: s.yearly, months: s.months }; continue; }
     const per = s.yearly / apps.length;
-    const orders = s.orders / apps.length;
-    for (const app of apps) pools[`${h.key}:${app}`] = { yearly: per, months: Math.min(s.months, Math.max(per > 0 ? 1 : 0, Math.round(orders))) };
+    const orders = s.months / apps.length;
+    for (const app of apps) pools[`${h.key}:${app}`] = { yearly: per, months: per > 0 ? Math.max(1, Math.round(orders)) : 0 };
   }
   return pools;
 }
@@ -225,27 +245,21 @@ export function poolsForCredit(credit, pools) {
 
 const PERIODS = { monthly: 12, quarterly: 4, semiannual: 2, annual: 1, "4yr": 1 };
 
-const choose = (n, k) => { if (k < 0 || k > n) return 0; let r = 1; for (let i = 1; i <= k; i++) r = (r * (n - k + i)) / i; return r; };
-/** Expected periods with at least one month of spending, the months falling
-    at random in the year: a quarterly credit used in 3 months of the year
-    gets about 2.5 of its 4 quarters; an annual one gets its 1 as soon as
-    there's one month. Fractional months interpolate. */
-export function periodsUsed(cadence, months) {
+export { PERIODS };
+
+/** v7e Part 1 (owner rule): N separate visits / purchases use N of a
+    credit's periods (up to all of them) — 2 purchases use 2 of the 4
+    quarterly credits; "I'd plan around it" uses every period. (v7c–v7d
+    spread the months at random: 3 visits ≈ 2.5 quarters.) */
+export function periodsUsed(cadence, count) {
   const n = PERIODS[cadence] || 1;
-  if (months >= 12) return n;
-  if (months <= 0) return 0;
-  const span = 12 / n;                      // months in one period
-  const at = (m) => n * (1 - choose(12 - span, m) / choose(12, m));
-  const lo = Math.floor(months);
-  const hi = Math.ceil(months);
-  return lo === hi ? at(lo) : (lo ? at(lo) : 0) * (hi - months) + at(hi) * (months - lo);
+  if (!(count > 0)) return 0;
+  return Math.min(n, count);
 }
 
-/** Months with spending across several pools (independent months). */
+/** Separate purchases across several pools add up. */
 export function unionMonths(list) {
-  let none = 1;
-  for (const m of list) none *= 1 - Math.min(12, m) / 12;
-  return 12 * (1 - none);
+  return list.reduce((t, m) => t + (m || 0), 0);
 }
 
 /**
@@ -282,31 +296,38 @@ export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = n
 
 export const PLANNABLE = new Set(["monthly", "quarterly", "semiannual"]);
 const PERIOD_WORD = { monthly: ["month", "months"], quarterly: ["quarter", "quarters"], semiannual: ["half-year", "half-years"] };
-const VISITS_WORD = { few: "a few visits a year", monthly: "about one visit a month", weekly: "weekly visits" };
-/* "visits" for places you go (Resy, Dunkin'), "orders" for things you buy. */
-const ORDERS_WORD = { few: "a few orders a year", monthly: "about one order a month", weekly: "weekly orders" };
+const PERIOD_ADJ = { monthly: "monthly", quarterly: "quarterly", semiannual: "half-yearly" };
+export const unitOf = (key) => HABIT_BY_KEY[key]?.unit || "purchases";
 const usd0 = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 
 /**
- * Why a habit credit counts what it counts:
+ * Why a habit credit counts what it counts — the three limits (face,
+ * spending, periods used) and which one binds (v7e Part 1.3):
  *   { binding: "face" | "timing" | "spend", text }
- *   timing  "it's $100 a quarter, and a few visits a year usually fall in
- *           about 2–3 quarters"
- *   spend   "limited by your ~$400 a year there"
+ *   timing  "you'd spend $200, but 2 purchases use 2 of the 4 quarterly $75
+ *           credits. Spread over 3 quarters → $200"
+ *   spend   "limited by the $150 a year you'd spend there (…)"
  */
 export function creditLimit(credit, r, answer, habitKey = null) {
   const face = credit?.annual || 0;
-  if (!r || r.value >= face - 0.5) return { binding: "face", text: "" };
-  const cad = credit.cadence || "annual";
-  if (PLANNABLE.has(cad) && r.periodCap < r.spend - 0.5) {
-    const [one, many] = PERIOD_WORD[cad];
-    const n = PERIODS[cad];
-    const p = periodsUsed(cad, r.months);
-    const lo = Math.floor(p + 1e-9), hi = Math.ceil(p - 1e-9);
-    const span = lo === hi ? `${lo} ${lo === 1 ? one : many}` : `${lo}–${hi} ${many}`;
-    return { binding: "timing", text: `it's ${usd0(face / n)} a ${one}, and ${(HABIT_BY_KEY[habitKey]?.unit === "orders" ? ORDERS_WORD : VISITS_WORD)[answer] || "your visits"} usually fall in about ${span}` };
+  const cad = credit?.cadence || "annual";
+  const unit = unitOf(habitKey);
+  const count = Number.isFinite(r?.months) ? Math.round(r.months) : null;
+  const one = (n) => (n === 1 ? unit.replace(/s$/, "") : unit);
+  /* v7e Part 1.3: always the three limits, and which one applies. */
+  if (r && PLANNABLE.has(cad)) {
+    const N = PERIODS[cad], per = face / N, used = Math.min(N, count ?? N);
+    const credits = `the ${N} ${PERIOD_ADJ[cad]} ${usd0(per)} credits`;
+    if (r.value >= face - 0.5) return { binding: "face", text: count == null ? `you'd spend ${usd0(r.spend)}, planned to use every ${PERIOD_WORD[cad][0]}` : `you'd spend ${usd0(r.spend)} over ${count} ${one(count)}, enough for all ${credits}` };
+    if (r.periodCap < r.spend - 0.5) {
+      const next = Math.min(face, r.spend, per * (used + 1));
+      return { binding: "timing", text: `you'd spend ${usd0(r.spend)}, but ${count} ${one(count)} use ${used} of ${credits}. Spread over ${used + 1} ${PERIOD_WORD[cad][1]} → ${usd0(next)}` };
+    }
+    return { binding: "spend", text: `limited by the ${usd0(r.spend)} a year you'd spend there${count != null ? ` (${count} ${one(count)} use ${used} of ${credits})` : ""}` };
   }
-  return { binding: "spend", text: `limited by your ~${usd0(r.spend)} a year there` };
+  /* a once-a-year credit: the face or the spending binds */
+  if (!r || r.value >= face - 0.5) return { binding: "face", text: r ? `you'd spend ${usd0(r.spend)}, at least the ${usd0(face)}` : "" };
+  return { binding: "spend", text: `limited by the ${usd0(r.spend)} a year you'd spend there` };
 }
 
 /** What one habit-asked credit is worth to this person on its own. */

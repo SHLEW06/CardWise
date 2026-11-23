@@ -38,7 +38,7 @@ describe("5.1 · 'Concert, sports and show tickets' in 'Going out'", () => {
     fireEvent.click(within(row).getByRole("radio", { name: "A few times a year" }));
     expect(within(row).getByText("Which site?")).toBeInTheDocument();
     expect(within(row).getByText("Any, I'd buy where my card gives a credit")).toBeInTheDocument();
-    expect(within(row).getByTestId("habit-size-tickets")).toHaveTextContent(/Your average ticket order: \$.*typical \$150, an estimate/);
+    expect(within(row).getByLabelText("Yearly spending: Concert, sports and show tickets")).toHaveValue("450");   // 3 × $150, an estimate
   });
   it("old StubHub / Live Nation answers move to the new row", () => {
     expect(migrateTicketHabits({ stubhub: { answer: "few" }, livenation: { answer: "monthly" } })).toEqual({ tickets: { answer: "monthly", apps: ["stubhub", "ticketmaster"] } });

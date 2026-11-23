@@ -94,14 +94,13 @@ describe("4.2 · one habit question per service", () => {
     expect(within(screen.getByTestId("habit-lululemon")).getByText(/Amex Platinum · up to \$300\/yr/)).toBeInTheDocument();
     expect(within(screen.getByTestId("habit-takeout")).getByText(/up to \$\d+\/yr/)).toBeInTheDocument();
   });
-  it("shows the result in plain words and lets the person adjust it", () => {
+  it("shows the result in plain words and lets the person change the numbers (v7e: always visible)", () => {
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({ cardsHeld: ["amex-gold"] })} />);
     const row = screen.getByTestId("habit-dunkin");
     fireEvent.click(within(row).getByRole("radio", { name: "A few times a year" }));
-    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/You'd use about \$21 of the \$84 a year the Amex Gold gives for this/);
-    fireEvent.click(within(row).getByRole("button", { name: "Adjust" }));
+    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/Counts \$21 of the \$84 a year the Amex Gold gives/);
     fireEvent.change(within(row).getByLabelText(/Yearly spending: Dunkin'/), { target: { value: "12" } });
-    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/about \$12 of the \$84/);
+    expect(within(row).getByTestId("habit-result-dunkin").textContent).toMatch(/Counts \$12 of the \$84/);
   });
 });
 
@@ -129,10 +128,11 @@ describe("4.2 · the engine turns habits into yearly dollars", () => {
     expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" } })).toBe(132);    // one $132 subscription
     expect(valueOf("amex-plat", /digital entertainment/, { peacock: { answer: "pay" }, nyt: { answer: "pay" } })).toBe(300);
   });
-  it("periods used: an annual credit needs one order; a quarterly one ~2.5 quarters from 3 orders", () => {
+  it("periods used: an annual credit needs one order; N separate purchases use N periods (v7e owner rule)", () => {
     expect(periodsUsed("annual", 3)).toBe(1);
-    expect(periodsUsed("monthly", 3)).toBeCloseTo(3, 5);
-    expect(periodsUsed("quarterly", 3)).toBeCloseTo(2.47, 2);
+    expect(periodsUsed("monthly", 3)).toBe(3);
+    expect(periodsUsed("quarterly", 3)).toBe(3);
+    expect(periodsUsed("quarterly", 2)).toBe(2);
     expect(periodsUsed("semiannual", 12)).toBe(2);
   });
   it("two cards share one pool: they can't pay back more than is spent there", () => {

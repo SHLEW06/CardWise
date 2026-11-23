@@ -64,3 +64,10 @@
 .v5 .fee-limit-cost { margin-top: 6px; }
 .v5 .over-limit { margin-top: 18px; }
 .v5 .alt-row.is-over { opacity: .85; }
+
+/* v7e Part 1: always-visible yearly $ and purchase count */
+.v5 .habit-numbers { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 8px; }
+.v5 .habit-numbers input.is-estimate { color: var(--ink-3, #9C988F); }
+.v5 .habit-numbers input { width: 5.5em; }
+.v5 .habit-tag { color: var(--ink-3, #9C988F); font-size: .92em; }
+.v5 .habit-reset { margin-top: 6px; }

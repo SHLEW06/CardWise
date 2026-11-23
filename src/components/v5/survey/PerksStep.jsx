@@ -6,7 +6,7 @@ import { cardDisplayName } from "../../../data/cardNames.js";
 import { creditClass } from "../../../data/creditClass.js";
 import {
   HABITS, HABIT_GROUPS, HABIT_BY_KEY, FREQ_ANSWERS, SUB_ANSWERS, TT_ANSWERS, ANY_APP,
-  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree, creditLimit, PLANNABLE,
+  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree, creditLimit, PLANNABLE, habitEstimate, unitOf,
 } from "../../../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../../../data/creditBrands.js";
 
@@ -93,35 +93,69 @@ export function habitResult(key, habits, cardsHeld = []) {
   const v = r.value;
   /* v7d 2.1: name the limit that binds */
   const lim = creditLimit(g.credit, r, habits[key]?.answer, key);
-  const base = `You'd use about ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives for this`;
+  /* v7e 1.3: "Counts $150 of the $300 a year the Amex Platinum gives: you'd
+     spend $200, but 2 purchases use 2 of the 4 quarterly $75 credits.
+     Spread over 3 quarters → $200." */
+  const base = `Counts ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives`;
   return { cardId: g.cardId, face: g.face, value: Math.round(v), credit: g.credit, limit: lim, text: lim.text ? `${base}: ${lim.text}.` : `${base}.` };
 }
 
 const PERIOD_ONE = { monthly: "month", quarterly: "quarter", semiannual: "half-year" };
 
 function HabitRow({ h, a, cardsHeld, habits, onChange }) {
-  const [adjust, setAdjust] = useState(false);
   const [why, setWhy] = useState(null);
+  const [pending, setPending] = useState(null);      // a new frequency waiting on "Reset to the estimate?"
   const answer = a?.answer || offAnswer(h);
   const on = habitOn(h, a);
   const apps = a?.apps || [ANY_APP];
   const qid = `q-habit-${h.key.replace(/[^a-z0-9]/gi, "")}`;
   const res = on ? habitResult(h.key, habits, cardsHeld) : null;
+  const est = habitEstimate(h, { ...(a || {}), count: null });
+  const own = { spend: a?.spend != null, count: a?.count != null };
+  const unit = unitOf(h.key);
   const setApps = (k) => {
     if (k === ANY_APP) return onChange({ apps: [ANY_APP] });
     const named = apps.filter((x) => x !== ANY_APP);
     const next = named.includes(k) ? named.filter((x) => x !== k) : [...named, k];
     onChange({ apps: next.length ? next : [ANY_APP] });
   };
+  /* v7e 1.2: the frequency only sets the defaults; once they've typed a
+     number, changing the frequency asks first. */
+  const pickAnswer = (key) => {
+    if (key === answer) return;
+    if ((own.spend || own.count) && key !== offAnswer(h)) { setPending(key); return; }
+    setPending(null);
+    onChange({ answer: key, spend: null, count: null });
+  };
+  /* v7e 1.1: typed numbers win; v7d 2.3: say why when the value doesn't move. */
+  const typeNumber = (field, raw) => {
+    const n = parseInt(String(raw).replace(/\D/g, ""), 10);
+    const v = Number.isFinite(n) ? n : null;
+    const next = habitResult(h.key, { ...habits, [h.key]: { ...a, [field]: v } }, cardsHeld);
+    if (res && next && v != null && next.value === res.value && field === "spend") {
+      setWhy(next.limit.binding === "timing"
+        ? `Spending more here doesn't change it: ${next.limit.text}. Tick "I'd plan visits…" to count every ${PERIOD_ONE[next.credit.cadence]}.`
+        : next.limit.binding === "face" ? `Spending more here doesn't change it: you'd already use all ${money(next.face)} a year.` : null);
+    } else setWhy(null);
+    onChange({ [field]: v });
+  };
+  const showNumbers = on && !triesIfFree(h, a) && h.type !== "tt";
   return (
     <div className="habit-row" data-testid={`habit-${h.key}`}>
       <p className="habit-label" id={qid}>{h.label}</p>
       <p className="t-caption habit-givers">{giversLine(habitGivers(h.key))}</p>
       <div className="chip-wrap" role="radiogroup" aria-labelledby={qid}>
         {answersFor(h).map((o) => (
-          <Choice key={o.key} radio pill selected={answer === o.key} onSelect={() => onChange({ answer: o.key, spend: null })}>{o.label}</Choice>
+          <Choice key={o.key} radio pill selected={answer === o.key} onSelect={() => pickAnswer(o.key)}>{o.label}</Choice>
         ))}
       </div>
+      {pending && (
+        <p className="t-caption habit-reset" role="status" data-testid={`habit-reset-${h.key}`}>
+          Reset to the estimate?{" "}
+          <button type="button" className="link" onClick={() => { onChange({ answer: pending, spend: null, count: null }); setPending(null); }}>Reset</button>{" · "}
+          <button type="button" className="link" onClick={() => { onChange({ answer: pending }); setPending(null); }}>Keep my numbers</button>
+        </p>
+      )}
       {on && h.apps && (
         <div className="habit-apps">
           <p className="t-caption" id={`${qid}-apps`}>{h.key === "tickets" ? "Which site?" : "Which app?"}</p>
@@ -131,44 +165,29 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
           </div>
         </div>
       )}
-      {res && (
-        <p className="t-caption habit-result" data-testid={`habit-result-${h.key}`}>
-          {res.text}{" "}
-          {!res.free && <button type="button" className="link-btn" onClick={() => setAdjust(!adjust)}>{adjust ? "Done" : "Adjust"}</button>}
-        </p>
+      {showNumbers && (
+        <div className="habit-numbers t-caption" data-testid={`habit-numbers-${h.key}`}>
+          <label className="habit-adjust">
+            About $
+            <input inputMode="numeric" aria-label={`Yearly spending: ${h.label}`} value={own.spend ? a.spend : est.spend}
+              className={own.spend ? "is-own" : "is-estimate"} onChange={(e) => typeNumber("spend", e.target.value)} />
+            a year <span className="habit-tag" data-testid={`habit-spend-tag-${h.key}`}>{own.spend ? "your number" : "estimate"}</span>
+          </label>
+          <label className="habit-adjust">
+            Over about
+            <input inputMode="numeric" aria-label={`Separate ${unit}: ${h.label}`} value={own.count ? a.count : est.count}
+              className={own.count ? "is-own" : "is-estimate"} onChange={(e) => typeNumber("count", e.target.value)} />
+            separate {unit}{h.type === "sub" ? " (payments)" : ""} <span className="habit-tag">{own.count ? "your number" : "estimate"}</span>
+          </label>
+        </div>
       )}
-      {res && !res.free && h.type === "freq" && PLANNABLE.has(res.credit?.cadence) && (
+      {res && (
+        <p className="t-caption habit-result" data-testid={`habit-result-${h.key}`}>{res.text}</p>
+      )}
+      {res && !res.free && PLANNABLE.has(res.credit?.cadence) && (
         <label className="habit-plan t-caption" data-testid={`habit-plan-${h.key}`}>
           <input type="checkbox" checked={!!a?.plan} onChange={(e) => { setWhy(null); onChange({ plan: e.target.checked || null }); }} />
-          {" "}I'd plan visits to use it every {PERIOD_ONE[res.credit.cadence]}
-        </label>
-      )}
-      {on && h.type === "freq" && a?.spend == null && (
-        <label className="habit-adjust t-caption" data-testid={`habit-size-${h.key}`}>
-          Your average {h.sizeWord || (h.key === "rideshare" ? "ride" : "order")}: $
-          <input inputMode="numeric" aria-label={`Your average order: ${h.label}`} value={a?.size ?? ""} placeholder={String(h.size)}
-            onChange={(e) => { const n = parseInt(e.target.value.replace(/\D/g, ""), 10); onChange({ size: Number.isFinite(n) && n > 0 ? n : null }); }} />
-          <span>{Number.isFinite(a?.size) && a.size > 0 ? "your figure" : `typical $${h.size}, an estimate`}</span>
-        </label>
-      )}
-      {on && adjust && (
-        <label className="habit-adjust t-caption">
-          About how much a year do you spend on this? $
-          <input inputMode="numeric" aria-label={`Yearly spending: ${h.label}`} value={a?.spend ?? ""} placeholder="typical"
-            onChange={(e) => {
-              const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
-              const spend = Number.isFinite(n) ? n : null;
-              /* v7d 2.3: if the new spending doesn't move the number, say why */
-              const next = habitResult(h.key, { ...habits, [h.key]: { ...a, spend } }, cardsHeld);
-              if (res && next && spend != null && spend !== a?.spend && next.value === res.value) {
-                setWhy(next.limit.binding === "timing"
-                  ? `Spending more here doesn't change it: ${next.limit.text}. Tick "I'd plan visits…" to count every ${PERIOD_ONE[next.credit.cadence]}.`
-                  : next.limit.binding === "face"
-                    ? `Spending more here doesn't change it: you'd already use all ${money(next.face)} a year.`
-                    : null);
-              } else setWhy(null);
-              onChange({ spend });
-            }} />
+          {" "}I'd plan {unit} to use it every {PERIOD_ONE[res.credit.cadence]}
         </label>
       )}
       {why && <p className="t-caption habit-why" data-testid={`habit-why-${h.key}`}>{why}</p>}
@@ -187,6 +206,7 @@ export default function PerksStep({ d, set, headRef }) {
     const next = { ...(habits[key] || { answer: offAnswer(HABIT_BY_KEY[key]) }), ...patch };
     if (next.spend == null) delete next.spend;
     if (next.size == null) delete next.size;
+    if (next.count == null) delete next.count;
     if (!next.plan) delete next.plan;
     setBrands({ habits: { ...habits, [key]: next } });
   };

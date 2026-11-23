@@ -85,20 +85,21 @@ describe("2 · estimates are labelled; the person can enter their own average", 
     /* the Amex Gold's $120 Uber Cash can only pay back the $96 they spend */
     expect(benefitBreakdown(BY_ID["amex-gold"], own).items.find((i) => /Uber Cash/.test(i.label)).value).toBe(96);
   });
-  it("the survey asks for their average order and ride (typical figure marked as an estimate)", () => {
+  it("the survey shows the estimate (12 × $35) and lets them type their own number (v7e Part 1)", () => {
     saveV5Profile({ cardsHeld: ["amex-gold"] });
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={loadV5Profile()} />);
     const takeout = screen.getByTestId("habit-takeout");
     fireEvent.click(within(takeout).getByRole("radio", { name: "About monthly" }));
-    expect(within(takeout).getByTestId("habit-size-takeout")).toHaveTextContent("Your average order: $typical $35, an estimate");
-    fireEvent.change(within(takeout).getByLabelText("Your average order: Takeout / food delivery"), { target: { value: "20" } });
-    expect(within(takeout).getByTestId("habit-size-takeout")).toHaveTextContent("your figure");
-    expect(within(takeout).getByTestId("habit-result-takeout")).toHaveTextContent("You'd use about $120 of the $120");
+    expect(within(takeout).getByLabelText("Yearly spending: Takeout / food delivery")).toHaveValue("420");
+    expect(within(takeout).getByTestId("habit-spend-tag-takeout")).toHaveTextContent("estimate");
+    fireEvent.change(within(takeout).getByLabelText("Yearly spending: Takeout / food delivery"), { target: { value: "240" } });
+    expect(within(takeout).getByTestId("habit-spend-tag-takeout")).toHaveTextContent("your number");
+    expect(within(takeout).getByTestId("habit-result-takeout")).toHaveTextContent("Counts $120 of the $120");
     const ride = screen.getByTestId("habit-rideshare");
     fireEvent.click(within(ride).getByRole("radio", { name: "A few times a year" }));
-    expect(within(ride).getByTestId("habit-size-rideshare")).toHaveTextContent(/Your average ride: \$.*typical \$25, an estimate/);
+    expect(within(ride).getByLabelText("Separate purchases: Rideshare")).toHaveValue("3");
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-    expect(loadV5Profile().brands.habits.takeout).toMatchObject({ answer: "monthly", size: 20 });
+    expect(loadV5Profile().brands.habits.takeout).toMatchObject({ answer: "monthly", spend: 240 });
   });
   it("'Why this card?' Show the math carries the estimate line under the benefit", () => {
     const p = { travel: { trips: 2 }, brands: { habits: { takeout: { answer: "monthly", apps: ["any"] } } } };

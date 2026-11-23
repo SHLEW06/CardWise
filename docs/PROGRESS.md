@@ -1913,6 +1913,60 @@ as an accent motif (swoosh / angled plane / glow, varied per card, never over
 text), a stronger card name and program line, more visible metal. Tests
 1,673 pass.
 
+# v7e — credits people can actually customize
+
+Brief: `docs/CLAUDE_CODE_V7E_CREDITS.md` (background
+`docs/RESEARCH_CREDITS_2026-11.md`, `docs/data/premium_hotel_prices.csv`).
+
+**Issuer re-check before coding (2026-11-23)** — where the issuer page
+disagrees with the research file, the page wins:
+- Sapphire Reserve DoorDash: the page says "$15 monthly promo on any qualifying
+  DoorDash order" plus "two $10 promos each month to save on groceries,
+  daily essentials", through 12/31/29. **The research file has a $5
+  restaurant promo; the page says $15 on any order.**
+- Sapphire Reserve The Edit: up to $250 per prepaid booking, two-night
+  minimum, up to $500 a calendar year (no half-year split) — matches.
+- Sapphire Reserve 2026 "Select Hotels" $250: **not on the card page**; not
+  added.
+- Sapphire Preferred Chase Travel hotel credit: **$100** each account
+  anniversary year (the brief says "the Chase Travel hotel credit"; our data
+  already had $100).
+- Amex Platinum: FHR / THC up to $300 per half-year ($600 a year), prepaid;
+  THC two nights; FHR two nights from 1/1/2027. lululemon $75 a quarter (U.S.
+  stores, not outlets, and lululemon.com; enrollment); Resy $100 a quarter;
+  Uber Cash $15 a month + $20 in December; digital entertainment $25 a month;
+  Walmart+ $12.95 a month; Uber One $120 — match. Oura, Ticketmaster presale
+  / Amex Experiences, the Venue Collection offer and the fee: **not in the
+  part of the page that loaded** (kept from the v7c audit; presale and Venue
+  Collection are $0 Nice extras anyway).
+- Amex Gold: "$100 credit" with The Hotel Collection on 2+ night bookings;
+  Resy $50 per half-year; dining $10 a month (Grubhub, Five Guys, BWW,
+  Cheesecake Factory, Wonder); Uber Cash $10 a month; Dunkin' $7 a month —
+  match.
+- Delta Stays (Gold / Platinum / Reserve $100 / $150 / $200): the Amex card
+  pages returned only their header and Delta's page needs a sign-in, so
+  **not re-verified**; kept from the v7c audit (2026-11-22).
+
+## v7e Part 1 · exact yearly amounts in the habits step (2026-11-23)
+
+- Every answered row shows **"About $___ a year"** and **"Over about ___
+  separate visits / purchases"** (subscriptions: payments), pre-filled from
+  the frequency (3 / 12 / 52, subscriptions 12), grey with "estimate" until
+  typed, then "your number". The "Adjust" link and the v7c follow-up "Your
+  average order" box are gone (an old saved average still feeds the
+  estimate).
+- Typed numbers win. Changing the frequency after typing asks **"Reset to the
+  estimate?"** (Reset / Keep my numbers), inline — never a browser dialog.
+- **Rule change (owner): N separate purchases use N periods.** lululemon $200
+  over 2 purchases → **$150**; over 3 → $200; "I'd plan purchases to use it
+  every quarter" → $200. (v7c–v7d spread months at random: 3 visits ≈ 2.5
+  quarters; Resy "a few times" + $400 was $247, now $300.)
+- The result line shows the three limits and which applies: "Counts $150 of
+  the $300 a year the Amex Platinum gives: you'd spend $200, but 2 purchases
+  use 2 of the 4 quarterly $75 credits. Spread over 3 quarters → $200."
+- Golden: unchanged. Tests: `v7ePart1.test.jsx` (7); v7c/v7d tests updated to
+  the new wording and rule.
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

@@ -159,7 +159,7 @@ describe("4 · brands (perks)", () => {
     expect(screen.queryByText("Travel credits")).toBeNull();
     const dunkin = screen.getByTestId("habit-dunkin");
     fireEvent.click(within(dunkin).getByRole("radio", { name: "About monthly" }));
-    expect(within(dunkin).getByTestId("habit-result-dunkin").textContent).toMatch(/You'd use about \$84 of the \$84 a year the Amex Gold gives for this/);
+    expect(within(dunkin).getByTestId("habit-result-dunkin").textContent).toMatch(/Counts \$84 of the \$84 a year the Amex Gold gives/);
     const takeout = screen.getByTestId("habit-takeout");
     expect(within(takeout).queryByText("Which app?")).toBeNull();
     fireEvent.click(within(takeout).getByRole("radio", { name: "A few times a year" }));
