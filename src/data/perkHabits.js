@@ -162,6 +162,8 @@ export function cleanHabit(h, a) {
   }
   if (Number.isFinite(Number(a.spend)) && a.spend !== null && a.spend !== "") out.spend = Math.max(0, Math.round(Number(a.spend)));
   if (h.type === "freq" && a.size !== null && a.size !== "" && Number(a.size) > 0) out.size = Math.round(Number(a.size));
+  /* v7d 2.2: "I'd plan visits to use it every quarter / month" */
+  if (a.plan === true) out.plan = true;
   return out;
 }
 
@@ -189,6 +191,9 @@ export function habitPools(habits = {}) {
     const a = habits[h.key];
     if (!isOn(h, a) || triesIfFree(h, a)) continue;
     const s = habitSpend(h, a);
+    /* v7d 2.2: planned visits land in every period → count every period
+       (value = min(face, spend)). */
+    if (a.plan && s.yearly > 0) s.months = 12;
     if (!h.apps) { pools[h.key] = { yearly: s.yearly, months: s.months }; continue; }
     const apps = a.apps || [ANY_APP];
     if (apps.includes(ANY_APP)) { pools[`${h.key}:${ANY_APP}`] = { yearly: s.yearly, months: s.months }; continue; }
@@ -253,6 +258,35 @@ export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = n
   const periodCap = per * periodsUsed(cad, m);
   const value = Math.max(0, Math.min(face, spend, cap, periodCap));
   return { value, pools: ids, spend, months: m, periodCap, single };
+}
+
+/* ── v7d Part 2: which limit binds, in plain words ─────────────────────── */
+
+export const PLANNABLE = new Set(["monthly", "quarterly", "semiannual"]);
+const PERIOD_WORD = { monthly: ["month", "months"], quarterly: ["quarter", "quarters"], semiannual: ["half-year", "half-years"] };
+const VISITS_WORD = { few: "a few visits a year", monthly: "about one visit a month", weekly: "weekly visits" };
+const usd0 = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
+
+/**
+ * Why a habit credit counts what it counts:
+ *   { binding: "face" | "timing" | "spend", text }
+ *   timing  "it's $100 a quarter, and a few visits a year usually fall in
+ *           about 2–3 quarters"
+ *   spend   "limited by your ~$400 a year there"
+ */
+export function creditLimit(credit, r, answer) {
+  const face = credit?.annual || 0;
+  if (!r || r.value >= face - 0.5) return { binding: "face", text: "" };
+  const cad = credit.cadence || "annual";
+  if (PLANNABLE.has(cad) && r.periodCap < r.spend - 0.5) {
+    const [one, many] = PERIOD_WORD[cad];
+    const n = PERIODS[cad];
+    const p = periodsUsed(cad, r.months);
+    const lo = Math.floor(p + 1e-9), hi = Math.ceil(p - 1e-9);
+    const span = lo === hi ? `${lo} ${lo === 1 ? one : many}` : `${lo}–${hi} ${many}`;
+    return { binding: "timing", text: `it's ${usd0(face / n)} a ${one}, and ${VISITS_WORD[answer] || "your visits"} usually fall in about ${span}` };
+  }
+  return { binding: "spend", text: `limited by your ~${usd0(r.spend)} a year there` };
 }
 
 /** What one habit-asked credit is worth to this person on its own. */

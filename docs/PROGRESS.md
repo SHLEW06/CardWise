@@ -1750,6 +1750,23 @@ profile, that's it.
 - Tests: `cardFacesPart2.test.jsx` (11); `v7Materials` updated (CSR's
   checked navy).
 
+## v7d Part 2 · perk rows explain why the number doesn't move (2026-11-23)
+
+Edits in `PerksStep.jsx` and `perkHabits.js`; the valuation rule is the same.
+- **The result line names the binding limit** (`creditLimit`): timing —
+  "You'd use about $247 of the $400 a year the Amex Platinum gives for this:
+  it's $100 a quarter, and a few visits a year usually fall in about 2–3
+  quarters."; spending — "…: limited by your ~$150 a year there."; all of
+  it — no reason.
+- **"I'd plan visits to use it every quarter / month / half-year"** under
+  rows whose card credit is monthly, quarterly or semiannual
+  (`habits.<key>.plan`). On: the spending lands in every period, so the
+  credit counts min(face, spend) — Resy $400 → $400.
+- **A spending change that doesn't move the value says why**, inline:
+  "Spending more here doesn't change it: it's $100 a quarter, … Tick "I'd
+  plan visits…" to count every quarter." (or "you'd already use all $X").
+- Tests: `v7dPart2.test.jsx` (7).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

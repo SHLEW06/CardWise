@@ -50,3 +50,7 @@
 .v5 .plan-step { display: grid; gap: 4px; }
 .v5 .plan-photo { width: 72px; }
 .v5 .plan-net { font-weight: 600; }
+/* v7d Part 2: plan-around toggle and the inline "why it didn't move" */
+.v5 .habit-plan { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; cursor: pointer; }
+.v5 .habit-plan input { accent-color: var(--ink); }
+.v5 .habit-why { color: var(--ink-2, inherit); margin-top: 4px; }

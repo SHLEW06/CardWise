@@ -6,7 +6,7 @@ import { cardDisplayName } from "../../../data/cardNames.js";
 import { creditClass } from "../../../data/creditClass.js";
 import {
   HABITS, HABIT_GROUPS, HABIT_BY_KEY, FREQ_ANSWERS, SUB_ANSWERS, TT_ANSWERS, ANY_APP,
-  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree,
+  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree, creditLimit, PLANNABLE,
 } from "../../../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../../../data/creditBrands.js";
 
@@ -89,12 +89,19 @@ export function habitResult(key, habits, cardsHeld = []) {
   if (!g) return null;
   /* Owner, 2026-11-23: only what they'd pay for anyway counts. */
   if (triesIfFree(h, habits[key])) return { cardId: g.cardId, face: g.face, value: 0, free: true, text: `Counted $0: only spending you'd have anyway counts. The ${cardDisplayName(BY_ID[g.cardId])} lists it as a nice extra you'd try if free.` };
-  const v = habitCreditValue(g.credit, pools).value;
-  return { cardId: g.cardId, face: g.face, value: Math.round(v), text: `You'd use about ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives for this.` };
+  const r = habitCreditValue(g.credit, pools);
+  const v = r.value;
+  /* v7d 2.1: name the limit that binds */
+  const lim = creditLimit(g.credit, r, habits[key]?.answer);
+  const base = `You'd use about ${money(v)} of the ${money(g.face)} a year the ${cardDisplayName(BY_ID[g.cardId])} gives for this`;
+  return { cardId: g.cardId, face: g.face, value: Math.round(v), credit: g.credit, limit: lim, text: lim.text ? `${base}: ${lim.text}.` : `${base}.` };
 }
+
+const PERIOD_ONE = { monthly: "month", quarterly: "quarter", semiannual: "half-year" };
 
 function HabitRow({ h, a, cardsHeld, habits, onChange }) {
   const [adjust, setAdjust] = useState(false);
+  const [why, setWhy] = useState(null);
   const answer = a?.answer || offAnswer(h);
   const on = habitOn(h, a);
   const apps = a?.apps || [ANY_APP];
@@ -130,6 +137,12 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
           {!res.free && <button type="button" className="link-btn" onClick={() => setAdjust(!adjust)}>{adjust ? "Done" : "Adjust"}</button>}
         </p>
       )}
+      {res && !res.free && h.type === "freq" && PLANNABLE.has(res.credit?.cadence) && (
+        <label className="habit-plan t-caption" data-testid={`habit-plan-${h.key}`}>
+          <input type="checkbox" checked={!!a?.plan} onChange={(e) => { setWhy(null); onChange({ plan: e.target.checked || null }); }} />
+          {" "}I'd plan visits to use it every {PERIOD_ONE[res.credit.cadence]}
+        </label>
+      )}
       {on && h.type === "freq" && a?.spend == null && (
         <label className="habit-adjust t-caption" data-testid={`habit-size-${h.key}`}>
           Your average {h.key === "rideshare" ? "ride" : "order"}: $
@@ -142,9 +155,23 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
         <label className="habit-adjust t-caption">
           About how much a year do you spend on this? $
           <input inputMode="numeric" aria-label={`Yearly spending: ${h.label}`} value={a?.spend ?? ""} placeholder="typical"
-            onChange={(e) => { const n = parseInt(e.target.value.replace(/\D/g, ""), 10); onChange({ spend: Number.isFinite(n) ? n : null }); }} />
+            onChange={(e) => {
+              const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
+              const spend = Number.isFinite(n) ? n : null;
+              /* v7d 2.3: if the new spending doesn't move the number, say why */
+              const next = habitResult(h.key, { ...habits, [h.key]: { ...a, spend } }, cardsHeld);
+              if (res && next && spend != null && spend !== a?.spend && next.value === res.value) {
+                setWhy(next.limit.binding === "timing"
+                  ? `Spending more here doesn't change it: ${next.limit.text}. Tick "I'd plan visits…" to count every ${PERIOD_ONE[next.credit.cadence]}.`
+                  : next.limit.binding === "face"
+                    ? `Spending more here doesn't change it: you'd already use all ${money(next.face)} a year.`
+                    : null);
+              } else setWhy(null);
+              onChange({ spend });
+            }} />
         </label>
       )}
+      {why && <p className="t-caption habit-why" data-testid={`habit-why-${h.key}`}>{why}</p>}
     </div>
   );
 }
@@ -160,6 +187,7 @@ export default function PerksStep({ d, set, headRef }) {
     const next = { ...(habits[key] || { answer: offAnswer(HABIT_BY_KEY[key]) }), ...patch };
     if (next.spend == null) delete next.spend;
     if (next.size == null) delete next.size;
+    if (!next.plan) delete next.plan;
     setBrands({ habits: { ...habits, [key]: next } });
   };
   const pc = d.brands.precheck;
