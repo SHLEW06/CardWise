@@ -76,3 +76,16 @@
 .v5 .hotel-cities { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 6px; }
 .v5 .hotel-budget .habit-adjust { margin: 6px 0; }
 .v5 .hotel-use { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+
+/* v7e Part 4: benefits checklist */
+.v5 .bc-rows { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 10px; }
+.v5 .bc-row { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 14px; align-items: center; padding-bottom: 8px; border-bottom: 1px solid var(--hair, rgba(255,255,255,.08)); }
+.v5 .bc-use { display: flex; align-items: center; gap: 8px; }
+.v5 .bc-use input { accent-color: var(--ink); }
+.v5 .bc-worth input { width: 5em; padding: 4px 6px; border: 1px solid var(--hair); border-radius: 6px; background: transparent; color: inherit; font: inherit; }
+.v5 .bc-face { color: var(--ink-3, #9C988F); }
+.v5 .bc-reason { grid-column: 1 / -1; margin: 0; }
+.v5 .bc-covered { margin: -6px 0 4px 26px; }
+.v5 .bc-totals { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 22px; margin: 10px 0; }
+.v5 .bc-totals dt { color: var(--ink-3, #9C988F); font-size: .85em; }
+.v5 .wc-group { margin-top: 14px; }

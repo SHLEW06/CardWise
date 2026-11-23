@@ -2026,6 +2026,20 @@ disagrees with the research file, the page wins:
   Tests: `v7ePart3.test.jsx` (18); three older tests moved to destinations
   with price data.
 
+## v7e Part 4 · "Your benefits" checklist (2026-11-23)
+
+- **Card detail:** "Your benefits" — each benefit (counted or not) with "I'd
+  use this", "Worth to me: $___", the face value and the reason; live totals
+  (Benefits you'd use · Card earns you · Fee · Net); "Reset to CardWise's
+  estimate" per row and "Reset this card".
+- **Wallet Lab:** "Your benefits checklist" across all cards, grouped (Dining &
+  delivery · Travel & hotels · Tickets · Shopping · Subscriptions · Nice
+  extras ($0)), with "Covered by the … already" on overlaps and the
+  hotel-night warning.
+- **Saved** per card in `profile.benefitOverrides`; they feed
+  `benefitBreakdown`, so every screen, the optimizer and the plan re-rank.
+- Golden: unchanged. Tests: `v7ePart4.test.jsx` (6).
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

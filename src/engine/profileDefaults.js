@@ -390,6 +390,7 @@ export function normalizeProfile(p = {}) {
     includeBonus: !!p.includeBonus,
     maxCards: Number.isFinite(p.maxCards) ? Math.max(1, Math.min(10, p.maxCards)) : d.maxCards,
     feeLimit: Number.isFinite(p.feeLimit) && p.feeLimit >= 0 ? Math.round(p.feeLimit) : null,
+    benefitOverrides: cleanOverrides(p.benefitOverrides),
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : { cash: "cash", both: "portal", travel: "partners" }[wants],
     pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,
@@ -406,6 +407,23 @@ export function normalizeProfile(p = {}) {
 }
 
 /** Paid hotel nights a year (answer, or trips × 2). */
+/** v7e Part 4: per-card benefit edits — { cardId: { benefitId: { use, value } } }. */
+export function cleanOverrides(o) {
+  if (!o || typeof o !== "object") return {};
+  const out = {};
+  for (const [cardId, rows] of Object.entries(o)) {
+    if (!rows || typeof rows !== "object") continue;
+    for (const [id, r] of Object.entries(rows)) {
+      if (!r || typeof r !== "object") continue;
+      const x = {};
+      if (typeof r.use === "boolean") x.use = r.use;
+      if (Number.isFinite(Number(r.value)) && r.value !== null && r.value !== "" && Number(r.value) >= 0) x.value = Math.round(Number(r.value));
+      if (Object.keys(x).length) (out[cardId] ||= {})[id] = x;
+    }
+  }
+  return out;
+}
+
 export const hotelNights = (profile) =>
   profile.travel.hotelNights != null ? profile.travel.hotelNights : profile.travel.trips * DEFAULT_NIGHTS_PER_TRIP;
 

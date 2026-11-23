@@ -802,8 +802,27 @@ export function benefitBreakdown(card, profile, ctx = {}) {
 
   /* v7e 3.4: this card's hotel credits and free nights share the nights they stay */
   const nb = applyNightBudget(items, profile);
-  const kept = nb.items.filter((i) => i.value > 0);
+  let kept = nb.items.filter((i) => i.value > 0);
   for (const i of nb.items) if (!(i.value > 0)) unused.push({ id: i.id, label: i.label, face: i.face, reason: i.nightNote || "Not enough hotel nights" });
+  /* v7e Part 4: the person's own checklist wins — "I'd use this" off → $0;
+     "Worth to me: $X" → X (fixed: not cut by pools or the night budget). */
+  const ov = profile.benefitOverrides?.[card.id] || {};
+  if (Object.keys(ov).length) {
+    const out = [];
+    for (const it of kept) {
+      const o = ov[it.id];
+      if (o?.use === false) { unused.push({ id: it.id, label: it.label, face: it.face, type: it.type, reason: "You unticked it", computed: it.value, overridden: true }); continue; }
+      out.push(o?.value != null ? { ...it, computed: it.value, value: o.value, overridden: true, dedupe: null, nightUnits: null } : it);
+    }
+    for (let k = unused.length - 1; k >= 0; k--) {
+      const u = unused[k];
+      const o = ov[u.id];
+      if (u.overridden || !(o?.use === true || (o?.value > 0 && o?.use !== false))) continue;
+      unused.splice(k, 1);
+      out.push({ id: u.id, label: u.label, face: u.face, type: u.type, kind: "credit", value: o.value ?? 0, computed: 0, overridden: true });
+    }
+    kept = out.filter((i) => i.value > 0 || i.overridden);
+  }
   return { total: kept.reduce((t, i) => t + i.value, 0), items: kept, unused, gated, extras, nightBudget: nb.dropped.length ? nb : null };
 }
 

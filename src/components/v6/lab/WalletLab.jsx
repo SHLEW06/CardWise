@@ -20,6 +20,7 @@ import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js"
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
+import { WalletChecklist } from "../../v7/BenefitChecklist.jsx";
 import { ticketCreditText, alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
@@ -152,6 +153,14 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
             </ul>
           </div>
         )}
+      </Reveal>
+
+      {/* v7e Part 4.4: every benefit across the wallet, grouped, editable. */}
+      <Reveal i={2} as="section" className="panel" aria-labelledby="wc-h">
+        <h2 className="t-h2" id="wc-h">Your benefits checklist</h2>
+        <p className="t-caption">Untick what you wouldn't use, or type what it's worth to you — the wallet re-ranks with your numbers.</p>
+        <WalletChecklist setup={setup} value={value} profile={p}
+          onProfileChange={(next) => { setDraft((d) => ({ ...d, benefitOverrides: next.benefitOverrides })); onSaveProfile?.({ ...normalizeProfile(saved), benefitOverrides: next.benefitOverrides }); }} />
       </Reveal>
 
       {/* v7c 5d-2.2: "Which card to use where" — one row per category; a card can be in many rows. */}

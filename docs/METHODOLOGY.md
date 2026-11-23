@@ -656,3 +656,18 @@ the Sapphire Preferred's Chase Travel credit — is valued with
   "You have ~4 hotel nights a year; these need 7. …".
 - The v7c portal yes/no still gates all of these (No = $0).
 
+## 10. Your benefits checklist (v7e Part 4)
+
+Every benefit on a card (card detail) and across the wallet (Wallet Lab,
+grouped: Dining & delivery · Travel & hotels · Tickets · Shopping ·
+Subscriptions · Nice extras ($0)) is a row: "I'd use this" (default = the
+survey result), "Worth to me: $___" (default = CardWise's value), the face
+value and the reason. Edits are saved per card in
+`profile.benefitOverrides` ({ cardId: { benefitId: { use, value } } }) and
+win in `benefitBreakdown`: unticked → $0 ("You unticked it"); a typed value
+is used as is and isn't cut by pools or the night budget. They feed every
+screen and the optimizer, so the wallet and the plan re-rank. Card detail
+shows live totals (Benefits you'd use · Card earns you · Fee · Net) and
+"Reset to CardWise's estimate" per row and per card; the wallet list flags
+overlaps ("Covered by the … already") and shows the hotel-night warning.
+
