@@ -18,7 +18,8 @@ export const DEFAULT_VALUE_MODE = "typical";
 /* Owner-set bands (v7 brief). */
 export const OWNER_BANDS = {
   hyatt: { low: 1.5, mid: 1.65, high: 1.8 },
-  delta: { low: 1.0, mid: 1.15, high: 1.3 },
+  /* v7d 3.4 (owner, 2026-11-23): Delta SkyMiles Typical 1.2¢ (was 1.15). */
+  delta: { low: 1.0, mid: 1.2, high: 1.3 },
   marriott: { low: 0.7, mid: 0.8, high: 0.9 },
 };
 export const BAND_SPREAD = 0.1;
@@ -54,11 +55,23 @@ export const CO_BRAND_DISCOUNTS = {
 /** Value of one point in an airline / hotel program for this mode and wallet:
     { cpp, base, discount } — base is the band value, cpp after any co-brand
     discount the wallet unlocks. */
-export function programCpp(key, mode = DEFAULT_VALUE_MODE, wallet = []) {
+/* v7d 3.4: a co-brand award discount (TakeOff 15) raises the program's value
+   only when the person's routes justify it: that airline flies at least 70%
+   of their trips (the same share that makes a route "theirs", METHODOLOGY
+   §2.1). Otherwise the program keeps its plain value (Delta: 1.2¢). */
+export const DISCOUNT_ROUTE_SHARE = 0.7;
+export function routeShare(profile, key) {
+  const t = profile?.travel?.tripsByAirline || {};
+  const total = Object.values(t).reduce((s, n) => s + (n || 0), 0);
+  return total > 0 ? (t[key] || 0) / total : 0;
+}
+
+export function programCpp(key, mode = DEFAULT_VALUE_MODE, wallet = [], profile = null) {
   const b = band(key);
   if (!b) return null;
   const base = b[modeKey(mode)];
   const d = CO_BRAND_DISCOUNTS[key];
-  const on = d && wallet.some((id) => d.cards.includes(id));
-  return { cpp: on ? base / (1 - d.discount) : base, base, discount: on ? d : null };
+  const held = d && wallet.some((id) => d.cards.includes(id));
+  const justified = held && (profile == null || routeShare(profile, key) >= DISCOUNT_ROUTE_SHARE);
+  return { cpp: justified ? base / (1 - d.discount) : base, base, discount: justified ? d : null, discountHeldNotJustified: !!held && !justified };
 }

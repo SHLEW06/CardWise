@@ -24,7 +24,9 @@ export const CARDS = [
        "3% cash back on all categories", so it's a note, never counted. The
        5% flights / 10% hotels booked in the app belong to the Robinhood
        Platinum, a different card (robinhood.com/us/en/creditcard/platinum). */
-    portalNote: "Robinhood Travel only: 5% is said to apply to travel booked in Robinhood's own app. Robinhood's Gold card page lists 3% on everything, so the 5% isn't counted.",
+    portalNote: "5% on Robinhood Travel bookings isn't counted here.",
+    /* v7d 3.3: the sourcing lives in "Show the math", not the user-facing line. */
+    portalMath: "Robinhood's Gold card page lists 3% cash back on all categories. The 5% on travel booked in Robinhood's own app appears on the Robinhood Platinum page, not the Gold one, so it isn't counted.",
     requiresSubscription: { name: "Robinhood Gold", annual: 60 },
     credits: [], benefits: ["3% cash back on all categories", "No annual fee (Robinhood Gold membership required)"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

@@ -153,22 +153,26 @@ over airline programs of trips × the best value one point gets there
 **Modes** (`data/valueModes.js`, Profile → Point values): Conservative ·
 Typical (default) · Optimistic pick the low / mid / high value of every
 airline and hotel program, for co-brand miles and for transfers alike.
-Bands: Hyatt 1.5 / 1.65 / 1.8, Delta 1.0 / 1.15 / 1.3, Marriott 0.7 / 0.8 /
+Bands: Hyatt 1.5 / 1.65 / 1.8, Delta 1.0 / 1.2 / 1.3 (v7d: typical was 1.15), Marriott 0.7 / 0.8 /
 0.9 (owner, v7 brief); every other program TPG's value (partnerValuations.js)
 × 0.9 / 1 / 1.1, rounded to 0.05¢ (modeling default). Profile lists the cards
 that drop out or join at the other modes (`plans.js modeSensitivity`).
 
-*Changed vs v6:* Delta typical is 1.15¢ (was TPG 1.2¢) and Marriott 0.8¢
-(was 0.75¢), per the owner's bands.
+*Changed vs v6:* Marriott 0.8¢ (was 0.75¢), per the owner's bands. Delta
+typical was 1.15¢ in v7 and is **1.2¢ again from v7d** (owner, 2026-11-23).
 
 **TakeOff 15** (delta.com, read 2026-11-20): Delta Gold / Platinum /
 Reserve (and Business) Card Members save 15% on the miles for Delta-operated
 award flights booked at delta.com or the app; Blue isn't eligible; partner
 flights, Pay with Miles and Miles + Cash are excluded. Modeled as
-`v_delta = band ÷ 0.85` whenever an eligible card is in the wallet — for
-Delta miles earned directly and for Amex points moved to Delta. This is
-why Delta shows ≈ 1.35¢ beside a Delta Gold (1.15 ÷ 0.85) and 1.15¢
-without one. No other co-brand discount was verified in this pass.
+`v_delta = band ÷ 0.85` when an eligible card is in the wallet **and the
+person's routes justify it (v7d 3.4): Delta flies ≥ 70% of their trips**
+(`routeShare`, `DISCOUNT_ROUTE_SHARE`; the same share that makes a route
+"theirs") — for Delta miles earned directly and for Amex points moved to
+Delta. Otherwise Delta stays at 1.2¢. So: 1.2¢ for the owner (Delta 4 of 7
+trips, 57%); 1.2 ÷ 0.85 ≈ 1.41¢ for a Delta-hub flyer with a Delta card.
+Every screen reads this one value (`programCpp` with the profile). No other
+co-brand discount was verified in this pass.
 
 **Direct base earn** (`value.js directBase`, `data/programBaseEarn.js`):
 booking direct with a picked program earns its member points on top of the

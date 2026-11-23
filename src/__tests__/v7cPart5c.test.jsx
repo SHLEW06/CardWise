@@ -67,12 +67,12 @@ describe("5c.2 · Robinhood Gold", () => {
     for (const cat of ["flights", "hotels", "dining", "other"]) expect(earnRate(BY_ID["robinhood-gold"], cat, p)).toBe(3);
     expect(BY_ID["robinhood-gold"].portalMultipliers).toEqual({});
   });
-  it("the 5% is a 'Robinhood Travel only' note, never counted", () => {
-    expect(BY_ID["robinhood-gold"].portalNote).toMatch(/^Robinhood Travel only/);
+  it("the 5% is a plain 'isn't counted here' note, never counted; the sourcing is in Show the math (v7d 3.3)", () => {
+    expect(BY_ID["robinhood-gold"].portalNote).toBe("5% on Robinhood Travel bookings isn't counted here.");
     expect(bestPortal("flight", ["robinhood-gold"], p)).toBeNull();
     saveV5Profile({ cardsHeld: OWNER });
     render(<Survey initialProfile={loadV5Profile()} initialMode="thorough" initialStepId="yourPoints" />);
-    expect(screen.getByTestId("portal-note")).toHaveTextContent(/Robinhood Travel only/);
+    expect(screen.getByTestId("portal-note")).toHaveTextContent("5% on Robinhood Travel bookings isn't counted here.");
   });
   it("no card earns a portal rate on another issuer's portal", () => {
     const bad = [];

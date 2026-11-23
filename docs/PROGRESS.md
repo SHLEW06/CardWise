@@ -1767,6 +1767,44 @@ Edits in `PerksStep.jsx` and `perkHabits.js`; the valuation rule is the same.
   plan visits…" to count every quarter." (or "you'd already use all $X").
 - Tests: `v7dPart2.test.jsx` (7).
 
+## v7d Part 3 · points screen copy (2026-11-23)
+
+1. **One unlock line per row.** The Chase row said "Add a Sapphire
+   Preferred and the same points move to …" and then the Chase note
+   repeated "Add a Sapphire Preferred or Reserve …". The note is gone from
+   the points rows; the sentence is the one line.
+2. **Cash rows:** "Paid as cash: $1 = $1" (was "Worth 1¢ per point"); the
+   sentence is "Nothing to plan or transfer."
+3. **Robinhood:** "5% on Robinhood Travel bookings isn't counted here." The
+   sourcing ("the Gold card page lists 3% … the 5% is on the Platinum page")
+   moved to Show the math (`portalMath`).
+4. **Delta SkyMiles at 1.35¢ — derivation.** 1.35¢ = the owner's v7 Typical
+   band for Delta, **1.15¢** (v7 brief, 2026-11-20; TPG publishes 1.2¢),
+   ÷ 0.85 for **TakeOff 15** (15% off the miles on Delta-operated award
+   flights for Gold / Platinum / Reserve holders; delta.com, read
+   2026-11-20) = 1.353¢. It applied whenever a Delta Gold was held, whatever
+   the routes. **Now:** Delta Typical is 1.2¢, and TakeOff 15 counts only
+   when Delta flies ≥ 70% of the person's trips (the existing route
+   "close call" share). The owner's routes: Delta 4 of 7 trips (57%) → **1.2¢**.
+   A Delta-hub flyer with a Delta card → 1.2 ÷ 0.85 ≈ 1.41¢. Profile's "Why
+   Delta miles show …" uses the same number and says why TakeOff isn't
+   counted. **One value per program on every screen** (points screen, Why
+   this card?, wallet earning rows, card chip): test.
+5. **Delta sentence:** "Best used for Delta flights from ATL, your home
+   airport. You picked Delta." (was "…, your home airport, an airline you
+   picked." — read as cut off). A test renders every program's sentences for
+   every card (alone and with brands picked): none ends on an article,
+   conjunction or comma; no unfilled placeholders.
+
+**Golden (`npm run golden`), before → after:**
+- 5 ATL Delta (lounges yes / no): N +$707 → **+$774**; delta-plat,
+  discover-it → delta-plat, **robinhood-gold**, discover-it. (Hub flyer:
+  TakeOff justified, Delta 1.35¢ → 1.41¢.)
+- Owner-like, from wallet: N +$864 → **+$829**; held wallet +$659 →
+  **+$624** (Delta 1.35¢ → 1.2¢). Others unchanged.
+
+Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

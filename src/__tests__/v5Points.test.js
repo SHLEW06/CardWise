@@ -32,13 +32,14 @@ describe("Your points, explained (§2 step 9)", () => {
     const byCur = Object.fromEntries(r.programs.map((p) => [p.currency, p]));
     expect(byCur.delta.name).toMatch(/Delta SkyMiles/);
     expect(byCur.delta.sentence).toMatch(/^Best used for Delta flights/);
-    expect(byCur.cash.sentence).toBe("Paid as cash. Nothing to plan or transfer.");
+    expect(byCur.cash.sentence).toBe("Nothing to plan or transfer.");
+    expect(byCur.cash.headline).toBe("Paid as cash: $1 = $1");   // v7d 3.2
     /* §9.10: never restate the card name. */
     for (const p of r.programs) for (const n of p.cards) expect(p.sentence).not.toContain(n);
   });
   it("names the home airport for an airline program (§9.10)", () => {
     const r = explainPoints({ cardsHeld: ["delta-gold"], travel: { trips: 4, homeAirport: "ATL" }, brands: { airlines: ["delta"] } });
-    expect(r.programs[0].sentence).toBe("Best used for Delta flights from ATL, your home airport, an airline you picked.");
+    expect(r.programs[0].sentence).toBe("Best used for Delta flights from ATL, your home airport. You picked Delta.");   // v7d 3.5
   });
   it("Freedom beside a Sapphire counts as transferable", () => {
     const r = explainPoints({ cardsHeld: ["freedom-unlimited", "csp"], brands: { airlines: ["united"] } });

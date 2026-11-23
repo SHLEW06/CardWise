@@ -64,7 +64,7 @@ export function partnerOptions(cur, wallet = [], profile = null) {
   const factor = unlocked ? 1 : rule.alone?.ratioFactor ?? 1;
   return keys.map((key) => {
     const ratio = transferRatio(cur, key, have) * factor;
-    const cpp = key in PARTNER_CPP ? programCpp(key, modeOf(profile), have)?.cpp ?? PARTNER_CPP[key] : null;
+    const cpp = key in PARTNER_CPP ? programCpp(key, modeOf(profile), have, profile)?.cpp ?? PARTNER_CPP[key] : null;
     return { key, name: LOYALTY[key]?.name || key, ratio, partnerCpp: cpp, effectiveCpp: cpp == null ? null : cpp * ratio };
   });
 }
@@ -90,7 +90,7 @@ export function currencyValue(cur, profile, wallet = []) {
     const picked = [...(profile?.brands?.airlines || []), ...(profile?.brands?.hotels || [])].includes(cur);
     const travels = profile?.travel?.trips > 0 || profile?.travel?.hotelNights > 0;
     const floor = meta?.conservativeCpp ?? CASH_CPP;
-    const pv = picked ? programCpp(cur, modeOf(profile), ids(wallet)) : null;
+    const pv = picked ? programCpp(cur, modeOf(profile), ids(wallet), profile) : null;
     let v = picked ? pv?.cpp ?? VAL[cur] ?? floor : travels ? floor : floor * 0.5;
     /* v7c 1.4: hotel points above their floor scale with where they stay. */
     const stay = STAY_STYLE_FACTOR[profile?.travel?.stayStyle] ?? 1;

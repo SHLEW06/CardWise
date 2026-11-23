@@ -125,7 +125,11 @@ export function explainPoints(rawProfile, byId = BY_ID) {
       : pv.basis === "standard" ? `Worth ${centsText(cpp)} a point: a typical redemption value for this program.`
       : `Worth ${centsText(cpp)} a point: what the points pay as cash or statement credit${BANK_CURRENCIES.has(cur) ? " (none of your cards lets them move to partners yet)" : ""}.`;
     const notes = cards.map((c) => c.portalNote).filter(Boolean);
-    const base = { currency: cur, cards: names, photoCardId: photo.id, pctBack: pct, pctText: pctText(pct), cpp, headline: `Worth ${centsText(cpp)} per point`, lines, math: { how, rows: lines.flatMap((l) => l.math.map((m) => `${BY_ID[l.cardId]?.name || l.cardId}: ${m}`)) }, portalNotes: notes };
+    /* v7d 3.2: cash rows say what cash is, not "1¢ per point". */
+    const isCash = CASH_CURRENCIES.has(cur) && pv.basis === "cash";
+    const headline = isCash ? "Paid as cash: $1 = $1" : `Worth ${centsText(cpp)} per point`;
+    const sources = cards.map((c) => c.portalMath).filter(Boolean);
+    const base = { currency: cur, cards: names, photoCardId: photo.id, pctBack: pct, pctText: pctText(pct), cpp, headline, lines, math: { how, rows: [...lines.flatMap((l) => l.math.map((m) => `${BY_ID[l.cardId]?.name || l.cardId}: ${m}`)), ...sources] }, portalNotes: notes };
     if (BANK_CURRENCIES.has(cur) && PROGRAMS[cur]) {
       const canTransfer = cards.some(transfersAlone) || held.some((h) => h.pointCurrency === cur && transfersAlone(h));
       const ids = cards.map((c) => c.id);
@@ -147,16 +151,19 @@ export function explainPoints(rawProfile, byId = BY_ID) {
       } else {
         sentence = `Your ${SHORT[cur]} points move to ${PROGRAMS[cur].partners.length} airline and hotel programs. Pick the ones you'd use and we'll value them that way.`;
       }
-      programs.push({ ...base, name: programName(cur), transferable: canTransfer, partnersYouPicked: canTransfer ? matches : [], sentence, note: cur === "chase" ? CHASE_NOTE : null });
+      /* v7d 3.1: one line per row about what unlocks more value — the
+         sentence above. (CHASE_NOTE repeated "Add a Sapphire …".) */
+      programs.push({ ...base, name: programName(cur), transferable: canTransfer, partnersYouPicked: canTransfer ? matches : [], sentence, note: null });
     } else if (CASH_CURRENCIES.has(cur)) {
-      programs.push({ ...base, name: "Cash back", transferable: false, partnersYouPicked: [], sentence: "Paid as cash. Nothing to plan or transfer.", note: null });
+      programs.push({ ...base, name: "Cash back", transferable: false, partnersYouPicked: [], sentence: "Nothing to plan or transfer.", note: null });
     } else {
       const brand = BRAND[cur] || LOYALTY[cur]?.name || cur;
       const isAir = LOYALTY[cur]?.kind === "air";
-      const yours = picked.includes(cur) ? `, ${isAir ? "an airline" : "a brand"} you picked` : "";
+      /* v7d 3.5: two plain sentences (was "…from ATL, your home airport, an airline you picked."). */
+      const yours = picked.includes(cur) ? ` You picked ${brand}.` : "";
       const sentence = isAir
-        ? `Best used for ${brand} flights${home ? ` from ${home}, your home airport` : ""}${yours}.`
-        : `Best used for free nights at ${brand} hotels${yours}.`;
+        ? `Best used for ${brand} flights${home ? ` from ${home}, your home airport` : ""}.${yours}`
+        : `Best used for free nights at ${brand} hotels.${yours}`;
       programs.push({ ...base, name: programName(cur), transferable: false, partnersYouPicked: [], sentence, note: null });
     }
   }

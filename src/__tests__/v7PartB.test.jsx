@@ -56,17 +56,19 @@ describe("B2 · the Hyatt chip says what it means", () => {
 });
 
 describe("B3 · co-brand discounts (TakeOff 15)", () => {
-  it("Delta miles are worth value ÷ 0.85 beside a Gold / Platinum / Reserve, not beside Blue", () => {
-    const p = normalizeProfile({ brands: { airlines: ["delta"] } });
-    expect(cardPointValue(BY_ID["delta-gold"], p).cpp).toBeCloseTo(1.15 / 0.85, 9);
-    expect(cardPointValue(BY_ID["delta-blue"], p).cpp).toBeCloseTo(1.15, 9);
+  it("Delta miles are worth value ÷ 0.85 beside a Gold / Platinum / Reserve, not beside Blue — when Delta flies their trips (v7d 3.4)", () => {
+    const p = normalizeProfile({ brands: { airlines: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
+    expect(cardPointValue(BY_ID["delta-gold"], p).cpp).toBeCloseTo(1.2 / 0.85, 9);
+    expect(cardPointValue(BY_ID["delta-blue"], p).cpp).toBeCloseTo(1.2, 9);
+    /* no routes to justify it → 1.2¢ (owner, 2026-11-23) */
+    expect(cardPointValue(BY_ID["delta-gold"], normalizeProfile({ brands: { airlines: ["delta"] } })).cpp).toBeCloseTo(1.2, 9);
     expect(CO_BRAND_DISCOUNTS.delta.cards).not.toContain("delta-blue");
     expect(programCpp("delta", "typical", ["amex-gold", "delta-plat"]).discount.name).toBe("TakeOff 15");
   });
   it("Amex points moved to Delta also go further beside a Delta card", () => {
-    const p = normalizeProfile({ partnerPicks: { amex: ["delta"] } });
-    expect(cardPointValue(BY_ID["amex-gold"], p, ["delta-gold"]).cpp).toBeCloseTo(1.15 / 0.85, 9);
-    expect(cardPointValue(BY_ID["amex-gold"], p, []).cpp).toBeCloseTo(1.15, 9);
+    const p = normalizeProfile({ partnerPicks: { amex: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
+    expect(cardPointValue(BY_ID["amex-gold"], p, ["delta-gold"]).cpp).toBeCloseTo(1.2 / 0.85, 9);
+    expect(cardPointValue(BY_ID["amex-gold"], p, []).cpp).toBeCloseTo(1.2, 9);
   });
 });
 
@@ -105,7 +107,8 @@ describe("Profile → Point values", () => {
     const box = screen.getByTestId("value-mode");
     expect(within(box).getByText(/Hyatt 1\.5¢ \/ 1\.65¢ \/ 1\.8¢/)).toBeInTheDocument();
     expect(screen.getByTestId("delta-why").textContent).toMatch(/TakeOff 15/);
-    expect(screen.getByTestId("delta-why").textContent).toMatch(/about 1\.35¢/);
+    expect(screen.getByTestId("delta-why").textContent).toMatch(/about 1\.2¢/);           // v7d 3.4: no routes → not counted
+    expect(screen.getByTestId("delta-why").textContent).toMatch(/isn't counted/);
     fireEvent.click(within(box).getByRole("radio", { name: "Conservative" }));
     expect(JSON.parse(localStorage.getItem("cardwise/v5/profile")).profile.valueMode).toBe("conservative");
   });

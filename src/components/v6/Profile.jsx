@@ -20,7 +20,8 @@ import PartnerPicker, { currenciesFor } from "./PartnerPicker.jsx";
 import { HABITS, habitSummary } from "../../data/perkHabits.js";
 import { useCardArtMode, setCardArtMode, CARD_ART_LABEL } from "../../state/cardArtMode.js";
 import { RedemptionCalc, AirportFit } from "../v7/Tools.jsx";
-import { VALUE_MODES, MODE_LABEL, band, CO_BRAND_DISCOUNTS } from "../../data/valueModes.js";
+import { VALUE_MODES, MODE_LABEL, band, CO_BRAND_DISCOUNTS, programCpp, routeShare } from "../../data/valueModes.js";
+import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { modeSensitivity } from "../../engine/v5/plans.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
@@ -158,8 +159,15 @@ function ValueMode({ profile, save }) {
       )}
       {profile.brands.airlines.includes("delta") && (
         <p className="t-caption" data-testid="delta-why">
-          Why Delta miles show about {cents(band("delta")[key] / (deltaCard ? 0.85 : 1))}: a typical Delta award gets about {cents(band("delta")[key])} a mile.
-          {deltaCard ? ` Your Delta card adds TakeOff 15 — 15% off the miles on Delta award flights — so each mile goes further: ${cents(band("delta")[key])} ÷ 0.85.` : " With a Delta Gold, Platinum or Reserve, TakeOff 15 takes 15% off the miles on Delta award flights, so each mile is worth ÷ 0.85."}
+          {(() => {
+            /* v7d 3.4: the same value every screen uses (programCpp with the profile). */
+            const pc = programCpp("delta", mode, profile.cardsHeld, normalizeProfile(profile));
+            const share = Math.round(routeShare(normalizeProfile(profile), "delta") * 100);
+            const head = `Why Delta miles show about ${cents(pc.cpp)}: a typical Delta award gets about ${cents(band("delta")[key])} a mile.`;
+            if (pc.discount) return `${head} Delta flies ${share}% of your trips and your Delta card adds TakeOff 15 — 15% off the miles on Delta award flights — so each mile goes further: ${cents(band("delta")[key])} ÷ 0.85.`;
+            if (deltaCard) return `${head} Your Delta card's TakeOff 15 (15% off the miles on Delta award flights) isn't counted: Delta flies ${share}% of your trips, under the 70% where we'd expect your awards to be on Delta.`;
+            return `${head} With a Delta Gold, Platinum or Reserve, and most of your trips on Delta, TakeOff 15 takes 15% off the miles on Delta award flights, so each mile is worth ÷ 0.85.`;
+          })()}
         </p>
       )}
       {sens.notes.length > 0 && <ul className="mode-notes">{sens.notes.map((n) => <li key={n} className="t-caption">{n}</li>)}</ul>}
