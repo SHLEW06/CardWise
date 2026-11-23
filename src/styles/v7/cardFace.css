@@ -140,3 +140,23 @@
 @media (prefers-reduced-motion: reduce) {
   .v5 .is-designed.finish-gloss::before { transition: none; }
 }
+
+/* ── fix pass (2026-11-23): identity and depth ───────────────────────────
+   The recorded pattern is drawn as an SVG motif in the card's accent colour
+   (Motif in CardFace.jsx); the card name and program carry more weight. */
+.v5 .v5-face-motif { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.v5 .is-designed.pattern-wave::after { content: none; }
+.v5 .is-designed.finish-metal::after, .v5 .is-designed.pattern-brushed::after { opacity: .09; }
+.v5 .is-designed.finish-metal.pattern-brushed::after { opacity: .13; }
+/* metal: a broad soft sheen across the face */
+.v5 .is-designed.finish-metal::before { background: linear-gradient(115deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, .10) 38%, rgba(255, 255, 255, 0) 55%); }
+.v5 .is-designed.finish-gloss::before { background: linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, .10) 42%, rgba(255, 255, 255, 0) 56%); background-size: 180% 100%; }
+.v5 .v5-face-layout { z-index: 1; }
+.v5 .v5-face-wordmark { font-weight: 600; letter-spacing: .01em; opacity: .95; }
+.v5 .v5-face-family { font-size: calc(var(--u) * 5.2); letter-spacing: .18em; font-weight: 600; opacity: .95; }
+.v5 .v5-face-name { font-size: calc(var(--u) * 6); font-weight: 600; letter-spacing: .01em; }
+@container (min-width: 200px) {
+  .v5 .v5-face-layout > .v5-face-name { font-size: calc(var(--u) * 6); font-weight: 600; }
+  .v5 .is-vertical .v5-face-layout > .v5-face-name { font-size: calc(var(--u) * 8); }
+}
+.v5 .v5-face-name, .v5 .v5-face-wordmark, .v5 .v5-face-family, .v5 .v5-face-network { text-shadow: 0 1px 1px rgba(0, 0, 0, .18); }

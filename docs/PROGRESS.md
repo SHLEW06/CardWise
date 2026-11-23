@@ -1905,6 +1905,14 @@ Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
 - Citi Strata Elite: not in the plan; −$653 → **−$653** (the Splurge credit
   needs a Live Nation / Best Buy / 1stDibs / Future habit; none answered).
 
+## v7d follow-up · card designs fixed (2026-11-23)
+
+Owner: "fix the credit card designs". Round 3 in `docs/DESIGN_REVIEW.md`:
+per-card accent colours (from the issuer images), the recorded pattern drawn
+as an accent motif (swoosh / angled plane / glow, varied per card, never over
+text), a stronger card name and program line, more visible metal. Tests
+1,673 pass.
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

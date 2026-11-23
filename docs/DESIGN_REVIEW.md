@@ -48,3 +48,25 @@ Gold, Discover it Chrome, BoA Customized Cash, Marriott Bonvoy Business) at
 
 **Screenshots to look at:** `docs/screenshots/card-faces/round-2/1440-01.png`
 … `1440-07.png` (desktop, both modes side by side) and `390-01.png` (phone).
+
+### Round 3 (2026-11-23, owner: "fix the credit card designs")
+
+Compared the designs side by side with the issuer photos at 320px.
+
+- **Problem:** cards from one issuer looked like one coloured box with
+  different text; the recorded patterns (wave, angled plane, brushed metal)
+  were nearly invisible; the issuer name outweighed the card's own name.
+- **Fixed:** each card has an `accent` — its own highlight colour, recorded
+  from the same issuer image (Boundless / Bevy coral, Freedom cyan, Strata
+  white lines, Sapphire Reserve blue halo …). The pattern is drawn as an SVG
+  motif in that colour (`Motif` in `CardFace.jsx`): *wave* = one accent
+  swoosh through the gap between chip and name, rising to the right edge
+  below the program text, with faint echoes — never across text; *gradient-
+  angle* = a second angled plane with a fine edge line; others = a soft glow.
+  Placement varies per card (seeded by id), so two cards with the same
+  pattern don't match. Generic shapes only — no artwork copied.
+- **Type:** card name 6% of width, semibold; program text 5.2% with wider
+  tracking; a faint text shadow; metal gets a broad sheen and more visible
+  brushing.
+- **Checked:** 64 / 160 / 320px at 2×; no motif crosses the name, network or
+  program text; contrast test still covers all 130 cards (ink vs base).
