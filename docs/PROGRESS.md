@@ -1709,6 +1709,47 @@ profile, that's it.
   `CARD_ART_MISSING.md` — skipped where there are no photos, e.g. a fresh
   clone; issuer mode renders an `<img>`; production defaults to rendered).
 
+## v7d Part 1 · card faces — Part 2: designed faces (2026-11-23)
+
+- **Structure:** ISO ID-1 1.586:1, radius 4.5% of the width; everything
+  sized in % of the card width via container queries
+  (`src/styles/v7/cardFace.css`): < 96px material + 2-letter issuer mark
+  ("CH", "AX", "C1" …); 96–199px + card name; ≥ 200px full layout and the
+  only drop shadow.
+- **Finishes:** metal = 135° gradient ±8% lightness + brushed SVG noise
+  (≈ 4%); matte = flat + soft top-left highlight (≈ 5%); gloss = one ≈ 8%
+  specular band that follows the tilt (`--mx`); clear = translucent base.
+  Patterns as recorded: brushed, wave, dots, gradient-angle (second tone).
+- **Layout:** issuer name top left (Switzer 600, 7% of width, +0.02em);
+  program / family top right in small caps ("SAPPHIRE", "SKYMILES",
+  "BONVOY"); SVG chip with contact pads in gold or silver (34% down, 13%
+  wide, 1.33:1) and the four-arc contactless mark; card name bottom left (5%,
+  issuer prefix dropped: "Platinum", "Venture X"); network as a text
+  wordmark ("VISA", "Mastercard", "AMEX", "Discover"). Portrait cards
+  (Altitude Go, Altitude Connect) rotate the layout inside a landscape box.
+  No logos, logo shapes or card artwork.
+- **Depth:** 1px top highlight (10% white), 1px bottom shadow; drop shadow
+  only ≥ 200px; selected keeps the ivory ring, check and 4px lift
+  (transform only).
+- **Accuracy pass:** the 40 most popular cards (`CHECKED_MATERIALS`) were
+  checked against the issuer's own card image — the card-art file on the
+  issuer's site that `public/cards/` was taken from
+  (`docs/CARD_ART_SOURCES.md`); `sourceUrl` is that file (Robinhood Gold's
+  photo has no recorded source, so its card page is given), `checkedDate`
+  2026-11-23. I didn't reopen each issuer page live. Every other card keeps
+  its photo-sampled colour (or issuer default), flagged
+  `materialVerified: false`. Navy cards are told apart by program text,
+  pattern and finish (CSR gradient metal · Freedom Unlimited wave gloss ·
+  Venture gloss · Boundless wave · Surpass plain · Aspire dots metal · BCP).
+- **Contrast:** ink is picked for ≥ 4.5:1 on the base, second tone and
+  metal highlights (test). Five cards' colours couldn't carry readable text
+  and were moved the least that passes: SavorOne #B4472B → #D15F40 (dark
+  ink), Double Cash #0F6E8C/#1A8F5A → #0C566E/#0C5730, Custom Cash second
+  tone #0A64B0 → #0A85E7 (dark ink), Robinhood Gold #A8874E → #B4935B,
+  Bilt Palladium #878580 → #969692.
+- Tests: `cardFacesPart2.test.jsx` (11); `v7Materials` updated (CSR's
+  checked navy).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

@@ -1,0 +1,140 @@
+/* ============================================================================
+   CardWise card faces (docs/CLAUDE_CODE_CARD_FACES.md Part 2).
+   ISO ID-1 (1.586:1), radius 4.5% of the width, everything positioned and
+   sized in % of the card width (--u = 1% of the card's own width; portrait
+   cards rotate their layout and use their short side). Identity comes from
+   material and type only: no logos, no copied artwork.
+   Breakpoints (container = .v5-face):
+     < 96px   material + 2-letter issuer mark
+     96–199   + card name
+     ≥ 200    full layout, drop shadow
+   ========================================================================== */
+
+.v5 .v5-face { container-type: inline-size; aspect-ratio: 1.586; }
+.v5 .v5-face-body { border-radius: 4.5% / 7.14%; box-shadow: none; }
+@container (min-width: 200px) {
+  .v5 .v5-face-body { box-shadow: 0 1px 1px rgba(0, 0, 0, .35), 0 16px 36px -18px rgba(0, 0, 0, .7); }
+}
+
+/* ── material ─────────────────────────────────────────────────────────── */
+.v5 .v5-face-body.is-designed {
+  --u: 1cqw;
+  color: var(--face-ink);
+  background: var(--base);
+  /* edge: a 1px highlight on top, a soft 1px shadow at the bottom */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), inset 0 -1px 0 rgba(0, 0, 0, .22);
+}
+@container (min-width: 200px) {
+  .v5 .v5-face-body.is-designed {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), inset 0 -1px 0 rgba(0, 0, 0, .22), 0 1px 1px rgba(0, 0, 0, .35), 0 16px 36px -18px rgba(0, 0, 0, .7);
+  }
+}
+.v5 .v5-face-body.is-designed::before,
+.v5 .v5-face-body.is-designed::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+
+/* two-tone / angled gradient cards (pattern recorded as gradient-angle) */
+.v5 .is-designed.pattern-gradient-angle { background: linear-gradient(135deg, var(--base) 0%, var(--base) 35%, var(--base2) 100%); }
+
+/* metal: ±8% lightness at 135° + a fine brushed texture (SVG noise ≈ 4%) */
+.v5 .is-designed.finish-metal { background: linear-gradient(135deg, var(--base-hi) 0%, var(--base) 50%, var(--base-lo) 100%); }
+.v5 .is-designed.finish-metal.pattern-gradient-angle { background: linear-gradient(135deg, var(--base-hi) 0%, var(--base) 40%, var(--base2) 100%); }
+.v5 .is-designed.finish-metal::after,
+.v5 .is-designed.pattern-brushed::after {
+  opacity: .04;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='202'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.9' numOctaves='2' seed='7'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23b)'/></svg>");
+  background-size: 100% 100%;
+  mix-blend-mode: normal;
+}
+.v5 .is-designed.finish-metal.pattern-brushed::after { opacity: .07; }
+
+/* matte: flat + a very soft top-left highlight (≈5%) */
+.v5 .is-designed.finish-matte::before { background: radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, .05), rgba(255, 255, 255, 0) 60%); }
+
+/* gloss: one soft specular band (≈8%) that drifts with the ≤3° tilt */
+.v5 .is-designed.finish-gloss::before {
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, .08) 42%, rgba(255, 255, 255, 0) 56%);
+  background-size: 180% 100%;
+  background-position: var(--mx, 50%) 0;
+  transition: background-position 500ms var(--ease-out, ease-out);
+}
+.v5 .v5-face.is-tilting .is-designed.finish-gloss::before { transition: background-position 80ms linear; }
+
+/* clear: the base reads through, with a lighter rim */
+.v5 .is-designed.finish-clear { background: color-mix(in srgb, var(--base) 78%, transparent); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
+
+/* recorded patterns, kept quiet */
+.v5 .is-designed.pattern-wave::after {
+  opacity: .10;
+  background: repeating-radial-gradient(140% 120% at 110% 120%, transparent 0 18px, rgba(255, 255, 255, .55) 18px 19px);
+}
+.v5 .is-designed.finish-metal.pattern-wave::after { opacity: .10; }
+.v5 .is-designed.pattern-dots::after {
+  opacity: .12;
+  background: radial-gradient(rgba(255, 255, 255, .7) 0.6px, transparent 0.9px) 0 0 / 6px 6px;
+}
+
+/* ── layout (% of the card width) ─────────────────────────────────────── */
+.v5 .v5-face-layout { position: absolute; inset: 0; font-family: var(--f-ui); color: var(--face-ink); }
+.v5 .v5-face-layout > * { position: absolute; white-space: nowrap; }
+
+.v5 .v5-face-mark {
+  left: 9%; top: 12%;
+  font-weight: 700; font-size: calc(var(--u) * 17); letter-spacing: .02em; line-height: 1; opacity: .92;
+}
+.v5 .v5-face-wordmark {
+  left: 6.5%; top: 8%;
+  font-weight: 600; font-size: calc(var(--u) * 7); letter-spacing: .02em; line-height: 1;
+}
+.v5 .v5-face-family {
+  right: 6.5%; top: 9.5%;
+  font-variant-caps: all-small-caps; text-transform: lowercase;
+  font-weight: 600; font-size: calc(var(--u) * 4.6); letter-spacing: .14em; line-height: 1; opacity: .88;
+}
+.v5 .v5-face-emv { left: 7.5%; top: 34%; display: flex; align-items: center; gap: calc(var(--u) * 2.6); }
+.v5 .v5-face-chip { width: calc(var(--u) * 13); height: auto; aspect-ratio: 1.33; display: block; filter: drop-shadow(0 .5px .5px rgba(0, 0, 0, .25)); }
+.v5 .v5-face-contactless { width: calc(var(--u) * 5.2); height: auto; aspect-ratio: 1; opacity: .8; }
+.v5 .v5-face-name {
+  left: 6.5%; bottom: 8.5%; right: 32%;
+  font-weight: 500; font-size: calc(var(--u) * 5); letter-spacing: .005em; line-height: 1.12;
+  white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.v5 .v5-face-network { right: 6.5%; bottom: 8.5%; line-height: 1; }
+.v5 .v5-face-network.net-visa { font-weight: 800; font-size: calc(var(--u) * 6.4); letter-spacing: .015em; font-style: normal; }
+.v5 .v5-face-network.net-mastercard { font-weight: 600; font-size: calc(var(--u) * 4.4); letter-spacing: -.01em; text-transform: lowercase; }
+.v5 .v5-face-network.net-amex { font-weight: 800; font-size: calc(var(--u) * 4.6); letter-spacing: .16em; }
+.v5 .v5-face-network.net-discover { font-weight: 700; font-size: calc(var(--u) * 4.6); letter-spacing: .03em; }
+
+/* ── size tiers ───────────────────────────────────────────────────────── */
+/* < 96px: material + 2-letter mark only */
+.v5 .v5-face-layout > :not(.v5-face-mark) { display: none; }
+/* 96–199px: + the card name */
+@container (min-width: 96px) {
+  .v5 .v5-face-mark { left: 7%; top: 10%; font-size: calc(var(--u) * 11); }
+  .v5 .v5-face-layout > .v5-face-name { display: -webkit-box; font-size: calc(var(--u) * 9); right: 7%; left: 7%; bottom: 10%; font-weight: 600; }
+}
+/* ≥ 200px: the full layout */
+@container (min-width: 200px) {
+  .v5 .v5-face-layout > :not(.v5-face-mark) { display: block; }
+  .v5 .v5-face-layout > .v5-face-emv { display: flex; }
+  .v5 .v5-face-layout > .v5-face-name { display: -webkit-box; left: 6.5%; right: 32%; bottom: 8.5%; font-size: calc(var(--u) * 5); font-weight: 500; }
+  .v5 .v5-face-layout > .v5-face-mark { display: none; }
+  /* portrait cards: the same layout, rotated, on the short side */
+  .v5 .is-vertical .v5-face-layout {
+    --u: .6305cqw;
+    inset: auto; left: 50%; top: 50%;
+    width: 63.05cqw; height: 100cqw;
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+  .v5 .is-vertical .v5-face-layout > .v5-face-name { right: 6.5%; bottom: 20%; font-size: calc(var(--u) * 7); }
+  .v5 .is-vertical .v5-face-family { top: 15%; left: 6.5%; right: auto; }
+  .v5 .is-vertical .v5-face-emv { top: 30%; }
+}
+
+/* ── selected: ivory ring, check, 4px lift (transform only) ───────────── */
+.v5 .v5-face { transition: transform var(--t-2, 200ms) var(--ease-out, ease-out); }
+.v5 .v5-face.is-selected { transform: translateY(-4px); }
+.v5 .v5-face.is-selected .v5-face-body { box-shadow: 0 0 0 2px var(--night), 0 0 0 4px var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .v5 .is-designed.finish-gloss::before { transition: none; }
+}

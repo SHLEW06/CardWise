@@ -102,11 +102,6 @@
 .v5 .timeline-when { grid-row: 1 / span 3; color: var(--ink-3); font-family: var(--f-label); font-size: var(--fs-label); letter-spacing: var(--ls-label); text-transform: uppercase; padding-top: 4px; }
 
 /* ── Card faces: flat material, no sheen, ivory ring when picked ── */
-.v5 .v5-face-body.is-designed::before { background: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
-.v5 .finish-metal::after { content: none; }
-.v5 .v5-face-chip { background: #B9A57E; }
-.v5 .v5-face-network { font-family: var(--f-label); font-size: 3.6cqw; letter-spacing: .08em; }
-.v5 .v5-face-network.net-visa { font-style: normal; font-size: 3.6cqw; letter-spacing: .08em; }
 .v5 .v5-face-shine { display: none; }
 .v5 .v5-face.is-selected .v5-face-body { box-shadow: 0 0 0 2px var(--night), 0 0 0 4px var(--ink), var(--shadow-card); }
 .v5 .v5-face-check { background: var(--ink); color: var(--night); }

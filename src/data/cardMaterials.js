@@ -66,7 +66,7 @@ export const PHOTO_MATERIALS = {
   "bcp":                       { base: "#121A2F", ink: "#F4F1EA", finish: "plastic" },
   "bilt-blue":                 { base: "#162637", ink: "#F4F1EA", finish: "plastic" },
   "bilt-obsidian":             { base: "#2A2A2A", ink: "#F4F1EA", finish: "metal" },
-  "bilt-palladium":            { base: "#878580", ink: "#F4F1EA", finish: "metal" },
+  "bilt-palladium":            { base: "#969692", ink: "#17171A", finish: "metal" },
   "bjs-one-plus":              { base: "#2C2D2C", ink: "#F4F1EA", finish: "plastic" },
   "boa-customized":            { base: "#A51522", ink: "#F4F1EA", finish: "plastic" },
   "boa-premium":               { base: "#333334", ink: "#F4F1EA", finish: "plastic" },
@@ -193,9 +193,155 @@ export const ISSUER_WORDMARK = {
   "US Bank": "U.S. Bank",
 };
 
-export const NETWORK_LABEL = { VISA: "VISA", MASTERCARD: "Mastercard", AMEX: "AMEX", DISCOVER: "DISCOVER" };
+export const NETWORK_LABEL = { VISA: "VISA", MASTERCARD: "Mastercard", AMEX: "AMEX", DISCOVER: "Discover" };
 
+/* ── CARD_FACES Part 2.5: the 40 most popular cards, checked ────────────────
+   Each checked on 2026-11-23 against the issuer's own card image (sourceUrl =
+   the card-art file on the issuer's site that public/cards/ was taken from,
+   docs/CARD_ART_SOURCES.md; Robinhood Gold's file has no recorded source, so
+   its card page is given). Recorded honestly from that image:
+     base / base2  body colour; base2 only where the card is a two-tone or
+                   angled gradient (pattern "gradient-angle")
+     finish        metal | matte | gloss | clear ("metal" only for cards the
+                   issuer sells as metal or that are visibly metal)
+     pattern       none | brushed | wave | dots | gradient-angle
+     chip          gold | silver, as on the card
+     family        the program / card family set in small caps, top right
+     vertical      the real card is printed portrait
+   Ink is chosen for ≥ 4.5:1 contrast on the base (and base2). Where the
+   card's own colours can't carry readable text, the colour was moved the
+   least that passes (SavorOne, Double Cash, Custom Cash, Robinhood Gold,
+   Bilt Palladium — logged in PROGRESS → v7d). */
+export const CHECKED_DATE = "2026-11-23";
+export const CHECKED_MATERIALS = {
+  "csr": { base: "#0A1426", base2: "#04070D", finish: "metal", pattern: "gradient-angle", chip: "silver", family: "SAPPHIRE", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png" },
+  "csp": { base: "#0B4A86", base2: "#062A50", finish: "metal", pattern: "gradient-angle", chip: "silver", family: "SAPPHIRE", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png" },
+  "amex-plat": { base: "#BABCBF", finish: "metal", pattern: "brushed", chip: "silver", family: "PLATINUM", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/platinum-card.png" },
+  "amex-gold": { base: "#C3AD6B", finish: "metal", pattern: "brushed", chip: "gold", family: "GOLD", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/gold-card.png" },
+  "amex-green": { base: "#A9CDB0", finish: "matte", pattern: "none", chip: "silver", family: "GREEN", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/green-card.png" },
+  "venture-x": { base: "#10374F", finish: "metal", pattern: "none", chip: "silver", family: "VENTURE", sourceUrl: "https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png" },
+  "venture": { base: "#0B2C52", finish: "gloss", pattern: "none", chip: "silver", family: "VENTURE", sourceUrl: "https://ecm.capitalone.com/WCM/card/products/venture_cardart_prim_323x203-1/mobile.png" },
+  "savor-one": { base: "#D15F40", base2: "#D9692E", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "SAVOR", sourceUrl: "https://ecm.capitalone.com/WCM/card/products/savorone-2025-cardart.png" },
+  "quicksilver": { base: "#8592A0", base2: "#6E7A88", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "QUICKSILVER", sourceUrl: "https://ecm.capitalone.com/WCM/card/products/quicksilver_cardart.png" },
+  "freedom-unlimited": { base: "#18307A", base2: "#0C1A48", finish: "gloss", pattern: "wave", chip: "silver", family: "FREEDOM", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/freedom_unlimited_card_alt.png" },
+  "freedom-flex": { base: "#1660B0", base2: "#0B3D7A", finish: "gloss", pattern: "wave", chip: "silver", family: "FREEDOM", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/freedom_flex_card.png" },
+  "delta-blue": { base: "#1479C4", base2: "#0B5A9A", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "SKYMILES", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/delta-blue.png" },
+  "delta-gold": { base: "#C2A46A", base2: "#A88A52", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "SKYMILES", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/gold-delta-skymiles.png" },
+  "delta-plat": { base: "#A3A9AD", base2: "#C9CDD0", finish: "metal", pattern: "gradient-angle", chip: "silver", family: "SKYMILES", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/platinum-delta-skymiles.png" },
+  "delta-reserve": { base: "#3F4E59", base2: "#2C3842", finish: "metal", pattern: "gradient-angle", chip: "silver", family: "SKYMILES", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/delta-reserve.png" },
+  "united-explorer": { base: "#0D4A92", finish: "gloss", pattern: "none", chip: "silver", family: "MILEAGEPLUS", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_explorer_new_card.png" },
+  "united-quest": { base: "#5A2668", finish: "gloss", pattern: "none", chip: "silver", family: "MILEAGEPLUS", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_quest_new_card.png" },
+  "united-club": { base: "#2E2E30", finish: "matte", pattern: "none", chip: "silver", family: "MILEAGEPLUS", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_club_new_infinite_card.png" },
+  "hilton-honors": { base: "#F4F4F4", finish: "gloss", pattern: "none", chip: "silver", family: "HONORS", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors.png" },
+  "hilton-surpass": { base: "#1F3E6A", finish: "gloss", pattern: "none", chip: "silver", family: "HONORS", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors-surpass.png" },
+  "hilton-aspire": { base: "#0E2F57", finish: "metal", pattern: "dots", chip: "silver", family: "HONORS", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors-aspire.png" },
+  "marriott-boundless": { base: "#1E3F66", finish: "gloss", pattern: "wave", chip: "silver", family: "BONVOY", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott-bonvoy-boundless-card.png" },
+  "marriott-bevy": { base: "#4A4B4C", finish: "gloss", pattern: "wave", chip: "silver", family: "BONVOY", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/marriott-bonvoy-bevy-card.png" },
+  "marriott-brilliant": { base: "#0A0A0A", finish: "metal", pattern: "wave", chip: "silver", family: "BONVOY", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/marriott-bonvoy-brilliant-card.png" },
+  "hyatt": { base: "#B2B4B6", finish: "gloss", pattern: "brushed", chip: "silver", family: "WORLD OF HYATT", sourceUrl: "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/world_of_hyatt_card.png" },
+  "ihg-premier": { base: "#8C9BAA", base2: "#A9B6C2", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "ONE REWARDS", sourceUrl: "https://creditcards.chase.com/bcs/api/images/file/public-card-marketplace/site-assets/ihg-premier-card-art-2026.png" },
+  "citi-strata": { base: "#5B5D63", finish: "gloss", pattern: "wave", chip: "silver", family: "STRATA", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp" },
+  "citi-strata-elite": { base: "#0A0C0C", finish: "metal", pattern: "wave", chip: "silver", family: "STRATA", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-elite-credit-card/citi-strata-elite-credit-card_306x192.webp" },
+  "citi-double-cash": { base: "#0C566E", base2: "#0C5730", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "DOUBLE CASH", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-double-cash-credit-card/citi-double-cash-credit-card_306x192.webp" },
+  "citi-custom-cash": { base: "#0E8FD0", base2: "#0A85E7", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "CUSTOM CASH", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-custom-cash-credit-card/citi-custom-cash-credit-card_306x192.webp" },
+  "bilt-obsidian": { base: "#262626", finish: "metal", pattern: "none", chip: "silver", family: "BILT", sourceUrl: "https://img.bilt.com/43819/1790799681-bilt-vail.webp" },
+  "costco-citi": { base: "#1C1D20", finish: "gloss", pattern: "none", chip: "silver", family: "COSTCO", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-costco-anywhere-visa-credit-card/citi-costco-anywhere-visa-credit-card_306x192.webp" },
+  "bcp": { base: "#1B3460", finish: "gloss", pattern: "none", chip: "silver", family: "BLUE CASH", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/blue-cash-preferred.png" },
+  "amex-bce": { base: "#2F7ED0", finish: "gloss", pattern: "none", chip: "silver", family: "BLUE CASH", sourceUrl: "https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/blue-cash-everyday.png" },
+  "usb-altitude-go": { base: "#E31B3B", finish: "gloss", pattern: "none", chip: "silver", family: "ALTITUDE", vertical: true, sourceUrl: "https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/altitude-go-visa-signature-credit-card.png" },
+  "usb-altitude-connect": { base: "#2B5FE6", finish: "gloss", pattern: "none", chip: "silver", family: "ALTITUDE", vertical: true, sourceUrl: "https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/photo-altitude-connect-consumer.png" },
+  "robinhood-gold": { base: "#B4935B", base2: "#B7905C", finish: "metal", pattern: "brushed", chip: "gold", family: "GOLD", sourceUrl: "https://robinhood.com/creditcard" },
+  "discover-it": { base: "#6AB3D0", finish: "gloss", pattern: "brushed", chip: "silver", family: "CASHBACK", sourceUrl: "https://ecm.capitalone.com/WCM/dfs-card/products/itblue_card/rdesktop.png" },
+  "active-cash": { base: "#6E7176", base2: "#A8232C", finish: "gloss", pattern: "gradient-angle", chip: "silver", family: "ACTIVE CASH", sourceUrl: "https://creditcards.wellsfargo.com/rv/next/images/cards/active-cash.webp" },
+  "citi-aa-globe": { base: "#23363C", finish: "gloss", pattern: "wave", chip: "silver", family: "AADVANTAGE", sourceUrl: "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-aadvantage-globe-mastercard/citi-aadvantage-globe-mastercard_306x192.webp" },
+};
+
+/* Program / card family text for every other card (plain words, no logos). */
+const FAMILY_RULES = [
+  [/^csr$|^csp$/, "SAPPHIRE"], [/^freedom/, "FREEDOM"], [/^ink-/, "INK"], [/^chase-freedom/, "FREEDOM"],
+  [/^delta-/, "SKYMILES"], [/^united-/, "MILEAGEPLUS"], [/^hilton-/, "HONORS"], [/^marriott-|^ritz$/, "BONVOY"],
+  [/^hyatt/, "WORLD OF HYATT"], [/^ihg-/, "ONE REWARDS"], [/^sw-/, "RAPID REWARDS"], [/^aa-|^citi-aa-/, "AADVANTAGE"],
+  [/^venture/, "VENTURE"], [/^savor/, "SAVOR"], [/^quicksilver/, "QUICKSILVER"], [/^spark-/, "SPARK"],
+  [/^citi-strata/, "STRATA"], [/^bilt/, "BILT"], [/^usb-altitude/, "ALTITUDE"], [/^amex-bce$|^bcp$/, "BLUE CASH"],
+  [/^jetblue/, "TRUEBLUE"], [/^alaska|^atmos/, "ATMOS"], [/^choice-/, "CHOICE PRIVILEGES"], [/^disney/, "DISNEY"],
+  [/^discover/, "CASHBACK"], [/^wf-autograph/, "AUTOGRAPH"], [/^boa-/, "REWARDS"], [/^amex-plat|^amex-biz-plat/, "PLATINUM"],
+  [/^amex-gold|^amex-biz-gold|^robinhood-gold/, "GOLD"], [/^amex-green/, "GREEN"], [/^aeroplan/, "AEROPLAN"],
+  [/^ba-visa/, "AVIOS"], [/^afklm/, "FLYING BLUE"], [/^one-key/, "ONE KEY"], [/^amazon/, "PRIME"],
+];
+export const familyFor = (card) => CHECKED_MATERIALS[card?.id]?.family || FAMILY_RULES.find(([re]) => re.test(card?.id || ""))?.[1] || "";
+
+/* Two-letter issuer mark for thumbnails under 96px (text, never a logo). */
+const ISSUER_MARK = {
+  Chase: "CH", "Chase (Amazon)": "AZ", "American Express": "AX", "Capital One": "C1", Citi: "CI", "Citi (Costco)": "CO",
+  "Wells Fargo": "WF", "Bank of America": "BA", "US Bank": "US", Discover: "DI", Barclays: "BC", Bilt: "BI",
+  Robinhood: "RH", "Goldman Sachs (Apple)": "AP", "TD Bank (Target)": "TG", "Synchrony (Venmo)": "VE",
+  "Synchrony (PayPal)": "PP", "Synchrony (Amazon)": "AZ",
+};
+export const issuerMarkFor = (card) => ISSUER_MARK[card?.issuer] || String(wordmarkFor(card)).replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase();
+
+/* The name printed bottom left: the card name without its issuer prefix. */
+const NAME_PREFIX = /^(American Express|Amex|Capital One|Citi|US Bank|U\.S\. Bank|Chase|Wells Fargo|Bank of America)\s+/;
+export const faceNameFor = (card) => String(card?.name || "").replace(NAME_PREFIX, "") || String(card?.name || "");
+
+/* ── colour helpers (contrast per WCAG 2.x) ─────────────────────────────── */
+const hex = (h) => { const x = String(h).replace("#", ""); return [0, 2, 4].map((i) => parseInt(x.slice(i, i + 2), 16)); };
+const toHex = (rgb) => "#" + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("").toUpperCase();
+export function luminance(h) {
+  const [r, g, b] = hex(h).map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+export function contrast(a, b) { const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); }
+function rgbToHsl([r, g, b]) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+  if (mx === mn) return [0, 0, l];
+  const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+  const h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
+}
+function hslToRgb([h, s, l]) {
+  const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+/** Shift lightness by  (−1…1): metal's ±8% gradient. */
+export function shade(h, d) { const [hh, s, l] = rgbToHsl(hex(h)); return toHex(hslToRgb([hh, s, Math.max(0, Math.min(1, l + d))])); }
+const LIGHT_INK = "#F4F1EA", DARK_INK = "#17171A";
+/** Ink that reads at ≥ 4.5:1 on every given background. */
+export function inkFor(bgs, preferred) {
+  const worst = (ink) => Math.min(...bgs.map((b) => contrast(ink, b)));
+  if (preferred && worst(preferred) >= 4.5) return preferred;
+  for (const ink of [LIGHT_INK, DARK_INK, "#FFFFFF", "#000000"]) if (worst(ink) >= 4.5) return ink;
+  return worst(LIGHT_INK) >= worst(DARK_INK) ? "#FFFFFF" : "#000000";
+}
+
+const FINISH = { plastic: "gloss", metal: "metal", matte: "matte", gloss: "gloss", clear: "clear" };
+const warm = (h) => { const [hh, s] = rgbToHsl(hex(h)); return hh >= 25 && hh <= 60 && s > 0.25; };
+
+/**
+ * Everything the designed face needs:
+ * { base, base2, hi, lo, ink, finish, pattern, chip, family, vertical,
+ *   materialVerified, sourceUrl, checkedDate }
+ */
 export function materialFor(card) {
-  return CARD_MATERIALS[card?.id] || PHOTO_MATERIALS[card?.id] || ISSUER_MATERIALS[card?.issuer] || DEFAULT_MATERIAL;
+  const checked = CHECKED_MATERIALS[card?.id];
+  const raw = checked || CARD_MATERIALS[card?.id] || PHOTO_MATERIALS[card?.id] || ISSUER_MATERIALS[card?.issuer] || DEFAULT_MATERIAL;
+  const finish = FINISH[raw.finish] || "gloss";
+  const base = raw.base;
+  const hi = finish === "metal" ? shade(base, 0.08) : base;
+  const lo = finish === "metal" ? shade(base, -0.08) : base;
+  const bgs = [base, raw.base2, finish === "metal" ? hi : null, finish === "metal" ? lo : null].filter(Boolean);
+  return {
+    base, base2: raw.base2 || null, hi, lo,
+    ink: inkFor(bgs, raw.ink),
+    finish,
+    pattern: raw.pattern || "none",
+    chip: raw.chip || (warm(base) ? "gold" : "silver"),
+    family: familyFor(card),
+    vertical: !!raw.vertical,
+    materialVerified: !!checked,
+    sourceUrl: checked?.sourceUrl || null,
+    checkedDate: checked ? CHECKED_DATE : null,
+  };
 }
 export const wordmarkFor = (card) => ISSUER_WORDMARK[card?.issuer] || card?.issuer || "";
