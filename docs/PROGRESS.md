@@ -1967,6 +1967,30 @@ disagrees with the research file, the page wins:
 - Golden: unchanged. Tests: `v7ePart1.test.jsx` (7); v7c/v7d tests updated to
   the new wording and rule.
 
+## v7e Part 2 · concerts and tickets, refined (2026-11-23)
+
+- The tickets row is amount-first: **$ a year** (default $0), **"Over about
+  ___ purchases"** (estimate: $ ÷ $150), **"Where do you usually buy?"**
+  (Ticketmaster / Live Nation — the same company; StubHub / viagogo; Other
+  sites; Any) with a **% split** when more than one (default even), and
+  **"U.S. events?"** Yes / Some abroad. v7d answers migrate to their estimate.
+- **Rules as card data** (`draws`, `pick`, `usOnly`, `endsOn`): Reserve
+  StubHub = min($300, StubHub spend, $150 × half-years with a purchase), ends
+  2027-12-31, activation; Strata Elite $200 / AAdvantage Globe $100 Splurge =
+  best two brands (Live Nation U.S. events only; "Some abroad" counts half),
+  with "Counts your best two: Live Nation and Best Buy"; American Airlines
+  flights count as a Strata Elite brand (flight spending × AA's share of the
+  trips). Platinum: presale, preferred seating, Venue Collection offer → Nice
+  extras, $0.
+- **Each ticket dollar paid back once**: credits first (shared pools), the
+  rest earns at the best card's rate.
+- **Golden (owner's case, 1 purchase, $300):** StubHub → Reserve **$150**;
+  Ticketmaster (U.S.) → Strata Elite **$200**; Platinum **$0**. Card detail:
+  "Buy on Ticketmaster with the Strata Elite: $200 back. On StubHub with the
+  Sapphire Reserve: $150 back."
+- Golden report unchanged. Tests: `v7ePart2.test.jsx` (11); v7d tickets
+  tests updated.
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

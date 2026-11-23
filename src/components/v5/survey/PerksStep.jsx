@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from "react";
 import Choice from "../Choice.jsx";
 import Head from "./SurveyHead.jsx";
+import { ticketComparison } from "../../../engine/v5/tickets.js";
 import { CARDS, BY_ID } from "../../../data/cards.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { creditClass } from "../../../data/creditClass.js";
 import {
   HABITS, HABIT_GROUPS, HABIT_BY_KEY, FREQ_ANSWERS, SUB_ANSWERS, TT_ANSWERS, ANY_APP,
-  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree, creditLimit, PLANNABLE, habitEstimate, unitOf,
+  creditDraws, derivedRule, habitPools, habitCreditValue, habitOn, triesIfFree, creditLimit, PLANNABLE, habitEstimate, unitOf, siteShares,
 } from "../../../data/perkHabits.js";
 import { LEGACY_PERK_ALIASES } from "../../../data/creditBrands.js";
 
@@ -195,6 +196,70 @@ function HabitRow({ h, a, cardsHeld, habits, onChange }) {
   );
 }
 
+/* v7e Part 2: tickets, amount first. */
+function AmountRow({ h, a, d, onChange }) {
+  const spend = a?.spend || 0;
+  const apps = a?.apps || [ANY_APP];
+  const named = apps.filter((x) => x !== ANY_APP);
+  const est = habitEstimate(h, a);
+  const shares = siteShares(a);
+  const qid = `q-habit-${h.key}`;
+  const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : null; };
+  const setApps = (k) => {
+    if (k === ANY_APP) return onChange({ apps: [ANY_APP], split: null });
+    const next = named.includes(k) ? named.filter((x) => x !== k) : [...named, k];
+    onChange({ apps: next.length ? next : [ANY_APP], split: null });
+  };
+  const cmp = spend > 0 ? ticketComparison({ ...d, brands: { ...d.brands, habits: { ...(d.brands.habits || {}), [h.key]: a } } }) : null;
+  return (
+    <div className="habit-row" data-testid={`habit-${h.key}`}>
+      <p className="habit-label" id={qid}>How much do you spend on concert, sports and show tickets a year?</p>
+      <p className="t-caption habit-givers">{giversLine(habitGivers(h.key))}</p>
+      <div className="habit-numbers t-caption">
+        <label className="habit-adjust">$
+          <input inputMode="numeric" aria-label={`Yearly spending: ${h.label}`} value={spend || ""} placeholder="0" onChange={(e) => onChange({ spend: num(e.target.value) || 0 })} />
+          a year
+        </label>
+        {spend > 0 && (
+          <label className="habit-adjust">Over about
+            <input inputMode="numeric" aria-label={`Purchases: ${h.label}`} value={a?.count ?? est.count} className={a?.count != null ? "is-own" : "is-estimate"} onChange={(e) => onChange({ count: num(e.target.value) })} />
+            purchases <span className="habit-tag">{a?.count != null ? "your number" : "estimate"}</span>
+          </label>
+        )}
+      </div>
+      {spend > 0 && (
+        <>
+          <div className="habit-apps">
+            <p className="t-caption" id={`${qid}-apps`}>Where do you usually buy?</p>
+            <div className="chip-wrap" role="group" aria-labelledby={`${qid}-apps`}>
+              {h.apps.map((x) => <Choice key={x.key} pill selected={apps.includes(x.key)} onSelect={() => setApps(x.key)}>{x.label}</Choice>)}
+              <Choice pill selected={apps.includes(ANY_APP)} onSelect={() => setApps(ANY_APP)}>{h.anyLabel}</Choice>
+            </div>
+            {named.length > 1 && (
+              <div className="habit-numbers t-caption" data-testid="ticket-split">
+                {named.map((k) => (
+                  <label key={k} className="habit-adjust">{h.apps.find((x) => x.key === k).label.replace(/ \(.*\)$/, "")}
+                    <input inputMode="numeric" aria-label={`Share bought on ${h.apps.find((x) => x.key === k).label.replace(/ \(.*\)$/, "")}`} value={Math.round(shares[k] * 100)}
+                      onChange={(e) => onChange({ split: { ...Object.fromEntries(named.map((n) => [n, Math.round(shares[n] * 100)])), [k]: num(e.target.value) ?? 0 } })} />%
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="habit-apps">
+            <p className="t-caption" id={`${qid}-us`}>U.S. events?</p>
+            <div className="chip-wrap" role="radiogroup" aria-labelledby={`${qid}-us`}>
+              <Choice radio pill selected={a?.us !== false} onSelect={() => onChange({ us: true })}>Yes</Choice>
+              <Choice radio pill selected={a?.us === false} onSelect={() => onChange({ us: false })}>Some abroad</Choice>
+            </div>
+          </div>
+          {cmp && <p className="t-caption habit-result" data-testid={`habit-result-${h.key}`}>{cmp.text}</p>}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function PerksStep({ d, set, headRef }) {
   const habits = d.brands.habits || {};
   const have = useMemo(() => perksFromHeld(d.cardsHeld), [d.cardsHeld]);
@@ -203,7 +268,9 @@ export default function PerksStep({ d, set, headRef }) {
      bring an answer back. */
   const setBrands = (patch) => set({ brands: { ...d.brands, perks: [], perksMaybe: [], perksUse: undefined, perksSpend: undefined, everyday: (d.brands.everyday || []).filter((k) => !aliases.has(k)), habits, ...patch } });
   const setHabit = (key, patch) => {
-    const next = { ...(habits[key] || { answer: offAnswer(HABIT_BY_KEY[key]) }), ...patch };
+    const h0 = HABIT_BY_KEY[key];
+    const next = { ...(habits[key] || (h0.type === "amount" ? { spend: 0 } : { answer: offAnswer(h0) })), ...patch };
+    if (next.split == null) delete next.split;
     if (next.spend == null) delete next.spend;
     if (next.size == null) delete next.size;
     if (next.count == null) delete next.count;
@@ -219,8 +286,9 @@ export default function PerksStep({ d, set, headRef }) {
       {HABIT_ROWS.map((g) => (
         <fieldset key={g.key} className="survey-group habit-group">
           <legend className="t-h3">{g.label}</legend>
-          {g.habits.map((h) => (
-            <HabitRow key={h.key} h={h} a={habits[h.key]} habits={habits} cardsHeld={d.cardsHeld} onChange={(patch) => setHabit(h.key, patch)} />
+          {g.habits.map((h) => (h.type === "amount"
+            ? <AmountRow key={h.key} h={h} a={habits[h.key]} d={d} onChange={(patch) => setHabit(h.key, patch)} />
+            : <HabitRow key={h.key} h={h} a={habits[h.key]} habits={habits} cardsHeld={d.cardsHeld} onChange={(patch) => setHabit(h.key, patch)} />
           ))}
           {g.key === "travel" && tt && (
             <div className="habit-row" data-testid="precheck">

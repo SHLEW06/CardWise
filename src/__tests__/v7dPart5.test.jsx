@@ -21,36 +21,38 @@ const prof = (tickets, extra = {}) => normalizeProfile({ ...extra, brands: { hab
 const credit = (id, re) => BY_ID[id].credits.find((c) => re.test(c.name));
 
 describe("5.1 · 'Concert, sports and show tickets' in 'Going out'", () => {
-  it("a frequency row with 'Which site?' and a $150 typical ticket order", () => {
+  it("an amount-first row (v7e Part 2) with the sites and a $150 typical purchase", () => {
     const h = HABIT_BY_KEY.tickets;
     expect(HABIT_GROUPS.find((g) => g.key === h.group).label).toBe("Going out");
     expect(h.label).toBe("Concert, sports and show tickets");
-    expect(h.type).toBe("freq");
+    expect(h.type).toBe("amount");
     expect(h.size).toBe(150);
-    expect(h.apps.map((a) => a.label)).toEqual(["StubHub / viagogo", "Ticketmaster / Live Nation", "Other sites"]);
+    expect(h.apps.map((a) => a.label)).toEqual(["Ticketmaster / Live Nation (the same company)", "StubHub / viagogo", "Other sites"]);
     expect(HABIT_BY_KEY.stubhub).toBeUndefined();
     expect(HABIT_BY_KEY.livenation).toBeUndefined();
   });
-  it("in the survey: Which site? with 'Any, I'd buy where my card gives a credit', and the average ticket order marked estimate", () => {
+  it("in the survey (v7e Part 2): $ a year, purchases, where you buy, U.S. events", () => {
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
     const row = screen.getByTestId("habit-tickets");
-    expect(within(row).getAllByRole("radio").map((r) => r.textContent)).toEqual(["Never", "A few times a year", "About monthly", "Weekly+"]);
-    fireEvent.click(within(row).getByRole("radio", { name: "A few times a year" }));
-    expect(within(row).getByText("Which site?")).toBeInTheDocument();
+    expect(row).toHaveTextContent("How much do you spend on concert, sports and show tickets a year?");
+    fireEvent.change(within(row).getByLabelText("Yearly spending: Concert, sports and show tickets"), { target: { value: "300" } });
+    expect(within(row).getByLabelText("Purchases: Concert, sports and show tickets")).toHaveValue("2");   // $300 / $150, an estimate
+    expect(within(row).getByText("Where do you usually buy?")).toBeInTheDocument();
     expect(within(row).getByText("Any, I'd buy where my card gives a credit")).toBeInTheDocument();
-    expect(within(row).getByLabelText("Yearly spending: Concert, sports and show tickets")).toHaveValue("450");   // 3 × $150, an estimate
+    expect(within(row).getByText("U.S. events?")).toBeInTheDocument();
   });
   it("old StubHub / Live Nation answers move to the new row", () => {
     expect(migrateTicketHabits({ stubhub: { answer: "few" }, livenation: { answer: "monthly" } })).toEqual({ tickets: { answer: "monthly", apps: ["stubhub", "ticketmaster"] } });
-    expect(normalizeProfile({ brands: { habits: { stubhub: { answer: "few" } } } }).brands.habits.tickets).toMatchObject({ answer: "few", apps: ["stubhub"] });
+    /* v7e: the row is amount-first — a frequency becomes its estimate (3 × $150) */
+    expect(normalizeProfile({ brands: { habits: { stubhub: { answer: "few" } } } }).brands.habits.tickets).toMatchObject({ spend: 450, count: 3, apps: ["stubhub"], us: true });
   });
 });
 
 describe("5.2 · credits mapped to sites, from the card data", () => {
   it("Sapphire Reserve → StubHub / viagogo; Strata Elite and AAdvantage Globe Splurge → Live Nation (plus their other brands); Platinum → none", () => {
     expect(creditDraws(credit("csr", /StubHub/))).toEqual([{ habit: "tickets", app: "stubhub" }]);
-    expect(creditDraws(credit("citi-strata-elite", /Splurge/))).toContainEqual({ habit: "tickets", app: "ticketmaster" });
-    expect(creditDraws(credit("citi-aa-globe", /Splurge/))).toContainEqual({ habit: "tickets", app: "ticketmaster" });
+    expect(creditDraws(credit("citi-strata-elite", /Splurge/))).toContainEqual({ habit: "tickets", app: "ticketmaster", usOnly: true });
+    expect(creditDraws(credit("citi-aa-globe", /Splurge/))).toContainEqual({ habit: "tickets", app: "ticketmaster", usOnly: true });
     expect(BY_ID["amex-plat"].credits.some((c) => creditDraws(c).some((d) => d.habit === "tickets"))).toBe(false);
   });
   it("a Splurge credit counts the best two brands picked", () => {

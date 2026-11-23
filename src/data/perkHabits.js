@@ -108,8 +108,10 @@ export const HABITS = [
   /* v7d Part 5: one grouped row for event tickets (was two shopping rows:
      StubHub, Live Nation). Spending, not a subscription — "Never" = $0.
      $150 a ticket order is an estimate. */
-  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "freq", size: 150, sizeWord: "ticket order",
-    apps: [{ key: "stubhub", label: "StubHub / viagogo" }, { key: "ticketmaster", label: "Ticketmaster / Live Nation" }, { key: "other", label: "Other sites" }],
+  /* v7e Part 2: amount first — "How much do you spend … a year?", how many
+     purchases, where you buy (with a % split), U.S. events or some abroad. */
+  { key: "tickets", label: "Concert, sports and show tickets", group: "going", type: "amount", size: 150,
+    apps: [{ key: "ticketmaster", label: "Ticketmaster / Live Nation (the same company)" }, { key: "stubhub", label: "StubHub / viagogo" }, { key: "other", label: "Other sites" }],
     anyLabel: "Any, I'd buy where my card gives a credit" },
 ];
 export const HABIT_BY_KEY = Object.fromEntries(HABITS.map((h) => [h.key, h]));
@@ -126,6 +128,8 @@ const APP_BRAND = { ubereats: "uber", doordash: "doordash", grubhub: "grubhub", 
  * the Platinum's digital entertainment credit for six subscriptions.
  */
 export function creditDraws(credit) {
+  /* v7e Part 2: the credit's own rules, from the card data, win. */
+  if (Array.isArray(credit?.draws)) return credit.draws;
   const name = String(credit?.name || "");
   if (credit?.kind === "membership" && TRAVEL_MEMBERSHIP.test(name)) return [{ habit: "globalentry" }];
   if (isGeneralCredit(credit)) return [];
@@ -147,7 +151,7 @@ export function creditDraws(credit) {
 
 /* ── the person's answers → yearly spending pools ───────────────────────── */
 
-const isOn = (h, a) => !!a && (h.type === "freq" ? a.answer && a.answer !== "never" : a.answer === "pay" || a.answer === "free");
+const isOn = (h, a) => !!a && (h.type === "amount" ? (a.spend || 0) > 0 : h.type === "freq" ? a.answer && a.answer !== "never" : a.answer === "pay" || a.answer === "free");
 
 /** True when a subscription answer is "Would start if free" — counted $0. */
 export const triesIfFree = (h, a) => !!h && h.type === "sub" && a?.answer === "free";
@@ -156,9 +160,38 @@ export const triesIfFree = (h, a) => !!h && h.type === "sub" && a?.answer === "f
     typical figure (an estimate). */
 export const orderSize = (h, a) => (h.type === "freq" && Number.isFinite(a?.size) && a.size > 0 ? a.size : h.size);
 
+/** v7e Part 2: an amount-first row (tickets). A v7d frequency answer
+    migrates to its estimate (orders × $150). */
+function cleanAmountHabit(h, a) {
+  const f = FREQ[a.answer];
+  const num = (x) => (x !== null && x !== "" && Number.isFinite(Number(x)) && Number(x) >= 0 ? Math.round(Number(x)) : null);
+  const spend = num(a.spend) ?? (f ? f.orders * h.size : 0);
+  const count = num(a.count) ?? (f && f.orders ? f.orders : null);
+  if (!(spend > 0) && count == null && !a.apps) return null;
+  const picked = Array.isArray(a.apps) ? a.apps.filter((k) => k === ANY_APP || h.apps.some((x) => x.key === k)) : [];
+  const apps = picked.includes(ANY_APP) || !picked.length ? [ANY_APP] : [...new Set(picked)];
+  const out = { spend: spend || 0, apps };
+  if (count != null) out.count = count;
+  if (apps.length > 1 && a.split && typeof a.split === "object") {
+    const split = Object.fromEntries(apps.map((k) => [k, Math.max(0, Number(a.split[k]) || 0)]));
+    if (Object.values(split).some((x) => x > 0)) out.split = split;
+  }
+  out.us = a.us !== false;
+  return out;
+}
+
+/** The share of an amount row's spending on each site (% split, default even). */
+export function siteShares(a) {
+  const apps = a?.apps || [ANY_APP];
+  const raw = apps.map((k) => [k, a?.split?.[k] ?? 1]);
+  const total = raw.reduce((t, [, v]) => t + v, 0) || 1;
+  return Object.fromEntries(raw.map(([k, v]) => [k, v / total]));
+}
+
 /** Normalize one saved answer for a service. */
 export function cleanHabit(h, a) {
   if (!a || typeof a !== "object") return null;
+  if (h.type === "amount") return cleanAmountHabit(h, a);
   const answers = h.type === "freq" ? FREQ_ANSWERS : h.type === "tt" ? TT_ANSWERS : SUB_ANSWERS;
   const answer = answers.some((x) => x.key === a.answer) ? a.answer : null;
   if (!answer) return null;
@@ -180,6 +213,7 @@ export function cleanHabit(h, a) {
 /** The estimate a frequency answer gives, before the person types numbers:
     { spend, count } — spend = count × the typical order (an estimate). */
 export function habitEstimate(h, a) {
+  if (h.type === "amount") return { spend: 0, count: Math.max(1, Math.round((a?.spend || 0) / h.size)) };
   if (h.type === "freq") {
     const f = FREQ[a?.answer] || FREQ.never;
     const count = a?.count != null ? a.count : f.orders;
@@ -196,6 +230,10 @@ export function habitEstimate(h, a) {
  */
 export function habitSpend(h, a) {
   if (!isOn(h, a) || triesIfFree(h, a)) return { yearly: 0, months: 0, orders: 0 };
+  if (h.type === "amount") {
+    const count = a.count != null ? a.count : habitEstimate(h, a).count;
+    return { yearly: a.spend, months: count, orders: count };
+  }
   if (h.type === "freq") {
     const f = FREQ[a.answer];
     const count = a.count != null ? a.count : f.orders;
@@ -224,6 +262,16 @@ export function habitPools(habits = {}) {
     if (a.plan && s.yearly > 0) s.months = Infinity;
     if (!h.apps) { pools[h.key] = { yearly: s.yearly, months: s.months }; continue; }
     const apps = a.apps || [ANY_APP];
+    if (h.type === "amount") {
+      /* v7e Part 2: split by site (%, default even); "Some abroad" halves
+         what a U.S.-events-only credit can use. */
+      const sh = siteShares(a);
+      for (const app of apps) {
+        const yearly = s.yearly * sh[app];
+        pools[`${h.key}:${app}`] = { yearly, months: yearly > 0 ? Math.max(1, Math.round(s.months * sh[app])) : 0, usShare: a.us === false ? 0.5 : 1 };
+      }
+      continue;
+    }
     if (apps.includes(ANY_APP)) { pools[`${h.key}:${ANY_APP}`] = { yearly: s.yearly, months: s.months }; continue; }
     const per = s.yearly / apps.length;
     const orders = s.months / apps.length;
@@ -236,6 +284,7 @@ export function habitPools(habits = {}) {
 export function poolsForCredit(credit, pools) {
   const out = [];
   for (const d of creditDraws(credit)) {
+    if (d.pool) { if (pools[d.pool]) out.push(d.pool); continue; }
     if (!d.app) { if (pools[d.habit]) out.push(d.habit); continue; }
     if (pools[`${d.habit}:${d.app}`]) out.push(`${d.habit}:${d.app}`);
     else if (pools[`${d.habit}:${ANY_APP}`]) out.push(`${d.habit}:${ANY_APP}`);
@@ -271,12 +320,21 @@ export function unionMonths(list) {
  */
 /** v7d Part 5: credits usable on only N chosen brands — Citi's Splurge
     credit ("your choice of up to 2 brands"): count the best two. */
-export const creditPick = (credit) => (/splurge/i.test(String(credit?.name || "")) ? 2 : null);
+export const creditPick = (credit) => credit?.pick ?? (/splurge/i.test(String(credit?.name || "")) ? 2 : null);
+
+/** Pools a credit may only use for U.S. events (Citi Splurge · Live Nation). */
+export const usOnlyPools = (credit) => new Set((creditDraws(credit) || []).filter((d) => d.usOnly).map((d) => `${d.habit}:${d.app}`));
+
+/** A credit past its end date ("through 12/31/2027") counts $0. */
+export const creditEnded = (credit, today = new Date()) => !!credit?.endsOn && today.toISOString().slice(0, 10) > credit.endsOn;
 
 export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = null, single = false, pick = null } = {}) {
   ids = ids.filter((id) => pools[id]);
   const face = credit.annual || 0;
-  if (!ids.length) return { value: 0, pools: [], spend: 0, months: 0, periodCap: 0 };
+  if (!ids.length || creditEnded(credit)) return { value: 0, pools: [], spend: 0, months: 0, periodCap: 0 };
+  /* U.S.-events-only pools: "Some abroad" counts half of that spending. */
+  const us = usOnlyPools(credit);
+  if (us.size) pools = Object.fromEntries(Object.entries(pools).map(([k, p]) => [k, us.has(k) && p.usShare != null ? { ...p, yearly: p.yearly * p.usShare } : p]));
   const n = single ? 1 : pick;
   /* one (or N) chosen pools: valued on the ones with the most spending; every
      usable pool stays listed so the wallet dedupe (sharePools) can choose
@@ -289,7 +347,7 @@ export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = n
   const per = face / (PERIODS[cad] || 1);
   const periodCap = per * periodsUsed(cad, m);
   const value = Math.max(0, Math.min(face, spend, cap, periodCap));
-  return { value, pools: ids, spend, months: m, periodCap, single, pick: n && n > 1 ? n : null };
+  return { value, pools: ids, chosen: top, spend, months: m, periodCap, single, pick: n && n > 1 ? n : null };
 }
 
 /* ── v7d Part 2: which limit binds, in plain words ─────────────────────── */
@@ -385,7 +443,7 @@ export function sharePools(items, pools) {
  */
 export function derivedRule(credit) {
   const draws = creditDraws(credit);
-  if (draws.length) return { asked: [...new Set(draws.map((d) => d.habit))] };
+  if (draws.length) return { asked: [...new Set(draws.map((d) => d.habit).filter(Boolean))] };   // pool-only draws (flights on one airline) aren't asked
   if (isGeneralCredit(credit)) return { rule: "general" };
   const name = String(credit?.name || "");
   if (credit.kind === "portal" || /renowned hotels/i.test(name)) return { rule: "portal" };
@@ -501,14 +559,15 @@ export function migrateTicketHabits(saved = {}) {
   delete out.stubhub; delete out.livenation;
   if (!parts.length) return out;
   const answer = parts.map(([, a]) => a).sort((x, y) => rank(y) - rank(x))[0].answer;
-  out.tickets = { answer, apps: parts.map(([k]) => k) };
+  out.tickets = { answer, apps: parts.map(([k]) => k) };      // cleanHabit turns this into $ + purchases
   return out;
 }
 
 export function habitSummary(h, a) {
   if (!isOn(h, a)) return null;
   const ans = [...FREQ_ANSWERS, ...SUB_ANSWERS, ...TT_ANSWERS].find((x) => x.key === a.answer)?.label;
-  const apps = h.apps ? (a.apps || [ANY_APP]).map((k) => (k === ANY_APP ? (h.key === "tickets" ? "any site" : "any app") : h.apps.find((x) => x.key === k)?.label)).filter(Boolean).join(", ") : "";
+  if (h.type === "amount") return `${h.label}: $${Math.round(a.spend).toLocaleString("en-US")} a year · ${(a.apps || [ANY_APP]).map((k) => (k === ANY_APP ? "any site" : h.apps.find((x) => x.key === k)?.label)).join(", ")}`;
+  const apps = h.apps ? (a.apps || [ANY_APP]).map((k) => (k === ANY_APP ? "any app" : h.apps.find((x) => x.key === k)?.label)).filter(Boolean).join(", ") : "";
   return `${h.label}: ${ans}${apps ? ` · ${apps}` : ""}`;
 }
 export { isOn as habitOn };

@@ -176,7 +176,9 @@ export const CARDS = [
     earnRates: { Dining: 3, General: 1.5 }, portalMultipliers: { Hotels: 12, Car: 12, Flights: 6 },
     credits: [
       cred("$300 hotel benefit (2+ night stay on Citi Travel)", 300, "MEDIUM", "portal", "annual", { cls: "niche" }),
-      cred("$200 Splurge credit (pick 2: American Airlines, Best Buy, Live Nation, 1stDibs, Future)", 200, "MEDIUM", "merchant", "annual", { cls: "easy" }),
+      cred("$200 Splurge credit (pick 2: American Airlines, Best Buy, Live Nation, 1stDibs, Future)", 200, "MEDIUM", "merchant", "annual", { cls: "easy", pick: 2,
+        /* Live Nation = livenation.com / ticketmaster.com, U.S. events, not third-party resale */
+        draws: [{ habit: "tickets", app: "ticketmaster", usOnly: true }, { habit: "bestbuy" }, { habit: "1stdibs" }, { habit: "future" }, { pool: "flightson:aa" }] }),
       cred("$200 Blacklane credit ($100 per half-year)", 200, "HARD", "merchant", "semiannual", { cls: "niche" }),
       cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr", { cls: "easy" }),
     ],
@@ -202,7 +204,8 @@ export const CARDS = [
     earnRates: { AA: 3, Dining: 2, Transit: 2, General: 1 }, portalMultipliers: { Hotels: 6 },
     credits: [
       cred("$240 Turo credit ($30 per trip)", 240, "HARD", "merchant", "annual"),
-      cred("$100 Splurge credit (pick 2: 1stDibs, AAdvantage Hotels, Future, Live Nation)", 100, "MEDIUM", "merchant", "annual", { source: "https://www.citi.com/credit-cards/citi-aadvantage-globe-mastercard", checked: "2026-11-23" }),
+      cred("$100 Splurge credit (pick 2: 1stDibs, AAdvantage Hotels, Future, Live Nation)", 100, "MEDIUM", "merchant", "annual", { source: "https://www.citi.com/credit-cards/citi-aadvantage-globe-mastercard", checked: "2026-11-23", pick: 2,
+        draws: [{ habit: "tickets", app: "ticketmaster", usOnly: true }, { habit: "1stdibs" }, { habit: "future" }] }),
       cred("$100 inflight purchase credit", 100, "MEDIUM", "airline", "annual"),
       cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr"),
     ],

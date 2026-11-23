@@ -416,6 +416,11 @@ export function profilePools(profile) {
   const trips = profile.travel.trips;
   const nights = hotelNights(profile);
   if (trips > 0 && a.flights > 0) pools.flights = { yearly: a.flights, months: Math.min(12, trips) };
+  /* v7e Part 2: flights on one airline (Citi Splurge · American Airlines) —
+     the flight spending × that airline's share of the trips. */
+  const tba = profile.travel.tripsByAirline || {};
+  const tbaTotal = Object.values(tba).reduce((t, n) => t + (n || 0), 0);
+  if (a.flights > 0 && tbaTotal > 0) for (const [al, n] of Object.entries(tba)) if (n > 0) pools[`flightson:${al}`] = { yearly: a.flights * (n / tbaTotal), months: n };
   if (nights > 0 && a.hotels > 0) pools.hotels = { yearly: a.hotels, months: Math.min(12, Math.max(1, Math.round(nights / 2))) };
   for (const k of ["dining", "streaming", "transit"]) if (a[k] > 0) pools[k] = { yearly: a[k], months: 12 };
   if (trips > 0) {
@@ -470,7 +475,10 @@ export function creditUsage(card, credit, profile) {
        amount per period. Shared across the wallet by pool. */
     const r = habitCreditValue(credit, pools);
     const label = HABIT_BY_KEY[rule.asked[0]]?.label || "that";
-    if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "pool", pick: r.pick || null, habit: r, perk: "use" };
+    /* v7e 2.2: a pick-two credit (Citi Splurge) says which two it counts. */
+    const PICK_NAME = { "tickets:ticketmaster": "Live Nation", "tickets:any": "Live Nation", bestbuy: "Best Buy", "1stdibs": "1stDibs", future: "Future", "flightson:aa": "American Airlines" };
+    const pickNote = r.pick && r.chosen?.length ? `Counts your best ${r.chosen.length === 1 ? "brand" : "two"}: ${r.chosen.map((id) => PICK_NAME[id] || id).join(" and ")}` : null;
+    if (r.value > 0) return { value: r.value, factor: credit.annual ? r.value / credit.annual : 0, reason: null, pools: r.pools, dedupe: "pool", pick: r.pick || null, habit: r, perk: "use", note: pickNote };
     /* Owner, 2026-11-23: "Would start if free" counts $0 — only what they'd
        pay for anyway. Listed under "Nice extras" instead. */
     if (rule.asked.some((k) => triesIfFree(HABIT_BY_KEY[k], habits[k]))) return { factor: 0, reason: "You'd try it if free", tryIfFree: true };

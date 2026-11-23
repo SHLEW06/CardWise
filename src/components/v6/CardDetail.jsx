@@ -29,7 +29,8 @@ import { cardDisplayName } from "../../data/cardNames.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 import { alternativesForSlot } from "../../engine/v5/lab.js";
 import { SLOT_DEFS } from "../../engine/v5/methodology.js";
-import { habitMathLines } from "../../data/perkHabits.js";
+import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
+import { ticketComparison } from "../../engine/v5/tickets.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
@@ -94,6 +95,12 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
   const [open, setOpen] = useState(null);
   const bestN = useMemo(() => optimalWallet(profile).value.N, [profile]);
   const d = useMemo(() => cardDetail(cardId, profile, bestN), [cardId, profile, bestN]);
+  /* v7e Part 2: where to buy tickets, on cards with a ticket credit or presales. */
+  const ticketCmp = useMemo(() => {
+    const c = BY_ID[cardId];
+    const relevant = (c?.credits || []).some((cr) => creditDraws(cr).some((x) => x.habit === "tickets")) || (c?.niceExtras || []).some((x) => /ticket/i.test(x));
+    return relevant ? ticketComparison(profile) : null;
+  }, [cardId, profile]);
   const e = useMemo(() => explainCard(cardId, context || profile.cardsHeld, profile, walletValue), [cardId, context, profile]);
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
@@ -154,6 +161,13 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
           <Reveal i={2} className="panel detail-block detail-why">
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
+
+          {ticketCmp && (
+            <Reveal i={2} className="panel detail-block" data-testid="ticket-compare">
+              <h2 className="t-h3">Concert and event tickets</h2>
+              <p>{ticketCmp.text}</p>
+            </Reveal>
+          )}
 
           <Reveal i={2} className="panel detail-block">
             <h2 className="t-h2">Benefits you'd use</h2>
