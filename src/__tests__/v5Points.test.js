@@ -22,8 +22,10 @@ describe("Your points, explained (§2 step 9)", () => {
     const r = explainPoints({ cardsHeld: ["freedom-unlimited"], spend: everyday, brands: { airlines: ["united"] } });
     expect(r.programs[0].transferable).toBe(false);
     expect(r.programs[0].partnersYouPicked).toEqual([]);
-    expect(r.programs[0].sentence).toBe("Worth about 1.5% today. Add a Sapphire Preferred and the same points move to United — a brand you picked.");
-    expect(r.programs[0].pctText).toBe("≈ 1.5% back");
+    /* v7c 5c: the headline is the point value; the card line carries the rates. */
+    expect(r.programs[0].sentence).toBe("Add a Sapphire Preferred and the same points move to United — a brand you picked.");
+    expect(r.programs[0].headline).toBe("Worth 1¢ per point");
+    expect(r.programs[0].lines[0].text).toBe("Freedom Unlimited: 3% at restaurants and drugstores · 1.5% elsewhere");
   });
   it("names co-brand and cash-back programs in plain words", () => {
     const r = explainPoints({ cardsHeld: ["delta-gold", "citi-double-cash", "quicksilver"] });

@@ -59,7 +59,8 @@ export function bestPortal(kind, walletIds, profile) {
     if (!mult) continue;
     const v = cardPointValue(card, profile, walletIds);
     const pct = mult * v.cpp;
-    if (!best || pct > best.pct) best = { cardId: id, portal: PORTAL_NAME[v.basis === "cash" && card.pointCurrency === "cash" ? "cash" : card.pointCurrency] || `${card.issuer} travel`, multiplier: mult, cpp: v.cpp, pct, upTo: v.upTo };
+    /* v7c 5c: a card earns its portal rate only on its own issuer's portal. */
+    if (!best || pct > best.pct) best = { cardId: id, portal: portalOf(card), multiplier: mult, cpp: v.cpp, pct, upTo: v.upTo };
   }
   return best;
 }

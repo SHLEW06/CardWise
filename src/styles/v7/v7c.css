@@ -22,3 +22,8 @@
 .v5 [data-testid="nice-extras"] .unused-row { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: center; }
 .v5 [data-testid="nice-extras"] .unused-row svg { color: var(--ink-3); }
 .v5 .earn-row [data-testid="stacked-return"] { grid-column: 1 / -1; }
+
+/* 5c: points screen — point value, then each card's rates. */
+.v5 .points-cpp { margin: 2px 0 6px; font-weight: 600; }
+.v5 .points-rates { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 4px; }
+.v5 .points-math ul { margin: 4px 0 0; padding-left: 18px; }

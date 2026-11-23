@@ -1342,6 +1342,35 @@ portal credits explicitly; bag test uses the verified two domestic bags.
 | Owner-like, held wallet | +$684 | **+$659** | |
 | 1, 2, 3 | — | unchanged | |
 
+## 5c — points screen and earn-rate fixes (2026-11-22)
+
+- **"Here's what your points can do"**: each currency row leads with "Worth
+  X¢ per point", then one line per card with its category rates as % back,
+  grouped by rate (`cardRateLine`): "Delta SkyMiles Gold: 2.4% at Delta,
+  restaurants and groceries · 1.2% elsewhere"; "Freedom Unlimited: 3% at
+  restaurants and drugstores · 1.5% elsewhere" under "Worth 1¢ per point"
+  (no more "Worth about 1.5% today" / "≈ 3%"). The blended % column is gone.
+  A co-brand's Flights / Hotels key reads as its own brand.
+- Amex Membership Rewards shows whenever an MR card is held (it always did
+  for a held MR card; now pinned by a test — the owner doesn't hold the Gold,
+  which is why it wasn't on their screen).
+- **"How we got this"**: where the ¢ value comes from (partner average at
+  transfer ratios with the 1¢ floor, a typical program value, or cash) and
+  each rate × ¢ = %.
+- **Robinhood Gold**: 3% on everything, travel included (Chase / Amex portals
+  or direct) — `earnRate` is 3 in every category and it has no portal rates.
+  Re-read robinhood.com/creditcard on 2026-11-22: "earn 3% cash back on all
+  categories", no travel tier and no Robinhood Travel mention. The 5% is kept
+  only as a **"Robinhood Travel only" note, never counted** (unverified —
+  see question 6). The 5% flights / 10% hotels "when you book in the app" are
+  on the **Robinhood Platinum** page (robinhood.com/us/en/creditcard/platinum),
+  a different card not in our catalog.
+- Portals are tied to the issuer everywhere: `bestPortal` used the point
+  currency's name for the portal; it now uses the card's issuer, like
+  `rankPortals`. Test: no card earns a portal rate on another issuer's portal.
+- Tests: `v7cPart5c.test.jsx` (9); two older tests that asserted the blended
+  % moved to the new rows. Golden: unchanged (display only).
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only
@@ -1446,3 +1475,8 @@ lists spend-gated or unverified credits.
 4. **Stay style** factors: chains 1 · mix 0.75 · independent 0.4. OK?
 5. The **Global Entry credit** amount on US Bank Altitude Connect isn't on
    its page — valued at $24 a year like the others.
+6. **Robinhood Gold 5% on Robinhood Travel** (5c): Robinhood's Gold card page
+   lists only "3% cash back on all categories". The 5% / 10% in-app travel
+   rates are on the Robinhood **Platinum** page. Kept as a "Robinhood Travel
+   only" note, not counted. Do you see 5% on Gold bookings in the app? If
+   so, where is it stated?

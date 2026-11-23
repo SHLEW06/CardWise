@@ -18,6 +18,13 @@ export const CARDS = [
     /* v7c audit (robinhood.com/creditcard, 2026-11-22): 3% on all categories;
        the 5% travel-portal rate isn't on the page — dropped. */
     earnRates: { General: 3 }, portalMultipliers: {},
+    /* v7c 5c: 3% on everything — travel too, booked anywhere (Chase / Amex
+       portals or direct). A 5% rate is said to apply only in Robinhood's own
+       travel booking; robinhood.com/creditcard (re-read 2026-11-22) shows only
+       "3% cash back on all categories", so it's a note, never counted. The
+       5% flights / 10% hotels booked in the app belong to the Robinhood
+       Platinum, a different card (robinhood.com/us/en/creditcard/platinum). */
+    portalNote: "Robinhood Travel only: 5% is said to apply to travel booked in Robinhood's own app. Robinhood's Gold card page lists 3% on everything, so the 5% isn't counted.",
     requiresSubscription: { name: "Robinhood Gold", annual: 60 },
     credits: [], benefits: ["3% cash back on all categories", "No annual fee (Robinhood Gold membership required)"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

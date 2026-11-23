@@ -15,6 +15,7 @@ import { transferRatio } from "../transferValue.js";
 import { normalizeProfile, annualSpend } from "../profileDefaults.js";
 import { BANK_CURRENCIES, CASH_CURRENCIES } from "./valuation.js";
 import { transfersAlone, rewardsByCategory, pctBackFor, CATEGORIES } from "./value.js";
+import { cardPointValue, partnerShortName } from "./pointValues.js";
 
 const SHORT = { chase: "Chase", amex: "Amex", citi: "Citi", c1: "Capital One", bilt: "Bilt", wf: "Wells Fargo" };
 const BRAND = {
@@ -62,6 +63,40 @@ function programPct(cards, wallet, p) {
   return Math.max(...cards.map((c) => pctBackFor(c, "other", p, wallet)));
 }
 
+/* v7c 5c: earn keys in plain words. */
+const KEY_WORDS = {
+  Dining: "restaurants", Restaurants: "restaurants", Groceries: "groceries", WholeFoods: "Whole Foods", Gas: "gas", EV: "EV charging",
+  Transit: "transit", Drugstores: "drugstores", Streaming: "streaming", Entertainment: "entertainment", Online: "online shopping",
+  Travel: "travel", Flights: "flights", Hotels: "hotels", Wireless: "phone plans", Internet: "internet", Utilities: "utilities",
+  Rent: "rent", Wholesale: "warehouse clubs", CostcoBuy: "Costco", CostcoGas: "Costco gas", VacationRentals: "vacation rentals",
+  Amazon: "Amazon", Target: "Target", Walmart: "Walmart", Apple: "Apple", PayPal: "PayPal", Mobile: "mobile wallets",
+};
+const pctNum = (x) => `${Math.round(x * 10) / 10}%`;
+const centsText = (c) => `${Math.round(c * 100) / 100}¢`;
+
+/**
+ * v7c 5c: one card's rates as % back at this point value, grouped by rate —
+ * "Delta Gold: 2.4% at restaurants, groceries and Delta · 1.2% elsewhere".
+ * A co-brand's Flights / Hotels key is its own brand. Never one blend.
+ */
+export function cardRateLine(card, cpp) {
+  const r = card.earnRates || {};
+  const general = r.General ?? 1;
+  const brand = BRAND[card.pointCurrency];
+  const byRate = new Map();
+  for (const [k, v] of Object.entries(r)) {
+    if (k === "General" || !(v > general)) continue;
+    const word = brand && ((k === "Flights" && LOYALTY[card.pointCurrency]?.kind === "air") || (k === "Hotels" && LOYALTY[card.pointCurrency]?.kind !== "air")) ? brand : KEY_WORDS[k] || k.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+    if (!byRate.has(v)) byRate.set(v, []);
+    if (!byRate.get(v).includes(word)) byRate.get(v).push(word);
+  }
+  if (card.rotating) byRate.set(card.rotating.rate, [...(byRate.get(card.rotating.rate) || []), "rotating categories each quarter"]);
+  const parts = [...byRate.entries()].sort((a, b) => b[0] - a[0]).map(([v, words]) => `${pctNum(v * cpp)} at ${list(words)}`);
+  parts.push(`${pctNum(general * cpp)} ${parts.length ? "elsewhere" : "on everything"}`);
+  const name = card.name;
+  return { cardId: card.id, text: `${name}: ${parts.join(" · ")}`, math: [...byRate.keys(), general].map((v) => `${v}x × ${centsText(cpp)} = ${pctNum(v * cpp)}`) };
+}
+
 export function explainPoints(rawProfile, byId = BY_ID) {
   const p = normalizeProfile(rawProfile);
   const held = p.cardsHeld.map((id) => byId[id]).filter(Boolean);
@@ -80,7 +115,17 @@ export function explainPoints(rawProfile, byId = BY_ID) {
        card if there is one, else the highest-fee card. */
     const photo = [...cards].sort((a, b) => (transfersAlone(b) ? 1 : 0) - (transfersAlone(a) ? 1 : 0) || (b.annualFee || 0) - (a.annualFee || 0))[0];
     const pct = programPct(cards, held, p);
-    const base = { currency: cur, cards: names, photoCardId: photo.id, pctBack: pct, pctText: pctText(pct) };
+    /* v7c 5c: the row leads with the point value; each card's rates as %
+       back follow. No blended % for a currency. */
+    const pv = cardPointValue(cards[0], p, held.map((c) => c.id));
+    const cpp = pv.cpp;
+    const lines = cards.map((c) => cardRateLine(c, cpp));
+    const how = pv.basis === "partners"
+      ? `Worth ${centsText(cpp)} a point: the average of the partners you'd use (${pv.partners.map((x) => partnerShortName(x.key)).join(", ")}), at their transfer ratios — never below the ${centsText(1)} cash value.`
+      : pv.basis === "standard" ? `Worth ${centsText(cpp)} a point: a typical redemption value for this program.`
+      : `Worth ${centsText(cpp)} a point: what the points pay as cash or statement credit${BANK_CURRENCIES.has(cur) ? " (none of your cards lets them move to partners yet)" : ""}.`;
+    const notes = cards.map((c) => c.portalNote).filter(Boolean);
+    const base = { currency: cur, cards: names, photoCardId: photo.id, pctBack: pct, pctText: pctText(pct), cpp, headline: `Worth ${centsText(cpp)} per point`, lines, math: { how, rows: lines.flatMap((l) => l.math.map((m) => `${BY_ID[l.cardId]?.name || l.cardId}: ${m}`)) }, portalNotes: notes };
     if (BANK_CURRENCIES.has(cur) && PROGRAMS[cur]) {
       const canTransfer = cards.some(transfersAlone) || held.some((h) => h.pointCurrency === cur && transfersAlone(h));
       const ids = cards.map((c) => c.id);
@@ -92,7 +137,7 @@ export function explainPoints(rawProfile, byId = BY_ID) {
       if (!canTransfer) {
         const unlock = UNLOCK_CARD[cur] ? `Add ${/^[AEIOU]/.test(UNLOCK_CARD[cur]) ? "an" : "a"} ${UNLOCK_CARD[cur]}` : `Add a ${SHORT[cur]} card that transfers`;
         const where = matches.length ? `to ${list(matches.map((m) => m.name))} — ${both}` : "to airlines and hotels";
-        sentence = `Worth about ${Math.round(pct * 10) / 10}% today. ${unlock} and the same points move ${where}.`;
+        sentence = `${unlock} and the same points move ${where}.`;
       } else if (matches.length) {
         const same = matches.every((m) => m.ratioText === matches[0].ratioText);
         const where = same

@@ -762,6 +762,21 @@ function CreditStep({ d, set, headRef }) {
 
 /* ── Step 8: your points ─────────────────────────────────────────────── */
 
+function HowWeGotThis({ math }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="link-btn t-caption" aria-expanded={open} onClick={() => setOpen(!open)}>How we got this</button>
+      {open && (
+        <div className="t-caption points-math" data-testid="points-math">
+          <p>{math.how}</p>
+          <ul>{math.rows.map((r) => <li key={r}>{r}</li>)}</ul>
+        </div>
+      )}
+    </>
+  );
+}
+
 function YourPointsStep({ d, headRef }) {
   const r = useMemo(() => explainPoints(d), [d]);
   return (
@@ -774,10 +789,16 @@ function YourPointsStep({ d, headRef }) {
             <div className="points-photo"><CardFace card={BY_ID[p.photoCardId]} /></div>
             <div className="points-copy">
               <h2 className="points-name">{p.name}</h2>
+              {/* v7c 5c: the point value first, then each card's own rates — never one blended %. */}
+              <p className="points-cpp" data-testid={`points-cpp-${p.currency}`}>{p.headline}</p>
+              <ul className="points-rates">
+                {p.lines.map((l) => <li key={l.cardId} data-testid={`points-rate-${l.cardId}`}>{l.text}</li>)}
+              </ul>
               <p>{p.sentence}</p>
               {p.note && !p.transferable && <p className="t-caption">{p.note}</p>}
+              {p.portalNotes.map((n) => <p key={n} className="t-caption" data-testid="portal-note">{n}</p>)}
+              <HowWeGotThis math={p.math} />
             </div>
-            <span className="points-value">{p.pctText}</span>
           </li>
         ))}
       </ul>

@@ -210,11 +210,12 @@ describe("6–9 · thorough steps", () => {
     cont();
     expect(loadV5Profile().partnerPicks.chase).toEqual(["united", "aeroplan"]);
   });
-  it("Your points: editorial rows with a photo and ≈ % back", () => {
+  it("Your points: editorial rows with a photo, the point value and each card's rates (v7c 5c)", () => {
     saveV5Profile({ cardsHeld: ["freedom-unlimited"], brands: { airlines: ["united"] } });
     render(<Survey initialProfile={loadV5Profile()} initialMode="thorough" initialStepId="yourPoints" />);
     expect(heading()).toBe("Here's what your points can do.");
-    expect(screen.getByText(/% back$/)).toBeInTheDocument();
+    expect(screen.getByTestId("points-cpp-chase")).toHaveTextContent("Worth 1¢ per point");
+    expect(screen.queryByText(/% back$/)).toBeNull();
   });
   it("the reveal shows the score, the optimal wallet at their budget, and Open Wallet Lab", () => {
     saveV5Profile({ cardsHeld: ["citi-double-cash"], feeBudget: 250 });
