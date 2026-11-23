@@ -99,32 +99,21 @@ describe("Reveal", () => {
 
 describe("Profile (§17)", () => {
   it("summarizes every survey answer and opens that step to edit", () => {
-    saveV5Profile({ cardsHeld: ["csp"], feeBudget: 250, travel: { trips: 4, homeAirport: "ATL", lounges: "yes" } });
+    saveV5Profile({ cardsHeld: ["csp"], memberships: ["costco"], travel: { trips: 4, homeAirport: "ATL", lounges: "yes" } });
     const onEdit = vi.fn();
     render(<Profile onEditStep={onEdit} />);
     expect(screen.getByText("Chase Sapphire Preferred")).toBeInTheDocument();
-    expect(screen.getByText("$250 a year, all cards")).toBeInTheDocument();
+    expect(screen.getByText("costco")).toBeInTheDocument();          // v7c: Memberships, not a fee budget
     fireEvent.click(screen.getByRole("button", { name: "Edit Travel" }));
     expect(onEdit).toHaveBeenCalledWith("travel");
     expect(answerSummaries(loadV5Profile()).map((r) => r.step)).toEqual(["cards", "spend", "travel", "brands", "fee", "credit"]);
   });
-  it("has point values, banks, fee budget, saved setups and settings", () => {
+  it("has point values, banks, saved setups and settings — no fee budget (v7c 5d-2.5)", () => {
     render(<Profile />);
-    for (const h of ["Your answers", "Fee budget", "Point values", "Connected banks", "Saved setups", "Settings"]) {
+    for (const h of ["Your answers", "Point values", "Connected banks", "Saved setups", "Settings"]) {
       expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
     }
-  });
-  it("fee budget saves a set amount or a typed one", () => {
-    const onChange = vi.fn();
-    render(<Profile onProfileChange={onChange} />);
-    fireEvent.click(screen.getByRole("radio", { name: "$750" }));
-    expect(loadV5Profile().feeBudget).toBe(750);
-    fireEvent.click(screen.getByRole("radio", { name: "Type an amount" }));
-    const f = screen.getByLabelText("Fee budget in dollars a year");
-    fireEvent.change(f, { target: { value: "$1,200" } });
-    fireEvent.blur(f);
-    expect(loadV5Profile().feeBudget).toBe(1200);
-    expect(onChange).toHaveBeenCalled();
+    expect(screen.queryByRole("heading", { name: "Fee budget" })).toBeNull();
   });
 });
 

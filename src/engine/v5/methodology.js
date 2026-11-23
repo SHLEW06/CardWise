@@ -32,6 +32,9 @@ export const C1_PERSONAL_LIMIT = 2;      // Capital One: about two personal card
    MIN_GAIN, kept): the search scores N − MIN_GAIN × cards, so a sixth card
    that adds $5 never makes the lineup. Reported N has no friction. */
 export const MIN_GAIN = 25;
+/* v7c 5d-2.3: a second card from a hotel or airline program already in the
+   wallet must add at least this much more (a "clearly positive" net). */
+export const SAME_PROGRAM_MIN = 50;
 const EPS = 1e-6;
 
 /* ── eligibility (issuer rules + credit profile) ─────────────────────────── */
@@ -223,7 +226,10 @@ const keyOf = (o) => JSON.stringify(o, (k, v) => (v === Infinity ? "∞" : v));
 
 /**
  * Best wallet for a profile.
- *   budget      fee budget (default profile.feeBudget; Infinity = no limit)
+ *   budget      total-fee cap — v7c 5d-2.5: NOT used by any screen; the
+ *               optimizer maximizes net value (counted value − fees −
+ *               application costs) with no cap. Default Infinity; kept only
+ *               for the explicit "what-if" fee ladder.
  *   mode        "scratch" — any eligible cards (held ones cost nothing to keep)
  *               "wallet"  — keep every held card, add the best ones
  *   maxCards    default profile.maxCards
@@ -235,7 +241,7 @@ const keyOf = (o) => JSON.stringify(o, (k, v) => (v === Infinity ? "∞" : v));
 export function optimalWallet(rawProfile, options = {}) {
   const profile = normalizeProfile(rawProfile);
   const {
-    budget = profile.feeBudget, mode = "scratch", maxCards = profile.maxCards,
+    budget = Infinity, mode = "scratch", maxCards = profile.maxCards,
     filter = null, mustOneOf = null, require = null, catalog = CARDS, tag = "",
   } = options;
   const ck = keyOf({ profile, budget, mode, maxCards, tag, mustOneOf, n: catalog.length, f: !!filter, r: !!require });
@@ -341,9 +347,27 @@ export function optimalWallet(rawProfile, options = {}) {
     return t;
   };
   const lowHurdle = minHurdle(profile);
+  /* v7c 5d-2.3: one hotel program, one hotel card (same for airlines) by
+     default — a second card from a program already in the set has to add a
+     clearly positive net value (SAME_PROGRAM_MIN on top of MIN_GAIN). Held
+     cards are theirs already and don't count. Costs only grow as cards
+     join, so the search bound stays an upper bound. */
+  const samePenalty = (set) => {
+    const seen = {};
+    let n = 0;
+    for (const c of set) {
+      const pc = c.pointCurrency;
+      if (!HOTEL_CURRENCIES.has(pc) && !AIRLINE_CURRENCIES.has(pc)) continue;
+      if (seen[pc] && elig[c.id]?.how !== "held") n++;
+      seen[pc] = true;
+    }
+    return n * SAME_PROGRAM_MIN;
+  };
+  const hurdleOfBase = hurdleOf;
+  const costOf = (set) => hurdleOfBase(set) + samePenalty(set);
   const consider = (set) => {
     if (!feasible(set)) return;
-    const v = ev.eval(set).N - MIN_GAIN * set.length - hurdleOf(set);
+    const v = ev.eval(set).N - MIN_GAIN * set.length - costOf(set);
     if (!best || v > best.N + EPS || (Math.abs(v - best.N) <= EPS && set.length < best.set.length)) best = { N: v, set: [...set] };
   };
 
@@ -366,10 +390,10 @@ export function optimalWallet(rawProfile, options = {}) {
     consider(set);
     while (set.length < maxCards) {
       let pick = null;
-      const cur = ev.eval(set).N - hurdleOf(set);
+      const cur = ev.eval(set).N - costOf(set);
       for (const c of cands) {
         if (!fitsWith(set, c, feesSoFar)) continue;
-        const g = ev.eval([...set, c]).N - hurdleOf([...set, c]) - cur - MIN_GAIN;
+        const g = ev.eval([...set, c]).N - costOf([...set, c]) - cur - MIN_GAIN;
         if (g > EPS && (!pick || g > pick.g)) pick = { c, g };
       }
       if (!pick) break;
@@ -392,7 +416,7 @@ export function optimalWallet(rawProfile, options = {}) {
     /* Hurdles only grow as cards join (a Chase card in the plan adds 5/24
        slot costs to the others), so today's hurdles + the smallest possible
        hurdle per added card keep this an upper bound. */
-    const here = evo.eval(set).N - MIN_GAIN * set.length - hurdleOf(set);
+    const here = evo.eval(set).N - MIN_GAIN * set.length - costOf(set);
     const gains = [];
     /* A must-have list not met yet: any feasible extension adds one of
        those cards, so the bound is its best gain (even if negative) plus
@@ -477,7 +501,7 @@ export function scoreFrom(n, best) {
 export function walletScore(rawProfile, opts = {}) {
   const profile = normalizeProfile(rawProfile);
   const current = walletValue(profile.cardsHeld, profile, { normalized: true });
-  const best = optimalWallet(profile, { budget: opts.budget ?? profile.feeBudget });
+  const best = optimalWallet(profile, opts.budget != null ? { budget: opts.budget } : {});
   return { score: scoreFrom(current.N, best.value.N), current, best };
 }
 
@@ -500,7 +524,9 @@ export function cardFits(rawProfile, catalog = CARDS) {
   const heldFees = held.reduce((t, c) => t + ev.fees[c.id], 0);
   const rows = pool.map((c) => {
     const withIt = ev.eval([...held, c]).N;
-    const fitsBudget = ev.fees[c.id] === 0 || heldFees + ev.fees[c.id] <= profile.feeBudget;
+    /* v7c 5d-2.5: no fee budget — every card is scored; kept for older callers. */
+    const fitsBudget = true;
+    void heldFees;
     return { cardId: c.id, delta: Math.round(withIt - baseN), fitsBudget };
   });
   const maxD = Math.max(0, ...rows.filter((r) => r.fitsBudget).map((r) => r.delta));
@@ -638,7 +664,7 @@ export const LOUNGE_OPTION_IDS = ["csr", "amex-plat", "ritz", "venture-x", "citi
 
 export function sampleWallets(rawProfile, opts = {}) {
   const profile = normalizeProfile(rawProfile);
-  const maxN = optimalWallet(profile, { budget: profile.feeBudget }).value.N;
+  const maxN = optimalWallet(profile).value.N;
   /* v7b: "Lounge & credits" = a premium lounge card that also carries real
      credits ($395+ fee, $300+ of credits: Sapphire Reserve, Platinum,
      Ritz-Carlton, Venture X, Strata Elite …) — not a hotel card that happens
@@ -646,13 +672,12 @@ export function sampleWallets(rawProfile, opts = {}) {
   const loungeIds = CARDS.filter((c) => rolesFor(c).includes("Lounge card") && c.cardType !== "business"
     && (c.annualFee || 0) >= 395 && (c.credits || []).reduce((t, x) => t + (x.annual || 0), 0) >= 300
     && (!HOTEL_CURRENCIES.has(c.pointCurrency) || c.id === "ritz")).map((c) => c.id);
-  const loungeFees = loungeIds.map((id) => cardFee(BY_ID[id], profile)).filter((f) => f > 0);
   const hotelBrand = profile.brands.hotels.find((h) => HOTEL_CURRENCIES.has(h)) || null;   // not "independent" / "unsure"
   const runs = [
-    { key: "lounge", label: "Lounge & credits", opts: { mustOneOf: loungeIds, budget: Math.max(profile.feeBudget, Math.min(...loungeFees)), profile: { ...profile, travel: { ...profile.travel, lounges: profile.travel.lounges === "bundle" ? "bundle" : profile.travel.trips ? "yes" : profile.travel.lounges } } } },
+    { key: "lounge", label: "Lounge & credits", opts: { mustOneOf: loungeIds, profile: { ...profile, travel: { ...profile.travel, lounges: profile.travel.lounges === "bundle" ? "bundle" : profile.travel.trips ? "yes" : profile.travel.lounges } } } },
     { key: "cash", label: "Simple cash back", opts: { filter: (c) => CASH_LIKE.has(c.pointCurrency), maxCards: 3 } },
     { key: "points", label: "Points traveler", opts: { filter: (c) => BANK_CURRENCIES.has(c.pointCurrency), require: (set) => set.some((c) => BANK_CURRENCIES.has(c.pointCurrency) && isUnlocked(c.pointCurrency, set.map((x) => x.id))) } },
-    hotelBrand && { key: "hotel", label: `Hotel loyalist (${hotelBrand[0].toUpperCase()}${hotelBrand.slice(1)})`, opts: { mustOneOf: CARDS.filter((c) => c.pointCurrency === hotelBrand && c.cardType !== "business").map((c) => c.id), budget: Math.max(profile.feeBudget, 95) } },
+    hotelBrand && { key: "hotel", label: `Hotel loyalist (${hotelBrand[0].toUpperCase()}${hotelBrand.slice(1)})`, opts: { mustOneOf: CARDS.filter((c) => c.pointCurrency === hotelBrand && c.cardType !== "business").map((c) => c.id) } },
     { key: "costco", label: "Costco family", opts: { mustOneOf: ["costco-citi"], profile: { ...profile, spend: { ...profile.spend, warehouse: profile.spend.warehouse || 300 }, gasAt: profile.gasAt === "regular" ? "both" : profile.gasAt, warehouseClub: "costco" } } },
   ].filter(Boolean);
   return runs.map((r) => {

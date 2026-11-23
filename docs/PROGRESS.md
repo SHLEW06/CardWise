@@ -1399,6 +1399,58 @@ portal credits explicitly; bag test uses the verified two domestic bags.
 - Tests: `v7cPart5d.test.jsx` (9); two older tests moved (no budget cap on
   swaps; no "overall" blend). Golden unchanged (display / sheet only).
 
+## 5d-2 — Wallet Lab results: root causes and redesign (2026-11-22)
+
+**Root causes, confirmed in the code:**
+1. **Mixed slots from different sources.** `SLOT_DEFS` (methodology.js)
+   mixed role slots (hotelKeeper, airlineKeeper, lounge), spending slots
+   (dining, hotels …) and the catch-all, each filled by different logic in
+   `slotsFor`: Keeper hotel = whichever wallet benefit has `kind:
+   "freeNight"`; Lounge = whichever has `dedupe: "lounge"`; Hotels = the card
+   with the most hotel dollars in the allocation. One card (the Brilliant)
+   could therefore show in two role slots, and nothing stopped a second
+   Marriott card (Boundless) taking Hotels beside it.
+2. **The Amex Gold was hidden by the fee budget.** `alternativesForSlot`
+   (lab.js) built `fits = setup.length ≤ max && Σ fees ≤ profile.feeBudget`;
+   with the Brilliant's $650 in the setup, only cards of ≈ $95 or less could
+   appear, so the Gold ($325) never showed for Groceries — confirmed, and the
+   same check sat in `optimalWallet` (`fitsWith`), `cardFits`, the sample
+   wallets and the survey.
+
+**Fixes:**
+- **No fee budget anywhere.** `optimalWallet` has no fee cap (default
+  `budget = Infinity`; a saved `feeBudget` is ignored), nor do slot
+  alternatives, card fit (`fitsBudget` always true), the sample wallets or the
+  Wallet Score. The survey's fee step is now **"Memberships you already pay
+  for"** (memberships + Robinhood cash, no budget); Profile's Fee budget block,
+  the Lab's slider and fee ladder, Explore's "Over your fee budget" tag and
+  Home's "Best possible at your fee budget" / "Play with your fee budget" are
+  gone ("Best possible wallet for you: $X a year"). The engine's fee ladder
+  stays as a what-if, on no screen.
+- **Mode label**: "Built from your N cards" (default whenever they hold cards)
+  or "Starting from zero".
+- **Two sections**: "Your cards" (one tile per card: counted value − fee, jobs
+  as tags, why it's there; no role slots) and "Which card to use where" (a
+  table: category, best card, % back, program bonus line; a card in many
+  rows; "Alternatives" opens the sheet).
+- **Held cards never vanish**: "Consider cancelling / downgrading" lists held
+  cards the setup leaves out or that cost more than they give, with the
+  reason and $ effect (`heldNotKept`).
+- **One program, one card**: a second new card from a hotel / airline program
+  already in the wallet must add ≥ $50 more (`SAME_PROGRAM_MIN`); if it stays,
+  its tile says what it adds beside the first.
+- **Re-run for the owner's three cards** (FU, Robinhood Gold, Delta Gold):
+  the optimizer weighs the Amex Gold for Dining and Groceries and recommends
+  it only if it pays after its fee and the application cost (it doesn't for
+  the owner-like test profile: −$220 a year); no card twice; no Brilliant +
+  Boundless.
+- Tests: `v7cPart5d2.test.jsx` (10). Budget-assuming tests (16 engine, 12
+  UI) now assert the budget changes nothing.
+
+**Golden (`npm run golden`)**: only **1 student $0** moves — N +$0 → **+$57**:
+the saved $0 budget no longer blocks the Capital One SavorOne ($39 fee, pays
+for itself). Everything else unchanged.
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only

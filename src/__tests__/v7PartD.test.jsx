@@ -72,12 +72,11 @@ describe("Wallet Lab screen", () => {
     expect(onOpen).toHaveBeenCalled();
     expect(Array.isArray(onOpen.mock.calls[0][1])).toBe(true);
   });
-  it("D5: a slot index, panels collapsed, the fee ladder beside the budget", () => {
+  it("D5 (v7c 5d-2): 'Your cards' + 'Which card to use where'; panels collapsed; no fee ladder", () => {
     render(<WalletLab profile={P} />);
-    const nav = screen.getByRole("navigation", { name: "Jump to a slot" });
-    expect(within(nav).getAllByRole("link").length).toBeGreaterThan(2);
+    expect(screen.getByTestId("your-cards")).toBeInTheDocument();
+    expect(within(screen.getByTestId("use-where")).getAllByRole("row").length).toBeGreaterThan(2);
     for (const d of document.querySelectorAll("details.fold")) expect(d.open).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: /See the fee ladder/ }));
-    expect(screen.getByTestId("fee-ladder")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /See the fee ladder/ })).toBeNull();
   });
 });

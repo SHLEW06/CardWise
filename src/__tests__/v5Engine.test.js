@@ -7,7 +7,7 @@ import { CREDIT_USAGE, LOUNGE_RETAIL_CAP } from "../data/benefitUsage.js";
 import { normalizeProfile, DEFAULT_PROFILE } from "../engine/profileDefaults.js";
 import { cppFor, formatPctBack } from "../engine/v5/valuation.js";
 import { cardValue, benefitBreakdown, rolesFor, cardCpp, cardFee, marginalRewards, creditUsage } from "../engine/v5/value.js";
-import { walletValue, MIN_GAIN } from "../engine/v5/methodology.js";
+import { walletValue, MIN_GAIN, optimalWallet } from "../engine/v5/methodology.js";
 import { optimizeWallet, slotsFilled } from "../engine/v5/optimizer.js";
 
 const recommended = (r) => [...r.getNext, ...r.later].filter((x) => !x.waitingOn);
@@ -151,22 +151,23 @@ describe("worked example: Citi Strata Elite for AA-hub flyers", () => {
   });
 });
 
-describe("worked example: $0 budget", () => {
+/* v7c 5d-2.5: the fee budget is gone as a constraint — a saved $0 budget
+   never changes what's recommended. */
+describe("worked example: a saved $0 budget", () => {
   const profiles = [
-    { feeBudget: 0, wants: "cash" },
-    { feeBudget: 0, wants: "travel", travel: { trips: 8, lounges: "yes", homeAirport: "ATL" }, brands: { airlines: ["delta"], hotels: ["marriott"] } },
+    { wants: "cash" },
+    { wants: "travel", travel: { trips: 8, lounges: "yes", homeAirport: "ATL" }, brands: { airlines: ["delta"], hotels: ["marriott"] } },
   ];
-  /* v6: a $0-fee card that happens to include lounge access may appear —
-     the rule is about fees, not roles. */
-  it.each(profiles.map((p, i) => [i, p]))("profile %i: only $0-fee cards", (_i, p) => {
-    const r = optimizeWallet(p);
-    expect(recommended(r).length).toBeGreaterThan(0);
-    for (const x of recommended(r)) expect(x.annualFee, x.cardId).toBe(0);
+  it.each(profiles.map((p, i) => [i, p]))("profile %i: same picks as with no budget", (_i, p) => {
+    const r0 = optimizeWallet({ ...p, feeBudget: 0 });
+    const r1 = optimizeWallet({ ...p, feeBudget: 1500 });
+    expect(recommended(r0).length).toBeGreaterThan(0);
+    expect(recIds(r0)).toEqual(recIds(r1));
   });
 });
 
 /* ── invariants ───────────────────────────────────────────────────────── */
-describe("fee budget is never exceeded", () => {
+describe("v7c 5d-2.5: the fee budget never changes the picks", () => {
   const budgets = [0, 100, 300, 700];
   const shapes = [
     { wants: "cash" },
@@ -175,12 +176,9 @@ describe("fee budget is never exceeded", () => {
     { wants: "travel", cardsHeld: ["csp", "freedom-unlimited"], travel: { trips: 3, lounges: "yes" } },
     { wants: "cash", cardsHeld: ["amex-plat"], travel: { trips: 0 } },
   ];
-  const cases = budgets.flatMap((b) => shapes.map((s, i) => [`budget ${b}, shape ${i}`, { ...s, feeBudget: b }]));
-  it.each(cases)("%s", (_n, p) => {
-    const r = optimizeWallet(p);
-    const P = r.profile;
-    const keptFees = r.keep.reduce((t, k) => t + cardFee(BY_ID[k.action === "downgrade" ? k.downgradeTo : k.cardId], P), 0);
-    expect(r.totals.newCardFees).toBeLessThanOrEqual(Math.max(0, P.feeBudget - keptFees));
+  it.each(shapes.map((s, i) => [`shape ${i}`, s]))("%s", (_n, s) => {
+    const ids = budgets.map((b) => recIds(optimizeWallet({ ...s, feeBudget: b })).join(","));
+    expect(new Set(ids).size).toBe(1);
   });
 });
 
@@ -205,11 +203,11 @@ describe("Altitude Go is not recommended when dining already earns ≥ 3x", () =
     const r = optimizeWallet({ ...heavyDining, wants: "travel", feeBudget: 700, travel: { trips: 6, lounges: "yes", homeAirport: "DFW" }, brands: { airlines: ["aa"] } });
     expect(recIds(r)).not.toContain("usb-altitude-go");
   });
-  it("control: it can appear for a $0-budget cash diner with no dining card (so the rule above is real)", () => {
-    const r = optimizeWallet({ ...heavyDining, wants: "cash", feeBudget: 0 });
+  it("control: among no-fee cards it is picked for a cash diner with no dining card (so the rule above is real)", () => {
     const alt = BY_ID["usb-altitude-go"];
     expect(marginalRewards(alt, [], normalizeProfile({ ...heavyDining, wants: "cash" }))).toBeGreaterThan(0);
-    expect(recIds(r)).toContain("usb-altitude-go");
+    const r = optimalWallet({ ...heavyDining, wants: "cash" }, { filter: (c) => !(c.annualFee > 0) && !c.requiresSubscription, tag: "test:nofee" });
+    expect(r.wallet).toContain("usb-altitude-go");
   });
 });
 

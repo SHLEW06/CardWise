@@ -183,15 +183,12 @@ describe("Part A screens", () => {
     expect(p.brands.hotels).not.toContain("unsure");
     expect(p.brands.airlines).toContain("delta");
   }, 20000);
-  it("fee: 'Whatever gives me the most back' shows the ladder; picking a rung sets the budget", () => {
+  it("v7c 5d-2.5: the fee step has no budget question or fee ladder", () => {
     saveV5Profile(ME);
     render(<Survey initialMode="quick" initialStepId="fee" initialProfile={loadV5Profile()} />);
-    fireEvent.click(screen.getByRole("radio", { name: "Whatever gives me the most back" }));
-    const ladder = screen.getByTestId("fee-ladder");
-    expect(within(ladder).getAllByRole("row")).toHaveLength(1 + LADDER_BUDGETS.length);
-    fireEvent.click(within(ladder).getAllByRole("button", { name: "Pick" })[2]);
-    cont();
-    expect(loadV5Profile().feeBudget).toBe(500);
+    expect(screen.queryByRole("radio", { name: "Whatever gives me the most back" })).toBeNull();
+    expect(screen.queryByTestId("fee-ladder")).toBeNull();
+    expect(LADDER_BUDGETS.length).toBeGreaterThan(0);   // the what-if ladder still exists in the engine
   });
   it("credit: the big-loan question saves", () => {
     render(<Survey initialMode="thorough" initialStepId="credit" />);

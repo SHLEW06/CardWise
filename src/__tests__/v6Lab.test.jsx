@@ -57,23 +57,22 @@ describe("lab engine", () => {
 });
 
 describe("Wallet Lab screen", () => {
-  it("header: dial, this setup a year, best at budget, no fee limit", () => {
+  it("header: dial, this setup a year, the best possible wallet (v7c: no fee budget)", () => {
     render(<WalletLab profile={P} />);
     expect(screen.getByRole("meter", { name: /^Wallet Score, (your wallet|suggested setup)$/ })).toBeInTheDocument();
     expect(screen.getByText(/^a year, (your wallet|this suggested setup)$/)).toBeInTheDocument();
-    expect(screen.getByText("Best at your budget")).toBeInTheDocument();
-    expect(screen.getByText("With no fee limit")).toBeInTheDocument();
+    expect(screen.getByText("Best possible wallet for you")).toBeInTheDocument();
+    expect(screen.queryByText("With no fee limit")).toBeNull();
   });
-  it("only relevant slots appear (no rent slot without rent; no lounge slot when lounges don't matter)", () => {
+  it("only relevant categories appear (no rent row without rent)", () => {
     render(<WalletLab profile={{ ...P, travel: { trips: 0 } }} />);
-    const names = within(screen.getByRole("list", { name: "Slots" })).getAllByRole("button").map((b) => b.getAttribute("aria-label").split(":")[0]);
-    expect(names).not.toContain("Rent");
-    expect(names).not.toContain("Lounge card");
-    expect(names).toContain("Dining");
+    const where = screen.getByTestId("use-where");
+    expect(within(where).queryByTestId("where-rent")).toBeNull();
+    expect(within(where).getByTestId("where-dining")).toBeInTheDocument();
   });
   it("tap a slot → alternatives → compare → add alongside (default) or replace; a toast explains", async () => {
     render(<WalletLab profile={P} />);
-    fireEvent.click(screen.getByRole("button", { name: /^Dining:/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Dining: .*See alternatives/ }));
     const dialog = screen.getByRole("dialog", { name: /Dining alternatives/ });
     fireEvent.click(within(dialog).getAllByRole("button", { name: "Compare" })[0]);
     expect(within(dialog).getByTestId("swap-compare")).toBeInTheDocument();
@@ -84,13 +83,17 @@ describe("Wallet Lab screen", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent(/\/yr — .+ took Dining/);
   });
-  it("the fee budget field re-optimizes and offers to save the what-if", () => {
+  it("v7c 5d-2.5: no fee-budget control; a spending what-if can be saved", () => {
     const onSave = vi.fn();
     render(<WalletLab profile={P} onSaveProfile={onSave} />);
-    const f = screen.getByLabelText("Fee budget, all cards, in dollars");
-    fireEvent.focus(f); fireEvent.change(f, { target: { value: "0" } }); fireEvent.blur(f);
+    expect(screen.queryByLabelText(/Fee budget/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Your spending/ }));
+    const d = screen.getByRole("dialog", { name: "Your spending" });
+    const inp = within(d).getAllByRole("textbox")[0];
+    fireEvent.focus(inp); fireEvent.change(inp, { target: { value: "999" } }); fireEvent.blur(inp);
+    fireEvent.click(within(d).getByRole("button", { name: "Done" }));
     fireEvent.click(screen.getByRole("button", { name: "Save to my profile" }));
-    expect(onSave.mock.calls[0][0].feeBudget).toBe(0);
+    expect(onSave).toHaveBeenCalled();
   });
   it("two modes, a spending drawer and the panels", () => {
     render(<WalletLab profile={P} />);

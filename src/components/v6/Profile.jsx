@@ -1,7 +1,7 @@
 /* ============================================================================
    Profile (v6 §17) — opened from the avatar, top right.
    Survey answers (edit any step) · point values · connected banks ·
-   fee budget · saved setups · settings.
+   saved setups · settings (v7c: no fee budget).
    Sections whose feature arrives in a later milestone render the slot they
    will fill (`slots` prop) so the page structure is final now.
    ========================================================================== */
@@ -41,7 +41,7 @@ export function answerSummaries(p) {
       if (p.brands.portalHotels) rows.push("Would book through a card's travel site");
       return rows.length ? rows.join(" · ") : "None picked";
     })() },
-    { step: "fee", title: "Fee budget", value: p.feeBudget === Infinity ? "No limit" : `${money(p.feeBudget)} a year, all cards` },
+    { step: "fee", title: "Memberships", value: p.memberships.length ? p.memberships.join(", ") : "None" },
     { step: "credit", title: "Credit", value: `${p.credit.score ? `About ${p.credit.score}` : "Score not given"} · ${p.credit.newCards24mo} new cards in 2 years` },
   ];
 }
@@ -77,11 +77,7 @@ export default function Profile({ onEditStep, onRestart, onProfileChange, onOpen
         </ul>
       </Reveal>
 
-      <Reveal i={2} className="panel profile-block">
-        <h2 className="t-h2">Fee budget</h2>
-        <p className="t-caption">The most you'd pay in yearly card fees, all cards combined.</p>
-        <FeeBudget value={profile.feeBudget} onChange={(feeBudget) => save({ feeBudget })} profile={profile} />
-      </Reveal>
+      {/* v7c 5d-2.5: no fee budget — the optimizer has no fee cap. */}
 
       <Reveal i={3} className="panel profile-block" id="point-values">
         <h2 className="t-h2">Point values</h2>

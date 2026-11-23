@@ -14,12 +14,13 @@ beforeEach(() => { window.scrollTo = () => {}; });
 const P = { cardsHeld: ["amex-plat", "citi-double-cash"], feeBudget: 300, travel: { trips: 0 } };
 
 describe("Home", () => {
-  it("hero: $X a year in words, the Wallet Score, best at budget, focal image, their cards", () => {
+  it("hero: $X a year in words, the Wallet Score, best possible wallet, focal image, their cards", () => {
     const { container } = render(<Home profile={P} offers={[]} />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/Your cards (pay|cost) you \$[\d,]+ a year\./);
     expect(screen.getByText(/fees cost more than you get back/)).toBeInTheDocument();   // this wallet nets below $0
     expect(screen.getByRole("meter", { name: "Wallet Score" })).toBeInTheDocument();
-    expect(screen.getByText(/Best possible at your fee budget/)).toBeInTheDocument();
+    expect(screen.getByTestId("home-best")).toHaveTextContent(/^Best possible wallet for you: \$[\d,]+ a year$/);   // v7c 5f.6
+    expect(screen.queryByText(/fee budget/i)).toBeNull();
     expect(container.querySelector(".home-hero-v7 .focal")).toBeTruthy();       // v7: the one texture
     expect(container.querySelectorAll(".home-cards-row li")).toHaveLength(2);
   });

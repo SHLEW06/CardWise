@@ -19,16 +19,14 @@ import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
-import { alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote } from "../../../engine/v5/lab.js";
+import { alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
 import CardFace from "../../v5/CardFace.jsx";
 import Choice from "../../v5/Choice.jsx";
-import MoneySlider from "../../v5/MoneySlider.jsx";
 import ScoreDial from "../ScoreDial.jsx";
 import PortalCalculator from "../PortalCalculator.jsx";
 import { Reveal, CountUp } from "../motion.jsx";
-import FeeLadder from "../../v7/FeeLadder.jsx";
 import CompareTable from "../../v7/CompareTable.jsx";
 import { SpendRow } from "../../v5/survey/Survey.jsx";
 import { formatPctBack } from "../../../engine/v5/valuation.js";
@@ -57,18 +55,18 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
   const [drawer, setDrawer] = useState(false);
   const [toast, setToast] = useState(null);
   const [samplesOn, setSamplesOn] = useState(false);
-  const [ladderOn, setLadderOn] = useState(false);
   const openCard = (id, slotKey = null) => onOpenCard?.(id, setup, slotKey);   // v7 D1 / v7b 5.2: full card detail, judged against this setup
 
   const best = useMemo(() => optimalWallet(p), [p]);
-  const noLimit = useMemo(() => optimalWallet(p, { budget: Infinity }), [p]);
   const mine = useMemo(() => (mode === "wallet" ? optimalWallet(p, { mode: "wallet" }) : best), [p, mode, best]);
   /* Changing the budget, spending or mode re-optimizes: a swap is kept only
      until then. */
   useEffect(() => { setCustom(null); }, [p, mode]);
   const setup = custom || mine.wallet;
   const value = useMemo(() => walletValue(setup, p), [setup, p]);
-  const slots = useMemo(() => slotsFor(value, p), [value, p]);
+  const tiles = useMemo(() => walletCards(setup, p, value), [setup, p, value]);
+  const where = useMemo(() => useWhereRows(value, p), [value, p]);
+  const dropped = useMemo(() => heldNotKept(setup, p), [setup, p]);
   const score = scoreFrom(value.N, best.value.N);
   /* "Your wallet now" — the same number Home shows (same function, same budget). */
   const nowValue = useMemo(() => walletValue(p.cardsHeld, p), [p]);
@@ -89,25 +87,18 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
       <Reveal as="header" className="lab-head">
         <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">
-          <p className="t-eyebrow">Wallet Lab · {sameAsHeld ? "your wallet" : "suggested setup"}</p>
+          {/* v7c 5d-2.1: say which mode the page is in. */}
+          <p className="t-eyebrow" data-testid="lab-mode">Wallet Lab · {mode === "wallet" && p.cardsHeld.length ? `Built from your ${p.cardsHeld.length} card${p.cardsHeld.length === 1 ? "" : "s"}` : "Starting from zero"}</p>
           <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
-          <p className="t-caption lab-basis">Score {score} = {scoreBasisText(value.N, best.value.N)}.</p>
+          <p className="t-caption lab-basis">{scoreBasisText(value.N, best.value.N)}</p>
           <dl className="lab-refs">
             {!sameAsHeld && <div><dt>Your wallet now</dt><dd className="t-value" data-testid="lab-now-score">{nowScore} <span className="t-caption">· {money(nowValue.net)} a year</span></dd></div>}
-            <div><dt>Best at your budget</dt><dd className="t-value"><CountUp value={best.value.net} /></dd></div>
-            <div><dt>With no fee limit</dt><dd className="t-value"><CountUp value={noLimit.value.net} /></dd></div>
+            <div><dt>Best possible wallet for you</dt><dd className="t-value" data-testid="lab-best"><CountUp value={best.value.net} /> <span className="t-caption">a year</span></dd></div>
           </dl>
         </div>
       </Reveal>
 
       <Reveal i={1} className="panel lab-controls">
-        <div className={`lab-budget${ladderOn ? " has-ladder" : ""}`}>
-          <div className="lab-budget-control">
-            <MoneySlider label="Fee budget, all cards" value={Number.isFinite(draft.feeBudget) ? draft.feeBudget : 1500} max={1500} step={25} onChange={(n) => setDraft({ ...draft, feeBudget: n })} hint="Changes re-run the optimizer." />
-            <button className="link" onClick={() => setLadderOn((o) => !o)} aria-expanded={ladderOn}>{ladderOn ? "Hide the fee ladder" : "Which budget pays most? See the fee ladder"}</button>
-          </div>
-          {ladderOn && <FeeLadder profile={p} value={Number.isFinite(draft.feeBudget) ? draft.feeBudget : null} onPick={(n) => setDraft({ ...draft, feeBudget: n })} />}
-        </div>
         <div className="lab-toggles">
           <div className="chip-wrap" role="radiogroup" aria-label="Start from">
             <Choice radio pill selected={mode === "wallet"} onSelect={() => setMode("wallet")}>From my wallet</Choice>
@@ -115,6 +106,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
           </div>
           <button className="btn btn-quiet btn-small" onClick={() => setDrawer(true)} aria-expanded={drawer}><SlidersHorizontal size={16} aria-hidden="true" /> Your spending</button>
         </div>
+        <p className="t-caption">No fee limit: a card is in only if it pays for itself — every number is after its fee.</p>
         {dirty && (
           <div className="lab-whatif" role="status">
             <span>You're playing with a what-if.</span>
@@ -124,59 +116,60 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
         )}
       </Reveal>
 
-      <Reveal i={2}><AllBenefits value={value} /></Reveal>
-
-      <nav className="slot-index" aria-label="Jump to a slot">
-        {slots.map((s) => <a key={s.key} className="slot-chip" href={`#slot-${s.key}`}>{s.label}</a>)}
-      </nav>
-      <Reveal i={2} as="ul" className="slots" aria-label="Slots">
-        {slots.map((s) => {
-          const card = s.cardId ? BY_ID[s.cardId] : null;
-          const also = card ? [...new Set([...(s.tags || []), ...slots.filter((x) => x.cardId === s.cardId && x.key !== s.key).map((x) => x.label)])] : [];
-          const shared = sharedText(s);
-          return (
-            <li key={s.key} id={`slot-${s.key}`} className="slot-item">
-              {card && <button className="slot-card" onClick={() => openCard(card.id, s.key)} aria-label={`Open ${cardDisplayName(card)}`}><CardFace card={card} /></button>}
-              <button className="slot" onClick={() => setSheet(s.key)} aria-label={`${s.label}: ${card ? cardDisplayName(card) : "empty"}. See alternatives`}>
-                <span className="slot-label">{s.label}</span>
-                {card ? null : s.suggestions?.length ? <CardFace card={BY_ID[s.suggestions[0].cardId]} className="is-suggestion" /> : <span className="slot-empty">No card yet</span>}
-                <span className="slot-name">{card ? cardDisplayName(card) : s.suggestions?.length ? `Consider: ${cardDisplayName(BY_ID[s.suggestions[0].cardId])}` : "Tap to add one"}</span>
-                <span className="slot-value">{s.pct != null ? pctText(s.pct) : s.keeper ? `${money(s.keeper.bags + s.keeper.companion)} in bags + perks − ${money(s.keeper.fee)} fee` : s.value ? `${money(s.value)} a year to you` : s.suggestions?.length ? `≈ ${money(s.suggestions[0].net)} a year after its fee` : "—"}</span>
-                {shared && <span className="t-caption slot-shared">{shared}</span>}
-                {s.programBase && <span className="t-caption slot-shared">+ {s.programBase.perDollar}x {partnerShortName(s.programBase.program)} base points booking direct (≈ {(Math.round(s.programBase.pct * 10) / 10)}% more, any card)</span>}
-                {also.length > 0 && <span className="slot-also">{also.map((a) => <span key={a} className="tag">{a}</span>)}</span>}
-                <span className="slot-more">See alternatives</span>
-              </button>
+      {/* v7c 5d-2.2: "Your cards" — one tile per card, its jobs as tags. */}
+      <Reveal i={2} as="section" className="panel your-cards" aria-labelledby="yc-h" data-testid="your-cards">
+        <h2 className="t-h2" id="yc-h">Your cards</h2>
+        <ul className="yc-tiles">
+          {tiles.map((t) => (
+            <li key={t.cardId} className="yc-tile" data-testid={`tile-${t.cardId}`}>
+              <button className="yc-photo" onClick={() => openCard(t.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[t.cardId])}`}><CardFace card={BY_ID[t.cardId]} /></button>
+              <div className="yc-copy">
+                <span className="slot-name">{cardDisplayName(BY_ID[t.cardId])}{t.held ? <span className="t-caption"> · yours</span> : <span className="t-caption"> · new</span>}</span>
+                <span className="num-ui yc-net" data-testid="tile-net">{signed(t.net)} a year <span className="t-caption">({money(t.earn + t.benefits)} counted − {money(t.fee)} fee)</span></span>
+                <span className="slot-also">{[...t.jobs, ...t.perkJobs].map((j) => <span key={j} className="tag">{j}</span>)}</span>
+                <span className="t-caption yc-why">{t.why}</span>
+              </div>
             </li>
-          );
-        })}
-      </Reveal>
-
-      {(() => {
-        const inSlots = new Set(slots.map((s) => s.cardId).filter(Boolean));
-        const rest = setup.filter((id) => !inSlots.has(id));
-        if (!rest.length) return null;
-        return (
-          <div className="lab-rest">
-            <span className="t-caption">Also in this setup</span>
-            <ul className="lab-rest-list">
-              {rest.map((id) => {
-                const own = value.benefits.filter((b) => b.cardId === id).reduce((t, b) => t + b.value, 0);
-                const fee = cardFee(BY_ID[id], p);
-                return (
-                  <li key={id}>
-                    <button className="lab-rest-item" onClick={() => openCard(id)}>
-                      <span className="lab-rest-photo"><CardFace card={BY_ID[id]} /></span>
-                      <span><span className="slot-name">{cardDisplayName(BY_ID[id])}</span><br /><span className="t-caption">{own ? `${money(own)} a year in benefits` : "Earns where nothing else beats it"}{fee ? ` · ${money(fee)} fee` : ""}</span></span>
-                    </button>
-                  </li>
-                );
-              })}
+          ))}
+        </ul>
+        {dropped.length > 0 && (
+          <div className="yc-drop" data-testid="consider-cancelling">
+            <h3 className="t-h3">Consider cancelling / downgrading</h3>
+            <ul className="rows">
+              {dropped.map((x) => (
+                <li key={x.cardId} className="plan-row">
+                  <button className="link" onClick={() => openCard(x.cardId)}>{cardDisplayName(BY_ID[x.cardId])}</button>
+                  <span className="t-caption">{x.action === "downgrade" ? `Downgrade to ${cardDisplayName(BY_ID[x.to])}` : x.action === "cancel" ? "Cancel" : "Not in this setup"} · {x.reason}</span>
+                </li>
+              ))}
             </ul>
           </div>
-        );
-      })()}
+        )}
+      </Reveal>
 
+      {/* v7c 5d-2.2: "Which card to use where" — one row per category; a card can be in many rows. */}
+      <Reveal i={2} as="section" className="panel use-where" aria-labelledby="uw-h" data-testid="use-where">
+        <h2 className="t-h2" id="uw-h">Which card to use where</h2>
+        <table className="v7-math uw-table">
+          <thead><tr><th scope="col">Category</th><th scope="col">Best card</th><th scope="col">Back</th><th scope="col"><span className="sr-only">Alternatives</span></th></tr></thead>
+          <tbody>
+            {where.map((r) => (
+              <tr key={r.key} data-testid={`where-${r.key}`}>
+                <td>{r.label}</td>
+                <td>
+                  <button className="link" onClick={() => openCard(r.cardId, r.key)}>{cardDisplayName(BY_ID[r.cardId])}</button>
+                  {r.programBase && <span className="t-caption uw-note"> + {r.programBase.perDollar}x {partnerShortName(r.programBase.program)} member points booking direct (≈ {Math.round(r.programBase.pct * 10) / 10}% more, any card)</span>}
+                  {r.beats.length > 0 && <span className="t-caption uw-note"> · {sharedText(r)}</span>}
+                </td>
+                <td className="num-ui">{Math.round(r.pct * 10) / 10}%</td>
+                <td><button className="btn btn-quiet btn-small" onClick={() => setSheet(r.key)} aria-label={`${r.label}: ${cardDisplayName(BY_ID[r.cardId])}. See alternatives`}>Alternatives</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Reveal>
+
+      <Reveal i={2}><AllBenefits value={value} /></Reveal>
       <Reveal i={3} className="lab-samples">
         <div className="lab-section-head">
           <h2 className="t-h2">Sample wallets</h2>

@@ -175,20 +175,18 @@ describe("4 · brands (perks)", () => {
     expect(b.habits.globalentry).toEqual({ answer: "pay" });
     expect(b.portalHotels).toBe(false);
     expect(b.precheck).toEqual({ has: false, renewIn: null });
-    expect(heading()).toBe("Most you'd pay in yearly card fees, all cards combined.");   // no second perk step
+    expect(heading()).toBe("Memberships you already pay for");   // no second perk step
   });
 });
 
-describe("5 · fee budget", () => {
-  it("set amounts or a typed one", () => {
+describe("5 · memberships (v7c 5d-2.5: the fee-budget question is gone)", () => {
+  it("asks only for memberships they already pay for and Robinhood cash", () => {
     render(<Survey initialMode="quick" initialStepId="fee" />);
-    expect(heading()).toBe("Most you'd pay in yearly card fees, all cards combined.");
-    fireEvent.click(screen.getByRole("radio", { name: "Type an amount" }));
-    const f = screen.getByLabelText("Fee budget in dollars a year");
-    fireEvent.change(f, { target: { value: "425" } });
-    fireEvent.blur(f);
+    expect(heading()).toBe("Memberships you already pay for");
+    expect(screen.queryByLabelText(/Fee budget/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Costco/ }));
     cont();
-    expect(loadV5Profile().feeBudget).toBe(425);
+    expect(loadV5Profile().memberships).toContain("costco");
   });
 });
 

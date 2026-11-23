@@ -44,7 +44,7 @@ describe("B1 / B2 · navigation and old features", () => {
   it("Profile holds airport fit and price-a-redemption (restored)", () => {
     saveV5Profile({ cardsHeld: ["amex-gold"], travel: { airports: [{ code: "ATL", trips: 4 }] } });
     render(<Profile />);
-    for (const h of ["Your answers", "Fee budget", "Point values", "Airport fit", "Price a redemption", "Connected banks", "Saved setups", "Settings"]) expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
+    for (const h of ["Your answers", "Point values", "Airport fit", "Price a redemption", "Connected banks", "Saved setups", "Settings"]) expect(screen.getByRole("heading", { name: h })).toBeInTheDocument();
     expect(screen.getByTestId("airport-fit")).toHaveTextContent(/Hub airlines: Delta/);
   });
   it("price a redemption: a booking's value per point against yours", () => {

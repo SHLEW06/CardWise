@@ -64,11 +64,11 @@ describe("1 · lounge visit limits", () => {
 });
 
 describe("2 · required memberships count as fees unless already paid", () => {
-  it("Robinhood Gold's $60 is in F(W) and the fee budget; not when they already pay it", () => {
+  it("Robinhood Gold's $60 is in F(W); not when they already pay it", () => {
     expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({}))).toBe(60);
     expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({ memberships: ["robinhood-gold"] }))).toBe(0);
     expect(walletValue(["robinhood-gold"], {}).F).toBe(60);
-    expect(optimalWallet({ feeBudget: 0 }).wallet).not.toContain("robinhood-gold");
+    expect(walletValue(["robinhood-gold"], { memberships: ["robinhood-gold"] }).N - walletValue(["robinhood-gold"], {}).N).toBe(60);
     expect(membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ memberships: { robinhoodGold: true } })).paid).toBe(true);   // v4 object form
   });
   it("the Costco Visa needs a Costco membership the same way", () => {

@@ -11,7 +11,7 @@ export const STEP_DEFS = [
   { id: "spend", title: "Spending", star: true },
   { id: "travel", title: "Travel", star: true },
   { id: "brands", title: "Card perks", star: true },
-  { id: "fee", title: "Fee budget", star: true },
+  { id: "fee", title: "Memberships", star: true },   // v7c 5d-2.5: was "Fee budget" (id kept for saved links)
   { id: "credit", title: "Credit", star: false },
   { id: "points", title: "Point values", star: false },
   { id: "yourPoints", title: "Your points", star: false },

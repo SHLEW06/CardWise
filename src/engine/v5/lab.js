@@ -40,7 +40,7 @@ function slotPct(card, slotKey, profile, wallet) {
  */
 export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCards, limit = Infinity, catalog = CARDS } = {}) {
   const profile = normalizeProfile(rawProfile);
-  const B = budget ?? profile.feeBudget;
+  const B = budget ?? Infinity;
   const max = maxCards ?? profile.maxCards;
   const before = walletValue(setup, profile, { normalized: true });
   const slots = slotsFor(before, profile);
@@ -114,6 +114,81 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
      ("You have this card · Put it back"). */
   out.sort((a, b) => (b.held ? 1 : 0) - (a.held ? 1 : 0) || b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
   return { current, before, pinned, slot, alternatives: out.slice(0, limit) };
+}
+
+/* ── v7c 5d-2.2: "Your cards" tiles and "Which card to use where" ────────── */
+
+const KIND_TAG = { freeNight: "Free night", companion: "Companion fare", bags: "Bags", lounge: "Lounge", points: "Bonus points" };
+const TYPE_TAG = { dining: "Dining perks", rides: "Rides", shopping: "Shopping perks", streaming: "Streaming", travelService: "Travel perks", security: "PreCheck / CLEAR", hotel: "Hotel perks", airline: "Airline fees", travel: "Travel perks", lifestyle: "Lifestyle perks", other: "Perks" };
+
+/**
+ * One tile per card in a setup: its total counted value (the earning it
+ * gets in this wallet + the benefits counted for it) minus its fee, its jobs
+ * as tags (the categories it's the best card for, its perk jobs) and why
+ * it's there. Each card appears once.
+ *   → [{ cardId, earn, benefits, fee, net, adds, jobs: [], perkJobs: [], why, held }]
+ */
+export function walletCards(setup, rawProfile, value = null) {
+  const profile = normalizeProfile(rawProfile);
+  const v = value || walletValue(setup, profile, { normalized: true });
+  const slots = slotsFor(v, profile);
+  return v.cards.map((id) => {
+    const earn = Math.round(v.earning.perCard[id]?.value || 0);
+    const mine = v.benefits.filter((b) => b.cardId === id && b.value > 0);
+    const benefits = mine.reduce((t, b) => t + b.value, 0);
+    const fee = cardFee(BY_ID[id], profile);
+    const adds = Math.round(v.N - walletValue(setup.filter((x) => x !== id), profile, { normalized: true }).N);
+    const jobs = slots.filter((s) => s.cardId === id && SLOT_DEFS.find((d) => d.key === s.key)?.buckets).map((s) => s.label);
+    const perkJobs = [...new Set(mine.map((b) => KIND_TAG[b.kind] || TYPE_TAG[b.type] || "Perks"))];
+    const held = profile.cardsHeld.includes(id);
+    /* A second card from the same hotel / airline program says why it stays. */
+    const pc = BY_ID[id].pointCurrency;
+    const sibling = v.cards.find((x) => x !== id && BY_ID[x].pointCurrency === pc && (HOTEL_OR_AIRLINE.has(pc)));
+    const parts = [];
+    if (jobs.length) parts.push(`best card for ${jobs.map((j) => j.toLowerCase()).join(", ")}`);
+    if (benefits) parts.push(`${money(benefits)} in perks you'd use`);
+    let why = parts.length ? `${parts.join(" and ")[0].toUpperCase()}${parts.join(" and ").slice(1)}.` : "Earns where nothing else in this setup beats it.";
+    if (sibling) why += ` Adds ${adds >= 0 ? "" : "−"}${money(adds)} a year beside the ${cardDisplayName(BY_ID[sibling])}.`;
+    return { cardId: id, earn, benefits, fee, net: earn + benefits - fee, adds, jobs, perkJobs, why, held };
+  }).sort((a, b) => b.net - a.net || (a.cardId < b.cardId ? -1 : 1));
+}
+const HOTEL_OR_AIRLINE = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham", "delta", "united", "aa", "southwest", "alaska", "jetblue", "aeroplan", "avios", "flyingblue"]);
+
+/** "Which card to use where": one row per spending category. */
+export function useWhereRows(value, rawProfile) {
+  const profile = normalizeProfile(rawProfile);
+  return slotsFor(value, profile).filter((s) => SLOT_DEFS.find((d) => d.key === s.key)?.buckets || s.key === "rotating").filter((s) => s.cardId)
+    .map((s) => ({ key: s.key, label: s.label, cardId: s.cardId, pct: s.pct, programBase: s.programBase || null, beats: s.beats || [], dollars: s.dollars || 0 }));
+}
+
+/**
+ * v7c 5d-2.1: held cards the setup leaves out, and held cards that cost more
+ * than they give — never dropped silently.
+ *   → [{ cardId, action: "cancel"|"downgrade"|"left out", to?, effect, reason }]
+ */
+export function heldNotKept(setup, rawProfile) {
+  const profile = normalizeProfile(rawProfile);
+  const out = [];
+  const v = walletValue(setup, profile, { normalized: true });
+  for (const id of profile.cardsHeld) {
+    if (!BY_ID[id]) continue;
+    const fee = cardFee(BY_ID[id], profile);
+    if (!setup.includes(id)) {
+      const withIt = walletValue([...setup, id], profile, { normalized: true }).N;
+      const effect = Math.round(withIt - v.N);
+      out.push({ cardId: id, action: "left out", effect, reason: effect <= 0 ? (effect < 0 ? `Keeping it would cost ${money(-effect)} a year${fee ? ` after its ${money(fee)} fee` : ""}.` : `Keeping it would add $0 a year — your other cards already earn as much${fee ? "" : " (it has no fee, so keeping it open costs nothing)"}.`) : `It would add ${money(effect)} a year — put it back from any category.` });
+      continue;
+    }
+    const without = walletValue(setup.filter((x) => x !== id), profile, { normalized: true }).N;
+    const adds = Math.round(v.N - without);
+    if (adds < 0 && fee > 0) {
+      const down = (BY_ID[id].downgradeOptionIds || []).filter((d) => BY_ID[d] && BY_ID[d].availabilityStatus !== "closed")
+        .map((d) => ({ to: d, n: walletValue([...setup.filter((x) => x !== id), d], profile, { normalized: true }).N })).sort((a, b) => b.n - a.n)[0];
+      if (down && down.n > v.N) out.push({ cardId: id, action: "downgrade", to: down.to, effect: Math.round(down.n - v.N), reason: `Costs ${money(-adds)} a year more than it gives back; switching to the ${cardDisplayName(BY_ID[down.to])} saves ${money(down.n - v.N)}.` });
+      else out.push({ cardId: id, action: "cancel", effect: -adds, reason: `Costs ${money(-adds)} a year more than it gives back, after its ${money(fee)} fee.` });
+    }
+  }
+  return out;
 }
 
 /* ── v7b 5.3: every benefit the wallet gives ─────────────────────────────── */

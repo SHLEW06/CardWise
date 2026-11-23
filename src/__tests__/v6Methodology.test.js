@@ -224,15 +224,13 @@ describe("net value and the optimal wallet", () => {
     const without = walletValue(["csp"], {});
     expect(withB.N - without.N).toBe(withB.bonus);
   });
-  it("one optimal lineup for every budget, never over it, ≤ 6 cards, deterministic", () => {
+  it("v7c 5d-2.5: one optimal lineup whatever the saved fee budget, ≤ 6 cards, deterministic", () => {
     const base = { spend: spend({ dining: 600, groceries: 600, gas: 200, flights: 300, other: 900 }), travel: { trips: 4, lounges: "yes", homeAirport: "ORD" }, brands: { airlines: ["united"], hotels: ["hyatt"] }, credit: { score: 770 } };
-    let last = -Infinity;
+    const first = optimalWallet({ ...base, feeBudget: 0 });
     for (const B of [0, 100, 250, 500, 750, 1000, 1500, Infinity]) {
       const r = optimalWallet({ ...base, feeBudget: B });
-      expect(r.value.F, `budget ${B}`).toBeLessThanOrEqual(B);
+      expect(r.wallet, `budget ${B}`).toEqual(first.wallet);
       expect(r.wallet.length).toBeLessThanOrEqual(6);
-      expect(r.value.N).toBeGreaterThanOrEqual(last - MIN_GAIN * 6);   // more budget never hurts (up to the card friction)
-      last = r.value.N;
       expect(optimalWallet({ ...base, feeBudget: B }).wallet).toEqual(r.wallet);
     }
   });
@@ -295,14 +293,13 @@ describe("net value and the optimal wallet", () => {
 
 /* ── Golden profiles (Part G) ─────────────────────────────────────────── */
 describe("golden profiles", () => {
-  it("1. $0 budget, student, dining + groceries → a no-fee lineup", () => {
+  it("1. student, dining + groceries, fair credit → a lineup where every fee pays for itself (no budget cap, v7c)", () => {
     const r = optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 640 } });
-    expect(r.value.F).toBe(0);
     expect(r.wallet.length).toBeGreaterThan(0);
-    for (const id of r.wallet) expect(BY_ID[id].annualFee, id).toBe(0);
+    /* any fee is there only because the card more than covers it */
+    for (const id of r.wallet) if (BY_ID[id].annualFee > 0) expect(r.value.N - walletValue(r.wallet.filter((x) => x !== id), { feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 640 } }).N, id).toBeGreaterThan(0);
     /* 640 is fair credit: student / fair-credit unsecured cards, never secured. */
     for (const id of r.wallet) expect(BY_ID[id].cardType, id).not.toBe("secured");
-    expect(r.wallet).toEqual(expect.arrayContaining(["discover-student"]));
     /* Secured cards only below 580 or with no credit history. */
     for (const credit of [{ score: 550 }, { noHistory: true }]) {
       const w = optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit }).wallet;

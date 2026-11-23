@@ -92,7 +92,7 @@ export default function Explore({ profile: raw, onOpenCard }) {
         </div>
       )}
 
-      <p className="t-caption explore-count">{rows.length} card{rows.length === 1 ? "" : "s"}{chip === "foryou" ? " · ranked by what each adds to your wallet at your fee budget" : ""}</p>
+      <p className="t-caption explore-count">{rows.length} card{rows.length === 1 ? "" : "s"}{chip === "foryou" ? " · ranked by what each adds to your wallet a year, after its fee" : ""}</p>
 
       <ul className="explore-grid" aria-label="Cards">
         {rows.map((r, k) => (
@@ -113,7 +113,6 @@ export default function Explore({ profile: raw, onOpenCard }) {
                 <span className="tile-tags">
                   <span className={`tag ${r.approval.level === 0 ? "tag-good" : r.approval.level === 2 ? "tag-warn" : ""}`}>{r.approval.label}</span>
                   {r.availability.key !== "open" && <span className="tag">{r.availability.label}</span>}
-                  {!r.fitsBudget && <span className="tag tag-warn">Over your fee budget</span>}
                 </span>
                 <Choice pill selected={picked.includes(r.card.id)} onSelect={() => togglePick(r.card.id)} aria-label={`Compare ${cardDisplayName(r.card)}`}>Compare</Choice>
               </div>

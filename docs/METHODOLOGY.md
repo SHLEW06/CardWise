@@ -19,7 +19,7 @@ math" is built from.
 |---|---|---|
 | `s_c` | Spend per category per year — stored yearly (`spendYear`); each row is entered monthly or yearly (v7 A1; flights, hotels, vacation rentals default to yearly) | Survey step 2 (defaults: `SPEND_PRESETS.typical` × 12) |
 | `H` | Cards held | Step 1 |
-| `B` | Fee budget (all cards combined) | Step 5 |
+| `B` | ~~Fee budget~~ — **removed in v7c 5d-2.5**: no screen caps total fees; the survey no longer asks | — |
 | `λ` | Lounges: most trips 1 · a few visits a year ½ · decide later ½ (until decided) · not at all 0 | Step 3 |
 | — | Cabin (economy / premium / business-first / mixed), how they book (direct / portal / whichever pays more), airline perks they'd use, bags per trip × share of trips with bags (v7 A2) | Step 3 |
 | — | Airlines + hotels picked; round trips/yr `T`; paid hotel nights/yr `n`; home airport | Step 3 (nights default `2T`; airport never defaulted) |
@@ -292,9 +292,27 @@ the score unless `includeBonus` is on.
 Base(W)  = 2% × (total spend − rent)              "a simple 2% card"
 N(W)     = E(W) + U(W) − F(W) − Base               extra over a 2% card
 net(W)   = E(W) + U(W) − F(W)                      what the wallet is worth a year
-W*(B)    = argmax N(W) − $25 × |W|
-           s.t. F(W) ≤ B, ≤ 6 cards (adjustable), issuer rules, credit profile
+W*       = argmax N(W) − $25 × |W| − hurdles − $50 × (2nd+ new card of a hotel / airline program)
+           s.t. ≤ 6 cards (adjustable), issuer rules, credit profile
 ```
+
+**v7c 5d-2.5 — no fee budget.** The optimizer maximizes net value (counted
+value − fees − application costs) with **no cap on total fees**. Fees are
+already subtracted, so a card is in only if it pays for itself. A saved
+`feeBudget` is ignored everywhere (optimal wallet, slot alternatives, card
+fit, sample wallets, Wallet Score). The survey's fee step asks only for
+memberships already paid for and Robinhood cash.
+
+**v7c 5d-2.3 — one program, one card.** A second new card from a hotel or
+airline program already in the wallet must add at least **$50 a year**
+(`SAME_PROGRAM_MIN`) on top of the usual $25; its tile then says what it
+adds beside the first ("Adds $183 a year beside the Marriott Bonvoy
+Brilliant"). Cards they hold don't count.
+
+**Search bound with a must-have list** (sample wallets, lounge options): any
+feasible extension must add one of the must-have cards, so the bound is that
+card's best gain plus the k − 1 best other gains (−∞ when none can still
+join); the greedy pass also starts from each must-have card.
 
 - **Eligibility** (`methodology.eligibility`): held cards always; otherwise
   open to new applicants, not business, store-locked only for that store's
@@ -326,7 +344,7 @@ W*(B)    = argmax N(W) − $25 × |W|
   keep). "From my wallet" = held cards stay (an upgradable one may be
   replaced by its upgrade); best adds within the budget; keep / downgrade /
   cancel from what each held card adds: `N(H) − N(H − k)`.
-- **Wallet Score** = `round(100 × N(current) / N(W*(B)))`, clamped to 0–100 — screens show it as "Score 23 = $377 of a possible $1,640 a year more than a simple 2% card", so it's computable from what's on screen; Home and Wallet Lab's "Your wallet now" use the same function;
+- **Wallet Score** = `round(100 × N(current) / N(W*))`, clamped to 0–100 — screens show it as "Score 23 = $377 of a possible $1,640 a year more than a simple 2% card", so it's computable from what's on screen; Home and Wallet Lab's "Your wallet now" use the same function;
   if `N(W*) ≤ 0`, 100 when the current wallet is at least as good, else 0.
 - **Card fit** (Explore) = `100 × Δ_k / max Δ` over cards eligible at their
   budget, `Δ_k = N(H ∪ {k}) − N(H)`; `Δ_k ≤ 0` → "Doesn't add value for you".
@@ -375,6 +393,27 @@ net. `gain = ΔE + ΔU − fee` exactly.
 
 ## 5c. Slots and swaps (v7 Part D)
 
+**v7c 5d / 5d-2 — the Lab is two sections now.** *"Your cards"*: one tile
+per card — its counted value (the earning it gets in this wallet + the
+benefits counted for it) minus its fee, its jobs as tags (the categories it's
+best for; Free night, Bags, Lounge, perks …) and why it's there
+(`walletCards`). There are no "Keeper hotel / Keeper airline / Lounge" slots:
+keepers are just cards whose tags are perk jobs. *"Which card to use where"*:
+a table, one row per spending category — the best card, its % back, and the
+program bonus line where it applies (`useWhereRows`); a card may be in many
+rows. Each category's card is the one that **earns the most at counted point
+values on the category's main spending** (was: the one with the most
+dollars). A second card is named only where it beats the first on a
+sub-category ("Chase Freedom Unlimited earns more on drugstores: 3%"); there's
+no "overall" blend. Held cards a setup leaves out, or that cost more than
+they give, show under **Consider cancelling / downgrading** with the reason
+and the $ effect (`heldNotKept`). The page says which mode it's in: "Built
+from your N cards" (the default whenever they hold cards) or "Starting from
+zero". The rotating 5% is its own row and is never a card's rate in another
+category's comparison.
+
+*Older (v7 D4), kept for reference:*
+
 **Slot %** (`slotsFor`): every allocation row in the slot's categories
 counts — rotating 5% included. The slot shows the **lead card's own rate**
 (its value ÷ its dollars); `overall` = all value ÷ all dollars, and when
@@ -386,8 +425,9 @@ total, so Robinhood's 3% showed as ≈ 2.3%.
 **Swaps** (`alternativesForSlot`): each candidate is valued two ways —
 **Add alongside** (default: the setup + the card; it takes only the lanes
 where it pays more) and **Replace** (the slot's card removed everywhere;
-lists the other slots that costs). Both must fit the fee budget and card
-limit. **Compare** (`compareCards`): % back per category (pctBack beside
+lists the other slots that costs). Both must fit the card limit (v7c: no
+fee budget). Cards they hold but the setup leaves out are listed first,
+"You have this card", with **Put it back**. **Compare** (`compareCards`): % back per category (pctBack beside
 the setup), credits used, lounges, fee, what each adds to the setup, and
 the application cost — delta = candidate − current, coloured better /
 worse.
@@ -428,7 +468,8 @@ applies to select bookings".
 
 ## 6b. Fee ladder and loyalty strategies (v7 Part A)
 
-**Fee ladder** (`plans.js feeLadder`): `W*(B)` for B = $0, $250, $500,
+**Fee ladder** (`plans.js feeLadder`) — *v7c: no longer on any screen (there's
+no fee budget); kept in the engine as a what-if.* `W*(B)` for B = $0, $250, $500,
 $1,000, $1,500. Per rung: net `E + U − F`, the cards, total fees, and the
 extra net per extra fee dollar over the rung below,
 `(net_B − net_prev) / (F_B − F_prev)`. **Returns flatten** at the first rung

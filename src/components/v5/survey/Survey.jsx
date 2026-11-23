@@ -5,7 +5,6 @@ import CardFace from "../CardFace.jsx";
 import Choice from "../Choice.jsx";
 import MoneySlider from "../MoneySlider.jsx";
 import Backdrop from "../../v6/Backdrop.jsx";
-import FeeBudget from "../../v6/FeeBudget.jsx";
 import PartnerPicker, { currenciesFor } from "../../v6/PartnerPicker.jsx";
 import ScoreDial from "../../v6/ScoreDial.jsx";
 import { Reveal, CountUp } from "../../v6/motion.jsx";
@@ -112,7 +111,7 @@ function ModeStep({ headRef, onPick }) {
     <>
       <Head headRef={headRef} title="Let's find your cards." sub="Every question is optional — skip anything and we'll use a sensible default. You can change any answer later from your profile." />
       <div className="choice-stack mode-choices">
-        <Choice onSelect={() => onPick("quick")} sub="Your cards, spending, travel, card perks and fee budget.">Quick · {MODES.quick.minutes} min</Choice>
+        <Choice onSelect={() => onPick("quick")} sub="Your cards, spending, travel, card perks and memberships.">Quick · {MODES.quick.minutes} min</Choice>
         <Choice onSelect={() => onPick("thorough")} sub="Also asks about your credit and where your points would go — the sharpest answer.">Thorough · {MODES.thorough.minutes} min</Choice>
       </div>
     </>
@@ -128,12 +127,12 @@ function Step({ id, d, set, mode, headRef }) {
     case "fee":
       return (
         <>
-          <Head headRef={headRef} title="Most you'd pay in yearly card fees, all cards combined."
-            sub="Some cards charge a yearly fee but give back more in benefits. We'll find the best setup within this." />
-          <FeeBudget value={d.feeBudget} onChange={(feeBudget) => set({ feeBudget })} profile={d} />
+          {/* v7c 5d-2.5: no fee-budget question — the optimizer has no fee cap;
+              a card is in only if it pays for itself after its fee. */}
+          <Head headRef={headRef} eyebrow="Memberships" title="Memberships you already pay for"
+            sub="Some cards only work with a paid membership. If you already have it, its cost isn't counted against the card." />
           <fieldset className="survey-group">
             <legend className="t-h3">Memberships you already pay for <span className="t-caption">(optional)</span></legend>
-            <p className="t-caption">Some cards only work with a paid membership. If you already have it, it won't count against your fee budget.</p>
             <ToggleChips options={MEMBERSHIPS} picked={d.memberships} onChange={(memberships) => set({ memberships })} label="Memberships you already pay for" />
           </fieldset>
           <fieldset className="survey-group" data-testid="robinhood-cash">
@@ -680,7 +679,7 @@ export function StrategyHelper({ d, set }) {
     <section className="helper" aria-labelledby="helper-h" data-testid="strategy-helper">
       <div>
         <h2 className="t-h3" id="helper-h">Your loyalty strategy</h2>
-        <p className="t-caption">From where you fly and your hotel nights: one airline and hotel program (or a few, if you travel a lot), with the smallest set of cards that earns them within your fee budget.</p>
+        <p className="t-caption">From where you fly and your hotel nights: one airline and hotel program (or a few, if you travel a lot), with the smallest set of cards that earns them, each paying for itself after its fee.</p>
       </div>
       {!list ? <p className="t-caption" role="status">Working out your strategies…</p> : (
         <ul className="helper-list" role="radiogroup" aria-labelledby="helper-h">
@@ -822,7 +821,7 @@ function RevealStep({ d, headRef }) {
     <>
       <Head headRef={headRef} eyebrow="Your best setup"
         title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
-        sub={`At your ${d.feeBudget === Infinity ? "unlimited" : fmt(d.feeBudget)} fee budget, with the answers you gave.`} />
+        sub="With the answers you gave. No fee limit: each card is in only if it pays for itself." />
       <div className="reveal-hero">
         {has && <ScoreDial score={s.score} caption="Wallet Score" />}
         <div className="reveal-numbers">

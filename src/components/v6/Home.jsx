@@ -94,7 +94,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             <ScoreDial score={s.score} size={120} caption="Score" />
             <div className="home-basis">
               <p className="t-small" data-testid="home-score-basis">Score {s.score} = {scoreBasisText(s.current.N, s.best.value.N)}.</p>
-              <p className="t-caption">Best possible at your fee budget: <span className="t-value">{money(s.best.value.net)} a year</span></p>
+              <p className="t-caption" data-testid="home-best">Best possible wallet for you: <span className="t-value">{money(s.best.value.net)} a year</span></p>
             </div>
           </div>
         </Reveal>
@@ -165,7 +165,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
         <Reveal i={3} className="home-links">
           <button className="home-link glass" onClick={() => onGo?.("lab")}>
             <span className="t-h2">Wallet Lab</span>
-            <span className="t-caption">Play with your fee budget and spending; watch the best wallet change.</span>
+            <span className="t-caption">Play with your cards and spending; watch the best wallet change.</span>
             <ArrowRight size={18} aria-hidden="true" />
           </button>
           <button className="home-link glass" onClick={() => onGo?.("explore")}>
