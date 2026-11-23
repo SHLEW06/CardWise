@@ -2040,6 +2040,22 @@ disagrees with the research file, the page wins:
   `benefitBreakdown`, so every screen, the optimizer and the plan re-rank.
 - Golden: unchanged. Tests: `v7ePart4.test.jsx` (6).
 
+## v7e Part 5 · DoorDash promos split (2026-11-23)
+
+- Chase's Reserve page lists "$15 monthly promo on any qualifying DoorDash
+  order" and "two $10 promos each month to save on groceries, daily
+  essentials" (through 12/31/29). **The research file's $5 restaurant promo
+  doesn't match; the page wins.** The $420 credit is now two: $15 a month
+  ($180) on the takeout habit (DoorDash or "Any"), and 2 × $10 a month ($240)
+  on a new row "Grocery or convenience delivery through DoorDash" (Never by
+  default, $40 an order estimate, not pooled with takeout). The Preferred's
+  $10 non-restaurant promo moves to the new row too.
+- Tests: `v7cPart4` updated (the Preferred's promo no longer pays for
+  takeout).
+
+**Not done yet (usage limit):** v7e Part 6 — acceptance re-run, the owner's
+before → after numbers and the card landing report.
+
 ## Questions for the owner (v7c, v7d)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

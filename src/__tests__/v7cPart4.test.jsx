@@ -105,7 +105,8 @@ describe("4.2 · one habit question per service", () => {
 });
 
 describe("4.2 · the engine turns habits into yearly dollars", () => {
-  const doordash = credit("csp", /DoorDash/);       // $10 a month
+  /* a $10-a-month DoorDash takeout credit (v7e: the Preferred's promo is non-restaurant now) */
+  const doordash = { name: "DoorDash test credit", annual: 120, cadence: "monthly", draws: [{ habit: "takeout", app: "doordash" }] };
   it("the brief's example: 'About monthly' takeout ≈ $420 a year → a $120 ($10 a month) credit counts in full", () => {
     const pools = habitPools({ takeout: { answer: "monthly", apps: ["doordash"] } });
     expect(pools["takeout:doordash"].yearly).toBe(420);
@@ -117,8 +118,10 @@ describe("4.2 · the engine turns habits into yearly dollars", () => {
     expect(habitCreditValue(doordash, pools).value).toBe(30);
   });
   it("a credit counts only for the apps picked; 'Any' counts all of them", () => {
-    expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["ubereats"] } })).toBe(0);
-    expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
+    expect(valueOf("csr", /\$15 DoorDash/, { takeout: { answer: "monthly", apps: ["ubereats"] } })).toBe(0);
+    expect(valueOf("csr", /\$15 DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(180);
+    expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(0);            // v7e: groceries, not takeout
+    expect(valueOf("csp", /DoorDash/, { ddgrocery: { answer: "monthly" } })).toBe(120);
     expect(valueOf("amex-gold", /Uber Cash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
   });
   it("subscriptions count up to their price; 'Would start if free', 'No' or 'Never' = $0", () => {

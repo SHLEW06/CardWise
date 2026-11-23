@@ -162,7 +162,9 @@ export const AUDIT = {
       "$300 StubHub / viagogo credit ($150 per half-year, through 2027)": "Get up to $150 in statement credits from January through June and again from July through December for a maximum of $300 annually for StubHub and viagogo purchases through 12/31/2027.",
       "Lyft credit ($10 a month, through Sep 2027)": "Get up to $10 in monthly in-app credits to use on rides through 9/30/2027. ($120 in Lyft ride credits)",
       "Peloton credit ($10 a month, through 2027)": "Get $10 in statement credits per month on eligible Peloton memberships through 12/31/2027, for a maximum of $120 annually.",
-      "DoorDash promos (up to $35 a month, through 2029)": "DashPass members now get up to $35 each month to spend on DoorDash … Available through 12/31/29. ($420 in DoorDash promos)",
+      /* v7e Part 5 (read 2026-11-23): split into the two promos the page lists */
+      "$15 DoorDash promo a month (any order, through 2029)": "$15 monthly promo on any qualifying DoorDash order … Available through 12/31/29.",
+      "Two $10 DoorDash promos a month (groceries, essentials, through 2029)": "two $10 promos each month to save on groceries, daily essentials … Available through 12/31/29.",
       "$120 DashPass membership (activate by 12/31/2029)": "Complimentary DashPass membership, a $120 value for 12 months. … Activate by 12/31/29.",
       "Global Entry / TSA PreCheck ($120 every 4 years)": "Receive one statement credit of up to $120 every four years as reimbursement for the application fee charged to your card. (Global Entry, TSA PreCheck®, or NEXUS fee credit)",
     },

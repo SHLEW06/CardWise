@@ -77,6 +77,10 @@ export const HABITS = [
   { key: "takeout", label: "Takeout / food delivery", group: "food", type: "freq", size: 35,
     apps: [{ key: "ubereats", label: "Uber Eats" }, { key: "doordash", label: "DoorDash" }, { key: "grubhub", label: "Grubhub" }] },
   { key: "dashpass", label: "DashPass (DoorDash membership)", group: "food", type: "sub", price: 120 },
+  /* v7e Part 5: DoorDash's non-restaurant promos — groceries and essentials,
+     not pooled with restaurant takeout. Never by default. $40 an order is an
+     estimate. */
+  { key: "ddgrocery", label: "Grocery or convenience delivery through DoorDash", group: "food", type: "freq", size: 40 },
   { key: "fastcasual", unit: "visits", label: "Five Guys, Buffalo Wild Wings or The Cheesecake Factory", group: "food", type: "freq", size: 30, brands: ["five guys", "cheesecake factory"] },
   { key: "dunkin", unit: "visits", label: "Dunkin'", group: "food", type: "freq", size: 8, brands: ["dunkin"] },
   { key: "resy", unit: "visits", label: "Restaurants you book on Resy", group: "food", type: "freq", size: 100, brands: ["resy"] },
