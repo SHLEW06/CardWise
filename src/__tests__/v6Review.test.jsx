@@ -11,7 +11,7 @@ import { resolve } from "node:path";
 
 import { BY_ID } from "../data/cards/index.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
-import { benefitBreakdown, loungeNetworks, cardFee, membershipCost } from "../engine/v5/value.js";
+import { benefitBreakdown, loungeNetworks, cardFee, membershipCost, loungeFace } from "../engine/v5/value.js";
 import { walletValue, optimalWallet, walletScore, scoreFrom, scoreNeeded, eligibility } from "../engine/v5/methodology.js";
 import { exploreRows, isLuxury } from "../engine/v5/explore.js";
 import { rankPurchase, matchStore } from "../engine/v5/checkout.js";
@@ -36,16 +36,24 @@ describe("1 · lounge visit limits", () => {
     const nets = loungeNetworks(BY_ID["usb-altitude-connect"], flyer);
     expect(nets.prioritypass).toBeLessThanOrEqual(4 * LOUNGE_VISIT_VALUE);
   });
+  /* v7c 5b: a visit / pass limit caps the network's face (limit × $35, at
+     most $469 retail); 1/8 of that face × coverage is counted. */
   it("a Priority Pass membership never inherits another network's pass count", () => {
-    const nets = loungeNetworks(BY_ID["citi-strata-elite"], { ...flyer, brands: { ...flyer.brands, airlines: ["aa"] } });
-    expect(nets.prioritypass).toBeGreaterThan(4 * LOUNGE_VISIT_VALUE);   // 20 visits wanted, membership unlimited
-    expect(nets.aa).toBeLessThanOrEqual(4 * LOUNGE_VISIT_VALUE);         // 4 Admirals passes
+    const card = BY_ID["citi-strata-elite"];
+    const pp = card.loungeAccess.networks.find((n) => /priority pass/i.test(n));
+    const aa = card.loungeAccess.networks.find((n) => /admirals/i.test(n));
+    expect(loungeFace(pp)).toBe(LOUNGE_RETAIL_CAP);                     // membership: no pass count
+    expect(loungeFace(aa)).toBe(4 * LOUNGE_VISIT_VALUE);                 // 4 Admirals passes
+    const nets = loungeNetworks(card, { ...flyer, brands: { ...flyer.brands, airlines: ["aa"] } });
+    expect(nets.prioritypass).toBeGreaterThan(nets.aa || 0);
   });
   it("Delta Sky Club visit limits: Reserve 15, Platinum 10, AA Globe 4 passes", () => {
+    const face = (id, re) => loungeFace(BY_ID[id].loungeAccess.networks.find((n) => re.test(n)));
+    expect(face("delta-reserve", /sky club/i)).toBe(Math.min(15 * LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP));   // capped at retail access price
+    expect(face("amex-plat", /sky club/i)).toBe(10 * LOUNGE_VISIT_VALUE);
+    expect(face("citi-aa-globe", /admirals/i)).toBe(4 * LOUNGE_VISIT_VALUE);
     const delta = { ...flyer, brands: { ...flyer.brands, airlines: ["delta", "aa"] }, travel: { ...flyer.travel, trips: 20, homeAirport: "ATL" } };
-    expect(loungeNetworks(BY_ID["delta-reserve"], delta).delta).toBe(Math.min(15 * LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP));   // capped at retail access price
-    expect(loungeNetworks(BY_ID["amex-plat"], delta).delta).toBe(10 * LOUNGE_VISIT_VALUE);
-    expect(loungeNetworks(BY_ID["citi-aa-globe"], { ...delta, travel: { ...delta.travel, homeAirport: "DFW" } }).aa).toBe(4 * LOUNGE_VISIT_VALUE);   // at an American hub
+    expect(loungeNetworks(BY_ID["delta-reserve"], delta).delta).toBeLessThanOrEqual(face("delta-reserve", /sky club/i) / 8 + 1e-9);
   });
   it("Sapphire Lounges left Priority Pass (Aug 15 2026): only cards that list them get them", () => {
     expect(SAPPHIRE_LEFT_PRIORITY_PASS).toBe("2026-08-15");

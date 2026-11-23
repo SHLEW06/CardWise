@@ -11,7 +11,7 @@
 import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, ChevronDown, Utensils, Plane, BedDouble, Armchair, Luggage, Car, ShieldCheck, Star, Gift, Ticket, Tv, ShoppingBag } from "lucide-react";
+import { X, ChevronDown, Utensils, Plane, BedDouble, Armchair, Luggage, Car, ShieldCheck, Star, Gift, Ticket, Tv, ShoppingBag, Sparkles } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import Choice from "../v5/Choice.jsx";
 import Backdrop from "./Backdrop.jsx";
@@ -19,7 +19,8 @@ import { Reveal, CountUp } from "./motion.jsx";
 import { cardDetail, approvalChip, availabilityOf } from "../../engine/v5/explore.js";
 import { optimalWallet, walletValue } from "../../engine/v5/methodology.js";
 import { explainCard } from "../../engine/v5/apply.js";
-import { pointsChip } from "../../engine/v5/pointValues.js";
+import { pointsChip, partnerShortName } from "../../engine/v5/pointValues.js";
+import { directBase, cardBrand, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "../../engine/v5/value.js";
 import { loungeCoverage } from "../../engine/airportFit.js";
 import { LOUNGE_SITES, networkKey } from "../../data/loungeLocations.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
@@ -37,20 +38,12 @@ export const BUCKET_LABEL = {
   drugstores: "drugstores", online: "online shopping", rent: "rent", phone: "phone and utilities", other: "everything else",
 };
 
-function iconFor(item) {
-  const l = item.label.toLowerCase();
-  if (item.kind === "lounge") return Armchair;
-  if (item.kind === "bags") return Luggage;
-  if (item.kind === "freeNight" || /hotel|stay|resort|edit/.test(l)) return BedDouble;
-  if (item.kind === "companion" || /airline|flight|delta|united/.test(l)) return Plane;
-  if (item.kind === "protection" || /global entry|tsa|clear/.test(l)) return ShieldCheck;
-  if (item.kind === "status") return Star;
-  if (item.kind === "points") return Gift;
-  if (/uber|lyft|rideshare|blacklane|avis|turo/.test(l)) return Car;
-  if (/dining|resy|dunkin|grubhub|restaurant|table/.test(l)) return Utensils;
-  if (/entertainment|disney|streaming|peacock/.test(l)) return Tv;
-  if (/lululemon|walmart|oura|peloton/.test(l)) return ShoppingBag;
-  return Ticket;
+/* v7c 5b.4: one icon per benefit type, from the engine's `kind` / `type`
+   (the old word match put a bed on every "cr-edit" — the dining credit). */
+const KIND_ICON = { lounge: Armchair, bags: Luggage, freeNight: BedDouble, companion: Plane, protection: ShieldCheck, status: Star, points: Gift };
+const TYPE_ICON = { dining: Utensils, rides: Car, shopping: ShoppingBag, streaming: Tv, travelService: Ticket, security: ShieldCheck, hotel: BedDouble, airline: Plane, travel: Plane, lifestyle: Sparkles, other: Ticket };
+export function iconFor(item) {
+  return KIND_ICON[item.kind] || TYPE_ICON[item.type] || Ticket;
 }
 
 /* v7b 4.6: name the REAL biggest value drivers — what the card adds in
@@ -165,14 +158,15 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
                 const isOpen = open === b.id;
                 return (
                   <li key={b.id}>
-                    <button className="benefit-row" onClick={() => setOpen(isOpen ? null : b.id)} aria-expanded={isOpen}>
-                      <Icon size={18} aria-hidden="true" />
+                    <button className="benefit-row" onClick={() => setOpen(isOpen ? null : b.id)} aria-expanded={isOpen} data-testid="benefit-row">
+                      <Icon size={18} aria-hidden="true" data-icon={b.kind === "credit" ? b.type : b.kind} />
                       <span className="benefit-name">{b.label}</span>
-                      <span className="benefit-value">{money(b.value)}</span>
+                      <span className="benefit-value"><span className="benefit-counted">Counted {money(b.value)}</span>{b.face > 0 && <span className="benefit-face t-caption">Face up to {money(b.face)}</span>}</span>
                     </button>
+                    {b.note && <p className="benefit-note t-caption">{b.note}</p>}
                     {isOpen && (
                       <p className="benefit-more t-caption">
-                        {b.face ? `Worth up to ${money(b.face)} a year on paper; we count ${money(b.value)} — what you'd realistically use from your answers.` : "Counted from your answers."}
+                        {b.face ? `Up to ${money(b.face)} a year on paper; we count ${money(b.value)} — only money it saves on things you'd pay for anyway.` : "Counted from your answers."}
                         {b.split && profile.planAround.includes(b.id) && <> <button className="link" onClick={() => togglePlan(b.id)}>Stop counting it</button></>}
                       </p>
                     )}
@@ -181,6 +175,24 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
               })}
             </ul>
           </Reveal>
+
+          {(d.extras || []).length > 0 && (
+            <Reveal i={3} className="panel detail-block" data-testid="nice-extras">
+              <h2 className="t-h2">Nice extras</h2>
+              <p className="t-caption">Real perks, but they don't save money on things you'd pay for anyway, so they aren't counted.</p>
+              <ul className="rows">
+                {d.extras.map((x) => {
+                  const Icon = iconFor(x);
+                  return (
+                    <li key={x.id} className="unused-row">
+                      <Icon size={18} aria-hidden="true" />
+                      <span className="benefit-name">{x.label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Reveal>
+          )}
 
           {(d.gated || []).length > 0 && (
             <Reveal i={3} className="panel detail-block" data-testid="unlocks-with-spending">
@@ -229,10 +241,23 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
                 <li key={e.bucket} className="earn-row">
                   <span>{BUCKET_LABEL[e.bucket][0].toUpperCase() + BUCKET_LABEL[e.bucket].slice(1)}</span>
                   <span className="t-value">{pct(e.pct)}</span>
-                  <span className="t-caption">{money(e.value)} a year on {money(e.dollars)}</span>
+                  <span className="t-caption">earns {money(e.value)} a year on {money(e.dollars)}</span>
                 </li>
               ))}
             </ul>
+            {(() => {
+              /* v7c 5b.5: at the card's own brand, the full stacked return
+                 (member points, earned with any card, + this card's), scoring
+                 only the card's part. */
+              const brand = cardBrand(c);
+              const bucket = brand && (HOTEL_CURRENCIES.has(brand) ? "hotels" : AIRLINE_CURRENCIES.has(brand) ? "flights" : null);
+              const base = bucket ? directBase(profile, bucket, [...wallet, c.id]) : null;
+              if (!base || base.program !== brand) return null;
+              const own = Math.max(0, ...(d.solo.earning.byBucket[bucket] || []).filter((r) => r.cardId === c.id).map((r) => r.pct));
+              if (!own) return null;
+              const one = (x) => `${Math.round(x * 10) / 10}%`;
+              return <p className="t-caption" data-testid="stacked-return">≈{Math.round(base.pct + own)}% back at {partnerShortName(brand)} ({one(own)} from this card). Member points come with any card you pay with, so only the card's part is counted.</p>;
+            })()}
           </Reveal>
 
           <Reveal i={5} className="panel detail-block">

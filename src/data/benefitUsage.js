@@ -166,3 +166,19 @@ export const PROTECTIONS = [
 ];
 /* v5 name, kept for old imports. */
 export const PROTECTIONS_VALUE = 0;
+
+/* ── v7c 5b: only count what they'd pay for (docs/CLAUDE_CODE_V7C_CHANGES.md
+   §5b; METHODOLOGY §3). These replace the perk factors above in the v6
+   engine:
+     statement credits they'd use, free bags on airlines they fly,
+     PreCheck / Global Entry          100% of face (capped at the spending
+                                      it can be used on)
+     credits limited to a kind of
+     spending (airline fee credits)   100%, capped at what they'd spend there
+     free-night / companion
+     certificates                     2/3 of the most it can be worth
+     lounge access                    1/8 of face, one network per wallet
+     elite status                     $0 (listed under "Nice extras")
+     travel / purchase protections    $0 (listed under "Nice extras")      */
+export const CERT_COUNTED_SHARE = 2 / 3;
+export const LOUNGE_FACE_SHARE = 1 / 8;

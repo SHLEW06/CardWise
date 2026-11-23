@@ -338,15 +338,30 @@ function AllBenefits({ value }) {
     <section className="panel all-benefits" aria-labelledby="ab-h" data-testid="all-benefits">
       <div className="lab-section-head"><h2 className="t-h2" id="ab-h">All your benefits</h2><span className="t-caption">{money(rows.reduce((t, r) => t + r.value, 0))} a year you'd use</span></div>
       <ul className="rows ab-list">
-        {rows.map((r, i) => (
+        {rows.filter((r) => !r.extra).map((r, i) => (
           <li key={`${r.cardId}-${r.label}-${i}`} className="ab-row">
             <span className="ab-name">{r.label}</span>
             <span className="t-caption">{cardDisplayName(BY_ID[r.cardId])}{r.reason ? ` · ${r.reason}` : ""}</span>
             <span className="ab-flags">{r.flags.map((f) => <span key={f} className={`tag ${f === "Not used" ? "" : "tag-warn"}`}>{f}</span>)}</span>
             <span className="num-ui ab-value">{r.value ? money(r.value) : "$0"}</span>
+            {r.face > 0 && <span className="t-caption ab-face">Face up to {money(r.face)}</span>}
           </li>
         ))}
       </ul>
+      {rows.some((r) => r.extra) && (
+        <>
+          <h3 className="t-h3">Nice extras</h3>
+          <p className="t-caption">Real perks that don't save money on things you'd pay for anyway — not counted.</p>
+          <ul className="rows ab-list" data-testid="lab-nice-extras">
+            {rows.filter((r) => r.extra).map((r, i) => (
+              <li key={`${r.cardId}-${r.label}-x${i}`} className="ab-row">
+                <span className="ab-name">{r.label}</span>
+                <span className="t-caption">{cardDisplayName(BY_ID[r.cardId])}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }

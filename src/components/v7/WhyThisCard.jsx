@@ -6,7 +6,7 @@
    table on "Show the math" — no left-border accents. */
 import React, { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { explainCard } from "../../engine/v5/apply.js";
+import { explainCard, VERDICT_TEXT } from "../../engine/v5/apply.js";
 import { walletValue } from "../../engine/v5/methodology.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
@@ -42,7 +42,10 @@ export default function WhyThisCard({ cardId, wallet = [], profile, open: startO
           <p className="t-eyebrow v7-hint-label">{label}</p>
           <p className="why-sentence">{whySentence(e)}</p>
           {e.ecosystem.map((x) => <p key={x.currency} className="t-caption why-eco" data-testid="why-ecosystem">{x.text}</p>)}
-          {e.verdict && <p className="t-caption">Worth applying? <strong className={`why-verdict is-${e.verdict.toLowerCase()}`}>{e.verdict}</strong> — gains {money(e.gain)} a year against a {money(e.hurdle.total)} application cost.</p>}
+          {e.verdict && (
+            <p className="t-caption" data-testid="worth-applying">Worth applying? <strong className={`why-verdict is-${e.verdict.toLowerCase()}`}>{VERDICT_TEXT[e.verdict]}</strong>
+              {e.verdict === "No" ? ` — ${e.topReason}.` : ` — ${signed(e.net)} a year after the ${money(e.hurdle.total)} application cost.`}</p>
+          )}
         </div>
         <button type="button" className="v7-btn-quiet" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
           {open ? "Hide the math" : "Show the math"} <ChevronDown size={16} aria-hidden="true" className={open ? "is-flipped" : ""} />
@@ -78,17 +81,17 @@ export default function WhyThisCard({ cardId, wallet = [], profile, open: startO
           </table>
           {e.lounge.length > 0 && (
             <table className="v7-math">
-              <caption className="t-caption">Lounges: visits × $35 × how practical at your airport</caption>
+              <caption className="t-caption">Lounges: 1/8 of what access costs × how practical at your airport — only the best network counts</caption>
               <tbody>
                 {e.lounge.map((l) => (
-                  <tr key={l.key}><td>{l.network}</td><td className="num-ui">{Math.round(l.visits * 10) / 10} visits × {Math.round(l.coverage * 100)}%</td><td className="num-ui">{money(l.value)}</td></tr>
+                  <tr key={l.key}><td>{l.network}</td><td className="num-ui">{money(l.face)} × 1/8 × {Math.round(l.coverage * 100)}%</td><td className="num-ui">{money(l.value)}</td></tr>
                 ))}
               </tbody>
             </table>
           )}
           <table className="v7-math">
             <tbody>
-              <tr><td>Earning it adds</td><td className="num-ui">{signed(e.earned)}</td></tr>
+              <tr><td>Earning it adds{e.earnNote && <span className="t-caption" data-testid="earn-note"> · {e.earnNote}</span>}</td><td className="num-ui">{signed(e.earned)}</td></tr>
               <tr><td>Benefits it adds</td><td className="num-ui">{signed(e.benefitTotal)}</td></tr>
               <tr><td>Yearly fee{e.membership && !e.membership.paid ? ` (incl. ${e.membership.name} membership)` : ""}</td><td className="num-ui">{e.fee ? `−${money(e.fee)}` : "$0"}</td></tr>
               {e.membership && (

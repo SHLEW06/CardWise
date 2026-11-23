@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { BY_ID, CARDS } from "../data/cards/index.js";
 import { PARTNER_CPP, PARTNER_VALUATIONS_SOURCE } from "../data/partnerValuations.js";
 import { TRANSFER_RULES, PROGRAMS } from "../data/programs.js";
-import { BRAND_CREDIT_CADENCE, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, FREE_NIGHT_P_USE, SECOND_LOUNGE_SHARE, LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP } from "../data/benefitUsage.js";
+import { BRAND_CREDIT_CADENCE, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, FREE_NIGHT_P_USE, SECOND_LOUNGE_SHARE, LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP, CERT_COUNTED_SHARE, LOUNGE_FACE_SHARE } from "../data/benefitUsage.js";
 import { normalizeProfile, annualSpend } from "../engine/profileDefaults.js";
 import { currencyValue, cardPointValue, pointsChip, isUnlocked, partnerPicksFor } from "../engine/v5/pointValues.js";
 import { allocateSpend, benefitBreakdown, creditUsage, creditId, cardCpp, pctBackFor, loungeTotal, earnRate, loungeBreakdown } from "../engine/v5/value.js";
@@ -150,29 +150,34 @@ describe("benefits U(W)", () => {
     const resort = aspire.credits.find((x) => /resort/.test(x.name));
     const id = creditId(aspire, resort);
     const ok = P({ travel: { trips: 4, hotelNights: 4 }, brands: { hotels: ["hilton"] }, planAround: [id] });
-    expect(creditUsage(aspire, resort, ok).factor).toBe(0.6);
+    /* v7c 5b: once planned, 100% for the halves they stay in, capped at hotel spend */
+    const u = creditUsage(aspire, resort, ok);
+    expect(u.value).toBeGreaterThan(0);
+    expect(u.value).toBeLessThanOrEqual(resort.annual);
     expect(creditUsage(aspire, resort, { ...ok, travel: { ...ok.travel, hotelNights: 3 } }).factor).toBe(0);
     expect(creditUsage(aspire, resort, { ...ok, brands: { ...ok.brands, hotels: [] } }).factor).toBe(0);
     expect(creditUsage(aspire, resort, { ...ok, planAround: [] }).factor).toBe(0);
   });
-  it("free nights = cap × program value × P(use); 0 unless the brand was picked and they stay in hotels", () => {
+  it("v7c 5b: free nights = 2/3 of cap × program value; 0 unless the brand was picked and they stay in hotels; spend-gated = $0", () => {
     const fn = BY_ID.hyatt.freeNightCertificates[0];
     expect(fn.pointCap).toBe(18000);                                 // Category 1–4
     const on = benefitBreakdown(BY_ID.hyatt, P({ brands: { hotels: ["hyatt"] }, travel: { trips: 2, hotelNights: 6 } }));
-    expect(on.items.find((i) => i.kind === "freeNight" && /Anniversary/.test(i.label)).value).toBe(Math.round(Math.round(18000 * 0.0165) * FREE_NIGHT_P_USE));
+    const night = on.items.find((i) => i.kind === "freeNight" && /Anniversary/.test(i.label));
+    expect(night.face).toBe(Math.round(18000 * 0.0165));
+    expect(night.value).toBe(Math.round(night.face * CERT_COUNTED_SHARE));
+    expect(on.items.some((i) => /after \$15k/.test(i.label))).toBe(false);          // the 2nd night needs $15k on the card
+    expect(on.gated.some((g) => /after \$15k/.test(g.label))).toBe(true);
     const off = benefitBreakdown(BY_ID.hyatt, P({ travel: { trips: 2, hotelNights: 6 } }));
     expect(off.items.find((i) => i.kind === "freeNight")).toBeUndefined();
     expect(BY_ID["marriott-boundless"].freeNightCertificates[0].pointCap).toBe(35000);
   });
-  it("lounge: only if it matters (Sometimes = half), visits × value × coverage at the home airport", () => {
+  it("v7c 5b: lounge = 1/8 of face × coverage at the home airport, best single network, only if it matters", () => {
     const yes = P({ travel: { trips: 4, lounges: "yes", homeAirport: "SEA" } });
-    const half = P({ travel: { trips: 4, lounges: "sometimes", homeAirport: "SEA" } });
     const no = P({ travel: { trips: 4, lounges: "no", homeAirport: "SEA" } });
     const v = (p) => benefitBreakdown(BY_ID["amex-plat"], p).items.find((i) => i.kind === "lounge")?.value || 0;
     const nets = benefitBreakdown(BY_ID["amex-plat"], yes).items.find((i) => i.kind === "lounge").networks;
-    expect(nets.centurion).toBe(4 * 2 * LOUNGE_VISIT_VALUE * 1);                           // Centurion at SEA
-    expect(v(yes)).toBe(Math.round(loungeTotal(nets)));                                    // + 15% of Priority Pass
-    expect(v(half)).toBe(Math.round(v(yes) / 2));
+    expect(nets.centurion).toBeCloseTo(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE * 1, 6);        // Centurion at SEA
+    expect(v(yes)).toBe(Math.round(Math.max(...Object.values(nets))));                       // best network only
     expect(v(no)).toBe(0);
     /* No Centurion lounge at BDL → coverage drops. */
     expect(v(P({ travel: { trips: 4, lounges: "yes", homeAirport: "BDL" } }))).toBeLessThan(v(yes));
@@ -186,7 +191,7 @@ describe("benefits U(W)", () => {
     const lounges = two.benefits.filter((b) => b.dedupe === "lounge");
     expect(lounges).toHaveLength(1);
     expect(lounges[0].value).toBeLessThanOrEqual(LOUNGE_RETAIL_CAP);
-    expect(loungeTotal({ a: 300, b: 200 })).toBe(Math.min(LOUNGE_RETAIL_CAP, 300 + SECOND_LOUNGE_SHARE * 200));
+    expect(loungeTotal({ a: 300, b: 200 })).toBe(300);                                       // v7c 5f.4: one network
     expect(one.U).toBeGreaterThan(0);
   });
   it("two cards from the same airline don't waive two sets of bag fees", () => {
@@ -194,10 +199,14 @@ describe("benefits U(W)", () => {
     const v = walletValue(["delta-gold", "delta-plat"], p);
     expect(v.benefits.filter((b) => b.kind === "bags")).toHaveLength(1);
   });
-  it("protections get small fixed values, counted once", () => {
-    const v = walletValue(["csp", "csr"].slice(0, 1).concat("freedom-flex"), P({ travel: { trips: 2 } }));
-    expect(v.benefits.filter((b) => b.kind === "protection" && /Cell phone/.test(b.label)).length).toBeLessThanOrEqual(1);
-    expect(v.benefits.filter((b) => b.kind === "protection" && /Trip delay/.test(b.label))).toHaveLength(1);
+  it("v7c 5b: protections and elite status count $0 — listed as Nice extras", () => {
+    const v = walletValue(["csp", "freedom-flex"], P({ travel: { trips: 2 } }));
+    expect(v.benefits.filter((b) => b.kind === "protection" || b.kind === "status")).toEqual([]);
+    expect(v.perCard.flatMap((c) => c.extras).some((x) => /Trip delay/.test(x.label))).toBe(true);
+    const hy = benefitBreakdown(BY_ID.hyatt, P({ brands: { hotels: ["hyatt"] }, travel: { trips: 2, hotelNights: 6 } }));
+    expect(hy.items.some((i) => i.kind === "status")).toBe(false);
+    expect(hy.extras.some((x) => x.kind === "status" && /Discoverist/.test(x.label))).toBe(true);
+    expect(hy.extras.every((x) => x.value === undefined)).toBe(true);                       // no dollar amounts
   });
 });
 
@@ -343,20 +352,23 @@ describe("golden profiles", () => {
     const base = { feeBudget: 1000, spend: spend({ dining: 500, groceries: 500, flights: 400, other: 900 }), brands: { airlines: ["delta"] } };
     const yes = optimalWallet({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } });
     const no = optimalWallet({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "no" } });
-    expect(yes.value.benefits.some((b) => b.dedupe === "lounge" && b.value > 0)).toBe(true);
     expect(no.value.benefits.some((b) => b.dedupe === "lounge")).toBe(false);
     for (const w of [yes, no]) expect(w.wallet.some((id) => BY_ID[id].pointCurrency === "delta")).toBe(true);
     expect(no.wallet).not.toContain("delta-reserve");
     expect(no.wallet).not.toContain("amex-plat");
-    /* ATL's Priority Pass lounges (The Club ATL, Poppin) are both on Concourse
-       F, international: a domestic Delta flyer gets 0.4 practicality, not full
-       coverage, so the lounge value comes from Sky Club access (Reserve). */
-    expect(yes.wallet).toContain("delta-reserve");
-    expect(yes.value.benefits.find((b) => b.dedupe === "lounge").cardId).toBe("delta-reserve");
+    /* v7c 5b: a lounge counts 1/8 of face, so lounges alone no longer carry
+       the $650 Reserve for this flyer; Sky Club access on the Reserve is
+       still worth more to them than ATL's Priority Pass (Concourse F,
+       international: 0.4 practicality for a domestic flyer). */
+    const prof = normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } });
+    const res = benefitBreakdown(BY_ID["delta-reserve"], prof).items.find((b) => b.kind === "lounge");
+    expect(res.value).toBeGreaterThan(0);
+    expect(res.value).toBeLessThanOrEqual(Math.round(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE));
+    expect(res.label).toMatch(/Sky Club/);
     const pp = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } })).find((b) => b.key === "prioritypass");
     expect(pp.coverage).toBeCloseTo(0.4, 9);
     expect(pp.lounges.map((l) => l.concourse)).toEqual(["F", "F"]);
-    expect(pp.value).toBe(Math.round(16 * 35 * 0.4));
+    expect(pp.value).toBe(Math.round(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE * 0.4));
     /* Mostly international flyers pass Concourse F: Priority Pass counts in full again. */
     const intl = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", intlShare: 0.8 } })).find((b) => b.key === "prioritypass");
     expect(intl.coverage).toBeCloseTo(0.8 + 0.2 * 0.4, 9);

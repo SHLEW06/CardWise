@@ -60,10 +60,11 @@ describe("benefit and reward value", () => {
     expect(CREDIT_USAGE.broad({})).toBe(0.95);
     expect(CREDIT_USAGE.merchant({ pickedMerchant: true })).toBe(0.8);
   });
-  it("lounge value never exceeds the retail price of access", () => {
+  it("v7c 5b: lounge access counts 1/8 of what it costs retail, however often they fly", () => {
     const heavy = normalizeProfile({ travel: { trips: 40, lounges: "yes" } });
     const l = benefitBreakdown(BY_ID.csr, heavy).items.find((i) => i.kind === "lounge");
-    expect(l.value).toBe(LOUNGE_RETAIL_CAP);
+    expect(l.value).toBeGreaterThan(0);
+    expect(l.value).toBeLessThanOrEqual(Math.round(LOUNGE_RETAIL_CAP / 8));
   });
   it("airline-run lounges only count if you picked that airline", () => {
     const noAA = benefitBreakdown(BY_ID["aa-executive"], flyer).items.find((i) => i.kind === "lounge");
@@ -104,7 +105,9 @@ describe("worked example: Ritz-Carlton", () => {
   };
   it("is clearly positive for a Marriott flyer who wants lounges", () => {
     const v = cardValue(BY_ID.ritz, normalizeProfile(P));
-    expect(v.benefitValue - v.annualFee).toBeGreaterThan(500);
+    /* v7c 5b: free night 2/3 of $629 = $419, lounges 1/8 of face */
+    expect(v.benefitValue - v.annualFee).toBeGreaterThan(300);
+    expect(v.benefits.find((b) => b.kind === "freeNight").value).toBe(419);
     expect(v.benefits.find((b) => b.kind === "freeNight")).toBeTruthy();
     expect(v.benefits.find((b) => b.kind === "lounge")).toBeTruthy();
   });
@@ -130,12 +133,14 @@ describe("worked example: Citi Strata Elite for AA-hub flyers", () => {
        because this flyer picked portal credits (so is Venture X's). */
     brands: { airlines: ["aa"], perks: ["hotel-portal", "portal-travel"] }, credit: { score: 770 },
   });
-  it("is a Lounge card candidate: benefits ≥ 0.6 × fee, including its Admirals Club passes", () => {
+  it("is a Lounge card candidate with one lounge line (the best network, v7c 5b)", () => {
     const c = BY_ID["citi-strata-elite"];
     expect(slotsFilled(c, P)).toContain("lounge");
     const b = benefitBreakdown(c, P);
-    expect(b.total).toBeGreaterThanOrEqual(0.6 * c.annualFee);
-    expect(b.items.find((i) => i.kind === "lounge").label).toMatch(/Admirals Club/);
+    expect(b.total).toBeGreaterThan(0);
+    const lounges = b.items.filter((i) => i.kind === "lounge");
+    expect(lounges).toHaveLength(1);
+    expect(lounges[0].label).toMatch(/^Lounge access: (Priority Pass|Admirals Club)/);
   });
   it("the benefit pass fills the lounge slot for this person", () => {
     const r = optimizeWallet(P);

@@ -117,7 +117,7 @@ function dedupeBenefits(perCard, profile) {
   const pooled = [];
   for (const { cardId, items } of perCard) {
     for (const it of items) {
-      if (it.dedupe === "habit") pooled.push({ ...it, cardId });
+      if (it.dedupe === "pool") pooled.push({ ...it, cardId });
       else if (it.dedupe === "lounge") {
         for (const [k, v] of Object.entries(it.networks || {})) networks[k] = Math.max(networks[k] || 0, v);
         (groups.lounge ||= []).push({ ...it, cardId });
@@ -128,9 +128,20 @@ function dedupeBenefits(perCard, profile) {
   }
   let total = plain.reduce((t, i) => t + i.value, 0);
   const counted = [...plain];
-  /* v7c Part 4: habit credits share each spending pool across the wallet. */
+  /* v7c Part 4 + 5b: credits share each spending pool across the wallet;
+     bag fees another card already waives aren't there to pay back. */
   if (pooled.length) {
-    const shared = pooled.length > 1 ? sharePools(pooled, profilePools(profile)) : pooled;
+    let pools = profilePools(profile);
+    const bagItems = (groups && Object.entries(groups).filter(([k]) => k.startsWith("bags:"))) || [];
+    if (bagItems.length) {
+      pools = { ...pools };
+      for (const [k, list] of bagItems) {
+        const id = `airlinefees:${k.slice(5)}`;
+        const free = Math.max(...list.map((x) => x.value));
+        if (pools[id]) pools[id] = { ...pools[id], yearly: Math.max(0, pools[id].yearly - free) };
+      }
+    }
+    const shared = pooled.length > 1 || bagItems.length ? sharePools(pooled, pools) : pooled;
     for (const it of shared) if (it.value > 0) { total += it.value; counted.push(it); }
   }
   for (const [key, list] of Object.entries(groups)) {
@@ -150,7 +161,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   const alloc = allocateSpend(cards, profile, opts.alloc || {});
   const perCard = cards.map((c) => {
     const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids });
-    return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [] };
+    return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [], extras: b.extras || [] };
   });
   const U = dedupeBenefits(perCard, profile);
   const F = cards.reduce((t, c) => t + cardFee(c, profile), 0);
@@ -342,8 +353,15 @@ export function optimalWallet(rawProfile, options = {}) {
     !set.some((s) => s.id === c.id || conflicts(s, c, elig))
     && (fee(c) === 0 || feesSoFar + fee(c) <= budget + EPS)
     && !(isC1(c) && set.filter(isC1).length >= C1_PERSONAL_LIMIT);
-  {
-    const set = [...startSet];
+  /* With a must-have list, also start a greedy run from each must-have
+     card, so the search has a feasible incumbent to prune against (without
+     one, a "Lounge & credits" sample searched ~85k nodes). */
+  const seeds = [startSet];
+  if (mustOneOf && !startSet.some((c) => mustOneOf.includes(c.id))) {
+    for (const c of cands) if (mustOneOf.includes(c.id) && startSet.length < maxCards && fitsWith(startSet, c, startSet.reduce((t, x) => t + fee(x), 0))) seeds.push([...startSet, c]);
+  }
+  for (const seed of seeds) {
+    const set = [...seed];
     let feesSoFar = set.reduce((t, c) => t + fee(c), 0);
     consider(set);
     while (set.length < maxCards) {
@@ -376,15 +394,27 @@ export function optimalWallet(rawProfile, options = {}) {
        hurdle per added card keep this an upper bound. */
     const here = evo.eval(set).N - MIN_GAIN * set.length - hurdleOf(set);
     const gains = [];
+    /* A must-have list not met yet: any feasible extension adds one of
+       those cards, so the bound is its best gain (even if negative) plus
+       the k − 1 best gains of anything — and −∞ if none can still join. */
+    const needMust = mustOneOf && !set.some((c) => mustOneOf.includes(c.id));
+    let mustGain = -Infinity;
     for (let j = from; j < order.length; j++) {
       const c = order[j];
       if (!fitsWith(set, c, feesSoFar)) continue;
       const g = evo.eval([...set, c]).N - evo.eval(set).N - MIN_GAIN - (isApply(c) ? lowHurdle : 0);
+      if (needMust && mustOneOf.includes(c.id)) mustGain = Math.max(mustGain, g);
       if (g > 0) gains.push(g);
     }
     gains.sort((x, y) => y - x);
     const k = maxCards - set.length;
     let extra = 0;
+    if (needMust) {
+      if (mustGain === -Infinity || k < 1) return -Infinity;
+      extra = mustGain;
+      for (let i = 0; i < Math.min(k - 1, gains.length); i++) extra += gains[i];
+      return here + extra;
+    }
     for (let i = 0; i < Math.min(k, gains.length); i++) extra += gains[i];
     return here + extra;
   };
@@ -476,7 +506,8 @@ export function cardFits(rawProfile, catalog = CARDS) {
   const maxD = Math.max(0, ...rows.filter((r) => r.fitsBudget).map((r) => r.delta));
   return Object.fromEntries(rows.map((r) => [r.cardId, {
     delta: r.delta, fitsBudget: r.fitsBudget,
-    fit: r.fitsBudget && r.delta > 0 && maxD > 0 ? Math.min(100, Math.round((100 * r.delta) / maxD)) : null,
+    /* a card that adds anything shows at least 1 (a $3 card beside a $900 one rounded to 0) */
+    fit: r.fitsBudget && r.delta > 0 && maxD > 0 ? Math.min(100, Math.max(1, Math.round((100 * r.delta) / maxD))) : null,
   }]));
 }
 

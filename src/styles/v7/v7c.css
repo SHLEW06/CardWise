@@ -13,3 +13,12 @@
 .v5 .habit-adjust { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .v5 .habit-adjust input { width: 7em; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
 .v5 .link-btn { background: none; border: 0; padding: 0; color: var(--signal, #2b59c3); text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* 5b: each benefit row — "Counted $X" with a grey "Face up to $Y" under it. */
+.v5 .benefit-value { display: grid; justify-items: end; gap: 2px; }
+.v5 .benefit-counted { white-space: nowrap; }
+.v5 .benefit-face { color: var(--ink-3); white-space: nowrap; }
+.v5 .benefit-note { margin: -6px 0 10px 34px; }
+.v5 [data-testid="nice-extras"] .unused-row { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; align-items: center; }
+.v5 [data-testid="nice-extras"] .unused-row svg { color: var(--ink-3); }
+.v5 .earn-row [data-testid="stacked-return"] { grid-column: 1 / -1; }

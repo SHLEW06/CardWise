@@ -189,6 +189,16 @@ Each card turns into **lanes** — one per (card, category) with a rate and
 caps (`value.lanesFor`):
 
 - the category's best earn key on that card (General otherwise);
+- **v7c 5b.5: a hotel or airline card's big multiplier applies only at its
+  own brand** — the brand's share of hotel spending (split evenly between
+  the hotel programs picked or recommended) or of flights (trips on that
+  airline ÷ all trips); the rest earns the card's travel / base rate. With
+  no stays or flights at that brand, "Earning it adds" is $0 with a reason
+  ("No Marriott stays in your trips, and your other cards beat 3x dining /
+  3x flights / 2x everything else."). The full stacked return is shown —
+  "≈13% back at Marriott (4.8% from this card)" = program base 10x × 0.8¢ +
+  the card's 6x × 0.8¢ — but only the card's part is scored, since member
+  points come with any card. Elite-status bonus points count $0;
 - capped bonuses with their post-cap rate: Blue Cash Preferred 6%
   supermarkets to $6,000/yr; Blue Cash Everyday 3% groceries / online / gas,
   each to $6,000/yr; Amex Gold 4x dining to $50,000 and US supermarkets to
@@ -218,7 +228,31 @@ category, then card id (deterministic).
 
 ## 3. Benefits `U(W)`
 
-`U(W) = Σ face × usage`, then deduped across the wallet.
+`U(W) = Σ counted value`, then deduped across the wallet.
+
+**v7c 5b — only count what they'd pay for.** A perk counts only for money it
+saves on things the person would pay for anyway. These replace every older
+perk factor below (cadence 0.9 / 0.75 / 0.6 / 0.5, "would use" ×0.5, trip-count
+factors for portal / airline / hotel credits, free-night P(use) 0.85,
+companion 0.6, lounge visits × $35, status $50–150, protections $15–25):
+
+| Perk type | Counted value |
+|---|---|
+| Statement credits they'd use (dining, airline, Uber, DoorDash, streaming …), free checked bags on airlines they fly, PreCheck / Global Entry | **100% of face** — capped at the spending it can be used on (the pools below) |
+| Credits limited to a kind of spending (airline *fee* credits: bags, seats, upgrades — not tickets) | **100%, capped at what they'd spend there**: bag fees = bags a trip × trips on that airline × 2 ways × $35, minus bags another card in the wallet already makes free. Shown as "You'd use $X of $200: bag fees on Delta — 1 bag × 3 trips × 2 ways × $35 = $210 a year". "One airline you pick" (Amex) uses only its best airline. |
+| Free-night and companion certificates | **2/3 of the most it can be worth** (e.g. an 85k Marriott certificate, at most a $629 night, counts $419; "up to $629" shown in grey). $0 with no hotel stays (no flights on that airline, for companions). Spend-gated certificates count **$0** (owner, 2026-11-22) and are listed under "Unlocks with spending". × the stay-style factor below for free nights. |
+| Lounge access (Priority Pass, Sky Club, Centurion …) | **1/8 of face**, face = $469 (Priority Pass Select retail) or, for a network with a visit / pass limit, that many × $35; × how practical it is where they fly (coverage, below); "I'd love it if my card included it" × 0.6. **One benefit per wallet**: the best single network, one line. |
+| Elite status, of any kind | **$0** — listed under "Nice extras" with no dollar amount |
+| Travel and purchase protections | **$0** — "Nice extras" |
+
+Spending pools (`profilePools`, shared across the wallet so two cards never
+pay back the same dollars twice): the habit answers (Part 4), flights
+(yearly flight spend; months = trips), hotels (yearly hotel spend; months ≈
+nights ÷ 2), dining, streaming, rides (spending step), and bag fees per
+airline flown. A credit = min(face, its pools' spending, any cap, periods
+with spending × the amount per period).
+
+Every benefit row shows **Counted $X** with a grey **Face up to $Y**.
 
 | Benefit | Usage |
 |---|---|
@@ -226,17 +260,18 @@ category, then card id (deterministic).
 | Typical order sizes and prices (modeling defaults, Nov 2026 list prices rounded) | Takeout $35 · rideshare $25 · Five Guys / BWW / Cheesecake Factory $30 · Dunkin' $8 · Resy dinner $100 · Exclusive Tables $120 · inKind $60 · Blacklane $100 · lululemon $100 · Oura Ring $350 · Best Buy $150 · StubHub $150 · Live Nation $120 · 1stDibs $500 · LoungeBuddy pass $50 · Avis / Budget rental $150 · Turo trip $150 · JSX flight $250. Yearly: DashPass $120 · Uber One $96 · Peloton $528 · Walmart+ $155 · Future $1,788 · Disney+ / Hulu / ESPN+ $132 · Peacock $132 · Paramount+ $96 · YouTube Premium $168 · NYT $300 · WSJ $468 · CLEAR+ $219. |
 | Credits not asked about (v7c 4.4) | Worked out from other answers: broad travel credit — if they travel at all; airline incidental and airline ticket credits — from the trips step (their airlines); hotel-chain credits — only for a chain picked or recommended in the hotels question; **portal-tied hotel credits** (Chase Travel, The Edit, Fine Hotels + Resorts, Delta Stays, Renowned Hotels, Citi / Bilt / United Hotels, Capital One Travel) — one yes/no, "Would you book hotels or trips through a card's travel site to get money back?", **No (default) = $0 for all of them**. |
 | **Credit classes (v7c)** | Every credit is **automatic** (posts on spend they already do), **easy** (a simple statement credit — counts where they said they'd use it), **niche or portal-tied** (Delta Stays, Renowned Hotels via Chase Travel, The Edit, Fine Hotels + Resorts, JSX, any "booked through the card's travel site" credit) or **spend-gated** (earned after a spending threshold, e.g. Delta Gold $200 flight credit after $10,000 a year). Spend-gated = **$0 in every value and score**, listed under "Unlocks with spending". Niche / portal-tied = **$0 unless picked** (the old trip-based portal factor is gone). `src/data/creditClass.js`; a credit's `cls` in the data wins. |
-| General credits (restaurants-anywhere, lifestyle, Bilt Cash) | by cadence (0.9 annual … 0.5 monthly) |
-| Broad travel credit (Sapphire Reserve $300) | 0.95 if they fly (0.6 if not) |
-| Portal / airline annual credits | v5 trip-based factors (portal 0.15 / 0.5 / 0.8; airline 0.1 / 0.5 / 0.75); an airline- or hotel-specific credit is $0 unless that brand was picked |
-| **Split travel credits** (two halves, quarterly pieces, minimum stays: The Edit, Fine Hotels + Resorts, Hilton Aspire resort + flight, IHG F&B …) | **$0 by default.** Count only if the brand/program was picked AND ≥ 4 paid hotel nights (≥ 2 trips for airline ones) AND they tapped "I'd plan around this" — then **0.6**. Shown behind "Why this counts as $0". |
-| Free night certificates | `pointCap × v_program × P(use)`; `P = 0.85` if the brand was picked and `n > 0`, else 0. Caps: Marriott 35k, Ritz 85k, Hyatt Cat 1–4 = 18k, IHG 40k; uncapped Hilton nights valued at an 80k-point redemption. Spend-gated certificates count only if the allocation in §2 puts that much on the card. |
-| Companion certificates | picked airline and ≥ 2 trips: `0.6 × face × min(1, T/3)`; $0 if they answered airline perks without "Companion fare" |
-| **Lounges** | `visits = 2T × λ`, per network: `visits × $35 × coverage(network, home airport)`, capped at that network's own visit / pass limit (read only from its label — e.g. Altitude Connect Priority Pass 4 visits, Delta Reserve 15 and Platinum 10 Sky Club visits, Strata Elite / AA Globe 4 Admirals passes; a Priority Pass *membership* never inherits another network's pass count) and at $469 (Priority Pass Select retail). Chase Sapphire Lounges left Priority Pass on Aug 15 2026: only cards that list them (Sapphire Reserve, Ritz-Carlton) count them. Airline clubs only for a picked airline. Coverage: where we know a network's lounges at that airport (`LOUNGE_SITES`; ATL so far), coverage = practicality: 1 if one is in a concourse they fly from; if all are in the international concourses, `intlShare + (1 − intlShare) × 0.4` (airside detour; 0.1 if behind another checkpoint), with `intlShare` from the survey ("How many of those trips are international?" None 0 / Some 0.3 / Most 0.8; default 0). Otherwise: Centurion / Sapphire / Capital One lounges by airport list (to verify); Priority Pass by airport size, ½ at a fortress hub (one airline ≥ 60%); airline clubs 1 at a hub, 0.8 where dominant, else 0.3–0.6; unknown airport 0.5. Wallet: best network + 15% of each other one, capped. |
+| General credits (restaurants-anywhere, lifestyle, travel/dining, any streaming, Bilt Cash) | 5b: 100%, capped at that spending (dining; streaming + dining + rides; travel + dining; streaming; dining) |
+| Broad travel credit (Sapphire Reserve $300) | 5b: 100%, capped at flight + hotel spending; $0 if they don't travel |
+| Airline ticket credits | 5b: 100% for an airline they fly, capped at the flight spending on that airline (its share of trips); periods = trips on it |
+| Hotel-chain credits | 5b: 100% for a chain picked or recommended, capped at hotel spending (split between the chains picked) |
+| **Split hotel-chain credits** (Hilton Aspire resort, IHG F&B …) | **$0 by default.** Count only with the brand picked AND ≥ 4 paid hotel nights AND "I'd plan around this" — then 100% for the periods with stays, capped at hotel spending. Portal-tied split credits (The Edit, Fine Hotels + Resorts) follow the travel-site yes/no instead. |
+| Free night certificates | 5b: `2/3 × pointCap × v_program` (× stay style) if the brand was picked and `n > 0`, else 0. Caps: Marriott 35k, Ritz 85k, Hyatt Cat 1–4 = 18k, IHG 40k; uncapped Hilton nights valued at an 80k-point redemption. Spend-gated → $0, "Unlocks with spending". |
+| Companion certificates | 5b: `2/3 × face` for a picked airline with ≥ 1 trip on it; $0 if they answered airline perks without "Companion fare"; spend-gated → $0 |
+| **Lounges** | `visits = 2T × λ`, per network: `visits × $35 × coverage(network, home airport)`, capped at that network's own visit / pass limit (read only from its label — e.g. Altitude Connect Priority Pass 4 visits, Delta Reserve 15 and Platinum 10 Sky Club visits, Strata Elite / AA Globe 4 Admirals passes; a Priority Pass *membership* never inherits another network's pass count) and at $469 (Priority Pass Select retail). Chase Sapphire Lounges left Priority Pass on Aug 15 2026: only cards that list them (Sapphire Reserve, Ritz-Carlton) count them. Airline clubs only for a picked airline. Coverage: where we know a network's lounges at that airport (`LOUNGE_SITES`; ATL so far), coverage = practicality: 1 if one is in a concourse they fly from; if all are in the international concourses, `intlShare + (1 − intlShare) × 0.4` (airside detour; 0.1 if behind another checkpoint), with `intlShare` from the survey ("How many of those trips are international?" None 0 / Some 0.3 / Most 0.8; default 0). Otherwise: Centurion / Sapphire / Capital One lounges by airport list (to verify); Priority Pass by airport size, ½ at a fortress hub (one airline ≥ 60%); airline clubs 1 at a hub, 0.8 where dominant, else 0.3–0.6; unknown airport 0.5. **5b: value = 1/8 × face × coverage** (the visits formula on the left is shown for context only); wallet = the best single network (no second-network share). |
 | Checked bags | picked airline: $35 × min(card's free bags, bags per trip) × 2 ways × T × share of trips with bags, once per airline. Not asked → 1 bag every trip (v6; v7c fixed the code, which had used the card's full bag count). $0 if they answered airline perks without "Free checked bags". |
-| Elite status | picked brand: $50–150 by tier |
+| Elite status | **5b: $0** — "Nice extras" (was $50–150 by tier) |
 | Anniversary points | points × `v` |
-| Protections | cell phone $20; trip delay/cancellation $25 and primary rental $15 if they fly — once each per wallet |
+| Protections | **5b: $0** — "Nice extras" (was cell phone $20, trip delay $25, primary rental $15) |
 | **Where they stay (v7c)** | "Where do you usually stay?" scales hotel loyalty: a hotel program's point value above its dependable floor, its elite status and its free-night P(use) × **1** (big chains, or not asked) · **0.75** (a mix) · **0.4** (independent or boutique). `STAY_STYLE_FACTOR`, a modeling default: boutique stayers rarely get to use chain points or status. |
 | Global Entry / TSA PreCheck / NEXUS | **v7c:** **$24 a year** — the $120 Global Entry / NEXUS fee (CBP pages, read 2026-11-22; TSA PreCheck "$85 or less") is paid once per 5-year membership, so a card's "every 4–4.5 years" credit is used once in 5. Counted only if "Have it or would get it" (then "Already have PreCheck or Global Entry? No / Yes, renewing in …"); once per wallet (other cards' copies flagged **Overlap**); $0 on a new card when a held card already covers it. |
 | CLEAR | a subscription row under "Travel services": up to $219 a year when they already pay for it or would start; shared across the wallet |
@@ -319,7 +354,12 @@ card moves to "After your loan" (month 12) in When to apply. The search
 subtracts each set's hurdles; the branch-and-bound bound uses the smallest
 possible hurdle per added card, so the search stays exact. Narrow cards
 (Costco, Amazon, store cards) clear the same hurdle. "Worth applying?":
-**Yes** if gain − hurdle ≥ $50, **Marginal** if ≥ $0, else **No**. Cards you
+**Yes** if gain − hurdle ≥ $50, **Marginal** ("Only just") if > $0, else
+**No** — shown as **"Not worth it for you"** with the top reason (fee more
+than what it adds; other cards already earn as much; doesn't cover the
+application cost). v7c 5b.6: the gain is counted value only (picked credits,
+2/3 of a free night, earning) minus the fee, and the line leads with the net
+after the application cost. Cards you
 hold carry no hurdle. When to apply now spaces new cards **6 months**
 apart (owner rule, was 3).
 

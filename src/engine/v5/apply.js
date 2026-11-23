@@ -6,9 +6,11 @@
 
 import { BY_ID, CARDS } from "../../data/cards/index.js";
 import { normalizeProfile, hotelNights } from "../profileDefaults.js";
-import { cardFee, loungeBreakdown, bagValue, directBase, membershipCost, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "./value.js";
+import { cardFee, loungeBreakdown, bagValue, directBase, membershipCost, brandShare, HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "./value.js";
 import { cardPointValue, currencyValue, convertsTo, partnerShortName, FLEX_CURRENCIES } from "./pointValues.js";
-import { FREE_NIGHT_P_USE, STATUS_VALUE } from "../../data/benefitUsage.js";
+import { CERT_COUNTED_SHARE } from "../../data/benefitUsage.js";
+
+const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 import { UNCAPPED_FREE_NIGHT_POINTS } from "../../data/benefitUsage.js";
 import { programCpp } from "../../data/valueModes.js";
 
@@ -47,11 +49,14 @@ export function applicationHurdle(card, profile, plan = []) {
 /** Lower bound on any card's hurdle (for the optimizer's search bound). */
 export const minHurdle = (profile) => (profile.bonusOffsetsHurdle ? 0 : HURDLE_BASE + (profile.credit.loan === "12-24" ? HURDLE_LOAN_SOON : 0));
 
-/** Yes / Marginal / No from a card's yearly gain in a plan and its hurdle. */
+/** Yes / Marginal / No from a card's yearly gain in a plan and its hurdle.
+    v7c 5b.6: only counted value goes in (the gain is walletValue's), and a
+    net of $0 or less is "No" — shown as "Not worth it for you". */
 export function worthVerdict(gain, hurdle) {
   const net = gain - hurdle;
-  return net >= WORTH_MARGIN ? "Yes" : net >= 0 ? "Marginal" : "No";
+  return net >= WORTH_MARGIN ? "Yes" : net > 0 ? "Marginal" : "No";
 }
+export const VERDICT_TEXT = { Yes: "Yes", Marginal: "Only just", No: "Not worth it for you" };
 
 /* ── C2: keeper cards ───────────────────────────────────────────────────── */
 
@@ -72,9 +77,9 @@ export function keeperHotelOptions(rawProfile, limit = 3) {
     const cpp = programCpp(c.pointCurrency, profile.valueMode)?.cpp ?? 0;
     const certs = c.freeNightCertificates.filter((n) => !n.spend).map((n) => {
       const pts = n.pointCap || UNCAPPED_FREE_NIGHT_POINTS[c.pointCurrency] || 0;
-      return { label: n.name, value: Math.round(pts * (cpp / 100) * FREE_NIGHT_P_USE), points: pts };
+      return { label: n.name, value: Math.round(pts * (cpp / 100) * CERT_COUNTED_SHARE), points: pts };
     });
-    const status = STATUS_VALUE.find((s) => s.pattern.test(c.hotelStatus?.tier || ""))?.value || 0;
+    const status = 0;   // v7c 5b: elite status counts $0
     const fee = cardFee(c, profile);
     const certValue = certs.reduce((t, x) => t + x.value, 0);
     out.push({ cardId: c.id, certs, status, fee, net: certValue + status - fee, cpp });
@@ -88,7 +93,7 @@ export function airlineKeeperValue(card, rawProfile) {
   if (!AIRLINE_CURRENCIES.has(card.pointCurrency)) return null;
   const bags = bagValue(card, profile);
   const companion = (card.companionCertificates || []).length && (!profile.travel.airlinePerks || profile.travel.airlinePerks.includes("companion"))
-    ? Math.round((card.companionCertificates[0].estValue || 0) * 0.6 * Math.min(1, profile.travel.trips / 3)) : 0;
+    && !card.companionCertificates[0].spend && profile.travel.trips > 0 ? Math.round((card.companionCertificates[0].estValue || 0) * CERT_COUNTED_SHARE) : 0;
   const fee = cardFee(card, profile);
   return { bags: Math.round(bags), companion, fee, net: Math.round(bags + companion - fee) };
 }
@@ -158,11 +163,36 @@ export function explainCard(cardId, baseWallet, rawProfile, walletValue) {
   /* v7b 5.5: a required membership (Robinhood Gold) as its own line, with
      the interest offset that's allowed against it. */
   const membership = membershipCost(card, profile);
+  const verdict = held ? null : worthVerdict(gain, hurdle.total);
+  /* v7c 5b.5: a hotel / airline card whose earning adds nothing says why,
+     e.g. "No Marriott stays in your trips, and your other cards beat 3x
+     dining / 2x everything else." */
+  let earnNote = null;
+  const brand = HOTEL_CURRENCIES.has(card.pointCurrency) || AIRLINE_CURRENCIES.has(card.pointCurrency) ? card.pointCurrency : null;
+  if (brand && Math.round(earned) <= 0) {
+    const hotel = HOTEL_CURRENCIES.has(brand);
+    const bucket = hotel ? "hotels" : "flights";
+    const Brand = partnerShortName(brand);
+    const atBrand = (after.earning.byBucket[bucket] || []).some((r) => r.cardId === cardId) || brandShare(card, bucket, profile) > 0 && profile.brands[hotel ? "hotels" : "airlines"].includes(brand) && (hotel ? hotelNights(profile) > 0 : profile.travel.trips > 0);
+    const r = card.earnRates || {};
+    const brandKeys = hotel ? ["Hotels"] : ["Flights"];
+    const others = Object.entries(r).filter(([k, v]) => k !== "General" && !brandKeys.includes(k) && v > (r.General ?? 1)).map(([k, v]) => `${v}x ${String(k).replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}`);
+    const rest = [...others, `${r.General ?? 1}x everything else`].join(" / ");
+    earnNote = `${atBrand ? `Your other cards earn about as much at ${Brand}` : `No ${Brand} ${hotel ? "stays" : "flights"} in your trips`}, and your other cards beat ${rest}.`;
+  }
+  /* v7c 5b.6: the top reason when it isn't worth it. */
+  let topReason = null;
+  if (verdict === "No") {
+    const got = Math.max(0, earned) + Math.max(0, benefitTotal);
+    if (earned <= 0 && benefitTotal <= 0) topReason = "your other cards already earn as much on your spending, and none of its perks match your answers";
+    else if (fee > got) topReason = `its ${money(fee)} fee is more than the ${money(got)} it adds`;
+    else topReason = `what it adds (${money(gain)} a year) doesn't cover the ${money(hurdle.total)} cost of applying`;
+  }
   return {
     cardId, held, lanes, benefits, lounge, fee, hurdle, ecosystem, membership,
     rates: profile.rates, robinhoodCash: profile.robinhoodCash,
     earned, benefitTotal, gain, net: gain - hurdle.total,
-    verdict: held ? null : worthVerdict(gain, hurdle.total),
+    verdict, topReason, earnNote,
     cpp: cardPointValue(card, profile, [...baseWallet, cardId]).cpp,
   };
 }

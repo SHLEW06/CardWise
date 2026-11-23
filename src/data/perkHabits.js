@@ -223,21 +223,28 @@ export function unionMonths(list) {
 }
 
 /**
- * What one credit is worth to this person on its own:
- *   { value, cap, pools, periodCap, spend, months } — value = min(face,
- *   spending it can be used on, periods with spending × amount per period).
+ * What one credit is worth from a set of spending pools:
+ *   value = min(face, spending in those pools, cap, periods with spending ×
+ *   amount per period). `months` overrides the pools' months (e.g. trips on
+ *   one airline); `single` = the credit can be used on only one of the pools
+ *   (Amex: "one airline you pick").
  */
-export function habitCreditValue(credit, pools) {
-  const ids = poolsForCredit(credit, pools);
+export function poolCreditValue(credit, ids, pools, { cap = Infinity, months = null, single = false } = {}) {
+  ids = ids.filter((id) => pools[id]);
   const face = credit.annual || 0;
   if (!ids.length) return { value: 0, pools: [], spend: 0, months: 0, periodCap: 0 };
-  const spend = ids.reduce((t, id) => t + pools[id].yearly, 0);
-  const months = unionMonths(ids.map((id) => pools[id].months));
+  const spend = single ? Math.max(...ids.map((id) => pools[id].yearly)) : ids.reduce((t, id) => t + pools[id].yearly, 0);
+  const m = months ?? (single ? Math.max(...ids.map((id) => pools[id].months)) : unionMonths(ids.map((id) => pools[id].months)));
   const cad = credit.cadence || "annual";
   const per = face / (PERIODS[cad] || 1);
-  const periodCap = per * periodsUsed(cad, months);
-  const value = Math.max(0, Math.min(face, spend, periodCap));
-  return { value, pools: ids, spend, months, periodCap };
+  const periodCap = per * periodsUsed(cad, m);
+  const value = Math.max(0, Math.min(face, spend, cap, periodCap));
+  return { value, pools: ids, spend, months: m, periodCap, single };
+}
+
+/** What one habit-asked credit is worth to this person on its own. */
+export function habitCreditValue(credit, pools) {
+  return poolCreditValue(credit, poolsForCredit(credit, pools), pools);
 }
 
 /**
@@ -251,8 +258,15 @@ export function sharePools(items, pools) {
   for (const it of [...items].sort((a, b) => b.value - a.value || (a.id < b.id ? -1 : 1))) {
     let want = it.value;
     let got = 0;
+    if (it.single) {
+      /* usable on one pool only: the one with the most spending left */
+      const id = [...(it.pools || [])].sort((a, b) => (left[b] ?? 0) - (left[a] ?? 0))[0];
+      if (id) { got = Math.min(want, Math.max(0, left[id] ?? 0)); left[id] = (left[id] ?? 0) - got; }
+      out.push({ ...it, value: Math.round(got) });
+      continue;
+    }
     for (const id of it.pools || []) {
-      const take = Math.min(want, left[id] ?? 0);
+      const take = Math.max(0, Math.min(want, left[id] ?? 0));
       left[id] = (left[id] ?? 0) - take;
       want -= take;
       got += take;

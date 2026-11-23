@@ -164,7 +164,7 @@ export function cardDetail(cardId, rawProfile, bestN = null) {
       const fee = cardFee(card, p);
       return { earn, benefits, fee, net: earn + benefits - fee };
     })(),
-    used: b.items, unused: b.unused, gated: b.gated || [], topEarning, eligibility: eligibility(card, p), fee: cardFee(card, p),
+    used: b.items, unused: b.unused, gated: b.gated || [], extras: b.extras || [], topEarning, eligibility: eligibility(card, p), fee: cardFee(card, p),
   };
 }
 

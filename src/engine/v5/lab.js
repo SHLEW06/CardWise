@@ -126,14 +126,17 @@ export function allBenefits(value) {
       const v = c && c.cardId === pc.cardId ? c.value : 0;
       const flags = [];
       /* v7c Part 4: a habit credit another card already pays back (part of) the spending for. */
-      const pooledShort = it.dedupe === "habit" && v < it.value;
+      const pooledShort = it.dedupe === "pool" && v < it.value;
       if (it.dedupe && (overlap || pooledShort || (c?.dedupedFrom?.length > 1))) flags.push("Overlap");
       if (v > 0 && it.face && v < SURPLUS_BELOW * it.face) flags.push("Surplus");
-      rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: overlap && v === 0 ? (it.dedupe === "habit" ? "Another card already pays back this spending" : "Another card already gives you this") : pooledShort ? `Another card already pays back part of this spending (you'd use $${v} of $${it.value})` : null });
+      rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: overlap && v === 0 ? (it.dedupe === "pool" ? "Another card already pays back this spending" : "Another card already gives you this") : pooledShort ? `Another card already pays back part of this spending (you'd use $${v} of $${it.value})` : null });
     }
     for (const u of pc.unused || []) rows.push({ cardId: pc.cardId, label: u.label, value: 0, face: u.face || 0, flags: ["Not used"], reason: u.reason });
     /* v7c 5.1: spend-gated credits are never counted. */
     for (const g of pc.gated || []) rows.push({ cardId: pc.cardId, label: g.label, value: 0, face: g.face || 0, flags: ["Unlocks with spending"], reason: g.spend ? `Needs $${g.spend.toLocaleString("en-US")} a year on this card` : "Needs a spending threshold" });
+    /* v7c 5b.2: status and protections — unscored "Nice extras", no $. */
+    const seen = new Set(rows.filter((r) => r.extra).map((r) => r.label));
+    for (const x of pc.extras || []) if (!seen.has(x.label)) { seen.add(x.label); rows.push({ cardId: pc.cardId, label: x.label, value: 0, face: 0, flags: ["Nice extra"], reason: null, extra: true, kind: x.kind }); }
   }
   return rows.sort((a, b) => b.value - a.value || (a.flags.includes("Not used") ? 1 : 0) - (b.flags.includes("Not used") ? 1 : 0) || b.face - a.face);
 }

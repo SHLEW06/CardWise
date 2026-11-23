@@ -1273,6 +1273,75 @@ the Delta Platinum's companion certificate beats the Gold for the no-lounge
 flyer. Tests: `v7cPart5.test.jsx` (9); v5Engine worked example now picks
 portal credits explicitly; bag test uses the verified two domestic bags.
 
+## 5b — only count what I'd pay for (2026-11-22)
+
+- **New factor table** (METHODOLOGY §3, replaces every older perk factor):
+  statement credits they'd use, free bags, PreCheck = 100% of face, capped
+  at the spending they can be used on; airline fee credits = 100% capped at
+  the bag fees they'd pay (bags × trips on that airline × 2 × $35) minus bags
+  another wallet card already waives, with the math shown ("You'd use $140 of
+  $200: bag fees on Delta — 1 bag × 2 trips × 2 ways × $35 = $140 a year (one
+  airline you pick)"); free-night / companion certificates = 2/3 of the most
+  they're worth (the Ritz 85k night: up to $629, counted $419 — the brief's
+  example, in a test); lounges = 1/8 of face, best single network; elite
+  status and protections = $0.
+- **Spending pools** (`profilePools`): habit answers + flights, hotels,
+  dining, streaming, rides and bag fees per airline. Every credit draws from
+  its pools and the wallet shares them, so two cards never pay back the same
+  dollars (biggest credit first; the cut-back one shows Overlap with "you'd
+  use $X of $Y").
+- **Spend-gated certificates count $0** (owner's answer to question 2): the
+  World of Hyatt's 2nd night after $15k, Hilton / Marriott spend-gated nights
+  and spend-gated companion certificates go to "Unlocks with spending".
+- **Card detail:** every benefit row shows "Counted $X" and a grey "Face up
+  to $Y"; airline fee credits show the bag-fee math; **Nice extras** (status,
+  protections) listed with no dollar amounts — also at the bottom of the Lab's
+  All your benefits.
+- **Icons by type** (`creditType`: dining, rides, shopping, streaming, travel
+  services, PreCheck/CLEAR, hotel, airline, travel; kinds: lounge, bags, free
+  night, companion, status, points). **Cause of the bed icon:** the old
+  matcher tested `/hotel|stay|resort|edit/` on the label, and "cr*edit*"
+  matched "edit" (meant for The Edit), so every credit not caught earlier —
+  the Brilliant's dining credit included — got a bed.
+- **Brand multipliers only at the brand (5b.5):** a hotel card's Hotels rate
+  applies to its program's share of hotel spending (split between the hotel
+  programs picked); an airline card's Flights rate to trips on that airline.
+  The rest earns its travel / base rate. With no stays at the brand, "Earning
+  it adds" is $0 with the brief's reason line ("No Marriott stays in your
+  trips, and your other cards beat 3x dining / 3x flights / 2x everything
+  else."). The card detail shows the stacked return: "≈13% back at Marriott
+  (4.8% from this card)" — scored part only.
+- **Worth applying? (5b.6):** counted value only; net ≤ $0 → "Not worth it
+  for you — its $650 fee is more than the $300 it adds." A Yes leads with
+  the net after the application cost ("+$X a year after the $75 application
+  cost"), which also covers half of 5f.5.
+- **Engine fixes found on the way:**
+  - The optimizer's bound ignored a must-have list (sample wallets, lounge
+    options): with no feasible incumbent it couldn't prune — one "Lounge &
+    credits" run searched 85k nodes. The bound now requires one must-have
+    card, and greedy also starts from each must-have card. The owner-profile
+    samples went 61 s → 0.8 s with identical wallets; the whole test suite
+    68 s → 13 s (the "lounge middle answer" test no longer times out).
+  - Card fit rounded a small positive gain to 0 (fit must be ≥ 1 when the
+    card adds anything).
+  - The spending-pool cache was keyed on `profile.brands`, so a copy with
+    other travel answers reused stale pools; now keyed on the profile.
+- Tests: `v7cPart5b.test.jsx` (20). Older tests that asserted the replaced
+  factors (lounge visits × $35, second-network share, status / protection $,
+  0.85 free nights, 0.6 companions, plan-around 0.6) moved to the 5b rules.
+
+**Golden before → after (`npm run golden`, Part 4 → 5b):**
+
+| Profile | Before | After | Why |
+|---|---|---|---|
+| 4 Hyatt $400 | N +$751 | **+$370** · same cards | 2nd free night is spend-gated ($15k) → $0; anniversary night 2/3 not 0.85; status + protections $0 |
+| 5 ATL Delta, lounges yes | +$1,039 · delta-reserve, robinhood-gold, discover-it | **+$707** · delta-plat, discover-it | Sky Club at 1/8 of face no longer carries the $650 Reserve |
+| 5 ATL Delta, lounges no | +$690 | **+$707** · same cards | companion 2/3 with ≥ 1 trip (was 0.6 × trips/3) |
+| Owner-like, from scratch | +$1,853 · hyatt, **marriott-brilliant**, delta-gold, boundless, freedom-flex ($990 fees) | **+$1,243** · delta-gold, robinhood-gold, hyatt, boundless, freedom-flex ($340) | the Brilliant's $535 + $134 lounge + status are gone at 5b values |
+| Owner-like, from wallet | +$1,003 | **+$864** · Boundless replaces Hyatt | |
+| Owner-like, held wallet | +$684 | **+$659** | |
+| 1, 2, 3 | — | unchanged | |
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only
