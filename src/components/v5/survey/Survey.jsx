@@ -19,6 +19,7 @@ import PerksStep from "./PerksStep.jsx";
 import GrowthStep from "./GrowthStep.jsx";
 import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import Head from "./SurveyHead.jsx";
+import { FeeLimitChoice, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
 import { searchPlaces, placeName, placeShort, isIntl, suggestRoutes, ROUTE_DATA_SOURCE } from "../../../engine/v5/tripRoutes.js";
@@ -130,8 +131,8 @@ function Step({ id, d, set, mode, headRef }) {
     case "fee":
       return (
         <>
-          {/* v7c 5d-2.5: no fee-budget question — the optimizer has no fee cap;
-              a card is in only if it pays for itself after its fee. */}
+          {/* v7c 5d-2.5: the optimizer has no fee cap by default; v7d Part 4
+              adds an optional limit (asked below). */}
           <Head headRef={headRef} eyebrow="Memberships" title="Memberships you already pay for"
             sub="Some cards only work with a paid membership. If you already have it, its cost isn't counted against the card." />
           <fieldset className="survey-group">
@@ -142,6 +143,11 @@ function Step({ id, d, set, mode, headRef }) {
             <legend className="t-h3">Cash you'd keep at Robinhood <span className="t-caption">(optional)</span></legend>
             <p className="t-caption">Robinhood's Gold card needs a Gold membership ($5 a month). The only thing that offsets it is extra interest on cash you'd keep there, compared with a typical high-yield savings account (Gold {normalizeProfile(d).rates.robinhoodGoldApy}% vs about {normalizeProfile(d).rates.hysaApy}% elsewhere, November 2026).</p>
             <MoneySlider label="Cash at Robinhood" value={d.robinhoodCash || 0} max={100000} step={1000} onChange={(robinhoodCash) => set({ robinhoodCash })} />
+          </fieldset>
+          <fieldset className="survey-group" data-testid="fee-limit-q">
+            <legend className="t-h3" id="fee-limit-q">Is there a most you'd pay in yearly card fees, in total?</legend>
+            <FeeLimitChoice value={d.feeLimit ?? null} onChange={(feeLimit) => set({ feeLimit })} id="fee-limit" />
+            <p className="t-caption">With no limit, a card is in only if it pays for itself after its fee. A limit keeps out anything over it, and we'll show you what that costs.</p>
           </fieldset>
         </>
       );
@@ -155,7 +161,7 @@ function Step({ id, d, set, mode, headRef }) {
         </>
       );
     case "yourPoints": return <YourPointsStep d={d} headRef={headRef} />;
-    case "reveal": return <RevealStep d={d} headRef={headRef} />;
+    case "reveal": return <RevealStep d={d} set={set} headRef={headRef} />;
     default: return null;
   }
 }
@@ -810,7 +816,7 @@ function YourPointsStep({ d, headRef }) {
 
 /* ── Step 9: your best setup ─────────────────────────────────────────── */
 
-function RevealStep({ d, headRef }) {
+function RevealStep({ d, set, headRef }) {
   /* v7c 5e.2: two tabs — Now (today's best wallet) and Your plan. */
   const [tab, setTab] = useState("now");
   const s = useMemo(() => walletScore(d), [d]);
@@ -826,7 +832,8 @@ function RevealStep({ d, headRef }) {
     <>
       <Head headRef={headRef} eyebrow="Your best setup"
         title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
-        sub="With the answers you gave. No fee limit: each card is in only if it pays for itself." />
+        sub={d.feeLimit != null ? `With the answers you gave, and your fee limit of $${d.feeLimit.toLocaleString("en-US")} a year.` : "With the answers you gave. No fee limit: each card is in only if it pays for itself."} />
+      <FeeLimitCost profile={d} onRemove={set ? () => set({ feeLimit: null }) : null} />
       <div className="segmented reveal-tabs" role="tablist" aria-label="Now or later">
         <button role="tab" aria-selected={tab === "now"} className="segmented-item" onClick={() => setTab("now")}>Now</button>
         <button role="tab" aria-selected={tab === "plan"} className="segmented-item" onClick={() => setTab("plan")}>Your plan</button>

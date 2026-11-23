@@ -19,6 +19,7 @@ import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
+import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
@@ -107,7 +108,12 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
           </div>
           <button className="btn btn-quiet btn-small" onClick={() => setDrawer(true)} aria-expanded={drawer}><SlidersHorizontal size={16} aria-hidden="true" /> Your spending</button>
         </div>
-        <p className="t-caption">No fee limit: a card is in only if it pays for itself — every number is after its fee.</p>
+        {/* v7d Part 4: the optional fee limit, as a quick-edit chip; saved to the profile. */}
+        <div className="lab-fee-limit">
+          <FeeLimitChip value={p.feeLimit} onChange={(feeLimit) => { setDraft((d) => ({ ...d, feeLimit })); onSaveProfile?.({ ...normalizeProfile(saved), feeLimit }); }} />
+          {p.feeLimit == null && <p className="t-caption">No fee limit: a card is in only if it pays for itself — every number is after its fee.</p>}
+        </div>
+        <FeeLimitCost profile={p} mode={mode} onRemove={() => { setDraft((d) => ({ ...d, feeLimit: null })); onSaveProfile?.({ ...normalizeProfile(saved), feeLimit: null }); }} />
         {dirty && (
           <div className="lab-whatif" role="status">
             <span>You're playing with a what-if.</span>
@@ -322,6 +328,24 @@ function SlotSheet({ slotKey, setup, profile, onClose, onSwap, onOpenCard }) {
                 </li>
               ))}
             </ul>
+            {/* v7d Part 4: never hidden — cards over the fee limit, with the swap that makes them fit. */}
+            {r.overLimit?.length > 0 && (
+              <section className="over-limit" aria-labelledby={`over-${slotKey}`} data-testid="over-limit">
+                <h3 className="t-h3" id={`over-${slotKey}`}>Over your fee limit</h3>
+                <ul className="rows alt-rows">
+                  {r.overLimit.map((a) => (
+                    <li key={a.cardId} className="alt-row is-over" data-testid={`over-${a.cardId}`}>
+                      <button className="alt-photo" onClick={() => onOpenCard?.(a.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[a.cardId])}`}><CardFace card={BY_ID[a.cardId]} /></button>
+                      <div className="alt-copy">
+                        <span className="alt-name">{cardDisplayName(BY_ID[a.cardId])}</span>
+                        <span className="t-caption">{money(a.totalFees)} in fees, {money(a.overBy)} over your {money(r.feeLimit)} limit. {a.fitSwap ? `Fits if you drop the ${cardDisplayName(BY_ID[a.fitSwap.drop])} (${money(a.fitSwap.fee)} fee).` : "No single swap makes it fit."}</span>
+                      </div>
+                      <span className={`num-ui alt-delta ${a.delta >= 0 ? "up" : "down"}`}>{signed(a.delta)}/yr after its {money(a.fee)} fee</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <p className="t-caption">"In this slot" compares {where} with the card here now; "Whole wallet" is the yearly change after every card's benefits and fees.</p>
           </>
         )}

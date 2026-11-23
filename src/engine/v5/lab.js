@@ -40,7 +40,9 @@ function slotPct(card, slotKey, profile, wallet) {
  */
 export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCards, limit = Infinity, catalog = CARDS } = {}) {
   const profile = normalizeProfile(rawProfile);
-  const B = budget ?? Infinity;
+  /* v7d Part 4: the optional fee limit. Cards that would break it still
+     show, in "Over your fee limit", with the swap that would make them fit. */
+  const B = budget ?? profile.feeLimit ?? Infinity;
   const max = maxCards ?? profile.maxCards;
   const before = walletValue(setup, profile, { normalized: true });
   const slots = slotsFor(before, profile);
@@ -56,11 +58,10 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
   /* v7 D2: two ways in. "Add alongside" (default) keeps every card and lets
      the newcomer take only the lanes where it wins. "Replace" removes the
      slot's card everywhere — and says which other slots that costs. */
-  /* v7c 5d-2.5: no fee budget — a card is shown whatever the wallet's total
-     fees; its net (after its fee) decides. (The budget hid the Amex Gold
-     from Groceries once the Brilliant's $650 had used it up.) */
-  void B;
+  /* v7c 5d-2.5: a card is never hidden for its fee (the old budget hid the
+     Amex Gold from Groceries once the Brilliant's $650 had used it up). */
   const fits = (next) => next.length <= max;
+  const feesOf = (ids) => ids.reduce((t, id) => t + cardFee(BY_ID[id], profile), 0);
   const lostWithout = current ? slots.filter((s) => s.cardId === current && s.key !== slotKey).map((s) => s.label) : [];
   const variant = (next, c, displaced) => {
     const v = walletValue(next, profile, { normalized: true });
@@ -113,7 +114,23 @@ export function alternativesForSlot(setup, slotKey, rawProfile, { budget, maxCar
      v7c 5d-2.5: cards they already own, left out of this setup, go first
      ("You have this card · Put it back"). */
   out.sort((a, b) => (b.held ? 1 : 0) - (a.held ? 1 : 0) || b.N - a.N || a.feeDelta - b.feeDelta || (a.cardId < b.cardId ? -1 : 1));
-  return { current, before, pinned, slot, alternatives: out.slice(0, limit) };
+  if (!Number.isFinite(B)) return { current, before, pinned, slot, alternatives: out.slice(0, limit), overLimit: [], feeLimit: null };
+  /* Over the limit: the swap that would make it fit — drop the fee card in
+     the setup whose loss costs the least, if that's enough. */
+  const within = [], over = [];
+  for (const a of out) {
+    const total = feesOf(a.setup);
+    if (total <= B + 0.5) { within.push(a); continue; }
+    let fitSwap = null;
+    for (const id of a.setup.filter((x) => x !== a.cardId && cardFee(BY_ID[x], profile) > 0)) {
+      if (total - cardFee(BY_ID[id], profile) > B + 0.5) continue;
+      const rest = a.setup.filter((x) => x !== id);
+      const N = walletValue(rest, profile, { normalized: true }).N;
+      if (!fitSwap || N > fitSwap.N) fitSwap = { drop: id, fee: cardFee(BY_ID[id], profile), N: Math.round(N), delta: Math.round(N - before.N) };
+    }
+    over.push({ ...a, totalFees: total, overBy: Math.round(total - B), fitSwap });
+  }
+  return { current, before, pinned, slot, alternatives: within.slice(0, limit), overLimit: over.slice(0, limit), feeLimit: B };
 }
 
 /* ── v7c 5d-2.2: "Your cards" tiles and "Which card to use where" ────────── */

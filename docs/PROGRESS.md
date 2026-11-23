@@ -1805,6 +1805,30 @@ Edits in `PerksStep.jsx` and `perkHabits.js`; the valuation rule is the same.
 
 Tests: `v7dPart3.test.jsx` (7); `v5Points`, `v7cPart5c`, `v7PartB` updated.
 
+## v7d Part 4 · optional fee limit (2026-11-23)
+
+- **Survey (Memberships step):** "Is there a most you'd pay in yearly card
+  fees, in total?" — **No limit, show me the best value** (default) / **Up to
+  $___ a year** (starts at $400). Saved as `profile.feeLimit`; an old
+  `feeBudget` (e.g. the $1,500 in the owner's saved profile) is not turned
+  into a limit.
+- **With a limit:** a real constraint on `optimalWallet` (so the Score's
+  "best", Home and the Lab), `alternativesForSlot`, `sampleWallets` and
+  `planRoadmap` (now and later wallets).
+- **What it costs, always:** "Your $400 limit keeps out the Chase Sapphire
+  Reserve, which would add $336 a year. [Remove limit]" — on the results step
+  and in the Wallet Lab (`feeLimitCost`, `FeeLimitCost`).
+- **Never hidden:** slot sheets get "Over your fee limit" — each card's total
+  fees, how far over, and "Fits if you drop the … ($X fee)" when one swap is
+  enough.
+- **Wallet Lab:** a quick-edit chip "Fee limit: none ▾" (same control; saves
+  to the profile).
+- Golden: unchanged (no profile sets a limit). Test traveler (JFK, 10 trips,
+  Hyatt + United): no limit → CSR, United Explorer, Robinhood Gold, Hyatt,
+  Freedom Flex ($1,100 fees, N +$2,217); $400 limit → CSP in place of CSR
+  ($400 fees, N +$1,881).
+- Tests: `v7dPart4.test.jsx` (7).
+
 ## Questions for the owner (v7c)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

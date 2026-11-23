@@ -54,3 +54,13 @@
 .v5 .habit-plan { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; cursor: pointer; }
 .v5 .habit-plan input { accent-color: var(--ink); }
 .v5 .habit-why { color: var(--ink-2, inherit); margin-top: 4px; }
+
+/* v7d Part 4: optional fee limit */
+.v5 .fee-limit-input { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.v5 .fee-limit-input input { width: 6em; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+.v5 .lab-fee-limit { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.v5 .fee-limit-chip { position: relative; }
+.v5 .fee-limit-pop { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; min-width: 320px; padding: 14px 16px; }
+.v5 .fee-limit-cost { margin-top: 6px; }
+.v5 .over-limit { margin-top: 18px; }
+.v5 .alt-row.is-over { opacity: .85; }

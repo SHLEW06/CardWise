@@ -116,6 +116,7 @@ export const DEFAULT_PROFILE = Object.freeze({
   memberships: [],                     // paid memberships they already have: robinhood-gold, costco, sams, amazon-prime, walmart-plus
   includeBonus: false,                 // count year-one welcome bonuses in the score
   maxCards: DEFAULT_MAX_CARDS,
+  feeLimit: null,                      // v7d 4: optional total yearly fee cap; null = no limit (the old feeBudget is not used)
   pointsUse: null,                     // v5 legacy; no longer prices bank points (Part E replaces it)
   pointValues: {},                     // v5 legacy sliders; ignored by Part E valuation
   newCardComfort: DEFAULT_NEW_CARD_COMFORT,
@@ -379,6 +380,7 @@ export function normalizeProfile(p = {}) {
     memberships: normalizeMemberships(p.memberships),
     includeBonus: !!p.includeBonus,
     maxCards: Number.isFinite(p.maxCards) ? Math.max(1, Math.min(10, p.maxCards)) : d.maxCards,
+    feeLimit: Number.isFinite(p.feeLimit) && p.feeLimit >= 0 ? Math.round(p.feeLimit) : null,
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : { cash: "cash", both: "portal", travel: "partners" }[wants],
     pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,

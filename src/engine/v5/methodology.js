@@ -226,10 +226,10 @@ const keyOf = (o) => JSON.stringify(o, (k, v) => (v === Infinity ? "∞" : v));
 
 /**
  * Best wallet for a profile.
- *   budget      total-fee cap — v7c 5d-2.5: NOT used by any screen; the
+ *   budget      total-fee cap. Default: the person's optional fee limit
+ *               (v7d Part 4, `profile.feeLimit`), else none (Infinity) — the
  *               optimizer maximizes net value (counted value − fees −
- *               application costs) with no cap. Default Infinity; kept only
- *               for the explicit "what-if" fee ladder.
+ *               application costs). Pass Infinity to ignore the limit.
  *   mode        "scratch" — any eligible cards (held ones cost nothing to keep)
  *               "wallet"  — keep every held card, add the best ones
  *   maxCards    default profile.maxCards
@@ -241,7 +241,7 @@ const keyOf = (o) => JSON.stringify(o, (k, v) => (v === Infinity ? "∞" : v));
 export function optimalWallet(rawProfile, options = {}) {
   const profile = normalizeProfile(rawProfile);
   const {
-    budget = Infinity, mode = "scratch", maxCards = profile.maxCards,
+    budget = profile.feeLimit ?? Infinity, mode = "scratch", maxCards = profile.maxCards,
     filter = null, mustOneOf = null, require = null, catalog = CARDS, tag = "",
   } = options;
   const ck = keyOf({ profile, budget, mode, maxCards, tag, mustOneOf, n: catalog.length, f: !!filter, r: !!require });
@@ -488,6 +488,21 @@ export function optimalWallet(rawProfile, options = {}) {
 export const clearOptimizerCache = () => cache.clear();
 
 /* ── scores ──────────────────────────────────────────────────────────────── */
+
+/**
+ * v7d Part 4: what the optional fee limit costs.
+ * → null without a limit; else { limit, keptOut: [ids], adds, limited, free }
+ *   "Your $400 limit keeps out the Sapphire Reserve, which would add $X a year."
+ */
+export function feeLimitCost(rawProfile, { mode = "scratch" } = {}) {
+  const profile = normalizeProfile(rawProfile);
+  if (profile.feeLimit == null) return null;
+  const limited = optimalWallet(profile, { mode });
+  const free = optimalWallet(profile, { mode, budget: Infinity });
+  const keptOut = free.wallet.filter((id) => !limited.wallet.includes(id) && cardFee(BY_ID[id], profile) > 0);
+  const adds = Math.max(0, Math.round(free.value.N - limited.value.N));
+  return { limit: profile.feeLimit, keptOut, adds, limited, free };
+}
 
 /** Wallet Score 0–100: how close their wallet is to the best one at their budget. */
 /** The score from the two numbers it's made of: extra over a 2% card for a

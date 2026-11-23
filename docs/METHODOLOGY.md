@@ -307,6 +307,19 @@ already subtracted, so a card is in only if it pays for itself. A saved
 fit, sample wallets, Wallet Score). The survey's fee step asks only for
 memberships already paid for and Robinhood cash.
 
+**v7d Part 4 — an optional fee limit.** No limit is the default (v7c): the
+optimizer maximizes net value after fees. The Memberships step asks "Is
+there a most you'd pay in yearly card fees, in total?" — *No limit, show me
+the best value* / *Up to $___ a year* (`profile.feeLimit`; an old saved
+`feeBudget` is ignored). With a limit, total fees (`cardFee`, memberships
+included) ≤ the limit in `optimalWallet`, the Wallet Score's "best", sample
+wallets and the plan. Slot sheets list cards that would break it under "Over
+your fee limit" with the swap that makes them fit (drop the fee card whose
+loss costs least). `feeLimitCost` always says what it costs: "Your $400 limit
+keeps out the Chase Sapphire Reserve, which would add $X a year" (best N
+without the limit − best N with it) with **Remove limit**. Wallet Lab has the
+same control as a chip ("Fee limit: none ▾").
+
 **v7c 5d-2.3 — one program, one card.** A second new card from a hotel or
 airline program already in the wallet must add at least **$50 a year**
 (`SAME_PROGRAM_MIN`) on top of the usual $25; its tile then says what it
