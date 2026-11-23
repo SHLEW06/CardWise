@@ -13,12 +13,14 @@
    Pure; no React, no storage.
    ========================================================================== */
 
+/* v7c 5f.2: the per-credit haircuts (cadence 0.9 / 0.75 / 0.6 / 0.5, "would
+   use" 0.5, promo 0.5, hard-to-use 0.6, portal / airline / hotel trip
+   factors, split 0.6, free-night 0.85, companion 0.6, status $) are no longer
+   read by this engine — METHODOLOGY §3, 5b table. */
 import {
-  CREDIT_USAGE, HARD_TO_USE, TRAVEL_MEMBERSHIP,
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
-  BAG_FEE, STATUS_VALUE, BRAND_CREDIT_CADENCE, PROMO_FACTOR, SPLIT_CREDIT_FACTOR, SPLIT_MIN_NIGHTS, SPLIT_MIN_TRIPS,
-  FREE_NIGHT_P_USE, COMPANION_P_USE, SECOND_LOUNGE_SHARE, PROTECTIONS,
-  LOUNGE_BUNDLE_FACTOR, WORK_STATUS_FACTOR, WORK_LOUNGE_FACTOR, STAY_STYLE_FACTOR, CERT_COUNTED_SHARE, LOUNGE_FACE_SHARE,
+  BAG_FEE, SPLIT_MIN_NIGHTS, PROTECTIONS,
+  LOUNGE_BUNDLE_FACTOR, WORK_LOUNGE_FACTOR, STAY_STYLE_FACTOR, CERT_COUNTED_SHARE, LOUNGE_FACE_SHARE,
 } from "../../data/benefitUsage.js";
 import { annualSpend, hotelNights, totalAnnualSpend, SPEND_CATEGORIES } from "../profileDefaults.js";
 import { pctBack, BANK_CURRENCIES } from "./valuation.js";
@@ -442,7 +444,7 @@ export function creditUsage(card, credit, profile) {
      be used on (no more cadence or trip-count factors). */
   if (rule.rule === "general") {
     const g = GENERAL_POOLS.find(([re]) => re.test(credit.name));
-    if (!g) return { factor: BRAND_CREDIT_CADENCE[cad] ?? 0.9, reason: null, brands: [] };   // business-only credits
+    if (!g) return { factor: 0, reason: "A business credit — not counted for personal wallets" };
     return fromPools(g[1], {}, "No spending it can pay back");
   }
   if (rule.rule === "portal") {
@@ -491,8 +493,9 @@ export function creditUsage(card, credit, profile) {
     if (!onIt) return { factor: 0, reason: `No trips on ${airlineName(brand)}` };
     return fromPools(["flights"], { cap: (pools.flights?.yearly || 0) * Math.min(1, onIt / trips), months: Math.min(12, onIt) }, "You don't fly");
   }
-  const fn = CREDIT_USAGE[credit.kind] || (() => 0.5);
-  return { factor: fn({ trips, pickedCardBrand: pickedBrand(profile, cardBrand(card)) }), reason: null };
+  /* v7c 5f.2: no per-credit haircuts — a credit that matches none of the
+     rules above isn't something we can tie to their spending, so it's $0. */
+  return { factor: 0, reason: "Not tied to anything in your answers" };
 }
 
 /**
@@ -620,14 +623,6 @@ export function bestLounge(networks) {
 /** v7c 1.4: how much hotel loyalty is worth to them (1 = chains / not asked). */
 export const stayFactor = (profile) => STAY_STYLE_FACTOR[profile?.travel?.stayStyle] ?? 1;
 
-function statusValue(status, profile) {
-  if (!status?.program || !status?.tier) return 0;
-  const programs = String(status.program).split(/[+/]/);
-  if (!programs.some((p) => pickedBrand(profile, p))) return 0;
-  const work = programs.some((p) => (profile.travel.workPrograms || []).includes(p)) ? WORK_STATUS_FACTOR : 1;
-  const stay = programs.some((p) => HOTEL_CURRENCIES.has(p)) ? stayFactor(profile) : 1;
-  return Math.round((STATUS_VALUE.find((s) => s.pattern.test(status.tier))?.value ?? 0) * work * stay);
-}
 
 /** Protections this card carries (keys from benefitUsage PROTECTIONS). */
 export function protectionsOf(card) {

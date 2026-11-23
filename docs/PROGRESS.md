@@ -1451,6 +1451,44 @@ portal credits explicitly; bag test uses the verified two domestic bags.
 the saved $0 budget no longer blocks the Capital One SavorOne ($39 fee, pays
 for itself). Everything else unchanged.
 
+## 5f — Home and card detail: the full-page review (2026-11-22)
+
+1. **"I have this card"** goes through `toggleHeld` (state/v5Profile.js):
+   loads the saved profile, toggles `cardsHeld`, saves, and App re-applies
+   it to every screen. Test: save / load round trip, the Wallet Score's
+   current wallet changes, toggling back restores it.
+2. **Unpicked credits count $0** — the Platinum's Resy, lululemon, Oura,
+   Walmart+, digital entertainment, Uber One and CLEAR are $0 and under
+   "Benefits you wouldn't use" until a habit answer says otherwise; picked =
+   100% capped at spend (Part 4 + 5b). **The old per-credit haircuts are gone
+   from the v5 engine**: value.js no longer imports the cadence factors,
+   "would use" 0.5, promo 0.5, hard-to-use 0.6, the trip-count factors, split
+   0.6, free-night 0.85, companion 0.6 or the status table; the last two
+   fall-backs (an unmatched credit, business-only general credits) are now $0
+   with a reason. (The constants stay in benefitUsage.js for the legacy v4
+   engine, `src/engine/scoring.js`, which no v6 screen uses.)
+3. **Status and trip delay $0** → "Nice extras" (done in 5b; pinned here).
+4. **Lounges**: one benefit per wallet, the best single network at 1/8 of
+   face, one line — the card detail's lounge row and the wallet total are the
+   same number (5b; pinned here).
+5. **One number per idea**: the card-detail headline now leads with the net
+   **after the application cost** ("Would add ≈ $X a year to you after the
+   application cost") — the same $X as "Why this card?" and "Worth applying?"
+   (the pre-cost gain is only in "Show the math"). The why-line says "its 4%
+   on dining (adds $X over your current card)"; the earning list says
+   "earns $Y a year on $Z".
+6. **Fee-budget copy** removed (5d-2): "Best possible wallet for you: $X a
+   year"; "Play with your cards and spending".
+7. **"Opens transfers to …"**: checked — `explainCard` shows it only when the
+   card raises that currency's value in the wallet. Beside a held MR card
+   that already transfers (Amex Gold / Green) the Platinum shows nothing; for
+   the owner's real three cards (no MR card) it does show, correctly — the
+   Platinum would be their first card that transfers. Both pinned in tests.
+8. **Score line**: "You're getting 42% of the most your cards could earn you.
+   Best possible: +$1,125 a year over a basic 2% card." (Home and Lab).
+- Tests: `v7cPart5f.test.jsx` (12); the score-text test moved to the new
+  sentence. Golden unchanged.
+
 ## Part 6 — full card-data audit: groups 1 and 2 (2026-11-22) — STOPPED for review
 
 Method: each issuer's own page, rendered in headless Chrome (Amex pages only

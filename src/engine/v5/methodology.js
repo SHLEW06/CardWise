@@ -505,10 +505,11 @@ export function walletScore(rawProfile, opts = {}) {
   return { score: scoreFrom(current.N, best.value.N), current, best };
 }
 
-/** "$377 of a possible $1,640 a year more than a simple 2% card" */
+/** v7c 5f.8: "You're getting 42% of the most your cards could earn you.
+    Best possible: +$1,125 a year over a basic 2% card." */
 export function scoreBasisText(n, best) {
-  const m = (x) => `${x < 0 ? "−" : ""}$${Math.round(Math.abs(x)).toLocaleString("en-US")}`;
-  return `${m(n)} of a possible ${m(best)} a year more than a simple 2% card`;
+  const m = (x) => `${x < 0 ? "−" : "+"}$${Math.round(Math.abs(x)).toLocaleString("en-US")}`;
+  return `You're getting ${scoreFrom(n, best)}% of the most your cards could earn you. Best possible: ${m(best)} a year over a basic 2% card.`;
 }
 
 /**

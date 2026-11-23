@@ -14,7 +14,7 @@ import { extensionBridge } from "./connector/index.js";
 import ConnectedBanks from "./components/v6/offers/ConnectedBanks.jsx";
 import WalletLab from "./components/v6/lab/WalletLab.jsx";
 import { useAuth } from "./firebase/useAuth.js";
-import { loadV5Profile, saveV5Profile } from "./state/v5Profile.js";
+import { loadV5Profile, saveV5Profile, toggleHeld } from "./state/v5Profile.js";
 
 import { PROGRAMS } from "./data/programs.js";
 import { BY_ID } from "./data/cards.js";
@@ -183,11 +183,8 @@ export default function App() {
     setProfile(withAnchors({ ...toLegacyProfile(next), valOverrides }));
   }, [valOverrides]);
 
-  const toggleWallet = (id) => {
-    const cur = loadV5Profile();
-    const cardsHeld = cur.cardsHeld.includes(id) ? cur.cardsHeld.filter((x) => x !== id) : [...cur.cardsHeld, id];
-    applyV5(saveV5Profile({ ...cur, cardsHeld }));
-  };
+  /* v7c 5f.1: updates cardsHeld and re-runs every screen from it. */
+  const toggleWallet = (id) => applyV5(toggleHeld(id));
 
   /* ── Offers (arrive by sync only, §15) ── */
   const markOfferAdded = useCallback((offerId) => {

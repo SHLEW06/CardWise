@@ -93,7 +93,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
           <div className="home-score">
             <ScoreDial score={s.score} size={120} caption="Score" />
             <div className="home-basis">
-              <p className="t-small" data-testid="home-score-basis">Score {s.score} = {scoreBasisText(s.current.N, s.best.value.N)}.</p>
+              <p className="t-small" data-testid="home-score-basis">{scoreBasisText(s.current.N, s.best.value.N)}</p>
               <p className="t-caption" data-testid="home-best">Best possible wallet for you: <span className="t-value">{money(s.best.value.net)} a year</span></p>
             </div>
           </div>

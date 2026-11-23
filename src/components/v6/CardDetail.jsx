@@ -52,11 +52,13 @@ export function iconFor(item) {
 export function whyLine(d, e) {
   const short = (label) => label.replace(/\s*\(.*$/, "").replace(/^\$[\d,]+\s+/, "");
   const drivers = [
-    ...(e?.lanes || []).filter((l) => l.delta > 0).map((l) => ({ value: l.delta, text: `${pct(l.pct)} on ${BUCKET_LABEL[l.bucket]}` })),
+    ...(e?.lanes || []).filter((l) => l.delta > 0).map((l) => ({ value: l.delta, text: `${pct(l.pct)} on ${BUCKET_LABEL[l.bucket]}`, lane: true })),
     ...(e?.benefits || []).filter((b) => b.kind !== "protection" && b.value > 0).map((b) => ({ value: b.value, text: `the ${short(b.label)}` })),
   ].sort((a, b) => b.value - a.value).slice(0, 2);
   if (!drivers.length) return "It earns about the same as a simple card for how you spend.";
-  return `Mostly ${drivers.map((x, i) => (i === 0 ? `its ${x.text} (${money(x.value)})` : `${x.text} (${money(x.value)})`)).join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
+  /* v7c 5f.5: a lane's number is what it ADDS over the card there now. */
+  const amt = (x) => (x.lane ? `adds ${money(x.value)} over your current card` : money(x.value));
+  return `Mostly ${drivers.map((x, i) => (i === 0 ? `its ${x.text} (${amt(x)})` : `${x.text} (${amt(x)})`)).join(" and ")}${d.fee ? `, after a ${money(d.fee)} fee` : ""}.`;
 }
 
 /** A held card in plain words: what it earns beyond their other cards,
@@ -106,7 +108,10 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
     const planAround = profile.planAround.includes(id) ? profile.planAround.filter((x) => x !== id) : [...profile.planAround, id];
     onProfileChange?.({ ...profile, planAround });
   };
-  const value = d.inWallet.has || wallet.length ? d.inWallet.after.N - d.inWallet.before.N : d.solo.net;
+  /* v7c 5f.5: one number per idea — lead with the net after the application
+     cost (the same figure as "Why this card?" and "Worth applying?"); the
+     pre-cost gain is only inside "Show the math". */
+  const value = d.inWallet.has ? d.inWallet.after.N - d.inWallet.before.N : e.net;
   const valueLabel = d.inWallet.has ? "It adds" : wallet.length ? "Would add" : "Worth";
 
   /* Portal to <body>: the detail must sit above the shell's sticky top bar. */
@@ -130,7 +135,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
               </>
             ) : (
               <>
-                <p className="detail-value"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} display /></span><span className="detail-unit"> a year to you</span></p>
+                <p className="detail-value" data-testid="detail-headline"><span className="t-big">{valueLabel} ≈ <CountUp value={Math.max(0, value)} display /></span><span className="detail-unit"> a year to you{e.hurdle?.total ? " after the application cost" : ""}</span></p>
                 <p className="t-lead" data-testid="why-line">{value > 0 ? whyLine(d, e) : "Doesn't add value for you — your other cards already earn this, or the fee outweighs what you'd use."}</p>
               </>
             )}

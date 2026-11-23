@@ -91,9 +91,11 @@ describe("3 · Wallet Score is explainable and the same on Home and in Wallet La
     const s = walletScore(P);
     expect(s.score).toBe(scoreFrom(s.current.N, s.best.value.N));
     render(<Home profile={P} offers={[]} />);
+    /* v7c 5f.8: plain words, same numbers. */
     const basis = screen.getByTestId("home-score-basis").textContent;
-    const [, score, n, best] = basis.match(/^Score (\d+) = \$([\d,]+) of a possible \$([\d,]+)/);
-    expect(Number(score)).toBe(Math.round((100 * Number(n.replace(/,/g, ""))) / Number(best.replace(/,/g, ""))));
+    const [, score, best] = basis.match(/^You're getting (\d+)% of the most your cards could earn you\. Best possible: \+\$([\d,]+) a year over a basic 2% card\.$/);
+    expect(Number(score)).toBe(s.score);
+    expect(Number(best.replace(/,/g, ""))).toBe(Math.round(s.best.value.N));
   });
   it("Wallet Lab labels a suggested setup and shows 'Your wallet now' = Home's score", () => {
     const home = walletScore(P).score;

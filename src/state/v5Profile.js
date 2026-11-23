@@ -56,3 +56,12 @@ export async function hydrateV5Record() {
   }
   return local;
 }
+
+/** v7c 5f.1: "I have this card" / "In my wallet" — toggles the card in the
+    saved cardsHeld and returns the saved profile (every screen re-runs
+    from it). */
+export function toggleHeld(cardId) {
+  const cur = loadV5Profile();
+  const cardsHeld = cur.cardsHeld.includes(cardId) ? cur.cardsHeld.filter((x) => x !== cardId) : [...cur.cardsHeld, cardId];
+  return saveV5Profile({ ...cur, cardsHeld });
+}
