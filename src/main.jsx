@@ -31,8 +31,11 @@ import "./styles/v7/cardFace.css";
 /* v7 Part 0: the "Ink & Stone" style tile lives at /styletile in dev only
    (REDESIGN_SPEC §9.11). In a production build the condition is false at
    compile time, so the tile and its CSS are never bundled. */
-const isStyleTile = import.meta.env.DEV && window.location.pathname.replace(/\/+$/, "") === "/styletile";
-const Root = isStyleTile ? React.lazy(() => import("./components/v7/StyleTile.jsx")) : App;
+const devPath = import.meta.env.DEV ? window.location.pathname.replace(/\/+$/, "") : "";
+/* CARD_FACES Part 3: every card in both modes at 64 / 160 / 320px (dev only). */
+const Root = devPath === "/styletile" ? React.lazy(() => import("./components/v7/StyleTile.jsx"))
+  : devPath === "/dev/card-faces" ? React.lazy(() => import("./components/v7/CardFacesReview.jsx"))
+  : App;
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

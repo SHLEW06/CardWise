@@ -85,6 +85,8 @@
   left: 6.5%; top: 8%;
   font-weight: 600; font-size: calc(var(--u) * 7); letter-spacing: .02em; line-height: 1;
 }
+/* long issuer names ("American Express") step down so the program text fits */
+.v5 .v5-face-wordmark.is-long { font-size: calc(var(--u) * 5.6); top: 8.8%; }
 .v5 .v5-face-family {
   right: 6.5%; top: 9.5%;
   font-variant-caps: all-small-caps; text-transform: lowercase;

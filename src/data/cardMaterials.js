@@ -280,8 +280,17 @@ const ISSUER_MARK = {
 export const issuerMarkFor = (card) => ISSUER_MARK[card?.issuer] || String(wordmarkFor(card)).replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase();
 
 /* The name printed bottom left: the card name without its issuer prefix. */
-const NAME_PREFIX = /^(American Express|Amex|Capital One|Citi|US Bank|U\.S\. Bank|Chase|Wells Fargo|Bank of America)\s+/;
-export const faceNameFor = (card) => String(card?.name || "").replace(NAME_PREFIX, "") || String(card?.name || "");
+const NAME_PREFIX = /^(American Express|Amex|Capital One|Citi|US Bank|U\.S\. Bank|Chase|Wells Fargo|Bank of America|BoA)\s+/;
+export function faceNameFor(card) {
+  const name = String(card?.name || "");
+  let out = name.replace(NAME_PREFIX, "");
+  /* "Robinhood Gold Card" → "Gold Card" (the issuer is printed top left);
+     only when at least two words are left ("Discover it", "Apple Card" stay). */
+  const mark = wordmarkFor(card);
+  const rest = out.slice(mark.length + 1);
+  if (out === name && mark && out.startsWith(`${mark} `) && rest.split(/\s+/).length >= 2 && /^[A-Z]/.test(rest)) out = rest;
+  return out || name;
+}
 
 /* ── colour helpers (contrast per WCAG 2.x) ─────────────────────────────── */
 const hex = (h) => { const x = String(h).replace("#", ""); return [0, 2, 4].map((i) => parseInt(x.slice(i, i + 2), 16)); };

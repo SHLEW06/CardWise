@@ -58,12 +58,13 @@ export function ContactlessSvg() {
   );
 }
 
-export default function CardFace({ card, selected = false, label, className = "", tilt = false, eager = false }) {
+export default function CardFace({ card, selected = false, label, className = "", tilt = false, eager = false, mode: forcedMode = null }) {
   /* A failed photo falls back to the designed face for that card and that
      file only (not a sticky flag: a new src gets its own try). */
   const [failedSrc, setFailedSrc] = useState(null);
   const t = useTilt(3);
-  const mode = useCardArtMode();
+  const globalMode = useCardArtMode();
+  const mode = forcedMode || globalMode;   // the /dev/card-faces review page shows both
   if (!card) return null;
   const src = card.image?.localImage || null;
   const art = mode === "issuer" && src && src !== failedSrc ? src : null;
@@ -90,7 +91,7 @@ export default function CardFace({ card, selected = false, label, className = ""
         ) : (
           <div className="v5-face-layout" aria-hidden="true">
             <span className="v5-face-mark">{issuerMarkFor(card)}</span>
-            <span className="v5-face-wordmark">{wordmarkFor(card)}</span>
+            <span className={`v5-face-wordmark${wordmarkFor(card).length > 12 ? " is-long" : ""}`}>{wordmarkFor(card)}</span>
             {m.family && <span className="v5-face-family">{m.family}</span>}
             <span className="v5-face-emv"><ChipSvg tone={m.chip} /><ContactlessSvg /></span>
             <span className="v5-face-name">{faceNameFor(card)}</span>
