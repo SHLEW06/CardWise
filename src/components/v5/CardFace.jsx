@@ -72,7 +72,7 @@ export function Motif({ m, id }) {
     /* one accent swoosh through the gap between the chip and the card name,
        rising to the right edge below the program text, with faint echoes —
        never across the text */
-    const y0 = H * (0.62 + s * 0.04), y1 = H * (0.3 + s * 0.12), dip = H * (0.1 + s * 0.06);
+    const y0 = H * (0.57 + s * 0.03), y1 = H * (0.3 + s * 0.12), dip = H * (0.04 + s * 0.04);   // stays above two-line names
     const d = (k) => `M -40 ${y0 - k * 16} C ${W * 0.3} ${y0 + dip - k * 16}, ${W * 0.58} ${H * 0.22 - k * 10}, ${W + 40} ${y1 - k * 14}`;
     return (
       <svg className="v5-face-motif" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">

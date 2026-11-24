@@ -160,3 +160,7 @@
   .v5 .is-vertical .v5-face-layout > .v5-face-name { font-size: calc(var(--u) * 8); }
 }
 .v5 .v5-face-name, .v5 .v5-face-wordmark, .v5 .v5-face-family, .v5 .v5-face-network { text-shadow: 0 1px 1px rgba(0, 0, 0, .18); }
+
+/* long issuer names and program text never meet */
+.v5 .v5-face-wordmark { max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+.v5 .v5-face-family { max-width: 34%; overflow: hidden; text-overflow: ellipsis; text-align: right; }

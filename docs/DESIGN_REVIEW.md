@@ -70,3 +70,16 @@ Compared the designs side by side with the issuer photos at 320px.
   brushing.
 - **Checked:** 64 / 160 / 320px at 2×; no motif crosses the name, network or
   program text; contrast test still covers all 130 cards (ink vs base).
+
+### Round 4 (2026-11-23, owner: "update all card faces")
+
+- **Every card with an issuer photo is now checked (114, was 40):** colour,
+  second tone, finish, pattern, chip, accent, program text and portrait
+  layout recorded from the issuer's card image (source per card in
+  `cardMaterials.js`). The 16 cards with no photo keep their recorded colour
+  and get the soft accent glow.
+- **Fixed from the shots:** long program text met long issuer names ("Bank of
+  America" + "PREMIUM REWARDS", "Wells Fargo" + "CHOICE PRIVILEGES") →
+  shorter program words and width limits on both; the swoosh grazed two-line
+  card names → it now sits higher and flatter.
+- Contrast: all 130 faces pass 4.5:1 (test).

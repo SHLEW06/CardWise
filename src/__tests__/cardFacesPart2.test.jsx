@@ -34,8 +34,8 @@ describe("2.2 / 2.5 · materials", () => {
       for (const bg of [m.base, m.base2, m.hi, m.lo].filter(Boolean)) expect(contrast(m.ink, bg), `${c.id} on ${bg}`).toBeGreaterThanOrEqual(4.5);
     }
   });
-  it("the 40 most popular cards are checked, with a source and date; the rest are flagged unverified", () => {
-    expect(Object.keys(CHECKED_MATERIALS)).toHaveLength(40);
+  it("every card with an issuer photo is checked (114), with a source and date; the rest are flagged unverified", () => {
+    expect(Object.keys(CHECKED_MATERIALS)).toHaveLength(114);
     for (const id of Object.keys(CHECKED_MATERIALS)) {
       expect(BY_ID[id], id).toBeTruthy();
       const m = materialFor(BY_ID[id]);
@@ -43,7 +43,7 @@ describe("2.2 / 2.5 · materials", () => {
       expect(m.sourceUrl).toMatch(/^https:\/\//);
       expect(m.checkedDate).toBe(CHECKED_DATE);
     }
-    expect(materialFor(BY_ID["ink-cash"]).materialVerified).toBe(false);
+    expect(materialFor(BY_ID["apple-card"]).materialVerified).toBe(false);   // no issuer photo
   });
   it("metal is ±8% lightness; gradient-angle cards carry a second tone", () => {
     const g = materialFor(BY_ID["amex-gold"]);

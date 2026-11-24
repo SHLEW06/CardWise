@@ -2090,6 +2090,13 @@ Peacock paid, Global Entry:
   Dunkin' $21 (its THC $100 is $0: you didn't say you'd spend $100 at the
   hotel).
 
+## Card faces · all cards updated (2026-11-23)
+
+Owner: "update all card faces". The other 74 cards with issuer photos are
+checked like the first 40 (colour, finish, pattern, chip, accent, program,
+portrait), so all 114 photographed cards carry an accent motif; long program
+text and the swoosh's position fixed (`docs/DESIGN_REVIEW.md` round 4).
+
 ## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
