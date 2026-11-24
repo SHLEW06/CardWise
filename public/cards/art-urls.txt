@@ -1,0 +1,130 @@
+# <catalog-id> <issuer image url>   — collected 2026-11-18 from issuer product pages
+bcp                  https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/blue-cash-preferred.png
+amex-bce             https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/blue-cash-everyday.png
+amex-gold            https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/gold-card.png
+amex-plat            https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/platinum-card.png
+amex-green           https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/green-card.png
+amex-biz-gold        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/open/category/cardarts/business-gold.png
+delta-gold           https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/gold-delta-skymiles.png
+delta-plat           https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/platinum-delta-skymiles.png
+delta-reserve        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/delta-reserve.png
+delta-blue           https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/delta-blue.png
+marriott-biz         https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/open/category/cardarts/amex-marriott-bonvoy-business.png
+marriott-bevy        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/marriott-bonvoy-bevy-card.png
+marriott-brilliant   https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/marriott-bonvoy-brilliant-card.png
+hilton-honors        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors.png
+hilton-surpass       https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors-surpass.png
+hilton-aspire        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/hilton-honors-aspire.png
+freedom-rise         https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/freedom_rise_alt_card2.png
+freedom-unlimited    https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/freedom_unlimited_card_alt.png
+freedom-flex         https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/freedom_flex_card.png
+csp                  https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png
+csr                  https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png
+ink-preferred        https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_preferred_card.png
+ink-unlimited        https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_unlimited_card.png
+united-explorer      https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_explorer_new_card.png
+united-quest         https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_quest_new_card.png
+united-club          https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/united_club_new_infinite_card.png
+united-gateway       https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art//united_gateway_new_ribbon_card.png
+sw-priority          https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/swa_priority_card-2.png
+sw-plus              https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/swa_plus_card_New.png
+sw-premier           https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/swa_premier_card.png
+marriott-bold        https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png
+marriott-boundless   https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott-bonvoy-boundless-card.png
+hyatt                https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/world_of_hyatt_card.png
+hyatt-business       https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/world_hyatt_biz_card.png
+ihg-premier          https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ihgpremiercardart2026.png
+ihg-traveler         https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ihg-one-rewardscard.png
+slate-edge           https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/slate_dagger_card.png
+amazon-prime         https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/prime-visa.png
+venture-x            https://ecm.capitalone.com/WCM/card/products/venture-x-card-art/mobile.png
+venture              https://ecm.capitalone.com/WCM/card/products/venture_cardart_prim_323x203-1/mobile.png
+venture-one          https://ecm.capitalone.com/WCM/card/products/ventureone_cardart_prim_323x203/mobile.png
+savor                https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png
+savor-one            https://ecm.capitalone.com/WCM/card/products/savorone-2025-cardart.png
+quicksilver          https://ecm.capitalone.com/WCM/card/products/quicksilver_cardart.png
+c1-platinum          https://ecm.capitalone.com/WCM/card/products/plat_cardart_prim_323x203/mobile.png
+citi-double-cash     https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-double-cash-credit-card/citi-double-cash-credit-card_306x192.webp
+citi-custom-cash     https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-custom-cash-credit-card/citi-custom-cash-credit-card_306x192.webp
+citi-strata          https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp
+citi-aa-platinum     https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-aadvantage-platinum-elite-credit-card/citi-aadvantage-platinum-elite-credit-card_306x192.webp
+aa-mileup            https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/aadvantage-mile-up-credit-card/aadvantage-mile-up-credit-card_306x192.webp
+aa-executive         https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-aadvantage-executive-world-legend-mastercard/citi-aadvantage-executive-world-legend-mastercard_306x192.webp
+costco-citi          https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-costco-anywhere-visa-credit-card/citi-costco-anywhere-visa-credit-card_306x192.webp
+discover-it          https://ecm.capitalone.com/WCM/dfs-card/products/itblue_card/rdesktop.png
+discover-chrome      https://ecm.capitalone.com/WCM/dfs-card/products/itchrome_card/rdesktop.png
+discover-student     https://ecm.capitalone.com/WCM/dfs-card/products/itiridescent_card/rdesktop.png
+boa-premium          https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8CAL_prmsigcm_v_250_158.png
+boa-unlimited        https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8cty_cshsigcm_v_250x157.png
+boa-customized       https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8ckn_cshsigcm_v_250x158.png
+boa-travel           https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8blm_trvsigcm_v_250x158.png
+boa-premium-elite    https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8cud_premrewelite_v_250x158.png
+alaska-visa          https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/1bbt_sigcm_v_atmos_ascent_250.png
+usb-altitude-go      https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/altitude-go-visa-signature-credit-card.png
+usb-altitude-connect https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/photo-altitude-connect-consumer.png
+usb-cash-plus        https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/photo-cash-plus-signature-lg.png
+active-cash          https://creditcards.wellsfargo.com/rv/next/images/cards/active-cash.webp
+wf-autograph         https://creditcards.wellsfargo.com/rv/next/images/cards/autograph.webp
+wf-autograph-journey https://creditcards.wellsfargo.com/rv/next/images/cards/autograph-journey.webp
+# --- second pass (manually cropped / angled art; re-running art:fetch on these gives the uncropped source)
+# c1-secured         https://ecm.capitalone.com/WCM/card/pages/open-graph/quicksilver-qs.png   (cropped from banner)
+jetblue-plus         https://cards.barclaycardus.com/content/dam/bcuspublic/card-plastic/card-angled/JBE_card_Plus_WE_Angle_359x246_L.png
+jetblue              https://cards.barclaycardus.com/content/dam/bcuspublic/card-plastic/card-angled/JBM_card_NoFee_WM_Angle_359x246_L.png
+# No flat card face published (lifestyle photos only): robinhood-gold, apple-card, bilt, venmo, paypal-cash, target-circle
+# No longer on issuer sites (closed to new applicants): amex-edp, amex-everyday, ritz, chase-freedom-student, citi-rewards-plus, usb-altitude-reserve, wf-attune
+# --- third pass 2026-11-18
+amex-edp             https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/amex-everyday-preferred.png
+amex-everyday        https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/category/cardarts/amex-everyday.png
+# robinhood-gold     https://cdn.robinhood.com/app_assets/credit-card/gold/web/robinhood-gold-card.png  (perspective-corrected to flat 1012x638 — do not re-fetch)
+# venmo              https://www.paypalobjects.com/venmocmsnodeweb/us/credit-card/rebrand/meta-image.png (front card perspective-corrected — do not re-fetch)
+
+# ── v5 data refresh — collected 2026-11-18 from issuer listing / product pages ──
+marriott-bountiful       https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bountiful_card.png
+ihg-premier-select       https://creditcards.chase.com/bcs/api/images/file/public-card-marketplace/site-assets/ihg-premier-select-card.png
+aeroplan-chase           https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/AirCanada_Aeroplan_cardart.png
+ink-cash                 https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_cash_card.png
+ba-visa                  https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/british-airways.png
+disney-premier           https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/disney_sleeping_beauty_premier_vs_Jan_2026.png
+disney-visa              https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/disney_vintage_mickey_Jan_2026.png
+amazon-visa              https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/amazon-visa.png
+doordash-mc              https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/doordash_card.png
+instacart-mc             https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/instacart_card.png
+quicksilver-one          https://ecm.capitalone.com/WCM/card/products/quicksilver_one_cardart.png
+c1-platinum-secured      https://ecm.capitalone.com/WCM/card/products/plat_cardart_prim_323x203/mobile.png
+venture-x-business       https://ecm.capitalone.com/WCM/card/products/vxb-card/mobile.png
+venture-business         https://ecm.capitalone.com/WCM/card/products/venture-business.png
+ventureone-business      https://ecm.capitalone.com/WCM/card/products/venture-business.png
+spark-cash-plus          https://ecm.capitalone.com/WCM/card/products/spark-cash-plus2.png
+spark-cash               https://ecm.capitalone.com/WCM/card/products/spark-cash-plus.png
+spark-cash-select        https://ecm.capitalone.com/WCM/card/products/cash_new_2021_optimized.png
+rei-mastercard           https://ecm.capitalone.com/WCM/card/products/card-art-240x151.png
+bjs-one-plus             https://ecm.capitalone.com/WCM/card/products/www-bj-one-plus-mc-240x151.png
+discover-it-miles        https://ecm.capitalone.com/WCM/dfs-card/products/itmiles_card/rdesktop.png
+discover-it-secured      https://ecm.capitalone.com/WCM/dfs-card/products/itblue_card/rdesktop.png
+discover-student-chrome  https://ecm.capitalone.com/WCM/dfs-card/products/itchrome_card/rdesktop.png
+citi-strata-elite        https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-elite-credit-card/citi-strata-elite-credit-card_306x192.webp
+citi-strata-no-fee       https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-credit-card/citi-strata-credit-card_306x192.webp
+citi-aa-globe            https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-aadvantage-globe-mastercard/citi-aadvantage-globe-mastercard_306x192.webp
+atmos-summit             https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/1bed_rewcm_v_atmos_visafront_infinite_250.png
+# one-key                  https://creditcards.wellsfargo.com/W-Card-MarketPlace/v10-21-26/images/Products/OneKey/onekeycash_card.png   (not a card face — use designed fallback)
+choice-privileges        https://creditcards.wellsfargo.com/W-Card-MarketPlace/v10-21-26/images/Products/ChoicePrivileges/WF_Choice_NoFee_Card.png
+choice-privileges-select https://creditcards.wellsfargo.com/W-Card-MarketPlace/v10-21-26/images/Products/ChoicePrivilegesSelect/WF_Choice_Fee_Card.png
+bilt-blue                https://img.bilt.com/43819/1790799681-bilt-tahoe.webp
+bilt-obsidian            https://img.bilt.com/43819/1790799681-bilt-vail.webp
+bilt-palladium           https://img.bilt.com/43819/1790799681-bilt-aspen.webp
+usb-smartly              https://www.usbank.com/content/dam/usbank/en/images/illustrations/card-art/credit-cards/photo-bank-smartly-card-art.png
+# target-circle            https://assets.targetimg1.com/webui/redcard/circle_card.svg   (not a card face — use designed fallback)
+# target-mastercard        https://assets.targetimg1.com/webui/redcard/circle_card.svg   (not a card face — use designed fallback)
+# redesigned faces / larger assets for existing cards
+csp                      https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png
+ihg-premier              https://creditcards.chase.com/bcs/api/images/file/public-card-marketplace/site-assets/ihg-premier-card-art-2026.png
+alaska-visa              https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/1bbt_sigcm_v_atmos_ascent_250.png
+aa-executive             https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-aadvantage-executive-world-legend-mastercard/citi-aadvantage-executive-world-legend-mastercard_306x192.webp
+venture-x                https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png
+amex-bbp https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/open/category/cardarts/blue-business-plus.png
+amex-biz-plat https://icm.aexp-static.com/Internet/Acquisition/US_en/AppContent/OneSite/open/category/cardarts/business-platinum.png
+wf-reflect https://creditcards.wellsfargo.com/rv/next/images/cards/reflect.webp
+one-key https://creditcards.wellsfargo.com/rv/next/images/cards/one-key.webp
+citi-diamond-preferred https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-diamond-preferred-credit-card/citi-diamond-preferred-credit-card_306x192.webp
+citi-simplicity https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-simplicity-credit-card/citi-simplicity-credit-card_306x192.webp
+bankamericard https://www.bankofamerica.com/content/images/ContextualSiteGraphics/CreditCardArt/en_US/Approved_PCM/8cae_nrwcm_mc_250x158.png

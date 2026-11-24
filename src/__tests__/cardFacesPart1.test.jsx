@@ -23,9 +23,10 @@ describe("Part 1 · which picture shows", () => {
     const listed = new Set([...missing.matchAll(/\| `([^`]+)` \|/g)].map((m) => m[1]));
     for (const c of CARDS) expect(!!CARD_ART_MANIFEST[c.id] || listed.has(c.id), c.id).toBe(true);
   });
-  it("the dev server defaults to issuer photos; the production build to CardWise designs", () => {
+  it("issuer photos by default, on the dev server and the published site (owner, 2026-11-23)", () => {
     expect(defaultCardArtMode({ DEV: true })).toBe("issuer");
-    expect(defaultCardArtMode({ DEV: false, PROD: true })).toBe("rendered");
+    expect(defaultCardArtMode({ DEV: false, PROD: true })).toBe("issuer");
+    expect(defaultCardArtMode({ DEV: false, VITE_CARD_ART: "rendered" })).toBe("rendered");
     expect(defaultCardArtMode({ DEV: false, VITE_CARD_ART: "issuer" })).toBe("issuer");
     expect(defaultCardArtMode({ DEV: true, VITE_CARD_ART: "rendered" })).toBe("rendered");
   });
@@ -53,6 +54,6 @@ describe("Part 1 · which picture shows", () => {
     expect(container.querySelector("img")).toHaveAttribute("src", "/cards/amex-gold.png");
   });
   it("the Profile switch is labelled with both modes", () => {
-    expect(CARD_ART_LABEL).toEqual({ issuer: "Issuer photos (only on this computer)", rendered: "CardWise designs" });
+    expect(CARD_ART_LABEL).toEqual({ issuer: "Issuer photos", rendered: "CardWise designs" });
   });
 });

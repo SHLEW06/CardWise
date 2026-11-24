@@ -11,11 +11,8 @@ firebase-debug.log
 .vscode/*
 !.vscode/extensions.json
 
-# real card faces are personal/copyrighted — keep them local
-public/cards/*
-!public/cards/README.md
-
-!public/cards/art-urls.example.txt
+# card faces: issuer photos in public/cards/ are committed and published
+# (owner's decision 2026-11-23, non-commercial project — see docs/THIRD_PARTY.md)
 
 # generated from public/cards/ by scripts/build-card-art-manifest.mjs (pre-dev/build/test)
 src/data/cardArtManifest.js

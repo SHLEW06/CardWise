@@ -112,3 +112,12 @@ build keeps the research-based records only. **Before a public launch:**
 email both site owners for permission and record the answers here
 (not done — the owner sends them).
 
+## Card photos (2026-11-23)
+
+The photos in `public/cards/` (114 of 130 cards; sources in
+`public/cards/art-urls.txt`) are the issuers' card artwork. Owner's decision:
+commit and publish them with the site — a non-commercial project, used only
+to identify each card. The site shows them by default; Profile switches to
+CardWise's own designed faces. On a takedown request, delete that issuer's
+files — those cards fall back to designed faces automatically.
+

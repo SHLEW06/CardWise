@@ -179,7 +179,7 @@ function CardArtSetting() {
   const mode = useCardArtMode();
   return (
     <div className="profile-row">
-      <span>Card pictures: <strong data-testid="card-art-active">{CARD_ART_LABEL[mode]}</strong> <span className="t-caption">· issuer photos stay on this computer and are never uploaded</span></span>
+      <span>Card pictures: <strong data-testid="card-art-active">{CARD_ART_LABEL[mode]}</strong></span>
       <div className="segmented" role="radiogroup" aria-label="Card pictures">
         {[["issuer", CARD_ART_LABEL.issuer], ["rendered", CARD_ART_LABEL.rendered]].map(([k, l]) => (
           <button key={k} role="radio" aria-checked={mode === k} aria-selected={mode === k} className="segmented-item" onClick={() => setCardArtMode(k)}>{l}</button>

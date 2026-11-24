@@ -69,9 +69,10 @@ describe("I1 · no jargon on consumer screens (outside 'See the math')", () => {
 });
 
 describe("I3 · secrets and art stay out of git", () => {
-  it(".gitignore covers card art, fonts, backgrounds, screenshots", () => {
+  it(".gitignore covers fonts, backgrounds, screenshots (card photos are published since 2026-11-23)", () => {
     const gi = readFileSync(resolve(ROOT, ".gitignore"), "utf8");
-    for (const p of ["public/cards", "public/fonts", "public/backgrounds", "screenshots"]) expect(gi, p).toMatch(new RegExp(p.replace("/", "\\/")));
+    for (const p of ["public/fonts", "public/backgrounds", "screenshots"]) expect(gi, p).toMatch(new RegExp(p.replace("/", "\\/")));
+    expect(gi).not.toMatch(/^public\/cards\/\*/m);
   });
   it("location never goes to a CardWise server: only OpenStreetMap is called", () => {
     const near = readFileSync(resolve(ROOT, "src/connector/locate.js"), "utf8") + readFileSync(resolve(ROOT, "src/connector/nearby.js"), "utf8");

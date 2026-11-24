@@ -73,6 +73,6 @@ docs/            methodology, progress log, acceptance report
 ## Notes
 
 - **Not financial advice.** Card terms change often, so always check the issuer's current terms before applying.
-- **No real card images in the repo.** Issuer card photos are personal-use only and stay on the owner's machine. The public app shows designed card faces instead.
+- **Card images.** The card photos are the issuers' artwork, used to identify each card in this non-commercial project. Profile has a switch to CardWise's own designed faces instead.
 
 *Personal project, 2026.*

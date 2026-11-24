@@ -45,6 +45,7 @@ an explicit value wins over the manifest. In-app per-card photo uploads
 
 ## Licensing
 
-Issuer card art is the issuer's copyright. This folder is `.gitignore`d
-except for this README so personal copies of card art never get committed by
-accident. Remove the ignore rule only if you have the rights to ship them.
+Issuer card art is the issuer's copyright. Since 2026-11-23 (owner's
+decision, non-commercial project) the photos here are committed and published
+with the site, used only to identify each card. If an issuer asks, remove its
+files and the card falls back to its designed face.
