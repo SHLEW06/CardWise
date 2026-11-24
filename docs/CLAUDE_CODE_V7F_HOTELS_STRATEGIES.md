@@ -144,6 +144,58 @@ Fill a separate price table, `hotelRates.json`, of
   - **"Value to you"**: the v7e formula, using my nightly budget in that
     city;
   - **three buttons: "I'd stay here" / "Too expensive" / "Not my style"**.
+- **Maps (owner, 2026-11-23): "add both interactive maps into my app, use
+  what they have if it exists".**
+  - **Step 1, check whether embedding is allowed.** The maps are
+    AwardHelper's FHR/THC map, "Chase Edit" map and "Amex + Chase
+    Combined" map, and the Quick Travel Guides Edit map if it has one.
+    - For each, request the page and read its `X-Frame-Options` and
+      `Content-Security-Policy: frame-ancestors` headers, and its terms.
+    - **If embedding is allowed and the terms don't forbid it:** add it in
+      the Hotels tab as an `<iframe>`, with a visible credit ("Map by
+      AwardHelper"), an "Open on their site ↗" link and lazy loading.
+    - **If embedding is blocked or forbidden:** don't work around it (no
+      proxying or re-hosting their pages). Use Step 2 for that map.
+    - Log the result for each map in `docs/THIRD_PARTY.md`.
+  - **Step 2, our own map,** built anyway: it's the version the public
+    app will use.
+    - **Library and tiles:** Leaflet + OpenStreetMap tiles, with
+      clustering. Show the OSM attribution, and follow the OSM tile usage
+      policy (switch to a free-tier provider if needed for production).
+    - **Pins:** from our hotel database. They're colour-coded by program
+      (Edit / FHR / THC / several), with the pin's shade showing
+      "Within budget / A bit over / Luxury splurge".
+    - **Clicking a pin** opens a mini card: name, programs, typical price
+      and date, cost after credit, value to me, "I'd stay here", and
+      "Check prices".
+    - **Sync:** the map and the list share the same filters and search.
+      Panning the map can filter the list ("Search this area").
+    - **Mobile:** the map is collapsible.
+- **List format, modelled on quicktravelguides.com/the-edit-hotel-list/.**
+  Take the layout idea; don't copy their text, styles or assets.
+  - **Above the table:**
+    - one-line summary stats, e.g. "1,523 hotels · 92 countries · 114
+      at ≤ $300/night · 176 likely double credit";
+    - the search box;
+    - filter dropdowns: Region → Country → City (dependent), Brand,
+      Program, Luxury tier, Price band, and "Only my cities".
+  - **A sortable table** with columns:
+    - Hotel (links to our hotel page) · Brand · City · Country · Stars;
+    - Programs (badges);
+    - Typical nightly (with date and source);
+    - Cost after credit (min nights);
+    - Value to you;
+    - Cheapest months (when known);
+    - a row with links: Check prices · Amex/Chase · Map.
+  - **Pagination or virtualized rows,** so 4,000+ rows stay fast.
+  - **Under 640px,** rows become stacked cards.
+  - **Our hotel page:**
+    - the monthly typical rates as a small bar chart (when the data
+      exists);
+    - which credits apply here and what each is worth to me;
+    - the program perks;
+    - the links;
+    - my notes and saved prices.
 - **Search for exact hotels** (owner, 2026-11-23: "prices tend to be quite
   high"):
   - One search box at the top of the Hotels tab. It matches hotel name,
