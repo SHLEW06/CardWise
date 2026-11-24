@@ -23,6 +23,7 @@ import { buildSpend } from "./engine/scoring.js";
 import { ensureUser } from "./firebase/auth.js";
 import { saveProfile, loadProfile, saveWallet, loadWallet, loadValOverrides } from "./firebase/firestore.js";
 import { loadOffers, saveOffers } from "./firebase/offers.js";
+import HotelExplorer from "./components/v7/HotelExplorer.jsx";
 import { setOfferStatus } from "./engine/offers/offerModel.js";
 
 /* ── URL state ───────────────────────────────────────────────────────────── */
@@ -249,6 +250,7 @@ export default function App() {
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
+      {tab === "hotels" && <HotelExplorer profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}
       {tab === "profile" && (
         <Profile
           onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
@@ -269,6 +271,7 @@ export default function App() {
           onClose={() => setModalCard(null)}
           onToggleOwn={toggleWallet}
           onProfileChange={(p) => applyV5(saveV5Profile(p))}
+          onOpenHotels={() => { setModalCard(null); setTab("hotels"); }}
         />
       )}
     </AppShell>

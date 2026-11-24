@@ -256,6 +256,9 @@ export function normalizeProfile(p = {}) {
   travel.breakfast = Number.isFinite(Number(travel.breakfast)) && Number(travel.breakfast) > 0 ? Math.round(Number(travel.breakfast)) : 0;
   travel.onProperty = travel.onProperty === true;
   travel.portalMarkup = Number.isFinite(Number(travel.portalMarkup)) && Number(travel.portalMarkup) >= 0 && Number(travel.portalMarkup) <= 1 ? Number(travel.portalMarkup) : 0.1;
+  /* v7f 1c: "I just want the credit's value" (default) / "I'd pay more for a nicer hotel" (+ $X a night for luxury) */
+  travel.hotelStyle = travel.hotelStyle === "nicer" ? "nicer" : "value";
+  travel.hotelExtra = Number.isFinite(Number(travel.hotelExtra)) && Number(travel.hotelExtra) > 0 ? Math.round(Number(travel.hotelExtra)) : 0;
   travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
   /* v7c 1.6: lounges — "Let CardWise pick the best value" (auto) or "I'll
      choose" (networks). Auto ignores any saved networks. */
@@ -405,6 +408,10 @@ export function normalizeProfile(p = {}) {
     maxCards: Number.isFinite(p.maxCards) ? Math.max(1, Math.min(10, p.maxCards)) : d.maxCards,
     feeLimit: Number.isFinite(p.feeLimit) && p.feeLimit >= 0 ? Math.round(p.feeLimit) : null,
     benefitOverrides: cleanOverrides(p.benefitOverrides),
+    /* v7f Part 1: hotel marks ("stay" | "expensive" | "style") and the rates
+       they saved or typed: [{ hotelId, program, date, nightlyUsd, source }] */
+    hotelMarks: p.hotelMarks && typeof p.hotelMarks === "object" ? Object.fromEntries(Object.entries(p.hotelMarks).filter(([, m]) => ["stay", "expensive", "style"].includes(m))) : {},
+    hotelRates: Array.isArray(p.hotelRates) ? p.hotelRates.filter((r) => r && r.hotelId && Number(r.nightlyUsd) > 0 && /^\d{4}-\d{2}/.test(String(r.date))).map((r) => ({ hotelId: String(r.hotelId), program: r.program || null, date: String(r.date).slice(0, 10), nightlyUsd: Math.round(Number(r.nightlyUsd)), source: r.source || "you" })) : [],
     pointsUse: ["cash", "portal", "partners"].includes(p.pointsUse) ? p.pointsUse : { cash: "cash", both: "portal", travel: "partners" }[wants],
     pointValues: cleanPointValues(p.pointValues),
     newCardComfort: Number.isFinite(p.newCardComfort) ? p.newCardComfort : d.newCardComfort,

@@ -17,7 +17,7 @@ afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 describe("shell — five tabs + Profile avatar (v6 §17)", () => {
-  const TABS = ["Home", "Checkout", "Offers", "Wallet Lab", "Explore"];
+  const TABS = ["Home", "Checkout", "Offers", "Wallet Lab", "Explore", "Hotels"];   // v7f adds Hotels
   function Harness() {
     const [tab, setTab] = useState("home");
     return <AppShell current={tab} onNavigate={setTab} onLogo={() => {}}><p>page {tab}</p></AppShell>;

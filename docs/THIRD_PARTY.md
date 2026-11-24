@@ -77,3 +77,21 @@ average nightly rate where the source gives one, otherwise lowest × 1.25 —
 never the lowest alone (a best-date figure). Used only to value hotel credits;
 no hotel names or prices are fetched at runtime.
 
+## Hotel database (v7f Part 1)
+
+`npm run hotel-db` (`scripts/build-hotel-db.mjs`) → `src/data/hotels/`
+(properties + `hotelRates.json`). Sources checked 2026-11-23, in the brief's
+order:
+
+| Source | Used? | Why |
+|---|---|---|
+| Amex Travel (FHR / THC property pages) | No | American Express Terms of Service, "General Prohibition on Automated Access": bots and crawlers may not access or collect data from the site, public or signed-in. |
+| Chase The Edit | No | The full list needs sign-in (Reserve cardmembers only); Chase's terms of use prohibit robots, spiders and scripts. |
+| awardtravelfinder.com | No | robots.txt allows `/hotels`, but no terms of use granting reuse could be found; the brief requires that permission. |
+| Research snapshot `docs/data/premium_hotel_prices.csv` (nextcard city guides) | Yes | Already in the repo (v7e). |
+| `docs/data/hotels_manual.csv` | Yes | Properties and prices the owner adds. |
+| Rates the owner saves while browsing (extension button) or types in the app | Yes | Kept in the person's profile, not in the build. |
+
+The build script keeps a cached, rate-limited fetch helper for a source that
+does allow reuse; none is enabled. Property coordinates are city centres.
+

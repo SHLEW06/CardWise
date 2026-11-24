@@ -44,7 +44,7 @@ describe("3.2 · the app uses the realistic rate, never the lowest alone", () =>
     const r = hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), trip(["hongkong"]));
     expect(r.use.best).toMatchObject({ hotel: "Cordis Hong Kong", rate: 256, n: 2, value: 188 });
     expect(r.value).toBe(376);           // both halves (trips spread evenly)
-    expect(r.note).toBe("Hong Kong · Cordis Hong Kong (The Hotel Collection) · ~$256/night · 2 nights $512 − $300 = $212 out of pocket · worth $188 to you");
+    expect(r.note).toBe("Hong Kong · Cordis Hong Kong (The Hotel Collection) — suggested, check it · ~$256/night · 2 nights $512 − $300 = $212 out of pocket · worth $188 to you");
   });
   it("a city with no price data counts $0", () => {
     const r = hotelProgramValue(BY_ID.csr, credit("csr", /The Edit/), trip(["taipei"]));

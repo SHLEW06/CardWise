@@ -92,3 +92,17 @@
 
 /* owner #9: hotel nights per trip row */
 .v5 .trip-nights { width: 4em; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+
+/* v7f Part 1c: Hotels tab */
+.v5 .hotels-head { margin: 24px 0 16px; }
+.v5 .hotels-filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; padding: 14px 16px; }
+.v5 .hotels-search { flex: 1 1 260px; padding: 8px 10px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+.v5 .hotels-price { display: flex; align-items: center; gap: 8px; }
+.v5 .hotel-rows { list-style: none; padding: 0; display: grid; gap: 12px; margin-top: 16px; }
+.v5 .hotel-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 14px 16px; border: 1px solid var(--hair, rgba(255,255,255,.08)); border-radius: 4px; }
+.v5 .hotel-program { margin-top: 6px; }
+.v5 .hotel-benefits { margin: 2px 0 4px; opacity: .8; }
+.v5 .hotel-marks { display: flex; flex-direction: column; gap: 6px; }
+.v5 .hotel-map { width: 100%; max-height: 460px; color: var(--ink, #ECE6DA); margin-top: 16px; }
+.v5 .hotel-map-dot { cursor: pointer; }
+.v5 .hotel-style { margin-top: 10px; }

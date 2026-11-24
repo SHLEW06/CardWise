@@ -5,6 +5,7 @@
    hotel-credit formula: value = clamp(C − n × max(0, P − B), 0, C). */
 import React from "react";
 import Choice from "../v5/Choice.jsx";
+import { HotelStyle } from "./HotelExplorer.jsx";
 import { CITY_HOTEL_BUDGET, DEFAULT_HOTEL_BUDGET } from "../../data/cityHotelBudget.js";
 import { destinationsOf } from "../../engine/v5/hotelCredits.js";
 import { DEFAULT_NIGHTS_PER_TRIP } from "../../engine/profileDefaults.js";
@@ -41,6 +42,7 @@ export default function HotelBudget({ n, t, setTravel }) {
         })}
       </ul>
       {/* Owner #9: hotel nights are entered per trip row above. */}
+      <HotelStyle travel={t} onChange={setTravel} />
       <p className="t-caption" id="q-months">Which months do you usually travel? <span className="habit-tag">(optional — otherwise spread evenly)</span></p>
       <div className="chip-wrap" role="group" aria-labelledby="q-months">
         {MONTHS.map((m, i) => <Choice key={m} pill selected={months.includes(i + 1)} onSelect={() => toggleMonth(i + 1)}>{m}</Choice>)}

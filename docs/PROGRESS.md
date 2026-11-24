@@ -2131,6 +2131,51 @@ Before = v7e with "Yes" to travel sites:
   Strata Elite −$210 → **−$266**; Amex Gold −$155 → **−$113**.
 - Tests: `ownerAnswers2026-11-23.test.jsx` (6); gate-era tests rewritten.
 
+# v7f — hotel database, Ritz-Carlton as a specialty card, strategies
+
+Brief: `docs/CLAUDE_CODE_V7F_HOTELS_STRATEGIES.md`.
+
+## v7f Part 1 · hotel database, rates and the Hotels tab (2026-11-23)
+
+- **Sources (checked 2026-11-23):** Amex Travel — **blocked by its Terms of
+  Service** ("General Prohibition on Automated Access", public pages
+  included). Chase The Edit — **blocked**: the full list needs sign-in and
+  Chase's terms of use prohibit robots / scripts. awardtravelfinder.com —
+  **not used**: robots.txt allows `/hotels`, but no terms granting reuse
+  could be found. So the database is the research snapshot plus what the
+  owner adds (`docs/data/hotels_manual.csv`, the extension button, "I saw
+  $___" in the app). `docs/THIRD_PARTY.md` has the table.
+  - Note: the v7e credit checks read Amex and Chase card pages with a fetch
+    tool; their terms (read today) don't allow automated access, so no more
+    Amex / Chase pages are fetched — card facts from those issuers need the
+    owner's confirmation or another permitted source.
+- **Database** (`npm run hotel-db`): **37 properties · Edit 27 · FHR 3 · THC 8
+  · Select Hotels (2026) 3** — one record each (id, name, chain, city,
+  country, region, lat/lng at the city centre, programs, min nights,
+  program benefits, luxury tier, source, date); `hotelRates.json` keeps the
+  dated rates. Program benefits are as the programs describe them, not
+  re-read (issuer pages can't be fetched).
+- **Realistic rate:** median of rates seen in the last 12 months (research
+  averages, your saved / typed rates); lowest × 1.25 if that's all; else a
+  city × tier estimate. Every price says "seen Oct 2026" or "estimate".
+- **Extension:** "Save this rate to CardWise" on Amex Travel / Chase Travel
+  pages you open — hotel from the page title, price from your selection, you
+  confirm; never clicks, books or signs in; not on sign-in / checkout /
+  payment pages. The Hotels tab picks the saved rates up.
+- **Hotels tab:** city / region / hotel search, list or map, program, price
+  slider, luxury tier, chain, "Only cities in my trips"; each row: chain,
+  tier, programs, realistic price + date, min nights, benefits, "Value to
+  you" (v7e formula at your budget), **I'd stay here / Too expensive / Not
+  my style**, "I saw $___ a night". **Hotel style** (survey and tab): "I just
+  want the credit's value" (default) / "I'd pay more for a nicer hotel" (+$X
+  a night for luxury hotels).
+- **Credit valuation:** from the hotels you marked "I'd stay here" in your
+  destinations; if none, the best eligible one, "suggested — check it";
+  "Too expensive" / "Not my style" never count. Card detail lists the 3
+  best-value hotels per credit with "See all in Hotels →".
+- Tests: `v7fPart1.test.jsx` (9), `extension/test/rate.test.js` (4); tab
+  tests updated (Hotels is a sixth tab).
+
 ## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

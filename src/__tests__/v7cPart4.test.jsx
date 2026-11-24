@@ -62,7 +62,8 @@ describe("4.1 · plain brand names, grouped look-alikes, never the word 'credit'
       render(<Survey initialMode="thorough" initialStepId={id} initialProfile={loadV5Profile()} />);
       const step = document.querySelector(".survey-step");
       const labels = [...step.querySelectorAll("h1, h2, h3, legend, button, label, .habit-label")].map((n) => n.textContent);
-      expect(labels.filter((t) => /\bcredits?\b/i.test(t)), id).toEqual([]);
+      /* v7f brief: the hotel-style answer is worded "I just want the credit's value" */
+      expect(labels.filter((t) => /\bcredits?\b/i.test(t) && t !== "I just want the credit's value"), id).toEqual([]);
     }
   });
 });

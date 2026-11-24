@@ -20,7 +20,10 @@
    with no price data counts $0 ("no price data"). The rules live on the
    credit (`hotelProgram` in the card data).
    ========================================================================== */
-import { PREMIUM_HOTELS } from "../../data/premiumHotels.generated.js";
+import { eligibleIn, excluded, markOf, valueToYou, HOTEL_BY_ID } from "./hotelDb.js";
+
+/** True when they marked "I'd stay here" on any hotel these programs cover. */
+const anyStayMarks = (profile, programs) => Object.entries(profile.hotelMarks || {}).some(([id, m]) => m === "stay" && HOTEL_BY_ID[id]?.programs.some((p) => programs.includes(p)));
 import { nightlyBudget, CITY_HOTEL_BUDGET } from "../../data/cityHotelBudget.js";
 import { DESTINATIONS } from "../../data/routes.js";
 import { DEFAULT_NIGHTS_PER_TRIP, hotelNights } from "../profileDefaults.js";
@@ -83,14 +86,20 @@ function bestUse(hp, C, profile, dests) {
       if (!best || row.value > best.value) best = row;
       continue;
     }
-    const city = PREMIUM_HOTELS.cities[d.key];
-    const hotels = (city?.hotels || []).filter((h) => hp.programs.includes(h.program));
-    if (!hotels.length) { rows.push({ dest: d.key, name: d.name, noData: true, value: 0, budget: B.value, budgetBasis: B.basis }); continue; }
+    /* v7f Part 1: the hotel database, the person's marks and hotel style.
+       Hotels they marked "Too expensive" / "Not my style" never count; if they
+       marked any "I'd stay here", only those count; otherwise the best
+       eligible one, marked "suggested — check it". */
+    const all = eligibleIn(d.key, hp.programs).filter((h) => !excluded(profile, h.id));
+    const marked = all.filter((h) => markOf(profile, h.id) === "stay");
+    const hotels = anyStayMarks(profile, hp.programs) ? marked : all;
+    if (!hotels.length) { rows.push({ dest: d.key, name: d.name, noData: true, value: 0, budget: B.value, budgetBasis: B.basis, noneMarked: anyStayMarks(profile, hp.programs) && all.length > 0 }); continue; }
     let pick = null;
-    for (const h of hotels) {
-      const n = Math.max(hp.minNights || 1, h.minNights || 1, 1);
-      const value = hotelCreditFormula({ C, n, P: h.rate, B: B.value });
-      const row = { dest: d.key, name: d.name, hotel: h.hotel, program: h.program, rate: h.rate, rateBasis: h.rateBasis, budget: B.value, budgetBasis: B.basis, n, cost: n * h.rate, after: Math.max(0, n * h.rate - C), value: Math.round(value), source: h.source, checked: h.checked };
+    for (const h of hotels) for (const prog of h.programs.filter((x) => hp.programs.includes(x))) {
+      const v = valueToYou(h, prog, profile, { C });
+      const n = Math.max(hp.minNights || 1, v.n, 1);
+      const value = hotelCreditFormula({ C, n, P: v.rate, B: v.budget });
+      const row = { dest: d.key, name: d.name, hotelId: h.id, hotel: h.name, program: prog, rate: v.rate, rateBasis: v.rateBasis, rateLabel: v.rateLabel, budget: v.budget, budgetBasis: v.budgetBasis, n, cost: n * v.rate, after: Math.max(0, n * v.rate - C), value: Math.round(value), source: h.source, checked: h.checked, suggested: markOf(profile, h.id) !== "stay" };
       if (!pick || row.value > pick.value || (row.value === pick.value && row.after < pick.after)) pick = row;
     }
     rows.push(pick);
@@ -122,8 +131,24 @@ export function hotelProgramValue(card, credit, profile) {
   const chunks = Array.from({ length: usable }, () => ({ value: best.value, nights: best.n }));
   const value = chunks.reduce((t, c) => t + c.value, 0);
   const cut = count - usable;
-  const note = `${best.name} · ${best.hotel}${best.program !== "portal" ? ` (${PROGRAM_LABEL[best.program]})` : ""} · ~${money(best.rate)}/night · ${best.n} night${best.n === 1 ? "" : "s"} ${money(best.cost)} − ${money(C)} = ${money(best.after)} out of pocket · worth ${money(best.value)} to you${cut > 0 ? ` (×${usable}: ${hp.periods === "half" ? "needs hotel nights in both halves of the year" : "needs a separate stay each"})` : ""}`;
+  const note = `${best.name} · ${best.hotel}${best.program !== "portal" ? ` (${PROGRAM_LABEL[best.program]})` : ""}${best.suggested ? " — suggested, check it" : ""} · ~${money(best.rate)}/night · ${best.n} night${best.n === 1 ? "" : "s"} ${money(best.cost)} − ${money(C)} = ${money(best.after)} out of pocket · worth ${money(best.value)} to you${cut > 0 ? ` (×${usable}: ${hp.periods === "half" ? "needs hotel nights in both halves of the year" : "needs a separate stay each"})` : ""}`;
   return { value, reason: null, chunks, use: { rows, best }, note };
+}
+
+/** v7f 1c: the 3 best-value eligible hotels in their destinations, for one credit. */
+export function topHotelsFor(credit, profile, k = 3) {
+  const hp = credit.hotelProgram;
+  if (!hp || hp.anyHotel) return [];
+  const C = hp.chunk || credit.annual;
+  const out = [];
+  for (const d of destinationsOf(profile)) for (const h of eligibleIn(d.key, hp.programs)) {
+    if (excluded(profile, h.id)) continue;
+    for (const prog of h.programs.filter((x) => hp.programs.includes(x))) {
+      const v = valueToYou(h, prog, profile, { C });
+      out.push({ hotelId: h.id, hotel: h.name, city: h.city, program: prog, ...v, marked: markOf(profile, h.id) === "stay" });
+    }
+  }
+  return out.sort((a, b) => (b.marked ? 1 : 0) - (a.marked ? 1 : 0) || b.value - a.value || a.after - b.after).slice(0, k);
 }
 
 /** Breakfast at FHR (the Platinum): only if they'd pay for breakfast anyway. */

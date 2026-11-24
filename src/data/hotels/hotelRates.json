@@ -1,0 +1,418 @@
+[
+  {
+    "hotelId": "shanghai-kimpton-qiantan-shanghai-by-ihg",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 242,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "shanghai-the-shanghai-edition",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 342,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "seoul-mondrian-seoul-itaewon",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 281,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "seoul-the-shilla-seoul",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 304,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "tokyo-the-strings-by-intercontinental-tokyo",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 553,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-the-strings-by-intercontinental-tokyo",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 330,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-kimpton-shinjuku-tokyo",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 413,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-the-prince-gallery-tokyo-kioicho",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 509,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-bellustar-tokyo-a-pan-pacific-hotel",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 645,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-the-tokyo-edition-ginza",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 741,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "tokyo-palace-hotel-tokyo",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 773,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-tokyo"
+  },
+  {
+    "hotelId": "hongkong-island-shangri-la-hong-kong",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 406,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "hongkong-four-seasons-hotel-hong-kong",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 694,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "hongkong-the-upper-house",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 769,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-asia"
+  },
+  {
+    "hotelId": "hongkong-cordis-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 256,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-cordis-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 159,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-mondrian-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 313,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-mondrian-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 230,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-kerry-hotel-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 406,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-kerry-hotel-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 252,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-the-hari-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 357,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-the-hari-hong-kong",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 259,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-lanson-place-causeway-bay",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 433,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-lanson-place-causeway-bay",
+    "program": "thc",
+    "date": "2026-10",
+    "nightlyUsd": 331,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-grand-hyatt-hong-kong",
+    "program": "fhr",
+    "date": "2026-10",
+    "nightlyUsd": 536,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "hongkong-grand-hyatt-hong-kong",
+    "program": "fhr",
+    "date": "2026-10",
+    "nightlyUsd": 386,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-hong-kong"
+  },
+  {
+    "hotelId": "london-the-standard-london",
+    "program": "edit",
+    "date": "2026-08",
+    "nightlyUsd": 368,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london"
+  },
+  {
+    "hotelId": "london-kimpton-fitzroy-london",
+    "program": "edit",
+    "date": "2026-08",
+    "nightlyUsd": 498,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london"
+  },
+  {
+    "hotelId": "london-dorset-square-hotel",
+    "program": "edit",
+    "date": "2026-08",
+    "nightlyUsd": 525,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london"
+  },
+  {
+    "hotelId": "london-the-ned",
+    "program": "edit",
+    "date": "2026-08",
+    "nightlyUsd": 539,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london"
+  },
+  {
+    "hotelId": "london-11-cadogan-gardens",
+    "program": "edit",
+    "date": "2026-08",
+    "nightlyUsd": 546,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-edit-hotels-in-london"
+  },
+  {
+    "hotelId": "paris-castille-paris",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 489,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-la-fantaisie",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 518,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-hotel-balzac-paris",
+    "program": "edit",
+    "date": "2026-09",
+    "nightlyUsd": 530,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-chase-edit-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-the-hoxton-paris",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 445,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-the-hoxton-paris",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 306,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-hotel-florida-paris",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 444,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-hotel-florida-paris",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 342,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-maison-albar-le-vendome",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 518,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-maison-albar-le-vendome",
+    "program": "thc",
+    "date": "2026-08",
+    "nightlyUsd": 354,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-la-fantaisie",
+    "program": "fhr",
+    "date": "2026-08",
+    "nightlyUsd": 688,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-la-fantaisie",
+    "program": "fhr",
+    "date": "2026-08",
+    "nightlyUsd": 537,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-so-paris",
+    "program": "fhr",
+    "date": "2026-08",
+    "nightlyUsd": 746,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "paris-so-paris",
+    "program": "fhr",
+    "date": "2026-08",
+    "nightlyUsd": 582,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/cheapest-amex-platinum-fhr-thc-hotels-in-paris"
+  },
+  {
+    "hotelId": "rome-sofitel-roma-villa-borghese",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 787,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-rome"
+  },
+  {
+    "hotelId": "rome-sofitel-roma-villa-borghese",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 404,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-rome"
+  },
+  {
+    "hotelId": "rome-villa-agrippina-a-gran-melia-hotel",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 442,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-rome"
+  },
+  {
+    "hotelId": "milan-radisson-collection-palazzo-touring-club",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 599,
+    "kind": "average",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-milan"
+  },
+  {
+    "hotelId": "milan-radisson-collection-palazzo-touring-club",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 503,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-milan"
+  },
+  {
+    "hotelId": "milan-hotel-principe-di-savoia",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 612,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-milan"
+  },
+  {
+    "hotelId": "singapore-the-standard-singapore",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 272,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-singapore"
+  },
+  {
+    "hotelId": "hawaii-wayfinder-waikiki",
+    "program": "edit",
+    "date": "2026-11",
+    "nightlyUsd": 280,
+    "kind": "lowest",
+    "source": "https://www.nextcard.com/articles/chase-edit-hotels-in-honolulu"
+  }
+]

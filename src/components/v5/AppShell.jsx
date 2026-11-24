@@ -1,6 +1,6 @@
 import React from "react";
 import { flushSync } from "react-dom";
-import { Home, ShoppingBag, Tag, FlaskConical, Compass } from "lucide-react";
+import { Home, ShoppingBag, Tag, FlaskConical, Compass, BedDouble } from "lucide-react";
 import { VALUATIONS_AS_OF } from "../../data/valuations.js";
 import Backdrop from "../v6/Backdrop.jsx";
 
@@ -12,6 +12,7 @@ export const DESTINATIONS = [
   { id: "offers", label: "Offers", icon: Tag, backdrop: "offers" },
   { id: "lab", label: "Wallet Lab", icon: FlaskConical, backdrop: "lab" },
   { id: "explore", label: "Explore", icon: Compass, backdrop: "explore" },
+  { id: "hotels", label: "Hotels", icon: BedDouble, backdrop: "explore" },     // v7f Part 1c
 ];
 
 const reducedMotion = () =>

@@ -94,7 +94,8 @@ test("manifest: least privilege — storage only, issuer offers pages only, neve
     assert.ok(!JSON.stringify([manifest.permissions, manifest.host_permissions, manifest.optional_permissions || []]).includes(bad), bad);
   }
   for (const h of manifest.host_permissions) assert.match(h, /^(http:\/\/(127\.0\.0\.1|localhost)\/\*|https:\/\/us-central1-credit-card-optimizer-19762\.cloudfunctions\.net\/\*)$/);
-  const bankScripts = manifest.content_scripts.filter((c) => !c.js.includes("content/bridge.js"));
+  /* the v7f rate button is a travel-site script with its own test (rate.test.js) */
+  const bankScripts = manifest.content_scripts.filter((c) => !c.js.includes("content/bridge.js") && !c.js.includes("content/rate.js"));
   const urls = {
     "https://global.americanexpress.com/offers/eligible": true,
     "https://secure.chase.com/web/auth/dashboard#/dashboard/merchantOffers/offer-hub": true,
@@ -112,7 +113,7 @@ test("manifest: least privilege — storage only, issuer offers pages only, neve
   assert.deepEqual(main.map((c) => c.js), [["content/intercept.js"]], "only the response reader runs in the page's world");
   const bridge = manifest.content_scripts.find((c) => c.js.includes("content/bridge.js"));
   for (const m of bridge.matches) assert.match(m, /^(http:\/\/(localhost|127\.0\.0\.1):(5173|4173)\/\*|https:\/\/credit-card-optimizer-19762\.(web\.app|firebaseapp\.com)\/\*)$/);
-  for (const w of manifest.web_accessible_resources) for (const m of w.matches) assert.match(m, /americanexpress|chase|127\.0\.0\.1|localhost/);
+  for (const w of manifest.web_accessible_resources) for (const m of w.matches) assert.match(m, /americanexpress|amextravel|chase|127\.0\.0\.1|localhost/);
 });
 
 test("calibrations.js is generated from connector/calibration (run npm run extension:calibrations)", () => {

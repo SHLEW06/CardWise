@@ -4,14 +4,22 @@
   "version": "0.1.0",
   "description": "Syncs card-linked offers from the bank offers pages you open, and adds the ones you choose.",
   "minimum_chrome_version": "111",
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "http://127.0.0.1/*",
     "http://localhost/*",
     "https://us-central1-credit-card-optimizer-19762.cloudfunctions.net/*"
   ],
-  "background": { "service_worker": "background.js", "type": "module" },
-  "action": { "default_title": "CardWise", "default_popup": "popup/popup.html" },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "CardWise",
+    "default_popup": "popup/popup.html"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -20,8 +28,16 @@
         "http://127.0.0.1/offers*",
         "http://localhost/offers*"
       ],
-      "exclude_globs": ["*login*", "*logon*", "*signin*", "*sign-in*", "*logout*"],
-      "js": ["content/intercept.js"],
+      "exclude_globs": [
+        "*login*",
+        "*logon*",
+        "*signin*",
+        "*sign-in*",
+        "*logout*"
+      ],
+      "js": [
+        "content/intercept.js"
+      ],
       "run_at": "document_start",
       "world": "MAIN"
     },
@@ -32,8 +48,16 @@
         "http://127.0.0.1/offers*",
         "http://localhost/offers*"
       ],
-      "exclude_globs": ["*login*", "*logon*", "*signin*", "*sign-in*", "*logout*"],
-      "js": ["content/loader.js"],
+      "exclude_globs": [
+        "*login*",
+        "*logon*",
+        "*signin*",
+        "*sign-in*",
+        "*logout*"
+      ],
+      "js": [
+        "content/loader.js"
+      ],
       "run_at": "document_start"
     },
     {
@@ -45,18 +69,54 @@
         "https://credit-card-optimizer-19762.web.app/*",
         "https://credit-card-optimizer-19762.firebaseapp.com/*"
       ],
-      "js": ["content/bridge.js"],
+      "js": [
+        "content/bridge.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.amextravel.com/*",
+        "https://travel.americanexpress.com/*",
+        "https://travelsecure.chase.com/*"
+      ],
+      "exclude_globs": [
+        "*login*",
+        "*logon*",
+        "*signin*",
+        "*sign-in*",
+        "*logout*",
+        "*checkout*",
+        "*payment*"
+      ],
+      "js": [
+        "content/rate.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["content/main.js", "content/panel.js", "lib/*.js"],
+      "resources": [
+        "content/main.js",
+        "content/panel.js",
+        "lib/*.js"
+      ],
       "matches": [
         "https://global.americanexpress.com/*",
         "https://secure.chase.com/*",
         "http://127.0.0.1/*",
         "http://localhost/*"
+      ]
+    },
+    {
+      "resources": [
+        "lib/rate.js"
+      ],
+      "matches": [
+        "https://www.amextravel.com/*",
+        "https://travel.americanexpress.com/*",
+        "https://travelsecure.chase.com/*"
       ]
     }
   ]

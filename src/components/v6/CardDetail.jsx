@@ -32,7 +32,7 @@ import { alternativesForSlot } from "../../engine/v5/lab.js";
 import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
 import { ticketComparison } from "../../engine/v5/tickets.js";
-import { PROGRAM_LABEL, PROGRAM_SEARCH, nightBudgetText } from "../../engine/v5/hotelCredits.js";
+import { PROGRAM_LABEL, PROGRAM_SEARCH, nightBudgetText, topHotelsFor } from "../../engine/v5/hotelCredits.js";
 import { PREMIUM_HOTELS } from "../../data/premiumHotels.generated.js";
 const PROGRAM_SHORT = { edit: "The Edit", fhr: "FHR", thc: "THC" };
 
@@ -92,7 +92,7 @@ export function gatedLine(g) {
   return g.spend ? `${base} after $${g.spend.toLocaleString("en-US")} a year on this card` : base;
 }
 
-export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null, slotKey = null, onOpenCard }) {
+export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn, onProfileChange, wallet: context = null, slotKey = null, onOpenCard, onOpenHotels }) {
   const profile = normalizeProfile(raw);
   const [math, setMath] = useState(false);
   const [showUnused, setShowUnused] = useState(false);
@@ -105,7 +105,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
     return [...(d.used || []), ...(d.unused || [])].filter((b) => b.hotelUse?.rows?.length).map((b) => {
       const cr = (c?.credits || []).find((x) => x.name === b.label);
       const prog = cr?.hotelProgram?.programs?.[0];
-      return { id: b.id, label: b.label, rows: b.hotelUse.rows, chunk: cr?.hotelProgram?.chunk || b.face, program: PROGRAM_LABEL[prog] || "", search: PROGRAM_SEARCH[prog] || null };
+      return { id: b.id, label: b.label, rows: b.hotelUse.rows, chunk: cr?.hotelProgram?.chunk || b.face, program: PROGRAM_LABEL[prog] || "", search: PROGRAM_SEARCH[prog] || null, top: cr ? topHotelsFor(cr, profile) : [] };
     });
   }, [cardId, d]);
   /* v7e Part 2: where to buy tickets, on cards with a ticket credit or presales. */
@@ -198,6 +198,12 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
                       </li>
                     ))}
                   </ul>
+                  {h.top.length > 0 && (
+                    <ol className="hotel-use t-caption" data-testid={`top-hotels-${h.id}`} aria-label={`Best hotels for ${h.label}`}>
+                      {h.top.map((t) => <li key={`${t.hotelId}${t.program}`}>{t.hotel}, {t.city} · ~{money(t.rate)}/night ({t.rateLabel}) · worth {money(t.value)} to you{t.marked ? " · you'd stay here" : ""}</li>)}
+                    </ol>
+                  )}
+                  {onOpenHotels && <button type="button" className="link" onClick={onOpenHotels}>See all in Hotels →</button>}
                   {h.search && <p className="t-caption"><a className="link" href={h.search} target="_blank" rel="noreferrer">Search {h.program} hotels</a> · prices from {PREMIUM_HOTELS.checked} (nextcard city guides)</p>}
                 </div>
               ))}

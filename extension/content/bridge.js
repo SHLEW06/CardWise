@@ -19,4 +19,10 @@
     }
   });
   hello();
+  /* v7f 1b: rates the person saved on travel sites → the app (it asks, then clears them). */
+  window.addEventListener("message", async (e) => {
+    if (e.source !== window || e.origin !== location.origin || e.data?.source !== APP) return;
+    if (e.data.type === "rates:get") { const { savedRates = [] } = await chrome.storage.local.get("savedRates"); post({ type: "rates", rates: savedRates }); }
+    if (e.data.type === "rates:clear") await chrome.storage.local.set({ savedRates: [] });
+  });
 })();
