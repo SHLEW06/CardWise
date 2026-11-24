@@ -412,6 +412,7 @@ export function normalizeProfile(p = {}) {
     maxCards: Number.isFinite(p.maxCards) ? Math.max(1, Math.min(10, p.maxCards)) : d.maxCards,
     feeLimit: Number.isFinite(p.feeLimit) && p.feeLimit >= 0 ? Math.round(p.feeLimit) : null,
     benefitOverrides: cleanOverrides(p.benefitOverrides),
+    targetStrategy: typeof p.targetStrategy === "string" ? p.targetStrategy : null,   // v7f Part 3: "Use this strategy"
     /* v7f Part 1: hotel marks ("stay" | "expensive" | "style") and the rates
        they saved or typed: [{ hotelId, program, date, nightlyUsd, source }] */
     hotelMarks: p.hotelMarks && typeof p.hotelMarks === "object" ? Object.fromEntries(Object.entries(p.hotelMarks).filter(([, m]) => ["stay", "expensive", "style"].includes(m))) : {},

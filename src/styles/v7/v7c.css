@@ -106,3 +106,11 @@
 .v5 .hotel-map { width: 100%; max-height: 460px; color: var(--ink, #ECE6DA); margin-top: 16px; }
 .v5 .hotel-map-dot { cursor: pointer; }
 .v5 .hotel-style { margin-top: 10px; }
+
+/* v7f Part 3: Strategies tab */
+.v5 .strategy-list { list-style: none; padding: 0; display: grid; gap: 14px; margin-top: 16px; }
+.v5 .strategy { padding: 16px 18px; }
+.v5 .strategy-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.v5 .strategy-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 18px; margin: 10px 0; }
+.v5 .strategy-facts dt { opacity: .7; }
+.v5 .strategy-actions { display: flex; gap: 14px; align-items: center; margin-top: 8px; }

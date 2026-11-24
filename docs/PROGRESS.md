@@ -2240,6 +2240,33 @@ Draft email (owner to send, one per site):
 - Golden: unchanged. Tests: `v7fPart2.test.jsx` (9); the old Ritz worked
   example now checks the specialty path.
 
+## v7f Part 3 · earning strategies (2026-11-23)
+
+- **A "Strategies" tab** (seventh tab) replaces the Wallet Lab's sample
+  wallets (the Lab now links to it). The survey's loyalty-strategy helper
+  stays as the trips-step input for picking programs.
+- **Built in:** Chase Trifecta (Reserve and Preferred versions), Amex Gold +
+  Platinum (and a + Blue Business Plus variant — a business card; the Amex
+  EveryDay is closed), Citi Strata Elite / Premier + Double Cash (the Custom
+  Cash is closed in our data since 2026-05-28), Capital One Venture X +
+  Savor, Bilt + Sapphire Preferred (only for renters), Simple cash (Robinhood
+  Gold; Active Cash + Savor), Hotel loyalist (Hyatt via Chase; Marriott
+  Boundless; Hilton Surpass), and the Ritz-Carlton path (only when the
+  specialty profile fits).
+- **For each, from the profile:** earnings (the set's own point values,
+  pooled as the program allows), credits (v7e rules + checklist overrides),
+  fees, the cost of applying, net, value per point and transfer partners
+  opened, new cards and months (6 apart; Chase cards waiting on 5/24 named),
+  what it keeps / adds / downgrades from current cards (a held card is kept
+  while it still adds something), and "which card for what".
+- **Ranked by net; "Best for you" on the top one;** weaker ones say "Needs
+  ~$X/yr more spending to beat Simple cash" (the gap ÷ the difference in %
+  back) or "Doesn't beat Simple cash at your spending mix".
+- **"Use this strategy"** makes it the target: the Wallet Lab shows "Target:
+  …" (Clear target) and builds that set; the plan orders its cards.
+- Golden: unchanged. Tests: `v7fPart3.test.jsx` (9) — Trifecta pooling, Amex
+  duo Uber Cash, one value per program.
+
 ## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

@@ -24,6 +24,7 @@ import { ensureUser } from "./firebase/auth.js";
 import { saveProfile, loadProfile, saveWallet, loadWallet, loadValOverrides } from "./firebase/firestore.js";
 import { loadOffers, saveOffers } from "./firebase/offers.js";
 import HotelExplorer from "./components/v7/HotelExplorer.jsx";
+import Strategies from "./components/v7/Strategies.jsx";
 import { setOfferStatus } from "./engine/offers/offerModel.js";
 
 /* ── URL state ───────────────────────────────────────────────────────────── */
@@ -248,7 +249,8 @@ export default function App() {
       {tab === "home" && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={() => { setSurveyStep(null); setScreen("survey"); }} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
-      {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} />}
+      {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} onGo={setTab} />}
+      {tab === "strategies" && <Strategies profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onGo={setTab} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
       {tab === "hotels" && <HotelExplorer profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}
       {tab === "profile" && (

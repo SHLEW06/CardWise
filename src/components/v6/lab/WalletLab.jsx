@@ -22,6 +22,7 @@ import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, 
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { WalletChecklist } from "../../v7/BenefitChecklist.jsx";
 import { SpecialtyOptions } from "../../v7/Specialty.jsx";
+import { STRATEGY_BY_KEY, strategyWallet } from "../../../engine/v5/strategies.js";
 import { ticketCreditText, alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
@@ -48,7 +49,7 @@ export function sharedText(s) {
   return s.beats.map((b) => `${cardDisplayName(BY_ID[b.cardId])} earns more on ${BUCKET_WORDS[b.bucket] || b.bucket}: ${Math.round(b.pct * 10) / 10}%`).join(" · ");
 }
 
-export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard }) {
+export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, onGo }) {
   const [draft, setDraft] = useState(() => normalizeProfile(saved));
   useEffect(() => { setDraft(normalizeProfile(saved)); }, [saved]);
   const p = useDeferredValue(draft);
@@ -62,7 +63,9 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
   const openCard = (id, slotKey = null) => onOpenCard?.(id, setup, slotKey);   // v7 D1 / v7b 5.2: full card detail, judged against this setup
 
   const best = useMemo(() => optimalWallet(p), [p]);
-  const mine = useMemo(() => (mode === "wallet" ? optimalWallet(p, { mode: "wallet" }) : best), [p, mode, best]);
+  /* v7f Part 3: a strategy chosen in the Strategies tab is the target setup */
+  const target = useMemo(() => (p.targetStrategy && STRATEGY_BY_KEY[p.targetStrategy] ? { ...STRATEGY_BY_KEY[p.targetStrategy], ...strategyWallet(STRATEGY_BY_KEY[p.targetStrategy], p) } : null), [p]);
+  const mine = useMemo(() => (target ? { wallet: target.wallet } : mode === "wallet" ? optimalWallet(p, { mode: "wallet" }) : best), [p, mode, best, target]);
   /* Changing the budget, spending or mode re-optimizes: a swap is kept only
      until then. */
   useEffect(() => { setCustom(null); }, [p, mode]);
@@ -92,6 +95,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
         <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">
           {/* v7c 5d-2.1: say which mode the page is in. */}
+          {target && <p className="t-caption" data-testid="lab-target">Target: {target.label} · <button type="button" className="link" onClick={() => onSaveProfile?.({ ...normalizeProfile(saved), targetStrategy: null })}>Clear target</button></p>}
           <p className="t-eyebrow" data-testid="lab-mode">Wallet Lab · {mode === "wallet" && p.cardsHeld.length ? `Built from your ${p.cardsHeld.length} card${p.cardsHeld.length === 1 ? "" : "s"}` : "Starting from zero"}</p>
           <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
           <p className="t-caption lab-basis">{scoreBasisText(value.N, best.value.N)}</p>
@@ -191,12 +195,12 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
       </Reveal>
 
       <Reveal i={2}><AllBenefits value={value} /></Reveal>
+      {/* v7f Part 3: the sample wallets moved to the Strategies tab */}
       <Reveal i={3} className="lab-samples">
         <div className="lab-section-head">
-          <h2 className="t-h2">Sample wallets</h2>
-          {!samplesOn && <button className="link" onClick={() => setSamplesOn(true)}>Show five sample setups</button>}
+          <h2 className="t-h2">Strategies</h2>
+          <button className="link" onClick={() => onGo?.("strategies")}>See card strategies ranked for you →</button>
         </div>
-        {samplesOn && <Samples profile={p} onLoad={(s) => { setCustom(s.wallet); setToast(`Loaded ${s.label} — ${s.ofMax ?? 0}% of your best.`); }} />}
       </Reveal>
 
       {/* v7 D5: panels start collapsed. */}

@@ -25,6 +25,7 @@ import { applicationHurdle, explainCard } from "./apply.js";
 import { cardFee } from "./value.js";
 import { monthsUntil, monthName } from "../../data/growth.js";
 import { specialtyCards, specialtyFit, specialtyPath, specialtyNet } from "./specialty.js";
+import { STRATEGY_BY_KEY, strategyWallet } from "./strategies.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const CAT = {
@@ -76,7 +77,10 @@ function whyFor(id, wallet, profile, later, when) {
 export function planRoadmap(rawProfile, { today = new Date() } = {}) {
   const p = normalizeProfile(rawProfile);
   const nowRes = optimalWallet(p, { mode: p.cardsHeld.length ? "wallet" : "scratch" });
-  const nowWallet = nowRes.wallet;
+  /* v7f Part 3: a strategy they chose ("Use this strategy") is the target;
+     the roadmap orders its cards. */
+  const target = p.targetStrategy && STRATEGY_BY_KEY[p.targetStrategy] ? strategyWallet(STRATEGY_BY_KEY[p.targetStrategy], p).wallet : null;
+  const nowWallet = target || nowRes.wallet;
   const nowValue = walletValue(nowWallet, p, { normalized: true });
   const steps = [];
   for (const t of applyTimeline(nowWallet, p)) {
