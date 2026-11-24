@@ -249,7 +249,8 @@ export function allBenefits(value) {
       const pooledShort = it.dedupe === "pool" && v < it.value;
       if (it.dedupe && (overlap || pooledShort || (c?.dedupedFrom?.length > 1))) flags.push("Overlap");
       if (v > 0 && it.face && v < SURPLUS_BELOW * it.face) flags.push("Surplus");
-      rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: overlap && v === 0 ? (it.dedupe === "pool" ? "Another card already pays back this spending" : "Another card already gives you this") : pooledShort ? `Another card already pays back part of this spending (you'd use $${v} of $${it.value})` : null });
+      const hotel = it.hotelUse ? (c || value.nightBudget?.items.find((b) => b.id === it.id && b.cardId === pc.cardId)) : null;
+      rows.push({ cardId: pc.cardId, label: it.label, value: v, face: it.face || 0, flags, reason: hotel?.note || (overlap && v === 0 ? (it.dedupe === "pool" ? "Another card already pays back this spending" : "Another card already gives you this") : pooledShort ? `Another card already pays back part of this spending (you'd use $${v} of $${it.value})` : null) });
     }
     for (const u of pc.unused || []) rows.push({ cardId: pc.cardId, label: u.label, value: 0, face: u.face || 0, flags: ["Not used"], reason: u.reason });
     /* v7c 5.1: spend-gated credits are never counted. */

@@ -7,7 +7,7 @@
 
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
-import { cardFits, walletValue, scoreNeeded, eligibility } from "./methodology.js";
+import { cardFits, walletValue, benefitsForCard, scoreNeeded, eligibility } from "./methodology.js";
 import { rolesFor, earnRate, benefitBreakdown, cardFee, HOTEL_CURRENCIES, AIRLINE_CURRENCIES, transfersAlone } from "./value.js";
 import { CASH_LIKE } from "./pointValues.js";
 import { BANK_CURRENCIES } from "./valuation.js";
@@ -128,10 +128,10 @@ export const ISSUERS = Array.from(new Set(CARDS.map((c) => c.issuer))).sort();
  * → { solo, inWallet: { before, after, delta, takes: [{bucket, from}] , scoreBefore, scoreAfter },
  *     used, unused, topEarning: [{ bucket, pct, dollars }], eligibility }
  */
-export function cardDetail(cardId, rawProfile, bestN = null) {
+export function cardDetail(cardId, rawProfile, bestN = null, wallet = null) {
   const p = normalizeProfile(rawProfile);
   const card = BY_ID[cardId];
-  const held = p.cardsHeld.filter((id) => BY_ID[id]);
+  const held = (wallet || p.cardsHeld).filter((id) => BY_ID[id]);
   const has = held.includes(cardId);
   const base = has ? held.filter((x) => x !== cardId) : held;
   const before = walletValue(base, p, { normalized: true });
@@ -147,7 +147,7 @@ export function cardDetail(cardId, rawProfile, bestN = null) {
     takes.push({ bucket, dollars: mine, from: prev?.cardId || null, pct: (100 * own.reduce((t, x) => t + x.value, 0)) / mine });
   }
   takes.sort((a, b) => b.dollars - a.dollars);
-  const b = benefitBreakdown(card, p, { wallet: [...base, cardId], cardSpend: after.earning.perCard[cardId]?.dollars });
+  const b = benefitsForCard(after, cardId);
   /* Top 3 categories by money this card would earn for them on its own. */
   const topEarning = Object.entries(solo.earning.byBucket)
     .map(([bucket, rows]) => { const dollars = rows.reduce((t, x) => t + x.dollars, 0); const value = rows.reduce((t, x) => t + x.value, 0); return { bucket, dollars, value, pct: dollars ? (100 * value) / dollars : 0 }; })

@@ -76,6 +76,13 @@
 .v5 .hotel-cities { list-style: none; padding: 0; margin: 6px 0; display: grid; gap: 6px; }
 .v5 .hotel-budget .habit-adjust { margin: 6px 0; }
 .v5 .hotel-use { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.v5 .detail-inner { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.v5 .detail-inner > *, .v5 .detail-block > *, .v5 .hotel-use li { min-width: 0; }
+.v5 .hotel-use { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .v5 .detail-inner .v7-math { table-layout: fixed; }
+  .v5 .detail-inner .v7-math :is(th, td) { overflow-wrap: anywhere; }
+}
 
 /* v7e Part 4: benefits checklist */
 .v5 .bc-rows { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 10px; }
@@ -88,6 +95,11 @@
 .v5 .bc-covered { margin: -6px 0 4px 26px; }
 .v5 .bc-totals { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 22px; margin: 10px 0; }
 .v5 .bc-totals dt { color: var(--ink-3, #9C988F); font-size: .85em; }
+@media (max-width: 640px) {
+  .v5 .detail-inner .bc-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .v5 .detail-inner .bc-use { grid-column: 1 / -1; min-width: 0; }
+  .v5 .detail-inner .bc-totals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .v5 .wc-group { margin-top: 14px; }
 
 /* owner #9: hotel nights per trip row */

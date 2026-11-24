@@ -10,7 +10,7 @@
 import { BY_ID, CARDS } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { normalizeProfile } from "../profileDefaults.js";
-import { walletValue, optimalWallet } from "./methodology.js";
+import { walletValue, optimalWallet, benefitsForCard } from "./methodology.js";
 import { applicationHurdle } from "./apply.js";
 import { cardFee, benefitBreakdown, loungeNetworks } from "./value.js";
 import { cardPointValue } from "./pointValues.js";
@@ -78,11 +78,11 @@ export function ritzVsReserve(rawProfile) {
   const best = optimalWallet(p, { mode: p.cardsHeld.length ? "wallet" : "scratch" }).wallet.filter((id) => id !== "ritz" && id !== "csr");
   const side = (id) => {
     const c = BY_ID[id];
-    const b = benefitBreakdown(c, p, { wallet: [...best, id] });
+    const b = benefitsForCard(walletValue([...best, id], p), id);
     const credits = b.items.filter((i) => i.kind === "credit").reduce((t, i) => t + i.value, 0);
     const lounge = loungeNetworks(c, p);
     const net = id === "ritz" ? specialtyNet(c, p, best) : Math.round(walletValue([...best, id], p, { normalized: true }).N - walletValue(best, p, { normalized: true }).N - applicationHurdle(c, p, best).total);
-    return { c, credits, lounge: Object.values(lounge).reduce((t, v) => Math.max(t, v), 0), cpp: cardPointValue(c, p, [...best, id]).cpp, fee: cardFee(c, p), net };
+    return { c, credits, hotelCredits: b.items.filter((i) => i.hotelUse), lounge: Object.values(lounge).reduce((t, v) => Math.max(t, v), 0), cpp: cardPointValue(c, p, [...best, id]).cpp, fee: cardFee(c, p), net };
   };
   const r = side("ritz"), s = side("csr");
   const guests = (c) => `${c.loungeAccess.networks.join(" + ")}; guests: ${c.loungeAccess.ppGuests === "unlimited" ? "unlimited on Priority Pass" : `${c.loungeAccess.ppGuests ?? c.loungeAccess.guests} on Priority Pass`}, ${c.loungeAccess.guests} at Sapphire Lounges`;
@@ -101,5 +101,5 @@ export function ritzVsReserve(rawProfile) {
   const second = first === "ritz" ? "csr" : "ritz";
   const w1 = first === "ritz" ? [...best.filter((id) => !BY_ID.ritz.specialty.from.includes(id)), "ritz"] : [...best, "csr"];
   const adds = Math.round(walletValue([...w1, second], p, { normalized: true }).N - walletValue(w1, p, { normalized: true }).N - (second === "csr" ? applicationHurdle(BY_ID.csr, p, w1).total : 0));
-  return { rows, nets: { ritz: r.net, csr: s.net }, both: { first, second, adds } };
+  return { rows, hotelCredits: { ritz: r.hotelCredits, csr: s.hotelCredits }, wallet: best, nets: { ritz: r.net, csr: s.net }, both: { first, second, adds } };
 }

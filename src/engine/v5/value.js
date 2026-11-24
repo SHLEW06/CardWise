@@ -29,7 +29,7 @@ import { VAL } from "../../data/valuations.js";
 import { loungeCoverage } from "../airportFit.js";
 import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
-import { hotelProgramValue, fhrBreakfastValue, applyNightBudget } from "./hotelCredits.js";
+import { hotelProgramValue, hotelPerkUnits, applyNightBudget } from "./hotelCredits.js";
 import { HOTEL_BY_ID } from "./hotelDb.js";
 import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree, habitSpend, creditDraws, poolsForCredit, creditPick, sharePools } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
@@ -735,8 +735,9 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     if (value <= 0 && u.tryIfFree) { tryFree.push({ id, label: `${noDollars(c.name)}: you'd try it if free`, face: c.annual, kind: "tryFree" }); continue; }
     if (value > 0 && u.nightUnits) {
       items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, note: u.note || null, nightUnits: u.nightUnits, hotelUse: u.hotelUse || null });
-      const bf = fhrBreakfastValue(card, { use: u.hotelUse, chunks: u.hotelChunks }, profile);
-      if (bf > 0) items.push({ id: `${card.id}#fhr-breakfast`, label: "Daily breakfast at Fine Hotels + Resorts stays", face: bf, value: bf, kind: "credit", type: "hotel", note: "Counted because you'd pay for breakfast anyway" });
+      const perStay = hotelPerkUnits(card, u.hotelChunks, profile);
+      const perkValue = perStay.reduce((t, v) => t + v, 0);
+      if (perkValue > 0) items.push({ id: `${id}#stay-perks`, label: "Hotel breakfast / on-property perks you'd pay for anyway", face: perkValue, value: perkValue, kind: "credit", type: "hotel", stayParent: id, perStay, note: "Only for the credit's allocated stays; upgrades count $0" });
       continue;
     }
     if (value > 0) items.push({ id, label: c.name, face: c.annual, value, kind: "credit", type, dedupe: u.dedupe || null, pools: u.pools || null, single: !!u.single, pick: u.pick || null, habit: u.habit || null, note: u.note || null, split: !!u.split, planned: !!u.planned, perk: u.perk || null });
@@ -811,9 +812,9 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   extras.push(...tryFree);
 
   /* v7e 3.4: this card's hotel credits and free nights share the nights they stay */
-  const nb = applyNightBudget(items, profile);
+  const nb = ctx.deferNightBudget ? { items, dropped: [] } : applyNightBudget(items, profile);
   let kept = nb.items.filter((i) => i.value > 0);
-  for (const i of nb.items) if (!(i.value > 0)) unused.push({ id: i.id, label: i.label, face: i.face, reason: i.nightNote || "Not enough hotel nights" });
+  for (const i of nb.items) if (!(i.value > 0)) unused.push({ ...i, reason: i.nightNote || "Not enough hotel nights" });
   /* v7e Part 4: the person's own checklist wins — "I'd use this" off → $0;
      "Worth to me: $X" → X (fixed: not cut by pools or the night budget). */
   const ov = profile.benefitOverrides?.[card.id] || {};

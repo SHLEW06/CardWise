@@ -172,22 +172,23 @@ export function destKeyFor(text, country) {
 const ULTRA_BRANDS = /four seasons|aman\b|rosewood|mandarin oriental|peninsula|ritz-carlton|st\. regis|bulgari|six senses|belmond|park hyatt|one&only|waldorf astoria|raffles|capella|auberge|montage|dorchester/i;
 const UPSCALE_BRANDS = /graduate|kimpton|canopy|hyatt centric|tribute|moxy|ac hotel|hampton|courtyard|holiday inn|hotel indigo/i;
 const tierFromBrand = (name, brand) => (ULTRA_BRANDS.test(`${name} ${brand}`) ? 3 : UPSCALE_BRANDS.test(`${name} ${brand}`) ? 1 : 2);
-const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\b(the|hotel|hotels|resort|and|&|a)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\b(?:by ihg|an ihg hotel)\b/g, " ").replace(/\b(the|hotel|hotels|resort|and|&|a)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
 
 export async function fetchLists() {
   for (const s of LIST_SOURCES) { const html = await politeFetch(s.url, { minGapMs: 2000 }); console.log(`  ${s.key}: ${html.length.toLocaleString()} bytes (cached)`); }
 }
 
 /** Merge the two lists with the research records (prices), deduped by name + city (+ coordinates). */
-export function buildLocal(base = build()) {
-  const ah = existsSync(cacheFile(LIST_SOURCES[0].url)) ? parseAwardHelper(readFileSync(cacheFile(LIST_SOURCES[0].url), "utf8")) : [];
-  const ed = existsSync(cacheFile(LIST_SOURCES[1].url)) ? parseEditList(readFileSync(cacheFile(LIST_SOURCES[1].url), "utf8")) : [];
+export function buildLocal(base = build(), lists = null) {
+  const ah = lists?.awardHelper ?? (existsSync(cacheFile(LIST_SOURCES[0].url)) ? parseAwardHelper(readFileSync(cacheFile(LIST_SOURCES[0].url), "utf8")) : []);
+  const ed = lists?.edit ?? (existsSync(cacheFile(LIST_SOURCES[1].url)) ? parseEditList(readFileSync(cacheFile(LIST_SOURCES[1].url), "utf8")) : []);
   if (!ah.length && !ed.length) return null;
   const byKey = new Map();
   const put = (rec) => {
     const k = `${norm(rec.name)}|${norm(rec.city)}`;
     const prev = byKey.get(k);
     if (!prev) { byKey.set(k, rec); return; }
+    prev.aliases = [...new Set([...(prev.aliases || []), rec.id, ...(rec.aliases || [])])].filter((id) => id !== prev.id);
     /* same hotel: one row with all of its programs */
     for (const p of rec.programs) if (!prev.programs.includes(p)) { prev.programs.push(p); prev.minNights[p] = rec.minNights[p]; prev.benefits[p] = rec.benefits[p]; Object.assign(prev.links, rec.links); }
     if (prev.lat == null && rec.lat != null) Object.assign(prev, { lat: rec.lat, lng: rec.lng, coords: rec.coords });
@@ -198,7 +199,7 @@ export function buildLocal(base = build()) {
     const place = [h.city, h.state, h.country].filter(Boolean).join(", ");
     put({
       id: `ah-${h.id}`, name: h.name, chain: h.brand && h.brand !== "Other" ? h.brand : "Independent", city: h.city, country: h.country, region: null, cityKey: destKeyFor(place, h.country),
-      lat: Number(h.latitude) || null, lng: Number(h.longitude) || null, coords: "property", programs: [program], minNights: { [program]: program === "thc" ? 2 : 2 },
+      lat: Number(h.latitude) || null, lng: Number(h.longitude) || null, coords: "property", programs: [program], minNights: { [program]: program === "thc" ? 2 : 1 },
       benefits: { [program]: h.perks ? [h.perks, ...PROGRAM_BENEFITS[program].slice(1)] : PROGRAM_BENEFITS[program] }, luxuryTier: tierFromBrand(h.name, h.brand),
       links: { [program]: h.url }, source: LIST_SOURCES[0].url, checked: h.added_date || null, list: "awardhelper",
     });
@@ -215,7 +216,7 @@ export function buildLocal(base = build()) {
   for (const r of base.properties) {
     const k = `${norm(r.name)}|${norm(r.city)}`;
     const hit = byKey.get(k);
-    if (hit) { byKey.delete(k); byKey.set(k, { ...hit, ...r, programs: [...new Set([...hit.programs, ...r.programs])], minNights: { ...hit.minNights, ...r.minNights }, benefits: { ...hit.benefits, ...r.benefits }, links: hit.links, lat: hit.lat ?? r.lat, lng: hit.lng ?? r.lng, coords: hit.lat != null ? "property" : r.coords }); }
+    if (hit) { byKey.delete(k); byKey.set(k, { ...hit, ...r, aliases: [...new Set([hit.id, ...(hit.aliases || []), ...(r.aliases || [])])].filter((id) => id !== r.id), programs: [...new Set([...hit.programs, ...r.programs])], minNights: { ...hit.minNights, ...r.minNights }, benefits: { ...hit.benefits, ...r.benefits }, links: hit.links, lat: hit.lat ?? r.lat, lng: hit.lng ?? r.lng, coords: hit.lat != null ? "property" : r.coords }); }
     else byKey.set(k, { ...r, links: {} });
   }
   const properties = [...byKey.values()];

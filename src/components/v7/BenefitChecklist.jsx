@@ -9,7 +9,7 @@ import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { benefitBreakdown, cardFee } from "../../engine/v5/value.js";
-import { walletValue } from "../../engine/v5/methodology.js";
+import { walletValue, benefitsForCard } from "../../engine/v5/methodology.js";
 import { creditDraws } from "../../data/perkHabits.js";
 import { nightBudgetText } from "../../engine/v5/hotelCredits.js";
 
@@ -18,11 +18,12 @@ const signed = (n) => `${n < 0 ? "−" : ""}${money(n)}`;
 const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : null; };
 
 /** The benefit rows for one card: computed (no edits for this card) vs current. */
-export function benefitRows(card, profile) {
+export function benefitRows(card, profile, wallet = null) {
   const ov = profile.benefitOverrides || {};
   const { [card.id]: mine = {}, ...others } = ov;
-  const base = benefitBreakdown(card, { ...profile, benefitOverrides: others });
-  const cur = benefitBreakdown(card, profile);
+  const evaluate = (p) => wallet ? benefitsForCard(walletValue(wallet, p), card.id) : benefitBreakdown(card, p);
+  const base = evaluate({ ...profile, benefitOverrides: others });
+  const cur = evaluate(profile);
   const rows = new Map();
   for (const it of base.items) rows.set(it.id, { id: it.id, label: it.label, face: it.face, type: it.type, kind: it.kind, computed: it.value, reason: it.note || "Counted from your answers" });
   for (const u of base.unused) if (!rows.has(u.id)) rows.set(u.id, { id: u.id, label: u.label, face: u.face, type: u.type, kind: u.kind, computed: 0, reason: u.reason });
@@ -67,11 +68,11 @@ function Row({ card, r, onPatch }) {
 }
 
 /** One card's checklist with live totals (card detail). */
-export default function BenefitChecklist({ cardId, profile: raw, onProfileChange }) {
+export default function BenefitChecklist({ cardId, profile: raw, onProfileChange, wallet = null }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);
   const card = BY_ID[cardId];
-  const b = useMemo(() => benefitRows(card, profile), [card, profile]);
-  const earns = useMemo(() => walletValue([cardId], profile).E, [cardId, profile]);
+  const b = useMemo(() => benefitRows(card, profile, wallet), [card, profile, wallet]);
+  const earns = useMemo(() => { const v = walletValue(wallet || [cardId], profile); return Math.round(v.earning.perCard[cardId]?.value || 0); }, [cardId, profile, wallet]);
   const fee = cardFee(card, profile);
   const patch = (id, p) => onProfileChange?.(withOverride(profile, cardId, id, p));
   if (!b.rows.length) return null;
@@ -117,7 +118,8 @@ export function WalletChecklist({ setup, value, profile, onProfileChange }) {
           const other = value.benefits.find((x) => x.cardId !== id && x.value > 0 && (x.label === r.label || (x.pools || []).some((p) => (value.perCard.find((pc) => pc.cardId === id)?.items.find((i) => i.id === r.id)?.pools || []).includes(p)) || (x.dedupedFrom || []).includes(id)));
           covered = other ? cardDisplayName(BY_ID[other.cardId]) : "another card";
         }
-        out[groupOf(card, r)].push({ card, r, covered });
+        const allocated = value.benefits.find((x) => x.cardId === id && x.id === r.id) || value.nightBudget?.items.find((x) => x.cardId === id && x.id === r.id);
+        out[groupOf(card, r)].push({ card, r: { ...r, value: counted, reason: allocated?.note || allocated?.nightNote || r.reason }, covered });
       }
       for (const x of b.extras) out["Nice extras ($0)"].push({ card, extra: x });
     }

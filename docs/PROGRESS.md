@@ -2297,6 +2297,37 @@ both answers were Yes: Specialty options, path "Boundless now → switch after
 12 months", −$235 a year beside the best wallet; as a strategy (Boundless
 then Ritz) +$496, fourth.
 
+## Hotel database → credit valuation (2026-11-24)
+
+- Kept the v7e formula. Price priority: latest saved quote → QTG typical
+  (fee-inclusive, two-night median) → Nextcard average / lowest × 1.25 →
+  city × tier estimate. All prices carry the actual source/date, or an
+  explicit undated-estimate label. QTG's input is empty pending an export
+  or API access; no QTG prices were invented.
+- Stay marks are per destination; exclusions never count. Every Edit chunk
+  needs its own eligible stay. Platinum half-year allocations are explicit;
+  FHR allows one night in 2026, with the issuer's 2027 two-night change in
+  card data. Chase's current card page now lists the temporary Select Hotels
+  $250; it is separate, expires 2026-12-31 and is $0 for the report profile.
+- One shared wallet allocation for hotel credits, certificates and their
+  attached perks; detail/checklist/Lab/strategies/plan/Ritz comparison use
+  allocated amounts. No breakfast or property perks without the spending
+  answer. No perks for a stay displaced by the night budget.
+- Fixed two duplicate IHG names in the personal lists (4,027 → 4,025),
+  preserving old saved-quote/mark IDs as aliases. Fixed zero/night entries
+  lost during legacy airport migration. Dev loads the full database before
+  rendering, avoiding cached values from different database variants.
+- Detail: up to three hotels per destination, quote source/date, after-credit
+  cost, stay marks and filtered city/program map links. Desktop/mobile
+  overflow repaired and browser amounts checked against the shared engine.
+- **1,761 tests; production build passes.** Chrome at 1440px and 390px,
+  local and production-preview variants: no page errors or overflow.
+- Full reconstructed owner profile, before/after credit sources and nets:
+  `docs/HOTEL_CREDIT_DATABASE_REPORT.md`. Local net: Reserve $797 → $533,
+  Platinum $254 → $306; public net: Reserve $385 and Platinum $254 unchanged.
+  The hotel change is local, per “commit and stop.” The preceding issuer-art
+  commit `1350821` was already pushed and deployed successfully.
+
 ## Questions for the owner (v7c, v7d, v7e, v7f)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

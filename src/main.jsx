@@ -37,16 +37,19 @@ const Root = devPath === "/styletile" ? React.lazy(() => import("./components/v7
   : devPath === "/dev/card-faces" ? React.lazy(() => import("./components/v7/CardFacesReview.jsx"))
   : App;
 
-/* v7f (owner update): the personal-use hotel lists, on the dev server only. */
-if (import.meta.env.DEV) {
-  Promise.all([import("virtual:cardwise-local-hotels"), import("./engine/v5/hotelDb.js")])
-    .then(([m, db]) => m.LOCAL_HOTELS && db.useLocalHotels(m.LOCAL_HOTELS)).catch(() => {});
-}
-
-createRoot(document.getElementById("root")).render(
+const renderApp = () => createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <React.Suspense fallback={null}>
       <Root />
     </React.Suspense>
   </React.StrictMode>
 );
+
+/* Resolve the dev-only database before the first calculation. Mutating it
+   after React rendered left different screens with cached research/list
+   values for the same profile. Production uses the research database. */
+if (import.meta.env.DEV) {
+  Promise.all([import("virtual:cardwise-local-hotels"), import("./engine/v5/hotelDb.js")])
+    .then(([m, db]) => m.LOCAL_HOTELS && db.useLocalHotels(m.LOCAL_HOTELS))
+    .catch(() => {}).finally(renderApp);
+} else renderApp();

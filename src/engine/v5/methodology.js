@@ -171,7 +171,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   const ids = cards.map((c) => c.id);
   const alloc = allocateSpend(cards, profile, opts.alloc || {});
   const perCard = cards.map((c) => {
-    const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids });
+    const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids, deferNightBudget: true });
     return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [], extras: b.extras || [] };
   });
   const U = dedupeBenefits(perCard, profile);
@@ -191,6 +191,21 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   };
 }
 
+/** Inspect a card in an already-valued wallet. All views use the allocated
+ * amounts, including hotel credits displaced by another card's free night. */
+export function benefitsForCard(value, cardId) {
+  const raw = value.perCard.find((p) => p.cardId === cardId);
+  if (!raw) return { items: [], unused: [], gated: [], extras: [] };
+  const items = [], unused = [...raw.unused];
+  for (const it of raw.items) {
+    const kept = value.benefits.find((b) => b.cardId === cardId && b.id === it.id);
+    const dropped = value.nightBudget?.items.find((b) => b.cardId === cardId && b.id === it.id);
+    if (kept?.value > 0) items.push(kept);
+    else unused.push({ ...it, ...(dropped || {}), value: 0, reason: dropped?.nightNote || (it.nightUnits || it.stayParent ? "Not enough hotel nights after higher-value uses" : "Covered elsewhere in this wallet") });
+  }
+  return { ...raw, items, unused, total: items.reduce((t, i) => t + i.value, 0), nightBudget: value.nightBudget };
+}
+
 /* ── fast evaluator for the search ───────────────────────────────────────── */
 
 function makeEvaluator(profile, cards, { optimistic = false } = {}) {
@@ -203,7 +218,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
   const gated = (c) => (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
   const fixed = {};
   const allIds = cards.map((c) => c.id);
-  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, optimistic ? { wallet: allIds } : {}).items;
+  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds } : {}), deferNightBudget: true }).items;
   /* Optimistic: every point valued as if its unlock card were in the wallet. */
   const optCpp = optimistic ? Object.fromEntries(cards.map((c) => [c.id, cardPointValue(c, profile, allIds).cpp])) : null;
   const memo = new Map();
@@ -215,7 +230,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
       const ids = set.map((c) => c.id);
       const cpp = optCpp || walletCpp(set, profile);
       const alloc = allocateSpend(set, profile, { spend, lanes, cpp });
-      const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, wallet: ids }).items }));
+      const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, wallet: ids, deferNightBudget: true }).items }));
       const U = dedupeBenefits(perCard, profile).total;
       const F = set.reduce((t, c) => t + fees[c.id], 0);
       const bonus = profile.includeBonus ? set.reduce((t, c) => t + (profile.cardsHeld.includes(c.id) ? 0 : bonusValue(c)), 0) : 0;

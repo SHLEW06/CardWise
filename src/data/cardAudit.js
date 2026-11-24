@@ -75,6 +75,9 @@ export const AUDIT = {
   /* ── Group 2 · recommended to the owner's profile (batch 1) ── */
   "amex-plat": {
     group: 2, batch: 1, checked: D, source: `${AMEX}platinum/`,
+    creditSources: {
+      "$600 Fine Hotels + Resorts / Hotel Collection credit ($300 per half-year)": { source: "https://www.americanexpress.com/en-us/travel/benefits/lodging-credit/", checked: "2026-11-24" },
+    },
     changed: [
       "Earn cap: + 5x flights on up to $500,000 a year",
       "$600 hotel credit: The Hotel Collection needs 2+ nights; from Jan 1, 2027 Fine Hotels + Resorts too (noted)",
@@ -148,6 +151,10 @@ export const AUDIT = {
   /* ── Group 2 · recommended to the owner's profile (batch 2) ── */
   "csr": {
     group: 2, batch: 2, checked: D, source: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve",
+    creditSources: {
+      "$500 The Edit hotel credit ($250 per prepaid 2+ night stay)": { source: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve", checked: "2026-11-24" },
+      "$250 Select Hotels credit (2026 only; prepaid 2+ nights)": { source: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve", checked: "2026-11-24" },
+    },
     changed: [
       "+ $120 DashPass membership (activate by 12/31/2029)",
       "DoorDash promos run through 12/31/2029 (was undated)",
@@ -158,6 +165,7 @@ export const AUDIT = {
     quotes: {
       "$300 travel credit": "up to $300 in statement credits for travel purchases each account anniversary year. ($300 annual travel credit)",
       "$500 The Edit hotel credit ($250 per prepaid 2+ night stay)": "Receive a statement credit of up to $250 for each prepaid booking with The Edit, up to $500 annually. Two-night minimum.",
+      "$250 Select Hotels credit (2026 only; prepaid 2+ nights)": "Get up to $250 in statement credits through 12/31/26 on prepaid Chase Travel hotel bookings",
       "$300 dining credit at Sapphire Reserve Exclusive Tables ($150 per half-year)": "Get up to $150 in statement credits from January through June and again from July through December for a maximum of $300 annually when you dine at restaurants part of the Sapphire Reserve Exclusive Tables program on OpenTable.",
       "$300 StubHub / viagogo credit ($150 per half-year, through 2027)": "Get up to $150 in statement credits from January through June and again from July through December for a maximum of $300 annually for StubHub and viagogo purchases through 12/31/2027.",
       "Lyft credit ($10 a month, through Sep 2027)": "Get up to $10 in monthly in-app credits to use on rides through 9/30/2027. ($120 in Lyft ride credits)",

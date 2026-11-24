@@ -8,14 +8,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
-import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
-import { destinationsOf } from "../../engine/v5/hotelCredits.js";
+import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, hotelMarksWith, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
+import { destinationsOf, minimumNights } from "../../engine/v5/hotelCredits.js";
+import { BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { matchHotel } from "../../../extension/lib/rate.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const PROGRAMS = ["edit", "fhr", "thc", "selectHotels2026"];
 const MARKS = [["stay", "I'd stay here"], ["expensive", "Too expensive"], ["style", "Not my style"]];
+const CREDIT_RULES = Object.fromEntries([BY_ID.csr, BY_ID["amex-plat"]].flatMap((c) => c.credits.filter((cr) => cr.hotelProgram?.programs).flatMap((cr) => cr.hotelProgram.programs.map((p) => [p, cr]))));
 const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : null; };
 
 export function HotelStyle({ travel, onChange }) {
@@ -57,12 +59,12 @@ function HotelMap({ hotels, onCity }) {
   );
 }
 
-export default function HotelExplorer({ profile: raw, onSaveProfile }) {
+export default function HotelExplorer({ profile: raw, onSaveProfile, filter = null }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);
-  const [q, setQ] = useState("");
-  const [view, setView] = useState("list");
-  const [progs, setProgs] = useState([]);
-  const [maxPrice, setMaxPrice] = useState(1000);
+  const [q, setQ] = useState(filter?.city || "");
+  const [view, setView] = useState(filter?.view || "list");
+  const [progs, setProgs] = useState(filter?.programs || []);
+  const [maxPrice, setMaxPrice] = useState(filter ? Infinity : 1000);
   const [tiers, setTiers] = useState([]);
   const [chain, setChain] = useState("");
   const [mine, setMine] = useState(false);
@@ -88,12 +90,12 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
   };
   const save = (patch) => onSaveProfile?.({ ...profile, ...patch });
   const setTravel = (patch) => save({ travel: { ...profile.travel, ...patch } });
-  const mark = (id, m) => save({ hotelMarks: { ...profile.hotelMarks, [id]: profile.hotelMarks[id] === m ? undefined : m } });
+  const mark = (id, m) => save({ hotelMarks: hotelMarksWith(profile, id, markOf(profile, id) === m ? null : m) });
   const chains = useMemo(() => [...new Set(HOTEL_PROPERTIES.map((h) => h.chain))].sort(), []);
   const pricedCount = useMemo(() => HOTEL_PROPERTIES.filter((h) => h.programs.some((pr) => realisticRate(h, pr, profile).basis !== "estimate")).length, [profile]);
 
   const rows = useMemo(() => HOTEL_PROPERTIES.map((h) => {
-    const per = h.programs.map((p) => ({ program: p, ...valueToYou(h, p, profile) }));
+    const per = h.programs.map((p) => ({ program: p, ...valueToYou(h, p, profile, { C: CREDIT_RULES[p]?.hotelProgram.chunk, minNights: CREDIT_RULES[p] ? minimumNights(CREDIT_RULES[p].hotelProgram, p) : 1 }) }));
     const best = [...per].sort((a, b) => b.value - a.value)[0];
     return { h, per, best, price: Math.min(...per.map((x) => x.rate)) };
   }).filter(({ h, price }) => {
@@ -131,8 +133,8 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
         <div className="chip-wrap" role="group" aria-label="Program">
           {PROGRAMS.map((p) => <Choice key={p} pill selected={progs.includes(p)} onSelect={() => toggle(progs, setProgs, p)}>{PROGRAM_NAME[p]}</Choice>)}
         </div>
-        <label className="t-caption hotels-price">Up to {money(maxPrice)} a night
-          <input type="range" min="100" max="1000" step="25" value={maxPrice} aria-label="Realistic price per night, up to" onChange={(e) => setMaxPrice(Number(e.target.value))} />
+        <label className="t-caption hotels-price">{Number.isFinite(maxPrice) ? `Up to ${money(maxPrice)} a night` : "All nightly prices"}
+          <input type="range" min="100" max="1000" step="25" value={Number.isFinite(maxPrice) ? maxPrice : 1000} aria-label="Realistic price per night, up to" onChange={(e) => setMaxPrice(Number(e.target.value))} />
         </label>
         <div className="chip-wrap" role="group" aria-label="Luxury tier">
           {[1, 2, 3].map((t) => <Choice key={t} pill selected={tiers.includes(t)} onSelect={() => toggle(tiers, setTiers, t)}>{TIER_NAME[t]}</Choice>)}
@@ -159,7 +161,7 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
                 {per.map((p) => (
                   <div key={p.program} className="hotel-program t-caption" data-testid={`hotel-${h.id}-${p.program}`}>
                     <span className="tag">{PROGRAM_NAME[p.program]}</span>{" "}
-                    ~{money(p.rate)}/night <span className="habit-tag">({p.rateLabel})</span> · {h.minNights[p.program]} night{h.minNights[p.program] === 1 ? "" : "s"} min ·
+                    ~{money(p.rate)}/night <span className="habit-tag">({p.rateLabel})</span> · {p.n} night{p.n === 1 ? "" : "s"} min ·
                     {" "}<strong data-testid={`value-${h.id}-${p.program}`}>Value to you: {money(p.value)}</strong> <span className="habit-tag">of a {money(p.C)} credit, at your {money(p.budget)} a night</span>
                     <p className="hotel-benefits">{(h.benefits[p.program] || []).join(" · ")}</p>
                     <label className="habit-adjust">I saw $

@@ -31,7 +31,15 @@ function localHotels() {
       if (id !== RID) return null;
       const f = resolve(process.cwd(), "src/data/hotels/properties.local.generated.js");
       if (isBuild || process.env.VITEST || !existsSync(f)) return "export const LOCAL_HOTELS = null;";
+      this.addWatchFile(f);
       return readFileSync(f, "utf8");
+    },
+    handleHotUpdate(ctx) {
+      if (ctx.file !== resolve(process.cwd(), "src/data/hotels/properties.local.generated.js")) return;
+      const mod = ctx.server.moduleGraph.getModuleById(RID);
+      if (mod) ctx.server.moduleGraph.invalidateModule(mod);
+      ctx.server.ws.send({ type: "full-reload" });
+      return [];
     },
   };
 }

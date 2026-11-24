@@ -47,12 +47,12 @@ describe("1a · the property list", () => {
 describe("1b · realistic, dated rates", () => {
   const today = new Date(Date.UTC(2026, 10, 23));
   it("median of the rates seen; lowest × 1.25 when that's all; else a city × tier estimate", () => {
-    expect(realisticRate(HOTEL_BY_ID[CORDIS], "thc", null, today)).toMatchObject({ rate: 256, basis: "seen", label: "seen Oct 2026" });
+    expect(realisticRate(HOTEL_BY_ID[CORDIS], "thc", null, today)).toMatchObject({ rate: 256, basis: "seen", label: "Nextcard average · seen Oct 2026" });
     const kimpton = HOTEL_PROPERTIES.find((h) => /Kimpton Qiantan/.test(h.name));
     expect(realisticRate(kimpton, "edit", null, today)).toMatchObject({ rate: Math.round(242 * 1.25), basis: "lowest × 1.25" });
     expect(realisticRate(kimpton, "edit", null, new Date(Date.UTC(2028, 0, 1))).basis).toBe("estimate");   // older than 12 months
     const own = normalizeProfile({ hotelRates: [{ hotelId: CORDIS, program: "thc", date: "2026-11-20", nightlyUsd: 300 }] });
-    expect(realisticRate(HOTEL_BY_ID[CORDIS], "thc", own, today).rate).toBe(278);       // median of 256 and 300
+    expect(realisticRate(HOTEL_BY_ID[CORDIS], "thc", own, today).rate).toBe(300);       // saved price overrides the research snapshot
     expect(HOTEL_RATES.every((r) => r.date && r.source)).toBe(true);
   });
 });
@@ -98,7 +98,7 @@ describe("1c · the Hotels tab", () => {
     expect(within(screen.getByTestId(`hotel-${CORDIS}`)).getByRole("button", { name: "Too expensive" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.change(within(screen.getByTestId(`hotel-${CORDIS}`)).getByLabelText(/I saw a nightly price: Cordis Hong Kong/), { target: { value: "300" } });
     fireEvent.click(within(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`hotel-${CORDIS}-thc`)).getByRole("button", { name: "Save" }));
-    expect(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`value-${CORDIS}-thc`)).toHaveTextContent("Value to you: $144");   // median 278
+    expect(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`value-${CORDIS}-thc`)).toHaveTextContent("Value to you: $100");   // saved 300
     fireEvent.click(within(ex).getByRole("radio", { name: "Map" }));
     expect(screen.getByTestId("hotel-map")).toBeInTheDocument();
   });

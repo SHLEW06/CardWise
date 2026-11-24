@@ -25,7 +25,12 @@ describe("every credit has a class and a source", () => {
     for (const [id, a] of Object.entries(AUDIT)) {
       expect(a.source, id).toMatch(/^https:\/\//);
       expect(a.checked, id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      for (const cr of BY_ID[id].credits || []) expect(cr, `${id}: ${cr.name}`).toMatchObject({ source: a.source, checked: a.checked });
+      for (const cr of BY_ID[id].credits || []) {
+        const evidence = a.creditSources?.[cr.name] || a;
+        expect(evidence.source).toMatch(/^https:\/\//);
+        expect(evidence.checked).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+        expect(cr, `${id}: ${cr.name}`).toMatchObject({ source: evidence.source, checked: evidence.checked });
+      }
     }
   });
 });

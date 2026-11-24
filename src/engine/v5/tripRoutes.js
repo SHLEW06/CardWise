@@ -347,10 +347,11 @@ export function rowsFromAirports(airports = [], cabin = null) {
       if (!to) continue;
       rest -= d.key === "domestic" ? 0 : d.trips;
       if (d.key === "domestic") continue;
-      out.push({ from: d.from || a.code, to, trips: d.trips, cabin, work: !!a.work });
+      out.push({ from: d.from || a.code, to, trips: d.trips, cabin, work: !!a.work, ...(d.nights != null ? { nights: d.nights } : {}) });
     }
     const dom = Math.max(0, rest);
-    if (dom > 0) out.push({ from: a.code, to: "us", trips: dom, cabin, work: !!a.work });
+    const domestic = a.destinations?.find((d) => d.key === "domestic");
+    if (dom > 0) out.push({ from: a.code, to: "us", trips: dom, cabin, work: !!a.work, ...(domestic?.nights != null ? { nights: domestic.nights } : {}) });
   }
   return out;
 }

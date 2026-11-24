@@ -128,6 +128,7 @@ export default function App() {
   const [screen, setScreen] = useState("hero"); // hero (landing) | survey | app
   const [surveyStep, setSurveyStep] = useState(null);   // step id when editing one answer from Profile
   const [tab, setTab] = useState("home");   // home | checkout | offers | lab | explore | profile (§17)
+  const [hotelFilter, setHotelFilter] = useState(null);
   const [profile, setProfile] = useState(null);
   const [v5, setV5] = useState(null);
   const [wallet, setWallet] = useState([]);
@@ -252,7 +253,7 @@ export default function App() {
       {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} onGo={setTab} />}
       {tab === "strategies" && <Strategies profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onGo={setTab} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
-      {tab === "hotels" && <HotelExplorer profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}
+      {tab === "hotels" && <HotelExplorer profile={v5} filter={hotelFilter} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}
       {tab === "profile" && (
         <Profile
           onEditStep={(step) => { setSurveyStep(step); setScreen("survey"); }}
@@ -273,7 +274,7 @@ export default function App() {
           onClose={() => setModalCard(null)}
           onToggleOwn={toggleWallet}
           onProfileChange={(p) => applyV5(saveV5Profile(p))}
-          onOpenHotels={() => { setModalCard(null); setTab("hotels"); }}
+          onOpenHotels={(filter) => { setHotelFilter(filter || null); setModalCard(null); setTab("hotels"); }}
         />
       )}
     </AppShell>

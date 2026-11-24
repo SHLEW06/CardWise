@@ -392,7 +392,7 @@ describe("golden profiles", () => {
     const trip = (budget) => ({ travel: { hotelNights: 6, hotelBudget: budget, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } });
     const low = benefitBreakdown(csr, normalizeProfile(trip(130)));
     expect(low.items.find((i) => /The Edit/.test(i.label))).toBeUndefined();
-    expect(low.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/cost more than your/);
+    expect(low.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/fits your budget and stay length/);
     expect(benefitBreakdown(csr, normalizeProfile(trip(300))).items.find((i) => /The Edit/.test(i.label)).value).toBeGreaterThan(0);
   });
 });
