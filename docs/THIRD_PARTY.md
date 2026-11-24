@@ -95,3 +95,20 @@ order:
 The build script keeps a cached, rate-limited fetch helper for a source that
 does allow reuse; none is enabled. Property coordinates are city centres.
 
+### Owner update (2026-11-23): the public lists, for personal use
+
+| Source | Used? | What | Terms |
+|---|---|---|---|
+| awardhelper.com/fhr-hotels | Yes — personal use | All 3,407 Amex FHR + THC properties: name, city, program, coordinates, the Amex property URL | robots.txt: `User-agent: * Allow: /`; no terms of use found |
+| edithotelsearch.com | Yes — personal use | 1,285 Chase Edit listings (from Chase's public listings, "built for personal use") | No robots.txt (GitHub Pages 404) and no terms found |
+| Chase's own public Edit listings | No | — | Chase's terms of use prohibit robots, spiders and scripts |
+
+One request per page, cached in `.cache/hotel-db/`, at most one request
+every 2 s (`npm run hotel-db -- --fetch`). Attribution in the Hotels tab
+footer: "List via AwardHelper (awardhelper.com)" and "Edit list via
+edithotelsearch.com". The merged list (`src/data/hotels/properties.local.generated.js`)
+is **git-ignored and served only by the dev server**; the public Firebase
+build keeps the research-based records only. **Before a public launch:**
+email both site owners for permission and record the answers here
+(not done — the owner sends them).
+

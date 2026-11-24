@@ -41,3 +41,6 @@ connector/calibration/*.suggested.json
 
 # route-data downloads (npm run routes)
 .cache/
+
+# v7f: hotel lists imported for personal use (awardhelper, edithotelsearch) — not public until the site owners agree
+src/data/hotels/properties.local.generated.js

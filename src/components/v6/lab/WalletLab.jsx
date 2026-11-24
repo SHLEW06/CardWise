@@ -21,6 +21,7 @@ import { normalizeProfile } from "../../../engine/profileDefaults.js";
 import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { WalletChecklist } from "../../v7/BenefitChecklist.jsx";
+import { SpecialtyOptions } from "../../v7/Specialty.jsx";
 import { ticketCreditText, alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
@@ -154,6 +155,9 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard })
           </div>
         )}
       </Reveal>
+
+      {/* v7f Part 2: specialty cards, only when the profile fits */}
+      <SpecialtyOptions profile={p} onOpenCard={(id) => openCard(id)} />
 
       {/* v7e Part 4.4: every benefit across the wallet, grouped, editable. */}
       <Reveal i={2} as="section" className="panel" aria-labelledby="wc-h">

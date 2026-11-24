@@ -20,6 +20,7 @@ import GrowthStep from "./GrowthStep.jsx";
 import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import Head from "./SurveyHead.jsx";
 import HotelBudget from "../../v7/HotelBudget.jsx";
+import { TravelCompany } from "../../v7/Specialty.jsx";
 import { FeeLimitChoice, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normalizeProfile } from "../../../engine/profileDefaults.js";
 
@@ -575,6 +576,7 @@ function TravelStep({ d, set, mode, headRef }) {
       </fieldset>
       <HotelQuestions d={d} n={n} t={t} set={set} setTravel={setTravel} />
       {nights > 0 && <HotelBudget n={n} t={t} setTravel={setTravel} />}
+      {flies && <TravelCompany t={t} setTravel={setTravel} />}
       <StrategyHelper d={d} set={set} />
     </>
   );

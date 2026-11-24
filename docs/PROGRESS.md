@@ -2176,6 +2176,70 @@ Brief: `docs/CLAUDE_CODE_V7F_HOTELS_STRATEGIES.md`.
 - Tests: `v7fPart1.test.jsx` (9), `extension/test/rate.test.js` (4); tab
   tests updated (Hotels is a sixth tab).
 
+## v7f Part 1 (owner update) · the public hotel lists (2026-11-23)
+
+- **awardhelper.com/fhr-hotels** (robots.txt allows all; no terms found):
+  3,407 properties — **FHR 1,938 · THC 1,469** — with name, city, program,
+  coordinates and the Amex property URL, read from the page's own data (one
+  request, cached).
+- **edithotelsearch.com** (no robots.txt, no terms; "built for personal
+  use"): **1,285 Edit listings** (the site says about 1,371). Chase's own
+  public listings would be preferred, but Chase's terms forbid scripts, so
+  edithotelsearch is the Edit source, attributed.
+- **Merged** by name + city (coordinates where both have them), with the
+  research records (prices) joined in: **4,027 properties · Edit 1,296 · FHR
+  1,938 · THC 1,471 · 678 in both an Amex and a Chase program** (one row,
+  all programs).
+- **Personal use only, until the site owners agree:** the merged file is
+  git-ignored and loaded only by the dev server (a Vite virtual module that
+  is null in production builds and tests); the public site keeps the
+  research-based 37. **Emails to both site owners: not sent** — drafts for
+  the owner below.
+- Each hotel row: **"Check prices"** (a plain Google Hotels link with your
+  dates — no scraping) and a link to the program's own page (Amex property
+  page; the Chase Edit page). Rows page 60 at a time.
+- The brief's "cross-check 30 properties against the issuer pages" isn't
+  possible: Amex's and Chase's terms forbid automated reading.
+
+Draft email (owner to send, one per site):
+> Hi — I'm building a personal card-benefits tool (CardWise) and use your
+> {FHR/THC | Edit} hotel list, with credit to you, to show which hotels a
+> card's credit works at. Before making it public, may I use the list
+> (names, cities, programs, links) with attribution? Happy to link back or
+> remove it if you'd prefer. Thanks!
+
+## v7f Part 2 · the Ritz-Carlton as a specialty card (2026-11-23)
+
+- **Facts not re-checked:** the Ritz card's page is on marriott.chase.com
+  (Chase's terms forbid automated reading) and Marriott's terms page didn't
+  render. The card data is the v7c audit (2026-11-22): $450 fee, Priority
+  Pass + Chase Sapphire Lounges, $300 airline incidental credit, an 85k
+  free night, Marriott Platinum status, a $100 Ritz-Carlton / St. Regis
+  credit on 2+ night stays, 6x / 3x / 3x / 2x. **Guests:** the brief says
+  Priority Pass guests are unlimited; the data said "2 guests free" — now
+  modeled as unlimited on Priority Pass, 2 at Sapphire Lounges. Owner to
+  confirm (question 11).
+- **Specialty class** (`card.specialty`): never in the main recommendation,
+  the "Now" wallet or the later wallet (a held one stays). Shown in
+  **"Specialty options"** (Wallet Lab) only when the profile fits — for the
+  Ritz: 4+ trips, travels with others, Marriott picked, would plan around
+  perks (two new trips-step questions: "Do you usually travel with
+  others?", "Would you plan trips around card perks to use them?").
+- **How to get it** in the plan (`r.specialty`, "Specialty: how to get it"):
+  Bonvoy Boundless after the plan's last application (6 months on, under
+  5/24) → after 12 months, ask Chase to switch it to the Ritz-Carlton; at
+  5/24 it waits. Held Boundless → the switch only.
+- **Conservative credits:** airline credit capped at bag / seat fees on your
+  airlines (as before); the property credit only for Ritz-Carlton / St.
+  Regis stays marked "I'd stay here" (same for the Brilliant's); Priority
+  Pass 1/8 of face per visit, × (1 + guests) only when you travel with others.
+- **Ritz-Carlton vs Sapphire Reserve** on both card pages: lounges and
+  guests, lounge value, credits you'd use, points (Marriott vs Chase UR, ¢ a
+  point), fee, how hard to get, net — and "Holding both: the second adds $X
+  after the overlap".
+- Golden: unchanged. Tests: `v7fPart2.test.jsx` (9); the old Ritz worked
+  example now checks the specialty path.
+
 ## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
@@ -2206,4 +2270,10 @@ Brief: `docs/CLAUDE_CODE_V7F_HOTELS_STRATEGIES.md`.
    trip length, so "trip length − 1" isn't available. OK, or add trip length?
 10. **v7e Part 3 — "Would you book through a card's travel site?"** still gates
    every hotel credit (v7c: No = $0). With the new formula it could go. Keep?
+11. **v7f Part 2 — Ritz-Carlton lounge guests:** your brief says unlimited
+   Priority Pass guests; our data (v7c audit) said "2 guests free". Modeled
+   as unlimited on Priority Pass, 2 at Sapphire Lounges. Which is right?
+12. **v7f Part 1 — the hotel-style answer** is worded "I just want the
+   credit's value" as in your brief, though the survey otherwise avoids the
+   word "credit". OK?
 

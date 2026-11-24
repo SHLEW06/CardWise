@@ -124,6 +124,106 @@ export function build() {
   return { properties, rates, log };
 }
 
+/* ── owner update (2026-11-23): the public lists, for personal use ───────
+   awardhelper.com/fhr-hotels — every Amex FHR + THC property (name, city,
+   program, Amex property URL, coordinates); robots.txt allows all crawlers,
+   no terms found. edithotelsearch.com — the Chase Edit list (built from
+   Chase's public listings, "built for personal use"); no robots.txt or terms.
+   Chase's own listings can't be read (Chase terms of use), so edithotelsearch
+   is the Edit source. Each page is ONE request, cached; at most one request
+   every 2 s. Until the site owners agree, the result stays out of git and
+   out of the Firebase build (src/data/hotels/properties.local.generated.js,
+   served only by the dev server). */
+export const LIST_SOURCES = [
+  { key: "awardhelper", url: "https://www.awardhelper.com/fhr-hotels", note: "List via AwardHelper (awardhelper.com)" },
+  { key: "edithotelsearch", url: "https://www.edithotelsearch.com/", note: "Edit list via edithotelsearch.com (from Chase's public Edit listings)" },
+];
+const cacheFile = (url) => resolve(CACHE, createHash("sha1").update(url).digest("hex") + ".html");
+
+export function parseAwardHelper(html) {
+  const pushes = [...html.matchAll(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g)].map((m) => JSON.parse(m[1])).join("");
+  const i = pushes.indexOf('"hotels":[');
+  if (i < 0) return [];
+  let depth = 0, end = -1;
+  for (let k = i + 9; k < pushes.length; k++) {
+    if (pushes[k] === "[") depth++;
+    else if (pushes[k] === "]" && --depth === 0) { end = k + 1; break; }
+  }
+  return JSON.parse(pushes.slice(i + 9, end));
+}
+export function parseEditList(html) {
+  const m = html.match(/const HOTELS_RAW = (\[.*?\]);\n/s);
+  return m ? JSON.parse(m[1]) : [];
+}
+
+/* City → the survey's destination keys (routes.js). */
+const DEST_RULES = [
+  ["hongkong", /\bhong kong\b/], ["tokyo", /\btokyo\b/], ["shanghai", /\bshanghai\b/], ["seoul", /\bseoul\b/], ["taipei", /\btaipei\b/],
+  ["singapore", /\bsingapore\b/], ["london", /\blondon\b/], ["paris", /\bparis\b/], ["rome", /\b(rome|roma)\b/], ["milan", /\b(milan|milano)\b/],
+  ["amsterdam", /\bamsterdam\b/], ["frankfurt", /\bfrankfurt\b/], ["dubai", /\bdubai\b/], ["doha", /\bdoha\b/], ["sydney", /\bsydney\b/],
+  ["toronto", /\btoronto\b/], ["mexicocity", /\bmexico city|ciudad de m[eé]xico\b/], ["cancun", /\bcanc[uú]n\b/], ["saopaulo", /\bs[aã]o paulo\b/],
+  ["hawaii", /\bhawaii\b|, hi\b/],
+];
+export function destKeyFor(text, country) {
+  const t = String(text).toLowerCase();
+  for (const [k, re] of DEST_RULES) if (re.test(t)) return k;
+  return /^(united states|us|usa)$/i.test(String(country).trim()) ? "domestic" : null;
+}
+const ULTRA_BRANDS = /four seasons|aman\b|rosewood|mandarin oriental|peninsula|ritz-carlton|st\. regis|bulgari|six senses|belmond|park hyatt|one&only|waldorf astoria|raffles|capella|auberge|montage|dorchester/i;
+const UPSCALE_BRANDS = /graduate|kimpton|canopy|hyatt centric|tribute|moxy|ac hotel|hampton|courtyard|holiday inn|hotel indigo/i;
+const tierFromBrand = (name, brand) => (ULTRA_BRANDS.test(`${name} ${brand}`) ? 3 : UPSCALE_BRANDS.test(`${name} ${brand}`) ? 1 : 2);
+const norm = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\b(the|hotel|hotels|resort|and|&|a)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+
+export async function fetchLists() {
+  for (const s of LIST_SOURCES) { const html = await politeFetch(s.url, { minGapMs: 2000 }); console.log(`  ${s.key}: ${html.length.toLocaleString()} bytes (cached)`); }
+}
+
+/** Merge the two lists with the research records (prices), deduped by name + city (+ coordinates). */
+export function buildLocal(base = build()) {
+  const ah = existsSync(cacheFile(LIST_SOURCES[0].url)) ? parseAwardHelper(readFileSync(cacheFile(LIST_SOURCES[0].url), "utf8")) : [];
+  const ed = existsSync(cacheFile(LIST_SOURCES[1].url)) ? parseEditList(readFileSync(cacheFile(LIST_SOURCES[1].url), "utf8")) : [];
+  if (!ah.length && !ed.length) return null;
+  const byKey = new Map();
+  const put = (rec) => {
+    const k = `${norm(rec.name)}|${norm(rec.city)}`;
+    const prev = byKey.get(k);
+    if (!prev) { byKey.set(k, rec); return; }
+    /* same hotel: one row with all of its programs */
+    for (const p of rec.programs) if (!prev.programs.includes(p)) { prev.programs.push(p); prev.minNights[p] = rec.minNights[p]; prev.benefits[p] = rec.benefits[p]; Object.assign(prev.links, rec.links); }
+    if (prev.lat == null && rec.lat != null) Object.assign(prev, { lat: rec.lat, lng: rec.lng, coords: rec.coords });
+  };
+  for (const h of ah) {
+    const program = h.program === "FHR" ? "fhr" : h.program === "THC" ? "thc" : null;
+    if (!program) continue;
+    const place = [h.city, h.state, h.country].filter(Boolean).join(", ");
+    put({
+      id: `ah-${h.id}`, name: h.name, chain: h.brand && h.brand !== "Other" ? h.brand : "Independent", city: h.city, country: h.country, region: null, cityKey: destKeyFor(place, h.country),
+      lat: Number(h.latitude) || null, lng: Number(h.longitude) || null, coords: "property", programs: [program], minNights: { [program]: program === "thc" ? 2 : 2 },
+      benefits: { [program]: h.perks ? [h.perks, ...PROGRAM_BENEFITS[program].slice(1)] : PROGRAM_BENEFITS[program] }, luxuryTier: tierFromBrand(h.name, h.brand),
+      links: { [program]: h.url }, source: LIST_SOURCES[0].url, checked: h.added_date || null, list: "awardhelper",
+    });
+  }
+  for (const h of ed) {
+    const [city, region2, cc] = String(h.location).split(",").map((x) => x.trim());
+    put({
+      id: `ed-${h.id}`, name: h.name, chain: h.brand || "Independent", city, country: cc || "", region: h.region, cityKey: destKeyFor(h.location, cc === "US" ? "US" : cc),
+      lat: null, lng: null, coords: null, programs: ["edit"], minNights: { edit: 2 }, benefits: { edit: PROGRAM_BENEFITS.edit }, luxuryTier: tierFromBrand(h.name, h.brand),
+      links: { edit: "https://www.chase.com/travel/the-edit" }, source: LIST_SOURCES[1].url, checked: null, list: "edithotelsearch", state: region2,
+    });
+  }
+  /* the research records (with prices) join by name + city; their ids stay, so saved marks and rates still match */
+  for (const r of base.properties) {
+    const k = `${norm(r.name)}|${norm(r.city)}`;
+    const hit = byKey.get(k);
+    if (hit) { byKey.delete(k); byKey.set(k, { ...hit, ...r, programs: [...new Set([...hit.programs, ...r.programs])], minNights: { ...hit.minNights, ...r.minNights }, benefits: { ...hit.benefits, ...r.benefits }, links: hit.links, lat: hit.lat ?? r.lat, lng: hit.lng ?? r.lng, coords: hit.lat != null ? "property" : r.coords }); }
+    else byKey.set(k, { ...r, links: {} });
+  }
+  const properties = [...byKey.values()];
+  const counts = Object.fromEntries(["edit", "fhr", "thc", "selectHotels2026"].map((k) => [k, properties.filter((p) => p.programs.includes(k)).length]));
+  const listed = { awardhelper: ah.length, awardhelperFhr: ah.filter((h) => h.program === "FHR").length, awardhelperThc: ah.filter((h) => h.program === "THC").length, edithotelsearch: ed.length };
+  return { properties, log: { built: new Date().toISOString().slice(0, 10), properties: properties.length, counts, listed, both: properties.filter((p) => p.programs.includes("edit") && (p.programs.includes("fhr") || p.programs.includes("thc"))).length, sources: LIST_SOURCES } };
+}
+
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const { properties, rates, log } = build();
@@ -134,4 +234,12 @@ if (isMain) {
   writeFileSync(resolve(OUT, "hotelRates.generated.js"), `${head("Dated nightly rates (never live).")}export const HOTEL_RATES = ${JSON.stringify(rates, null, 2)};\n`);
   console.log(`hotel DB: ${properties.length} properties · Edit ${log.counts.edit} · FHR ${log.counts.fhr} · THC ${log.counts.thc} · Select Hotels ${log.counts.selectHotels2026}`);
   for (const s of log.sources) console.log(`  ${s.key}: ${s.enabled ? "used" : "off"} — ${s.why}`);
+  /* the personal-use lists (owner update): fetched only with --fetch, then from the cache */
+  if (process.argv.includes("--fetch")) await fetchLists();
+  const local = buildLocal({ properties, rates, log });
+  if (local) {
+    writeFileSync(resolve(OUT, "properties.local.generated.js"), `${head("PERSONAL USE — not in git or the public build (awardhelper.com, edithotelsearch.com).")}export const LOCAL_HOTELS = ${JSON.stringify(local)};\n`);
+    console.log(`local list: ${local.log.properties.toLocaleString()} properties · Edit ${local.log.counts.edit} · FHR ${local.log.counts.fhr} · THC ${local.log.counts.thc} · in both Amex and Chase programs ${local.log.both}`);
+    console.log(`  listed: AwardHelper ${local.log.listed.awardhelper} (FHR ${local.log.listed.awardhelperFhr} · THC ${local.log.listed.awardhelperThc}) · edithotelsearch ${local.log.listed.edithotelsearch}`);
+  } else console.log("local list: none (run with --fetch to import the personal-use lists)");
 }

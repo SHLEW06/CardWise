@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
 const writeManifest = () => {
@@ -16,6 +16,26 @@ const writeManifest = () => {
    was null everywhere. Vite now writes the manifest itself at startup and
    rewrites it whenever a file in public/cards/ is added or removed; the
    import then hot-reloads. */
+/* v7f (owner update): the hotel lists imported for personal use
+   (src/data/hotels/properties.local.generated.js, git-ignored) are served by
+   the dev server only — a production build and the tests get null, so the
+   public Firebase site never carries them. */
+function localHotels() {
+  const VID = "virtual:cardwise-local-hotels", RID = "\0" + VID;
+  let isBuild = false;
+  return {
+    name: "cardwise-local-hotels",
+    configResolved(c) { isBuild = c.command === "build"; },
+    resolveId(id) { return id === VID ? RID : null; },
+    load(id) {
+      if (id !== RID) return null;
+      const f = resolve(process.cwd(), "src/data/hotels/properties.local.generated.js");
+      if (isBuild || process.env.VITEST || !existsSync(f)) return "export const LOCAL_HOTELS = null;";
+      return readFileSync(f, "utf8");
+    },
+  };
+}
+
 function cardArtManifest() {
   const dirs = ["public/cards", "public/backgrounds"].map((d) => resolve(process.cwd(), d));
   return {
@@ -48,7 +68,7 @@ function fontPreload() {
 
 // Vite build → outputs to dist/, which Firebase Hosting serves (see firebase.json).
 export default defineConfig({
-  plugins: [cardArtManifest(), fontPreload(), react()],
+  plugins: [localHotels(), cardArtManifest(), fontPreload(), react()],
   test: {
     include: ["src/**/*.test.js", "src/**/*.test.jsx"],
     /* Default fast node environment; UI tests opt into jsdom via a

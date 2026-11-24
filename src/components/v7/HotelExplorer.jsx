@@ -8,7 +8,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
-import { HOTEL_PROPERTIES, HOTEL_DB_LOG, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf } from "../../engine/v5/hotelDb.js";
+import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
 import { destinationsOf } from "../../engine/v5/hotelCredits.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { matchHotel } from "../../../extension/lib/rate.js";
@@ -67,6 +67,10 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
   const [chain, setChain] = useState("");
   const [mine, setMine] = useState(false);
   const [seen, setSeen] = useState({});
+  const [shown, setShown] = useState(60);
+  const inDays = (d) => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10);
+  const [checkin, setCheckin] = useState(inDays(30));
+  const [checkout, setCheckout] = useState(inDays(32));
   const myCities = useMemo(() => new Set(destinationsOf(profile).map((d) => d.key)), [profile]);
   /* v7f 1b: rates saved with the extension's "Save this rate to CardWise" */
   const [fromExt, setFromExt] = useState([]);
@@ -137,16 +141,20 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
           {chains.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <Choice pill selected={mine} onSelect={() => setMine(!mine)}>Only cities in my trips</Choice>
+        <label className="t-caption">Your dates <input type="date" aria-label="Check-in" value={checkin} onChange={(e) => setCheckin(e.target.value)} /> – <input type="date" aria-label="Check-out" value={checkout} onChange={(e) => setCheckout(e.target.value)} /></label>
       </div>
 
       {view === "map" ? <HotelMap hotels={rows.map((r) => r.h)} onCity={(c) => { setQ(c); setView("list"); }} /> : (
         <ul className="rows hotel-rows" aria-label="Hotels">
           {!rows.length && <li className="t-caption">No hotel matches these filters.</li>}
-          {rows.map(({ h, per }) => (
+          {rows.slice(0, shown).map(({ h, per }) => (
             <li key={h.id} className="hotel-row" data-testid={`hotel-${h.id}`}>
               <div className="hotel-main">
                 <p className="hotel-name"><strong>{h.name}</strong> <span className="t-caption">· {h.chain} · {TIER_NAME[h.luxuryTier]}</span></p>
-                <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {h.city}, {h.country}{myCities.has(h.cityKey) ? " · in your trips" : ""}</p>
+                <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {h.city}, {h.country}{myCities.has(h.cityKey) ? " · in your trips" : ""}
+                  {" · "}<a className="link" href={googleHotelsUrl(h, checkin, checkout)} target="_blank" rel="noreferrer" data-testid={`check-${h.id}`}>Check prices</a>
+                  {Object.entries(h.links || {}).map(([p, url]) => <React.Fragment key={p}>{" · "}<a className="link" href={url} target="_blank" rel="noreferrer">{PROGRAM_NAME[p]} page</a></React.Fragment>)}
+                </p>
                 {per.map((p) => (
                   <div key={p.program} className="hotel-program t-caption" data-testid={`hotel-${h.id}-${p.program}`}>
                     <span className="tag">{PROGRAM_NAME[p.program]}</span>{" "}
@@ -165,10 +173,12 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
               </div>
             </li>
           ))}
+          {rows.length > shown && <li><button type="button" className="link" onClick={() => setShown(shown + 60)}>Show more ({(rows.length - shown).toLocaleString()} left)</button></li>}
         </ul>
       )}
       <p className="t-caption hotels-sources" data-testid="hotel-sources">
-        Prices are dated snapshots (research file, {HOTEL_DB_LOG.properties} properties; your saved rates), never live. Not used: {HOTEL_DB_LOG.sources.filter((s) => !s.enabled).map((s) => `${s.key} (${s.why})`).join("; ")}.
+        {HOTEL_SOURCE.kind === "lists" ? <>{HOTEL_SOURCE.notes.join(" · ")} — for personal use. </> : null}
+        Prices are dated snapshots (research file; your saved rates), never live. Not used: {(HOTEL_DB_LOG.sources || []).filter((s) => !s.enabled).map((s) => `${s.key} (${s.why})`).join("; ")}.
       </p>
     </section>
   );

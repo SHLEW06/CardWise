@@ -24,6 +24,7 @@ import { applyTimeline, APPLY_SPACING_MONTHS } from "./lab.js";
 import { applicationHurdle, explainCard } from "./apply.js";
 import { cardFee } from "./value.js";
 import { monthsUntil, monthName } from "../../data/growth.js";
+import { specialtyCards, specialtyFit, specialtyPath, specialtyNet } from "./specialty.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const CAT = {
@@ -145,5 +146,18 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
     const nextM = steps.slice(i + 1).find((s) => s.month > steps[i].month)?.month;
     steps[i].window = nextM != null ? `${monthName(steps[i].month, today)} – ${monthName(nextM - 1, today)}` : `From ${monthName(steps[i].month, today)}`;
   }
-  return { now: { wallet: nowWallet, value: nowValue }, later, steps, growth: p.growth };
+  /* v7f Part 2: specialty cards — only when the profile fits, as their own
+     "How to get it" path after the plan's last application (6 months on),
+     under 5/24. Never part of Now; the specialty card itself only by switching. */
+  const lastApply = steps.filter((s) => s.how === "apply").reduce((m, s) => Math.max(m, s.month), -APPLY_SPACING_MONTHS);
+  const applied = steps.filter((s) => s.how === "apply").length;
+  const specialty = [];
+  for (const c of specialtyCards()) {
+    const fit = specialtyFit(c, p);
+    if (!fit.fits) continue;
+    const path = specialtyPath(c, p, { afterMonth: lastApply + APPLY_SPACING_MONTHS, newCards24mo: (p.credit?.newCards24mo || 0) + applied });
+    const net = specialtyNet(c, p, later?.wallet || nowWallet);
+    for (const s of path) specialty.push({ era: "specialty", cardId: s.cardId, how: s.how, from: s.from || null, month: s.month, window: `From ${monthName(s.month, today)}`, why: s.note, net: s.cardId === c.id ? net : 0, notes: [c.specialty.how], drop: [] });
+  }
+  return { now: { wallet: nowWallet, value: nowValue }, later, steps, specialty, growth: p.growth };
 }

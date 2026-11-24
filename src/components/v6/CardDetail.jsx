@@ -28,6 +28,7 @@ import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 import BenefitChecklist from "../v7/BenefitChecklist.jsx";
+import { RitzVsReserve } from "../v7/Specialty.jsx";
 import { alternativesForSlot } from "../../engine/v5/lab.js";
 import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
@@ -174,6 +175,11 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
           <Reveal i={2} className="panel detail-block detail-why">
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
+
+          {/* v7f Part 2.4: Ritz-Carlton vs Sapphire Reserve, on both pages */}
+          {(c.id === "ritz" || c.id === "csr") && (
+            <Reveal i={2} className="panel detail-block"><RitzVsReserve profile={profile} /></Reveal>
+          )}
 
           {/* v7e Part 4: the editable checklist, with live totals */}
           {onProfileChange && (

@@ -122,7 +122,7 @@ export const CARDS = [
     earnRates: { Dining: 3, Flights: 4, Hotels: 4, General: 1 }, portalMultipliers: { Travel: 8 },
     credits: [cred("$300 travel credit", 300, "EASY", "broad", "annual", { cls: "automatic" }), cred("$500 The Edit hotel credit ($250 per prepaid 2+ night stay)", 500, "MEDIUM", "portal", "annual", { cls: "niche", hotelProgram: { programs: ["edit"], chunk: 250, chunks: 2, minNights: 2, periods: "stays" } }), cred("$300 dining credit at Sapphire Reserve Exclusive Tables ($150 per half-year)", 300, "HARD", "dining", "semiannual", { cls: "easy" }), cred("$300 StubHub / viagogo credit ($150 per half-year, through 2027)", 300, "HARD", "merchant", "semiannual", { cls: "niche", activation: true, endsOn: "2027-12-31", draws: [{ habit: "tickets", app: "stubhub" }] }), cred("Lyft credit ($10 a month, through Sep 2027)", 120, "MEDIUM", "merchant", "monthly", { cls: "easy" }), cred("Peloton credit ($10 a month, through 2027)", 120, "HARD", "merchant", "monthly", { cls: "easy" }), cred("$15 DoorDash promo a month (any order, through 2029)", 180, "HARD", "promo", "monthly", { cls: "easy", draws: [{ habit: "takeout", app: "doordash" }] }), cred("Two $10 DoorDash promos a month (groceries, essentials, through 2029)", 240, "HARD", "promo", "monthly", { cls: "easy", draws: [{ habit: "ddgrocery" }] }), cred("$120 DashPass membership (activate by 12/31/2029)", 120, "MEDIUM", "membership", "annual", { cls: "easy" }), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr", { cls: "easy" })],
     benefits: ["Chase Sapphire Lounges + Priority Pass Select (2 guests free)", "8x on Chase Travel, 4x flights & hotels booked direct", "Apple TV and Apple Music (activate by June 22, 2027)", "IHG Platinum Elite through 2027", "5x on Lyft through 9/30/2027", "Keeps Chase → Hyatt at 1:1"],
-    transferAccess: ["chase"], loungeAccess: { networks: ["Chase Sapphire Lounge", "Priority Pass Select"], guests: 2, guestFee: 27, estAnnual: 250, use: "MEDIUM", type: "Priority Pass + Chase lounges" },
+    transferAccess: ["chase"], loungeAccess: { networks: ["Chase Sapphire Lounge", "Priority Pass Select"], guests: 2, ppGuests: 2, guestFee: 27, estAnnual: 250, use: "MEDIUM", type: "Priority Pass + Chase lounges" },
     hotelStatus: { program: "ihg", tier: "Platinum Elite", until: "2027-12-31" }, airlineStatus: null, checkedBagBenefits: null,
     companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: ["Edit / Luxury Hotel benefits"], travelProtections: ["Primary CDW (primary rental car cover, $75,000)", "Trip delay", "Trip cancellation / interruption", "Lost luggage", "Baggage delay"], foreignTransactionFee: 0,
@@ -327,11 +327,16 @@ export const CARDS = [
   },
   {
     id: "ritz", name: "Ritz-Carlton", issuer: "Chase", network: "VISA", appOnly: true,
+    /* v7f Part 2: a specialty card — closed to new applicants; only by asking
+       Chase to switch a Chase Marriott card, usually after 12 months. Facts as
+       recorded in the v7c audit (marriott.chase.com); re-checking is blocked
+       (Chase's terms of use) — owner to confirm. */
+    specialty: { from: ["marriott-boundless", "marriott-bold"], afterMonths: 12, how: "Closed to new applicants — ask Chase to switch a Chase Marriott card, usually after 12 months" },
     annualFee: 450, currency: "Marriott Bonvoy", pointCurrency: "marriott",
     earnRates: { Hotels: 6, Dining: 3, Flights: 3, General: 2 }, portalMultipliers: {},
     credits: [cred("$300 airline incidental credit (bags, seats, lounge passes)", 300, "EASY", "airline", "annual"), cred("$100 hotel credit on 2+ night Ritz-Carlton / St. Regis stays", 100, "MEDIUM", "hotel", "annual"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr")],
     benefits: ["Free night every year (up to 85k points)", "Priority Pass Select + Chase Sapphire Lounges (2 guests free)", "3 Club Level upgrades a year"],
-    transferAccess: [], loungeAccess: { networks: ["Priority Pass Select", "Chase Sapphire Lounge"], guests: 2, guestFee: 27, estAnnual: 200, use: "MEDIUM", type: "Priority Pass + Chase lounges" },
+    transferAccess: [], loungeAccess: { networks: ["Priority Pass Select", "Chase Sapphire Lounge"], guests: 2, ppGuests: "unlimited", guestFee: 27, estAnnual: 200, use: "MEDIUM", type: "Priority Pass + Chase lounges" },
     hotelStatus: { program: "marriott", tier: "Platinum", estValue: 120 }, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [],
     freeNightCertificates: [fnc("Anniversary free night (up to 85k points)", 85000, "MEDIUM")],

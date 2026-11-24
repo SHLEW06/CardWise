@@ -258,6 +258,10 @@ export function normalizeProfile(p = {}) {
   travel.portalMarkup = Number.isFinite(Number(travel.portalMarkup)) && Number(travel.portalMarkup) >= 0 && Number(travel.portalMarkup) <= 1 ? Number(travel.portalMarkup) : 0.1;
   /* v7f 1c: "I just want the credit's value" (default) / "I'd pay more for a nicer hotel" (+ $X a night for luxury) */
   travel.hotelStyle = travel.hotelStyle === "nicer" ? "nicer" : "value";
+  /* v7f Part 2: who they travel with (lounge guests) and whether they'd plan
+     trips around card credits (specialty cards). */
+  travel.companions = [0, 1, 2].includes(Number(travel.companions)) ? Number(travel.companions) : 0;
+  travel.planCredits = travel.planCredits === true;
   travel.hotelExtra = Number.isFinite(Number(travel.hotelExtra)) && Number(travel.hotelExtra) > 0 ? Math.round(Number(travel.hotelExtra)) : 0;
   travel.loungeNetworks = Array.isArray(travel.loungeNetworks) ? travel.loungeNetworks.filter((k) => LOUNGE_NETWORK_KEYS.includes(k)) : [];
   /* v7c 1.6: lounges — "Let CardWise pick the best value" (auto) or "I'll

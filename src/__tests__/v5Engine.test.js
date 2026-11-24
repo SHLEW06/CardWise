@@ -1,5 +1,6 @@
 /* v5 engine (docs/REDESIGN_SPEC.md §3, §4; phase 2). The worked examples in
    §3.3, the fee-budget invariant, and the Altitude Go rule. */
+import { specialtyOptions } from "../engine/v5/specialty.js";
 import { describe, it, expect } from "vitest";
 import { BY_ID, CARDS } from "../data/cards/index.js";
 import { VAL } from "../data/valuations.js";
@@ -105,20 +106,20 @@ describe("worked example: Ritz-Carlton", () => {
   };
   it("is clearly positive for a Marriott flyer who wants lounges", () => {
     const v = cardValue(BY_ID.ritz, normalizeProfile(P));
-    /* v7c 5b: free night 2/3 of $629 = $419, lounges 1/8 of face */
-    expect(v.benefitValue - v.annualFee).toBeGreaterThan(300);
+    /* v7c 5b: free night 2/3 of $629 = $419, lounges 1/8 of face; v7f: the
+       Ritz / St. Regis property credit counts only for a hotel marked "I'd stay here" */
+    expect(v.benefitValue - v.annualFee).toBeGreaterThan(250);
     expect(v.benefits.find((b) => b.kind === "freeNight").value).toBe(419);
     expect(v.benefits.find((b) => b.kind === "freeNight")).toBeTruthy();
     expect(v.benefits.find((b) => b.kind === "lounge")).toBeTruthy();
   });
-  it("becomes Lounge card + Hotel keeper, as an upgrade path — not an application", () => {
+  it("v7f: a specialty card — never in the main recommendation; an upgrade path under Specialty options when the profile fits", () => {
     expect(slotsFilled(BY_ID.ritz, normalizeProfile(P))).toEqual(expect.arrayContaining(["lounge", "hotel:marriott"]));
-    const r = optimizeWallet(P);
-    const ritz = recommended(r).find((x) => x.cardId === "ritz");
-    expect(ritz).toBeTruthy();
-    expect(ritz.action).toBe("upgrade");
-    expect(ritz.upgradeFrom).toBe("marriott-boundless");
-    expect(ritz.roles).toEqual(expect.arrayContaining(["Lounge card", "Hotel keeper"]));
+    expect(recommended(optimizeWallet(P)).find((x) => x.cardId === "ritz")).toBeUndefined();
+    expect(specialtyOptions(P)).toEqual([]);                                  // doesn't travel with others / plan around credits
+    const fits = specialtyOptions({ ...P, travel: { ...P.travel, companions: 1, planCredits: true } });
+    expect(fits.map((o) => o.cardId)).toEqual(["ritz"]);
+    expect(fits[0].path).toEqual([expect.objectContaining({ how: "upgrade", cardId: "ritz", from: "marriott-boundless" })]);
   });
   it("is never offered to someone without a Chase Marriott card to upgrade", () => {
     const r = optimizeWallet({ ...P, cardsHeld: [] });

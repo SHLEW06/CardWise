@@ -38,6 +38,22 @@ export default function PlanTimeline({ profile, today }) {
           </li>
         ))}
       </ol>
+      {/* v7f Part 2: specialty cards — their own "How to get it" path */}
+      {r.specialty?.length > 0 && (
+        <div className="plan-specialty" data-testid="plan-specialty">
+          <h3 className="t-h3">Specialty: how to get it</h3>
+          <ol className="timeline">
+            {r.specialty.map((s, i) => (
+              <li key={`sp-${s.cardId}-${i}`} className="timeline-row plan-step" data-testid={`plan-specialty-${s.cardId}`}>
+                <span className="timeline-when">{s.window}</span>
+                <span className="timeline-name">{`${HOW[s.how] || "Wait"}: ${cardDisplayName(BY_ID[s.cardId])}`}</span>
+                <span className="t-caption plan-why">{s.why}</span>
+                {s.net !== 0 && <span className="num-ui plan-net">{signed(s.net)} a year</span>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }

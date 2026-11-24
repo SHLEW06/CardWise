@@ -17,6 +17,22 @@ import { nightlyBudget, CITY_HOTEL_BUDGET, DEFAULT_HOTEL_BUDGET } from "../../da
 
 export { HOTEL_PROPERTIES, HOTEL_DB_LOG };
 export const HOTEL_BY_ID = Object.fromEntries(HOTEL_PROPERTIES.map((h) => [h.id, h]));
+let BY_CITY = null;
+const byCity = () => (BY_CITY ||= HOTEL_PROPERTIES.reduce((m, h) => { (m[h.cityKey] ||= []).push(h); return m; }, {}));
+/** Which list the app is using: "research" (public build) or "lists" (dev, personal use). */
+export const HOTEL_SOURCE = { kind: "research", notes: [] };
+
+/** v7f (owner update): swap in the personal-use lists (dev server only). */
+export function useLocalHotels(local) {
+  if (!local?.properties?.length) return;
+  HOTEL_PROPERTIES.splice(0, HOTEL_PROPERTIES.length, ...local.properties);
+  for (const k of Object.keys(HOTEL_BY_ID)) delete HOTEL_BY_ID[k];
+  for (const h of HOTEL_PROPERTIES) HOTEL_BY_ID[h.id] = h;
+  BY_CITY = null;
+  Object.assign(HOTEL_DB_LOG, { properties: local.log.properties, counts: local.log.counts, listed: local.log.listed, both: local.log.both });
+  HOTEL_SOURCE.kind = "lists";
+  HOTEL_SOURCE.notes = local.log.sources.map((s) => s.note);
+}
 export const PROGRAM_CREDIT = { edit: 250, fhr: 300, thc: 300, selectHotels2026: 250 };
 export const PROGRAM_NAME = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", selectHotels2026: "Select Hotels (2026)" };
 export const TIER_NAME = { 1: "Upscale", 2: "Luxury", 3: "Ultra-luxury" };
@@ -68,4 +84,7 @@ export const markOf = (profile, id) => profile?.hotelMarks?.[id] || null;
 export const excluded = (profile, id) => ["expensive", "style"].includes(markOf(profile, id));
 
 /** Hotels in a destination that a program's credit can be used at. */
-export const eligibleIn = (dest, programs) => HOTEL_PROPERTIES.filter((h) => h.cityKey === dest && h.programs.some((p) => programs.includes(p)));
+export const eligibleIn = (dest, programs) => (byCity()[dest] || []).filter((h) => h.programs.some((p) => programs.includes(p)));
+
+/** "Check prices" — a plain Google Hotels link for that hotel and their dates (no scraping). */
+export const googleHotelsUrl = (h, checkin, checkout) => `https://www.google.com/travel/search?q=${encodeURIComponent(`${h.name} ${h.city}`)}${checkin ? `&checkin=${checkin}` : ""}${checkout ? `&checkout=${checkout}` : ""}`;

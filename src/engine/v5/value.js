@@ -30,6 +30,7 @@ import { loungeCoverage } from "../airportFit.js";
 import { TRUSTED_TRAVELER_YEARLY } from "../../data/perkChips.js";
 import { creditClass, spendThreshold } from "../../data/creditClass.js";
 import { hotelProgramValue, fhrBreakfastValue, applyNightBudget } from "./hotelCredits.js";
+import { HOTEL_BY_ID } from "./hotelDb.js";
 import { derivedRule, habitPools, habitCreditValue, poolCreditValue, HABIT_BY_KEY, habitOn, triesIfFree, habitSpend, creditDraws, poolsForCredit, creditPick, sharePools } from "../../data/perkHabits.js";
 import { PROGRAM_BASE_EARN } from "../../data/programBaseEarn.js";
 import { networkKey, LOUNGE_SITES } from "../../data/loungeLocations.js";
@@ -508,6 +509,12 @@ export function creditUsage(card, credit, profile) {
   if (rule.rule === "travel-broad") return fromPools(["flights", "hotels"], {}, "You don't travel");
   if (rule.rule === "hotel-brand") {
     const brand = travelBrandOf(card, credit);
+    /* v7f Part 2: the Ritz-Carlton / St. Regis property credit counts only for
+       those hotels the person marked "I'd stay here" in the Hotels tab. */
+    if (/ritz-carlton|st\. regis/i.test(credit.name)) {
+      const marked = Object.entries(profile.hotelMarks || {}).some(([id, m]) => m === "stay" && /ritz-carlton|st\. regis/i.test(HOTEL_BY_ID[id]?.name || ""));
+      return marked && nights >= 2 ? { factor: 1, reason: null } : { factor: 0, reason: "Counts only for Ritz-Carlton / St. Regis stays you marked \"I'd stay here\" in Hotels" };
+    }
     if (creditClass(credit) === "niche") return { factor: 0, reason: "Tied to one hotel brand's own properties — $0 unless you stay there" };
     if (brand && !pickedBrand(profile, brand)) return { factor: 0, reason: `You didn't pick ${brand}` };
     if (!nights) return { factor: 0, reason: "You rarely stay in hotels" };
@@ -624,7 +631,12 @@ export function loungeNetworks(card, profile) {
     const key = nk || n;
     /* "I'd love it if my card included it" keeps its reduced bundle value. */
     const bundle = profile.travel.lounges === "bundle" ? LOUNGE_BUNDLE_FACTOR : 1;
-    const val = loungeFace(n) * LOUNGE_FACE_SHARE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare) * bundle;
+    /* v7f Part 2: guests count only when they travel with others — up to the
+       card's free guests on that network (the Ritz: unlimited on Priority Pass) */
+    const companions = profile.travel.companions || 0;
+    const allow = nk === "prioritypass" ? (l.ppGuests ?? l.guests ?? 0) : (l.guests ?? 0);
+    const guests = companions > 0 ? Math.min(companions, allow === "unlimited" ? companions : allow) : 0;
+    const val = loungeFace(n) * LOUNGE_FACE_SHARE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare) * bundle * (1 + guests);
     out[key] = Math.max(out[key] || 0, val);
   }
   return out;

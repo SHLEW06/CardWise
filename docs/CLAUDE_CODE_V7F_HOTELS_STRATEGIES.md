@@ -40,6 +40,60 @@ Build `src/data/hotels/` with one record per property:
    it in `docs/THIRD_PARTY.md`, and cross-check a sample of 30 properties
    against the issuer pages.
 
+**Owner update (2026-11-23): use these existing lists.** Both are free
+lists of names and places. Neither has prices.
+- **awardhelper.com/fhr-hotels:** "All 3,407 properties in Amex Fine
+  Hotels + Resorts and The Hotel Collection", with name, city, program
+  (FHR/THC), an Amex link and a Maps link. It has a changelog.
+  - Its robots.txt allows all crawlers, and I found no terms of use.
+  - Import name, city, program and the Amex property URL from its page or
+    sitemap with a polite script (cache, at most 1 request every 2s).
+  - Attribute it in THIRD_PARTY.md and in the Hotels tab footer ("List
+    via AwardHelper").
+- **edithotelsearch.com:** the Chase Edit list, about 1,285 of about 1,371
+  listings. It says its data comes from Chase's public Edit listings and
+  that it's "built for personal use". It has no robots.txt or terms.
+  - **Prefer the same public Chase Edit listings it used.** Find them
+    (e.g. the JSON or pages behind Chase's public Edit hotel guides) and
+    build from those.
+  - Use edithotelsearch only to cross-check counts and fill gaps, with
+    attribution.
+- **quicktravelguides.com/the-edit-hotel-list/: the best source for The
+  Edit (owner pick).**
+  - **What it has:** 1,523 hotels in 92 countries, updated daily (as of
+    2026-11-23). Per hotel: name, brand, city, country, stars, and a
+    **typical nightly rate**: the median of about a year of forward Chase
+    Travel prices, fees included, for 2-night stays. Per-hotel pages add
+    month-by-month rates and the cheapest months per city. It flags
+    "likely double credit" (Select Hotels).
+  - **The terms:** © 2026 Quick Travel Guides. Its robots.txt allows
+    crawling (except wp-admin, `?p=` and oembed). Its footer links Terms
+    and Privacy pages, and a **"Hotel List API"** page with a contact form.
+  - **First:** read its Terms and API pages.
+    - **If the API allows use:** use the API, as its terms say, for the
+      Edit list and typical rates. Store each hotel's rate with
+      `source: "QTG typical (median, 2-night, fees incl.)"` and its date.
+      Prefer this over the nextcard snapshots wherever both exist.
+    - **If the terms forbid reuse or need permission:** don't scrape. Write
+      me a short request email to send through their contact form, and
+      use the other sources in the meantime.
+  - **Use their rate only as a planning figure,** labelled as such. Note
+    that the source itself says Chase Travel rates typically run 10–20%
+    above the hotel's own site.
+- **Before the public launch:** email the site owners to ask permission
+  to use their lists, and record the answers in THIRD_PARTY.md. Until then,
+  the database is for personal use: keep it out of the public Firebase build
+  (gitignore the generated file, like the card art), and fall back to
+  issuer-sourced records only.
+- **Neither has prices,** so 1b stays as written.
+  - Copy edithotelsearch's good idea: each hotel row gets a **"Check
+    prices"** link that opens Google Hotels for that hotel with my dates
+    filled in (a plain link, with no scraping of Google).
+  - Also add a link to the program's own page on Amex Travel or Chase
+    Travel.
+- **Dedupe** hotels that are in both Amex and Chase programs by name + city
+  + coordinates. Show all of a hotel's programs on one row.
+
 Write a build script, `scripts/build-hotel-db.mjs`, that:
 - caches what it fetches;
 - is polite (rate-limited);
@@ -90,6 +144,36 @@ Fill a separate price table, `hotelRates.json`, of
   - **"Value to you"**: the v7e formula, using my nightly budget in that
     city;
   - **three buttons: "I'd stay here" / "Too expensive" / "Not my style"**.
+- **Search for exact hotels** (owner, 2026-11-23: "prices tend to be quite
+  high"):
+  - One search box at the top of the Hotels tab. It matches hotel name,
+    chain, city, country and neighborhood, and is typo-tolerant
+    ("shangri la", "cordis hk").
+  - Results appear as you type, under 100ms on the full database.
+  - The search is keyboard-friendly: ↑/↓/Enter, and Esc clears it.
+- **Affordability first:**
+  - The default sort is **"Your cost after credit"**, low to high: the
+    realistic price × the minimum nights − the credit.
+  - A toggle **"Only hotels near my budget"** shows hotels whose realistic
+    price is ≤ my nightly budget + 25% (the cut-off is editable).
+  - Each row gets a plain label:
+    - **"Within budget"**: price ≤ budget;
+    - **"A bit over"**: up to +50%;
+    - **"Luxury splurge"**: more than +50%;
+    - **"No price yet"**.
+- **The empty state for an expensive city:** "No Edit/FHR/THC hotel in
+  Tokyo is near your $200 budget. The cheapest is The Strings at ~$330:
+  2 nights cost $660 − $250 credit = $410, vs $400 at your usual hotel."
+  Then list the 3 cheapest anyway.
+- **"Check prices" on every row:** the Google Hotels link with my dates,
+  plus the Amex/Chase link. "Save a price I saw" updates the realistic rate
+  for that hotel, for me.
+- **A saved shortlist:** hotels I marked "I'd stay here" are gathered in a
+  "My hotels" list per city. Credit values use these first.
+- **Tests:**
+  - Searching "cordis" finds Cordis Hong Kong.
+  - The sort by cost after credit is right for the research examples.
+  - The "near my budget" toggle hides a $500 hotel at a $200 budget.
 - **The "Hotel style" question,** in the survey and at the top of the
   explorer:
   - **"I just want the credit's value"** (the default): budget B = my

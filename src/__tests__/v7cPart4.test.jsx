@@ -164,9 +164,9 @@ describe("4.4 · generic credit chips are gone — worked out from other answers
     expect(valueOf("amex-plat", /airline fee credit/, {}, { travel: { trips: 4 } })).toBeGreaterThan(0);
     expect(valueOf("amex-plat", /airline fee credit/, {}, { travel: { trips: 0 } })).toBe(0);
   });
-  it("hotel-chain credit counts only if that chain is picked", () => {
+  it("the Ritz-Carlton / St. Regis property credit counts only for those hotels marked 'I'd stay here' (v7f)", () => {
     const P = { travel: { trips: 4, hotelNights: 8, hotelChoice: "manual" } };
-    expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["marriott"] } })).toBeGreaterThan(0);
+    expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["marriott"] } })).toBe(0);
     expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["hilton"] } })).toBe(0);
   });
   it("travel-site hotel credits: the formula decides, no yes/no (owner #10)", () => {

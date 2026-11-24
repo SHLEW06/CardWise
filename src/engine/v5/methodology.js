@@ -264,6 +264,9 @@ export function optimalWallet(rawProfile, options = {}) {
     const e = eligibility(c, profile);
     if (!e.ok) continue;
     if (filter && !filter(c) && !(mode === "wallet" && e.how === "held")) continue;
+    /* v7f Part 2: specialty cards never join the main recommendation (only a
+       held one stays); they're offered apart, when the profile fits. */
+    if (c.specialty && e.how !== "held") continue;
     elig[c.id] = e;
     pool.push(c);
   }
