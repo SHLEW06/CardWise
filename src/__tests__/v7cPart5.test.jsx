@@ -53,22 +53,18 @@ describe("5.2–5.3 · only free or easy credits count; niche / portal-tied $0 u
     expect(names.length).toBeGreaterThan(4);
     for (const c of names) expect(creditClass(c), c.name).toBe("niche");
   });
-  it("a portal credit is $0 unless its chip is picked", () => {
+  it("a travel-site credit counts what it saves at a 10% markup (owner #10: no gate)", () => {
     const stays = (p) => benefitBreakdown(BY_ID["delta-gold"], normalizeProfile(p)).items.find((i) => /Delta Stays/.test(i.label))?.value || 0;
-    expect(stays(FLYER)).toBe(0);
-    expect(stays({ ...FLYER, brands: { ...FLYER.brands, perksUse: ["hotel-portal"], perksSpend: ["portal hotels"] } })).toBeGreaterThan(0);
-    /* A non-hotel portal credit (Venture X's, as the data had it before the v7c audit flagged it unverified). */
-    const card = { ...BY_ID["venture-x"], credits: [{ ...BY_ID["venture-x"].credits[0], unverified: false }] };
-    const vx = (p) => benefitBreakdown(card, normalizeProfile(p)).items.find((i) => /Capital One Travel/.test(i.label))?.value || 0;
-    expect(vx(FLYER)).toBe(0);
-    expect(vx({ ...FLYER, brands: { ...FLYER.brands, perksUse: ["portal-travel"], perksSpend: ["portal travel"] } })).toBeGreaterThan(0);
+    expect(stays(FLYER)).toBeGreaterThan(0);
+    expect(stays(FLYER)).toBeLessThan(100);
+    expect(stays({ ...FLYER, travel: { ...FLYER.travel, portalMarkup: 0 } })).toBe(100);
   });
-  it("the optimizer never counts a spend-gated or unpicked portal credit", () => {
+  it("the optimizer never counts a spend-gated credit; travel-site credits only on the formula", () => {
     const r = optimalWallet(FLYER);
     for (const b of r.value.benefits) if (b.kind === "credit") {
       const cr = BY_ID[b.cardId].credits.find((x) => x.name === b.label);
       expect(creditClass(cr)).not.toBe("spend-gated");
-      if (cr.kind === "portal") expect(normalizeProfile(FLYER).brands.perksUse).toEqual(expect.arrayContaining(["hotel-portal"]));
+      if (cr.kind === "portal") expect(cr.hotelProgram, cr.name).toBeTruthy();
     }
   });
 });

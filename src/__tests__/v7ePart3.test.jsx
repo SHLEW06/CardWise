@@ -83,8 +83,8 @@ describe("3.3 · each credit's own rules", () => {
     expect(benefitBreakdown(BY_ID["amex-plat"], trip(["paris"], { hotelBudget: 700 })).items.find((i) => /breakfast/.test(i.label))).toBeUndefined();
     expect(b.extras.map((x) => x.label).join(" ")).toMatch(/upgrade/i);
   });
-  it("no credit counts without 'Yes' to booking through a card's travel site (v7c 4.4)", () => {
-    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), trip(["hongkong"], {}, { portalHotels: false })).value).toBe(0);
+  it("owner #10: no travel-site gate — the formula decides even without a 'Yes'", () => {
+    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), trip(["hongkong"], {}, { portalHotels: false })).value).toBe(376);
   });
 });
 
@@ -118,9 +118,8 @@ describe("3.1 / 3.5 · survey and card detail", () => {
     expect(within(box).getByLabelText("Nightly hotel budget: Hong Kong")).toHaveValue("190");
     fireEvent.change(within(box).getByLabelText("My usual hotel budget a night"), { target: { value: "200" } });
     expect(within(box).getByLabelText("Nightly hotel budget: Tokyo")).toHaveValue("200");
-    fireEvent.change(within(box).getByLabelText("Hotel nights per trip"), { target: { value: "3" } });
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-    expect(loadV5Profile().travel).toMatchObject({ hotelBudget: 200, nightsPerTrip: 3 });
+    expect(loadV5Profile().travel).toMatchObject({ hotelBudget: 200 });
   });
   it("card detail: 'Where you could use this' per destination, with the program link and data date", () => {
     render(<CardDetail cardId="amex-plat" profile={{ brands: { portalHotels: true }, travel: { hotelNights: 8, hotelBudget: 200, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "taipei", trips: 2 }] }] } }} onClose={() => {}} />);

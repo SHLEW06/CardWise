@@ -26,7 +26,7 @@ import { DESTINATIONS } from "../../data/routes.js";
 import { DEFAULT_NIGHTS_PER_TRIP, hotelNights } from "../profileDefaults.js";
 
 export const DEFAULT_PORTAL_MARKUP = 0.10;
-export const PROGRAM_LABEL = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection" };
+export const PROGRAM_LABEL = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", renowned: "Renowned Hotels and Resorts" };
 export const PROGRAM_SEARCH = {
   edit: "https://travelsecure.chase.com/",
   fhr: "https://www.americanexpress.com/en-us/travel/discover/fine-hotels-resorts/",
@@ -43,7 +43,9 @@ export function destinationsOf(profile) {
   const out = new Map();
   for (const a of profile.travel.airports || []) for (const d of a.destinations || []) {
     const prev = out.get(d.key);
-    out.set(d.key, { key: d.key, name: DESTINATIONS[d.key]?.name || d.name || d.key, trips: (prev?.trips || 0) + (d.trips || 0) });
+    const nights = (prev?.nightsTotal || 0) + (d.nights != null ? d.nights * (d.trips || 0) : 0);
+    const trips = (prev?.trips || 0) + (d.trips || 0);
+    out.set(d.key, { key: d.key, name: DESTINATIONS[d.key]?.name || d.name || d.key, trips, nightsTotal: nights, nightsPerTrip: nights > 0 && trips > 0 ? nights / trips : null });
   }
   if (!out.size && profile.travel.trips > 0) out.set("domestic", { key: "domestic", name: DESTINATIONS.domestic.name, trips: profile.travel.trips });
   return [...out.values()];
@@ -72,9 +74,10 @@ function bestUse(hp, C, profile, dests) {
   for (const d of dests) {
     const B = nightlyBudget(profile.travel, d.key);
     if (hp.anyHotel) {
-      const n = Math.max(hp.minNights || 1, per, 1);
+      const n = Math.max(hp.minNights || 1, Math.round(d.nightsPerTrip || per), 1);
       const P = B.value * (1 + markup);
-      const value = hotelCreditFormula({ C, n, P, B: B.value });
+      /* a minimum booking (Citi "$500+ stay"): only a stay that big qualifies */
+      const value = hp.minStay && n * P < hp.minStay ? 0 : hotelCreditFormula({ C, n, P, B: B.value });
       const row = { dest: d.key, name: d.name, hotel: "Any hotel on the card's travel site", program: "portal", rate: Math.round(P), budget: B.value, budgetBasis: B.basis, n, cost: Math.round(n * P), after: Math.max(0, Math.round(n * P - C)), value: Math.round(value) };
       rows.push(row);
       if (!best || row.value > best.value) best = row;
@@ -104,7 +107,8 @@ export function hotelProgramValue(card, credit, profile) {
   const hp = credit.hotelProgram;
   const C = hp.chunk || credit.annual;
   const count = hp.chunks || 1;
-  if (!profile.brands.portalHotels) return { value: 0, reason: "You'd rather not book through a card's travel site", chunks: [] };
+  /* Owner, 2026-11-23 (#10): no "book through a card's travel site?" gate —
+     the formula plus the person's hotel choices decide. */
   if (hp.onProperty && !profile.travel.onProperty) return { value: 0, reason: "An on-property credit (dining, spa): counts only if you'd spend that at the hotel anyway", chunks: [] };
   const dests = destinationsOf(profile);
   if (!dests.length || !(hotelNights(profile) > 0)) return { value: 0, reason: "No hotel stays in your trips", chunks: [] };

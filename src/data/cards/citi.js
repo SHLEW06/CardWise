@@ -86,7 +86,7 @@ export const CARDS = [
     id: "citi-strata", name: "Citi Strata Premier", issuer: "Citi", network: "MASTERCARD",
     annualFee: 95, currency: "Citi ThankYou", pointCurrency: "citi",
     earnRates: { Dining: 3, Groceries: 3, Gas: 3, EV: 3, Flights: 3, Hotels: 3, General: 1 }, portalMultipliers: { Hotels: 10, Car: 10 },
-    credits: [cred("$100 hotel benefit ($500+ stay on Citi Travel)", 100, "MEDIUM", "portal", "annual", { cls: "niche" })],
+    credits: [cred("$100 hotel benefit ($500+ stay on Citi Travel)", 100, "MEDIUM", "portal", "annual", { cls: "niche", hotelProgram: { anyHotel: true, chunk: 100, chunks: 1, minNights: 1, minStay: 500, periods: "stays" } })],
     benefits: ["3x across five everyday categories", "Transfers to ThankYou partners", "Strong Asia (EVA/Cathay) access"],
     transferAccess: ["citi"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],

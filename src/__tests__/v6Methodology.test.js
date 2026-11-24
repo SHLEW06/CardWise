@@ -337,7 +337,8 @@ describe("golden profiles", () => {
     expect(cardCpp(BY_ID["amex-gold"], normalizeProfile(p), r.wallet)).toBeCloseTo(1.45, 9);
   });
   it("4. Hyatt picker, $400 → World of Hyatt; Freedom points priced at transfer value beside a Sapphire", () => {
-    const p = { feeBudget: 400, spend: spend({ dining: 500, groceries: 500, other: 800 }), travel: { trips: 4, hotelNights: 10 }, brands: { hotels: ["hyatt"] } };
+    /* v7d: the fee cap is the optional fee limit (the old feeBudget is ignored since v7c) */
+    const p = { feeLimit: 400, spend: spend({ dining: 500, groceries: 500, other: 800 }), travel: { trips: 4, hotelNights: 10 }, brands: { hotels: ["hyatt"] } };
     const r = optimalWallet(p);
     expect(r.wallet).toContain("hyatt");
     const n = normalizeProfile(p);
@@ -386,15 +387,13 @@ describe("golden profiles", () => {
     const v = heldCardVerdicts({ cardsHeld: ["amex-plat"], travel: { trips: 0 } })[0];
     expect(["cancel", "downgrade"]).toContain(v.action);
   });
-  it("8. portal-tied split hotel credits: $0 by default, > 0 after 'Yes' to booking through a card's travel site", () => {
+  it("8. hotel-program credits: the formula at their budget decides (owner #10: no travel-site gate)", () => {
     const csr = BY_ID.csr;
-    /* v7e Part 3: valued at hotels in their destinations (Shanghai has Edit prices) */
-    const p = { travel: { hotelNights: 6, hotelBudget: 300, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };   // $300 a night anyway
-    const before = benefitBreakdown(csr, normalizeProfile(p));
-    expect(before.items.find((i) => /The Edit/.test(i.label))).toBeUndefined();
-    expect(before.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/travel site/);
-    const after = benefitBreakdown(csr, normalizeProfile({ ...p, brands: { portalHotels: true } }));
-    expect(after.items.find((i) => /The Edit/.test(i.label)).value).toBeGreaterThan(0);
+    const trip = (budget) => ({ travel: { hotelNights: 6, hotelBudget: budget, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } });
+    const low = benefitBreakdown(csr, normalizeProfile(trip(130)));
+    expect(low.items.find((i) => /The Edit/.test(i.label))).toBeUndefined();
+    expect(low.unused.find((i) => /The Edit/.test(i.label)).reason).toMatch(/cost more than your/);
+    expect(benefitBreakdown(csr, normalizeProfile(trip(300))).items.find((i) => /The Edit/.test(i.label)).value).toBeGreaterThan(0);
   });
 });
 

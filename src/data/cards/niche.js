@@ -53,7 +53,7 @@ export const CARDS = [
   card({ id: "bilt-obsidian", name: "Bilt Obsidian", issuer: "Bilt", network: "MASTERCARD",
     annualFee: 95, currency: "Bilt Points", pointCurrency: "bilt",
     earnRates: { Dining: 3, Travel: 2, Rent: 1, General: 1 },
-    credits: [cred("$100 Bilt Travel hotel credit (2 × $50)", 100, "MEDIUM", "portal", "semiannual")],
+    credits: [cred("$100 Bilt Travel hotel credit (2 × $50)", 100, "MEDIUM", "portal", "semiannual", { hotelProgram: { anyHotel: true, chunk: 50, chunks: 2, minNights: 2, periods: "half" } })],
     transferAccess: ["bilt"], tags: ["renter", "travel", "flexible", "food"], beginner: 6, complexity: 4,
     why: "Bilt's mid tier: 3x dining or groceries (groceries up to $25k) plus rent points.",
     verifiedAt: VERIFIED, verifiedSource: "https://www.bilt.com/card",
@@ -63,7 +63,7 @@ export const CARDS = [
     annualFee: 495, currency: "Bilt Points", pointCurrency: "bilt",
     earnRates: { Travel: 2, Rent: 1, General: 2 },
     credits: [
-      cred("$400 Bilt Travel hotel credit (2 × $200)", 400, "MEDIUM", "portal", "semiannual"),
+      cred("$400 Bilt Travel hotel credit (2 × $200)", 400, "MEDIUM", "portal", "semiannual", { hotelProgram: { anyHotel: true, chunk: 200, chunks: 2, minNights: 2, periods: "half" } }),
       cred("$200 Bilt Cash each year", 200, "MEDIUM", "merchant", "annual"),
     ],
     loungeAccess: { networks: ["Priority Pass"], estAnnual: 200, use: "MEDIUM", type: "Priority Pass" },

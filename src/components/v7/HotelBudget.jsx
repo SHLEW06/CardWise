@@ -40,9 +40,7 @@ export default function HotelBudget({ n, t, setTravel }) {
           );
         })}
       </ul>
-      <label className="habit-adjust t-caption">Hotel nights per trip
-        <input inputMode="numeric" aria-label="Hotel nights per trip" value={t.nightsPerTrip ?? DEFAULT_NIGHTS_PER_TRIP} className={t.nightsPerTrip ? "is-own" : "is-estimate"} onChange={(e) => setTravel({ nightsPerTrip: num(e.target.value) })} />
-      </label>
+      {/* Owner #9: hotel nights are entered per trip row above. */}
       <p className="t-caption" id="q-months">Which months do you usually travel? <span className="habit-tag">(optional — otherwise spread evenly)</span></p>
       <div className="chip-wrap" role="group" aria-labelledby="q-months">
         {MONTHS.map((m, i) => <Choice key={m} pill selected={months.includes(i + 1)} onSelect={() => toggleMonth(i + 1)}>{m}</Choice>)}

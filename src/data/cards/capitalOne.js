@@ -36,7 +36,7 @@ export const CARDS = [
        no longer shows the $300 Capital One Travel credit, the 10,000
        anniversary miles, rental car or trip cover, or lounge access for
        authorized users — kept, marked unverified, counted $0. */
-    credits: [cred("$300 Capital One Travel credit", 300, "MEDIUM", "portal", "annual", { cls: "niche", unverified: true })],
+    credits: [cred("$300 Capital One Travel credit", 300, "MEDIUM", "portal", "annual", { cls: "niche", unverified: true, hotelProgram: { anyHotel: true, chunk: 300, chunks: 1, minNights: 1, periods: "stays" } })],
     benefits: ["2x everywhere", "10x hotels and rental cars, 5x flights and vacation rentals on Capital One Travel", "5x Capital One Entertainment", "Capital One Lounges + Priority Pass (primary cardholder)", "Cell phone protection (up to $800)", "Premier Collection $100 / Lifestyle Collection $50 experience credit per stay", "Hertz Gold+ status upgrade"],
     transferAccess: ["c1"], loungeAccess: { networks: ["Capital One Lounge", "Priority Pass"], estAnnual: 250, use: "MEDIUM", type: "Capital One + Priority Pass" },
     hotelStatus: { program: "hilton/wyndham", tier: "via Premier Collection", estValue: 0 }, airlineStatus: null,
@@ -207,7 +207,7 @@ export const CARDS = [
   card({ id: "venture-x-business", name: "Venture X Business", issuer: "Capital One", network: "VISA",
     annualFee: 395, currency: "Capital One Miles", pointCurrency: "c1", cardType: "business",
     earnRates: { General: 2 }, portalMultipliers: { Hotels: 10, Car: 10, Flights: 5 },
-    credits: [cred("$300 Capital One Business Travel credit", 300, "MEDIUM", "portal", "annual"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr")],
+    credits: [cred("$300 Capital One Business Travel credit", 300, "MEDIUM", "portal", "annual", { hotelProgram: { anyHotel: true, chunk: 300, chunks: 1, minNights: 1, periods: "stays" } }), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr")],
     tags: ["business", "travel", "premium", "lounge"], beginner: 4, complexity: 5,
     why: "Venture X for businesses: 2x everywhere and a $300 travel credit.",
     verifiedAt: VERIFIED, verifiedSource: "https://www.capitalone.com/small-business/credit-cards/",
@@ -215,7 +215,7 @@ export const CARDS = [
   card({ id: "venture-business", name: "Venture Business", issuer: "Capital One", network: "VISA",
     annualFee: 95, currency: "Capital One Miles", pointCurrency: "c1", cardType: "business",
     earnRates: { General: 2 }, portalMultipliers: { Hotels: 5, Car: 5 },
-    credits: [cred("$50 travel credit", 50, "MEDIUM", "portal", "annual"), cred("$50 advertising / software credit", 50, "MEDIUM", "merchant", "annual"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr")],
+    credits: [cred("$50 travel credit", 50, "MEDIUM", "portal", "annual", { hotelProgram: { anyHotel: true, chunk: 50, chunks: 1, minNights: 1, periods: "stays" } }), cred("$50 advertising / software credit", 50, "MEDIUM", "merchant", "annual"), cred("Global Entry / TSA PreCheck ($120 every 4 years)", 24, "EASY", "membership", "4yr")],
     tags: ["business", "travel"], beginner: 5, complexity: 4,
     why: "2x miles for businesses at $95.",
     verifiedAt: VERIFIED, verifiedSource: "https://www.capitalone.com/small-business/credit-cards/",

@@ -63,7 +63,7 @@ describe("3.1–3.4 · trips step", () => {
     expect(screen.getAllByRole("radiogroup", { name: "Checked bags per trip" })).toHaveLength(1);
     cont();
     const p = normalizeProfile(loadV5Profile());
-    expect(p.travel.tripRows).toEqual([{ from: "NYC", to: "c:Tokyo, Japan", trips: 1, cabin: "business", work: true, airline: null }]);
+    expect(p.travel.tripRows).toEqual([{ from: "NYC", to: "c:Tokyo, Japan", trips: 1, cabin: "business", work: true, airline: null, nights: null }]);
     expect(p.travel).toMatchObject({ trips: 1, homeAirport: "JFK", intlShare: 1, cabin: "business" });
   });
   it("one-tap suggestions of common routes from airports already entered", () => {

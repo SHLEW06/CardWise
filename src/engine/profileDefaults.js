@@ -41,16 +41,16 @@ export const NEW_CARD_BUCKETS = { "0": 0, "1-2": 2, "3-4": 4, "5+": 5 };
 export const SPEND_CATEGORIES = [
   "dining", "groceries", "warehouse", "gas", "ev",
   "transit", "flights", "hotels", "rentals", "streaming", "drugstores", "online",
-  "rent", "phone", "other",
+  "rent", "phone", "other", "tickets",
 ];
 
 /* Monthly presets. "typical" is the default for anyone who skips. Travel
    rows default to what the trip count implies (see annualSpend). Modeling
    defaults, not card data. */
 export const SPEND_PRESETS = {
-  light:   { dining: 150, groceries: 300, warehouse: 0, gas: 60, ev: 0, transit: 30, flights: 0, hotels: 0, rentals: 0, streaming: 25, drugstores: 20, online: 100, rent: 0, phone: 100, other: 200 },
-  typical: { dining: 350, groceries: 500, warehouse: 0, gas: 120, ev: 0, transit: 60, flights: 0, hotels: 0, rentals: 0, streaming: 40, drugstores: 30, online: 250, rent: 0, phone: 160, other: 400 },
-  heavy:   { dining: 700, groceries: 800, warehouse: 150, gas: 250, ev: 0, transit: 120, flights: 0, hotels: 0, rentals: 0, streaming: 70, drugstores: 60, online: 500, rent: 0, phone: 250, other: 900 },
+  light:   { dining: 150, groceries: 300, warehouse: 0, gas: 60, ev: 0, transit: 30, flights: 0, hotels: 0, rentals: 0, streaming: 25, drugstores: 20, online: 100, rent: 0, phone: 100, other: 200, tickets: 0 },
+  typical: { dining: 350, groceries: 500, warehouse: 0, gas: 120, ev: 0, transit: 60, flights: 0, hotels: 0, rentals: 0, streaming: 40, drugstores: 30, online: 250, rent: 0, phone: 160, other: 400, tickets: 0 },
+  heavy:   { dining: 700, groceries: 800, warehouse: 150, gas: 250, ev: 0, transit: 120, flights: 0, hotels: 0, rentals: 0, streaming: 70, drugstores: 60, online: 500, rent: 0, phone: 250, other: 900, tickets: 0 },
 };
 
 /* When flights/hotels spend isn't given, it's implied by trips: one round
@@ -178,7 +178,7 @@ export function normalizeProfile(p = {}) {
     code: String(a?.code || "").toUpperCase(),
     trips: num(a?.trips),
     work: !!a?.work,
-    destinations: Array.isArray(a?.destinations) ? a.destinations.filter((x) => DESTINATIONS[x?.key]).map((x) => ({ key: x.key, trips: num(x.trips), ...(x.from ? { from: String(x.from).toUpperCase() } : {}) })) : [],
+    destinations: Array.isArray(a?.destinations) ? a.destinations.filter((x) => DESTINATIONS[x?.key]).map((x) => ({ key: x.key, trips: num(x.trips), ...(x.from ? { from: String(x.from).toUpperCase() } : {}), ...(Number.isFinite(Number(x.nights)) && x.nights !== null && x.nights !== "" ? { nights: Math.max(0, Math.round(Number(x.nights))) } : {}) })) : [],
   })).filter((a) => a.code) : [];
   /* v7c Part 3: trips replace the airport steps. Each row is one route the
      person flies: from (airport or metro) → to (airport, metro, city or
@@ -194,6 +194,8 @@ export function normalizeProfile(p = {}) {
     cabin: CABINS.includes(r?.cabin) && r.cabin !== "mixed" ? r.cabin : null,
     work: !!r?.work,
     airline: r?.airline ? String(r.airline).toLowerCase() : null,
+    /* Owner, 2026-11-23 (#9): hotel nights per trip on each row */
+    nights: Number.isFinite(Number(r?.nights)) && r?.nights !== null && r?.nights !== "" ? Math.max(0, Math.round(Number(r.nights))) : null,
   })).filter((r) => knownPlace(r.from) && knownPlace(r.to) && r.from !== r.to);
   if (travel.tripRows.length) {
     /* Derived home airports (the shape hotels, lounges and older screens read). */
@@ -204,8 +206,10 @@ export function normalizeProfile(p = {}) {
       h.work = h.work || r.work;
       const key = destKeyOf(r.to) || r.to;
       const d = h.destinations.find((x) => x.key === key);
-      if (d) d.trips += r.trips;
-      else h.destinations.push({ key, trips: r.trips, name: placeShort(r.to), intl: isIntl(r.to) });
+      if (d) {
+        if (r.nights != null) d.nights = ((d.nights ?? 0) * d.trips + r.nights * r.trips) / Math.max(1, d.trips + r.trips);
+        d.trips += r.trips;
+      } else h.destinations.push({ key, trips: r.trips, name: placeShort(r.to), intl: isIntl(r.to), ...(r.nights != null ? { nights: r.nights } : {}) });
     }
     travel.airports = Object.values(homes).sort((a, b) => b.trips - a.trips);
     const all = travel.tripRows.reduce((t, r) => t + r.trips, 0);
@@ -237,6 +241,12 @@ export function normalizeProfile(p = {}) {
      alone → independent; beside brands → a mix. */
   const hadIndependent = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).includes("independent");
   travel.stayStyle = STAY_STYLE_KEYS.includes(travel.stayStyle) ? travel.stayStyle : hadIndependent ? (realHotels.length ? "mix" : "independent") : null;
+  /* Owner, 2026-11-23 (#9): when trips carry their hotel nights, hotel nights
+     a year = what they entered (Σ trips × nights). */
+  {
+    const withNights = (travel.airports || []).flatMap((a) => a.destinations || []).filter((d) => d.nights != null);
+    if (withNights.length) travel.hotelNights = Math.round((travel.airports || []).flatMap((a) => a.destinations || []).reduce((t, d) => t + (d.nights != null ? d.nights * d.trips : 0), 0));
+  }
   /* v7e Part 3: what they'd pay for hotels anyway (estimates until they type). */
   const pos = (x) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Math.round(Number(x)) : null);
   travel.hotelBudget = pos(travel.hotelBudget);
@@ -363,6 +373,10 @@ export function normalizeProfile(p = {}) {
         const habits = {};
         const saved = migrateTicketHabits(p.brands?.habits && typeof p.brands.habits === "object" ? p.brands.habits : {});
         for (const h of HABITS) { const a = cleanHabit(h, saved[h.key]); if (a) habits[h.key] = a; }
+        /* Owner, 2026-11-23 (#8): ticket spending is a line in the spending step;
+           the tickets row reads it (an older answer seeds it once). */
+        if (spendYear.tickets > 0) habits.tickets = { ...(habits.tickets || { apps: ["any"], us: true }), spend: spendYear.tickets };
+        else if (habits.tickets?.spend > 0) { spendYear.tickets = habits.tickets.spend; spend.tickets = habits.tickets.spend / 12; }
         const implied = chipsFromHabits(habits);
         const extra = habitsFromChips(strong.filter((k) => !implied.perks.includes(k)), weak.filter((k) => !implied.perks.includes(k) && !implied.perksMaybe.includes(k)));
         for (const [k, a] of Object.entries(extra)) if (!habits[k]) habits[k] = cleanHabit(HABIT_BY_KEY[k], a);

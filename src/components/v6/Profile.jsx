@@ -40,7 +40,6 @@ export function answerSummaries(p) {
     { step: "brands", title: "Card perks", value: (() => {
       /* v7c Part 4: the habit answers in plain words. */
       const rows = HABITS.map((h) => habitSummary(h, p.brands.habits?.[h.key])).filter(Boolean);
-      if (p.brands.portalHotels) rows.push("Would book through a card's travel site");
       return rows.length ? rows.join(" · ") : "None picked";
     })() },
     { step: "fee", title: "Memberships", value: p.memberships.length ? p.memberships.join(", ") : "None" },

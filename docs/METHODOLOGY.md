@@ -643,7 +643,8 @@ the Sapphire Preferred's Chase Travel credit — is valued with
   else lowest × 1.25 — never the lowest alone. A city with no data counts $0.
 - **n** — max(the program's minimum nights, the hotel's, 1).
 - **Any-hotel portals** (Delta Stays, Chase Travel): P = B × (1 + markup),
-  markup 10% by default and editable — value = C − markup × the stay.
+  markup 10% by default and editable — value = C − markup × the stay; the
+  stay is the destination's hotel nights per trip (owner #9).
 - **Timing:** semiannual credits (Platinum $300 + $300) count the second
   half only with hotel nights in both halves of the year (their months, or
   spread evenly); each Edit credit needs its own 2-night stay (one per trip).
@@ -654,7 +655,7 @@ the Sapphire Preferred's Chase Travel credit — is valued with
   hotel nights from the trips step (`applyNightBudget`, per card and across
   the wallet). The highest-value uses get nights first; the rest count $0:
   "You have ~4 hotel nights a year; these need 7. …".
-- The v7c portal yes/no still gates all of these (No = $0).
+- No yes/no gate (owner #10, 2026-11-23): the formula and their hotel choices decide.
 
 ## 10. Your benefits checklist (v7e Part 4)
 

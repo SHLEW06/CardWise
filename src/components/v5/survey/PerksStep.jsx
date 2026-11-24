@@ -307,15 +307,8 @@ export default function PerksStep({ d, set, headRef }) {
           )}
         </fieldset>
       ))}
-      <fieldset className="survey-group" data-testid="portal-hotels">
-        <legend className="t-h3" id="q-portal">Would you book hotels or trips through a card's travel site to get money back?</legend>
-        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-portal">
-          <Choice radio pill selected={!d.brands.portalHotels} onSelect={() => setBrands({ portalHotels: false })}>No</Choice>
-          <Choice radio pill selected={!!d.brands.portalHotels} onSelect={() => setBrands({ portalHotels: true })}>Yes</Choice>
-        </div>
-        <p className="t-caption">Chase Travel, Amex Fine Hotels + Resorts, The Edit, Delta Stays and others pay back part of a booking made on their own site, often at higher prices than booking direct.</p>
-        <p className="t-caption habit-givers">{giversLine(portalGivers())}</p>
-      </fieldset>
+      {/* Owner, 2026-11-23 (#10): no "book through a card's travel site?" question —
+          hotel credits use the formula and the person's hotel choices. */}
       <p className="t-caption">Travel perks (bags, airline fees, money back on travel, hotel-chain perks) come from your trips and hotel answers, so they aren't asked here.</p>
       <section className="perk-section" aria-labelledby="perks-c">
         <h2 className="t-h3" id="perks-c">Your cards already give you</h2>

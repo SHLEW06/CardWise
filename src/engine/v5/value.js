@@ -213,11 +213,9 @@ export function buckets(profile) {
   const costcoShare = profile.gasAt === "costco" ? 1 : profile.gasAt === "both" ? 0.5 : 0;
   out.gas = a.gas * (1 - costcoShare);
   out.gasCostco = a.gas * costcoShare;
-  /* v7d Part 5: event tickets get their own bucket, taken out of
-     "everything else" (the spending step has no ticket question). */
-  const t = profile.brands?.habits?.tickets;
-  const tickets = t ? habitSpend(HABIT_BY_KEY.tickets, t).yearly : 0;
-  if (tickets > 0) { out.tickets = tickets; out.other = Math.max(0, (out.other || 0) - tickets); }
+  /* Owner, 2026-11-23 (#8): tickets are their own line in the spending step
+     (no longer taken out of "everything else"). */
+  if (!(out.tickets > 0)) delete out.tickets;
   return out;
 }
 

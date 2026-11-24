@@ -27,6 +27,7 @@ export const SPEND_ROWS = [
   { key: "online", label: "Online shopping", group: "everyday", quick: true },
   { key: "drugstores", label: "Drugstores", group: "everyday" },
   { key: "streaming", label: "Streaming", group: "everyday" },
+  { key: "tickets", label: "Tickets & events (concerts, sports, shows)", group: "everyday" },
   { key: "transit", label: "Rideshare and transit", group: "travel" },
   { key: "flights", label: "Flights", group: "travel" },
   { key: "hotels", label: "Hotels", group: "travel" },

@@ -168,19 +168,14 @@ describe("4.4 · generic credit chips are gone — worked out from other answers
     expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["marriott"] } })).toBeGreaterThan(0);
     expect(valueOf("ritz", /hotel credit on 2\+ night/, {}, { ...P, brands: { hotels: ["hilton"] } })).toBe(0);
   });
-  it("portal-tied hotel credits: one yes/no, No by default = $0 for all of them", () => {
-    /* v7e Part 3: destinations with hotel price data (Hong Kong THC / FHR, Shanghai Edit) */
-    const P = { travel: { hotelNights: 6, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };
-    expect(normalizeProfile({}).brands.portalHotels).toBe(false);
-    for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["united-quest", /Renowned/], ["amex-plat", /Fine Hotels/]]) {
-      expect(valueOf(id, re, {}, P), id).toBe(0);
-      expect(valueOf(id, re, {}, { ...P, brands: { portalHotels: true } }), id).toBeGreaterThan(0);
-    }
+  it("travel-site hotel credits: the formula decides, no yes/no (owner #10)", () => {
+    const P = { travel: { hotelNights: 6, hotelBudget: 300, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };
+    for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["amex-plat", /Fine Hotels/]]) expect(valueOf(id, re, {}, P), id).toBeGreaterThan(0);
+    expect(valueOf("united-quest", /Renowned/, {}, P)).toBe(0);      // no price data for Renowned Hotels
   });
-  it("the step shows the yes/no question and no travel-credit chips", () => {
+  it("the step has no travel-site question and no travel-credit chips", () => {
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
-    const q = screen.getByTestId("portal-hotels");
-    expect(within(q).getByRole("radio", { name: "No" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByTestId("portal-hotels")).toBeNull();
     expect(screen.queryByText(/Airline incidental|Hotel credit|Travel credit \(any/)).toBeNull();
   });
 });

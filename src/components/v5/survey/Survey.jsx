@@ -411,6 +411,11 @@ function TripRow({ row, route, onChange, onRemove }) {
             {CABIN_ROW.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
           </select>
         </label>
+        {/* Owner, 2026-11-23 (#9): hotel nights per trip; hotel nights a year follow */}
+        <label className="field"><span className="t-caption">Hotel nights</span>
+          <input className="trip-nights" inputMode="numeric" aria-label={`Hotel nights per trip, ${name}`} value={row.nights ?? ""} placeholder="—"
+            onChange={(e) => { const n = parseInt(String(e.target.value).replace(/\D/g, ""), 10); onChange({ nights: Number.isFinite(n) ? n : null }); }} />
+        </label>
         <Choice pill selected={!!row.work} onSelect={() => onChange({ work: !row.work })} aria-label={`I fly for work, ${name}`}>I fly for work</Choice>
         <button type="button" className="link" onClick={onRemove} aria-label={`Remove ${name}`}>Remove</button>
       </div>
@@ -560,9 +565,13 @@ function TravelStep({ d, set, mode, headRef }) {
       )}
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-nights">Paid hotel nights a year</legend>
-        <div className="chip-wrap" role="radiogroup" aria-labelledby="q-nights">
-          {NIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={nights === o.key} onSelect={() => setTravel({ hotelNights: o.key })}>{o.label}</Choice>)}
-        </div>
+        {rows.some((r) => r.nights != null) ? (
+          <p className="t-caption" data-testid="nights-from-trips">{n.travel.hotelNights} nights a year, from the hotel nights on your trips.</p>
+        ) : (
+          <div className="chip-wrap" role="radiogroup" aria-labelledby="q-nights">
+            {NIGHT_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={nights === o.key} onSelect={() => setTravel({ hotelNights: o.key })}>{o.label}</Choice>)}
+          </div>
+        )}
       </fieldset>
       <HotelQuestions d={d} n={n} t={t} set={set} setTravel={setTravel} />
       {nights > 0 && <HotelBudget n={n} t={t} setTravel={setTravel} />}

@@ -41,7 +41,7 @@ describe("4.4 niche / portal-tied credits count $0 unless picked", () => {
     const items = benefitBreakdown(BY_ID["united-quest"], p).items.map((i) => i.label).join(" | ");
     expect(items).not.toMatch(/Renowned|JSX/);
     const picked = benefitBreakdown(BY_ID["united-quest"], normalizeProfile({ ...p, brands: { ...p.brands, perks: ["renowned", "jsx"] } })).items.map((i) => i.label).join(" | ");
-    expect(picked).toMatch(/Renowned/);
+    expect(picked).not.toMatch(/Renowned/);     // v7e: valued on hotel prices — none on file for Renowned Hotels → $0
     expect(picked).toMatch(/JSX/);
   });
 });

@@ -89,3 +89,6 @@
 .v5 .bc-totals { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 22px; margin: 10px 0; }
 .v5 .bc-totals dt { color: var(--ink-3, #9C988F); font-size: .85em; }
 .v5 .wc-group { margin-top: 14px; }
+
+/* owner #9: hotel nights per trip row */
+.v5 .trip-nights { width: 4em; padding: 6px 8px; border: 1px solid var(--hair); border-radius: 8px; background: transparent; color: inherit; font: inherit; }

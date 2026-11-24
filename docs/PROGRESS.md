@@ -2097,6 +2097,40 @@ checked like the first 40 (colour, finish, pattern, chip, accent, program,
 portrait), so all 114 photographed cards carry an accent motif; long program
 text and the swoosh's position fixed (`docs/DESIGN_REVIEW.md` round 4).
 
+## Owner answers, 2026-11-23 (after v7e)
+
+- **#2** Spend-gated free-night certificates count $0, under "Unlocks with
+  spending". *Already the rule since the v7c answer (2026-11-22); now pinned
+  by a test over every card with one.*
+- **#7** TakeOff 15 at ≥ 70% of trips: OK, unchanged.
+- **#8** Ticket spending is a **"Tickets & events" line in the spending step**
+  (`SPEND_CATEGORIES` + `SPEND_ROWS`), not taken out of "everything else".
+  The tickets perk row reads the same number; an older tickets answer seeds
+  the line once.
+- **#9** **Hotel nights per trip on each trip row**; hotel nights a year =
+  Σ trips × nights entered (the "Paid hotel nights a year" chips show only
+  when no row has nights). Each destination's nights set the stay length for
+  "any hotel" credits.
+- **#10** **No "book through a card's travel site?" question or gate.** Every
+  hotel / travel-site credit is on the v7e formula (now also United Hotels,
+  Renowned Hotels — no price data, so $0 —, Capital One Travel, Citi Travel
+  $100 on a $500+ stay, Bilt Travel). Hotel choices from the Hotels tab (v7f)
+  join the formula.
+
+**Owner's profile re-run** (as in v7e Part 6; 3 hotel nights per trip — 21 a
+year, close to the 20 before; the travel-site answer no longer matters).
+Before = v7e with "Yes" to travel sites:
+- Held wallet: N +$463 → **+$466**.
+- Best wallet: N +$937 → **+$920**: Delta Gold, Robinhood Gold, **Amex
+  Platinum**, Bonvoy Boundless, World of Hyatt (+ Freedom Unlimited) — the
+  Platinum replaces the United Explorer.
+- **Plan:** Bonvoy Boundless (Nov 2026) → World of Hyatt (May 2027) → **Amex
+  Platinum (Nov 2027)**; Discover it later.
+- Sapphire Reserve −$43 → **−$139** (its Priority Pass now goes to the
+  Platinum's lounges in the best wallet); Platinum −$95 → **+$67** (Yes);
+  Strata Elite −$210 → **−$266**; Amex Gold −$155 → **−$113**.
+- Tests: `ownerAnswers2026-11-23.test.jsx` (6); gate-era tests rewritten.
+
 ## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
