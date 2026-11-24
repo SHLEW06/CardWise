@@ -175,7 +175,7 @@ export const CARDS = [
     annualFee: 595, currency: "Citi ThankYou", pointCurrency: "citi",
     earnRates: { Dining: 3, General: 1.5 }, portalMultipliers: { Hotels: 12, Car: 12, Flights: 6 },
     credits: [
-      cred("$300 hotel benefit (2+ night stay on Citi Travel)", 300, "MEDIUM", "portal", "annual", { cls: "niche" }),
+      cred("$300 hotel benefit (2+ night stay on Citi Travel)", 300, "MEDIUM", "portal", "annual", { cls: "niche", hotelProgram: { anyHotel: true, chunk: 300, chunks: 1, minNights: 2, periods: "stays" } }),
       cred("$200 Splurge credit (pick 2: American Airlines, Best Buy, Live Nation, 1stDibs, Future)", 200, "MEDIUM", "merchant", "annual", { cls: "easy", pick: 2,
         /* Live Nation = livenation.com / ticketmaster.com, U.S. events, not third-party resale */
         draws: [{ habit: "tickets", app: "ticketmaster", usOnly: true }, { habit: "bestbuy" }, { habit: "1stdibs" }, { habit: "future" }, { pool: "flightson:aa" }] }),

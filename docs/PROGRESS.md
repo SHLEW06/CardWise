@@ -2053,10 +2053,44 @@ disagrees with the research file, the page wins:
 - Tests: `v7cPart4` updated (the Preferred's promo no longer pays for
   takeout).
 
-**Not done yet (usage limit):** v7e Part 6 — acceptance re-run, the owner's
-before → after numbers and the card landing report.
+## v7e Part 6 · acceptance re-run and report (2026-11-23)
 
-## Questions for the owner (v7c, v7d)
+- Found while running the owner's numbers, fixed: the Strata Elite's "$300
+  hotel benefit (2+ night stay on Citi Travel)" still counted at face; it now
+  uses the same any-hotel formula (2 nights at the city budget + 10% →
+  $260).
+- `docs/ACCEPTANCE_REPORT.md` re-checked for C10–C12, C18, C19, E2, E10,
+  E14, F6, G3, I2. No status changed. 1,715 tests; build OK.
+
+**Owner's profile, before (v7d + card fix) → after (v7e)** — Freedom
+Unlimited, Robinhood Gold, Delta Gold; Light spending; $200 a night; trips to
+Hong Kong, Shanghai, Taipei, Tokyo and Rome ("Italy"); "Yes" to booking
+through a card's travel site; one $300 concert a year (any site); lululemon
+$200 over 2 purchases; takeout monthly, Uber a few times, Dunkin' a few times,
+Peacock paid, Global Entry:
+- Held wallet: N +$503 → **+$463** (Delta Stays $100 → $60: 10% travel-site
+  markup on a 2-night stay).
+- Best from wallet: N +$1,707 → **+$937**; Sapphire Reserve out, World of
+  Hyatt in (Delta Gold, Robinhood Gold, United Explorer, Bonvoy Boundless,
+  World of Hyatt, + Freedom Unlimited).
+- Plan: Reserve now → **United Explorer (Nov 2026), Boundless (May 2027),
+  World of Hyatt (Nov 2027)**; Bilt Palladium later.
+- **Sapphire Reserve** +$760 → **−$43** (No): travel credit $300 · DoorDash
+  $15 promo $180 (was the full $420) · StubHub $150 (one purchase, one
+  half-year; was $273) · The Edit $88 (was $500: the cheapest Edit hotels in
+  your cities cost more than $200 a night — Shanghai Kimpton ~$303 → $44 a
+  stay, ×2) · Priority Pass $35.
+- **Amex Platinum** −$57 → **−$95** (No): FHR/THC $376 (Hong Kong Cordis
+  ~$256 → $188 a half-year, ×2; was $600) · Uber Cash $200 · lululemon $150
+  (2 purchases, 2 quarters) · digital entertainment $132 · Centurion $35.
+- **Citi Strata Elite** −$394 → **−$210** (No): Citi Travel hotel $260 · Splurge
+  $200 (Live Nation for the $300 concert) · Priority Pass $35 · Global Entry
+  $24.
+- **Amex Gold** −$334 → **−$155** (No): dining credit $120 · Uber Cash $120 ·
+  Dunkin' $21 (its THC $100 is $0: you didn't say you'd spend $100 at the
+  hotel).
+
+## Questions for the owner (v7c, v7d, v7e)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
    you see them on your account / statement? (The Visa Infinite benefits PDF
@@ -2082,3 +2116,8 @@ before → after numbers and the card landing report.
 8. **v7d Part 5 — ticket spending** is taken out of "everything else" (the
    spending step has no ticket question). If someone's "everything else" is
    smaller than their ticket answer, total spending goes up a little. OK?
+9. **v7e Part 3 — hotel nights per trip** default to 2: the trips step has no
+   trip length, so "trip length − 1" isn't available. OK, or add trip length?
+10. **v7e Part 3 — "Would you book through a card's travel site?"** still gates
+   every hotel credit (v7c: No = $0). With the new formula it could go. Keep?
+
