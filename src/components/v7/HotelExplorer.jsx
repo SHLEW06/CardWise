@@ -90,6 +90,7 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
   const setTravel = (patch) => save({ travel: { ...profile.travel, ...patch } });
   const mark = (id, m) => save({ hotelMarks: { ...profile.hotelMarks, [id]: profile.hotelMarks[id] === m ? undefined : m } });
   const chains = useMemo(() => [...new Set(HOTEL_PROPERTIES.map((h) => h.chain))].sort(), []);
+  const pricedCount = useMemo(() => HOTEL_PROPERTIES.filter((h) => h.programs.some((pr) => realisticRate(h, pr, profile).basis !== "estimate")).length, [profile]);
 
   const rows = useMemo(() => HOTEL_PROPERTIES.map((h) => {
     const per = h.programs.map((p) => ({ program: p, ...valueToYou(h, p, profile) }));
@@ -115,7 +116,7 @@ export default function HotelExplorer({ profile: raw, onSaveProfile }) {
       <header className="hotels-head">
         <p className="t-eyebrow">Hotels</p>
         <h1 className="t-d2">Where your cards' hotel credits work.</h1>
-        <p className="t-caption">The Edit, Fine Hotels + Resorts, The Hotel Collection and Select Hotels — {HOTEL_DB_LOG.properties} properties we have prices for. "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
+        <p className="t-caption">The Edit, Fine Hotels + Resorts, The Hotel Collection and Select Hotels — {HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices (the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
         <HotelStyle travel={profile.travel} onChange={setTravel} />
       </header>
 

@@ -1,4 +1,4 @@
-# Acceptance report — 2026-11-20, v7c re-runs 2026-11-22 and 2026-11-23, v7d and v7e re-runs 2026-11-23
+# Acceptance report — 2026-11-20, v7c re-runs 2026-11-22 and 2026-11-23, v7d, v7e and v7f re-runs 2026-11-23
 
 Checklist: `docs/CLAUDE_CODE_V7_ACCEPTANCE.md`, run after v7 + v7b on branch
 `redesign`, against the running app (localhost:5173) with the checklist's test
@@ -54,6 +54,13 @@ benefits checklist, DoorDash split). Re-checked C10–C12, C18, C19, E2, E10,
 E14, F6, G3, I2 against the v7e tests. **1,715 tests pass; build OK.** No
 status changed.
 
+**v7f re-run (2026-11-23)** — after the owner's answers (#2, #8–#10) and
+`docs/CLAUDE_CODE_V7F_HOTELS_STRATEGIES.md` Parts 1–3 (hotel database and
+Hotels tab, the Ritz-Carlton as a specialty card, the Strategies tab).
+Re-checked B1, C9, C14, E4, F1, G3, I2. Evidence: `screenshots/v7f/`
+(gitignored) and the v7f tests. **1,748 tests pass; build OK** (the
+personal-use hotel list is not in the build). No status changed.
+
 **Totals now: 63 PASS · 7 FIXED · 3 HOLD · 2 REPLACED · 0 FAIL** (75 IDs).
 
 ## FIXED (failed when checked, fixed, re-checked)
@@ -87,7 +94,7 @@ status changed.
 - **A8** · PASS · `A8-home-1280/1440/1600.png`, `A8-lab-1280/1440/1600.png`. Phone works, not polished (agreed).
 
 ### B. Navigation and features kept
-- **B1** · PASS · Five tabs + avatar Profile. `acceptance.test.jsx` › "five tabs; Profile behind the avatar"; `B2-profile.png`.
+- **B1** · PASS (v7f) · Seven tabs — Home · Checkout · Offers · Wallet Lab · Explore · **Hotels** · **Strategies** (the v7f brief adds the last two) — and Profile behind the avatar. `acceptance.test.jsx`, `v5Shell.ui.test.jsx`.
 - **B2** · FIXED · (above). Keep or cancel, when to apply, saved setups: `B2-lab-panels.png`; compare: `F3-compare.png`; best by category: `H4-best-by-category.png`; offers: `H6-offers.png`.
 - **B3** · PASS (v7c re-run) · Uncluttered Home; the Score line reads "You're getting 43% of the most your cards could earn you. Best possible: +$1,039 a year over a basic 2% card." and "Best possible wallet for you: $1,607 a year" (no fee-budget copy). `screenshots/v7c-2/B3-home.png`; `v7cPart5f.test.jsx` › "5f.6 / 5f.8 · Home copy".
 
@@ -100,12 +107,12 @@ status changed.
 - **C6** · PASS (v7c) · Checked bags asked once for all trips. `v7cPart3.test.jsx` › "…Bags asked once" (one radiogroup).
 - **C7** · PASS (v7c) · Airlines per route from US DOT BTS T-100 (2025-09 → 2026-08, `docs/THIRD_PARTY.md`): "ATL→LAX: Delta (most flights)", "ATL→Seoul: Delta, Korean Air", "EWR→Taipei: United, EVA Air (one stop, via LAX)"; editable per row; picks only break close calls. `screenshots/v7c/C3-trips-step.png`; `v7cPart3.test.jsx` › 3.6–3.8 tests.
 - **C8** · PASS (v7c) · "How do you pick hotels?" — Let CardWise pick the best program for me (default) / I have brands I like → brand chips; "Where do you usually stay?" separate; loyalty strategy one choice ("Using this" / "Use this instead", highest value default). `screenshots/v7c/C8-hotel-strategy-why.png`; `v7cPart1.test.jsx`, `v7cPart2.test.jsx`.
-- **C9** · PASS (v7c) · "We'd pick Marriott: strong in 4 of your 4 destinations, incl. Seoul, Taipei and Tokyo" + Why?; strategies show net after fees, total fees, per-partner transfer lines (Chase → Hyatt 1:1 only with the Sapphire Reserve; Chase → Marriott 1:1), smallest card set and "Why these cards?". `screenshots/v7c/C8-hotel-strategy-why.png`; `v7cPart2.test.jsx` › 2.2–2.4.
+- **C9** · PASS (v7c) · "We'd pick Marriott: strong in 4 of your 4 destinations, incl. Seoul, Taipei and Tokyo" + Why?; strategies show net after fees, total fees, per-partner transfer lines (Chase → Hyatt 1:1 only with the Sapphire Reserve; Chase → Marriott 1:1), smallest card set and "Why these cards?". `screenshots/v7c/C8-hotel-strategy-why.png`; `v7cPart2.test.jsx` › 2.2–2.4. v7f: the survey's loyalty helper stays an input; ranked card strategies live in the Strategies tab.
 - **C10** · PASS (v7e) · Every answered habit row shows "About $___ a year" and "Over about ___ separate visits / purchases" (estimate until typed); typed numbers win; changing the frequency asks "Reset to the estimate?". Result line: "Counts $150 of the $300 a year the Amex Platinum gives: you'd spend $200, but 2 purchases use 2 of the 4 quarterly $75 credits. Spread over 3 quarters → $200." `v7ePart1.test.jsx`, `v7dPart2.test.jsx`.
 - **C11** · PASS (v7e) · "A few times a year" sets an estimate the person can replace; tickets are amount-first ($ a year, purchases, where you buy with a % split, U.S. events); "Would start if free" stays $0. `v7ePart2.test.jsx`.
 - **C12** · PASS (v7e) · Plain names; ticket and DoorDash credits mapped from the card data (`draws`, `pick`, `usOnly`, `endsOn`), re-read on the issuer pages 2026-11-23; the Reserve's DoorDash promos split as Chase's page lists them. `v7ePart2.test.jsx`, `v7cPart4.test.jsx`.
 - **C13** · PASS (v7c) · "Your cards already give you" names the service and card ("Rideshare · Delta SkyMiles Gold · up to $120 a year"). Dedupe is now by spending pool: two cards can't pay back more than is spent on that service; the cut-back card is flagged Overlap. `screenshots/v7c-2/C10-perk-habits.png`; `v7PartA.test.jsx` › "cards share the spending…", `v7cPart4.test.jsx` › "two cards share one pool".
-- **C14** · PASS · Three answers + networks (default best value). `C3-travel.png`; `v7PartA.test.jsx` › "lounges: three answers…".
+- **C14** · PASS (v7f) · Lounges: three answers + networks; v7f adds "Do you usually travel with others?" — lounge guests count only when you do, up to each card's free guests (the Ritz: unlimited on Priority Pass). `v7fPart2.test.jsx`.
 - **C15** · REPLACED · (above)
 - **C16** · PASS · `C16-credit-loan.png`; `v7PartC.test.jsx` › hurdle with loan.
 - **C17** · PASS (v7c re-run) · "Cash you'd keep at Robinhood" is on the Memberships step. `v7bPart3.test.jsx` › "3.10 Robinhood cash".
@@ -128,7 +135,7 @@ status changed.
 - **E1** · PASS · N = E + U − F − 2% baseline. `docs/METHODOLOGY.md` §5; `v6Methodology.test.js`.
 - **E2** · PASS (v7e rules) · Credits count 100% of the lesser of face, spending and periods used (N purchases → N periods); hotel credits on what you'd pay anyway, clamp(C − n × max(0, P − B), 0, C), with realistic rates; spend-gated items $0. `v7ePart1.test.jsx`, `v7ePart3.test.jsx`.
 - **E3** · PASS · `v7bPart3.test.jsx` › "United Quest no longer gets bags for an ATL Delta flyer".
-- **E4** · PASS (v7c re-run) · "I'd love it if my card included it" keeps the bundle factor on top of 5b's 1/8 of face; Sapphire Reserve and Platinum still appear as "Lounge & credits" options with net value (Venture X, Delta Reserve, Strata Elite too). The sample-wallet search now finishes in ~0.8 s instead of ~61 s (it used to time out). `v7bPart3.test.jsx` › golden lounge middle answer.
+- **E4** · PASS (v7f) · Lounge "love it" bundle value as before; the Ritz-Carlton is now a specialty card (never in the main recommendation; "Specialty options" when the profile fits) and the Sapphire Reserve / Platinum stay real options in the Strategies tab with net value. `v7fPart2.test.jsx`, `v7fPart3.test.jsx`.
 - **E5** · PASS (v7c 5b.6) · 6-month cadence and loan hurdle unchanged; "Worth applying?" uses counted value only: Yes / Only just / **Not worth it for you** (net ≤ $0) with the top reason ("its $650 fee is more than the $300 it adds"). `v7cPart5b.test.jsx` › 5b.6; `v7PartC.test.jsx`.
 - **E6** · FIXED · (above)
 - **E7** · REPLACED · (above)
@@ -141,7 +148,7 @@ status changed.
 - **E14** · PASS (v7e re-run) · Golden report unchanged by every v7e part; the owner's before → after is in `docs/PROGRESS.md` → v7e Part 6.
 
 ### F. Wallet Lab
-- **F1** · PASS (v7c 5d-2; v7d Part 4) · Fee control back as an optional limit: "Fee limit: none ▾" chip (typed amount); with a limit, "Best possible wallet for you" is at the limit and the cost line gives the no-limit difference with "Remove limit". Spending drawer, "Your cards" tiles, "Which card to use where" (now with Tickets & events), sample wallets. `screenshots/v7d/F1-lab-fee-limit.png`; `v7dPart4.test.jsx`.
+- **F1** · PASS (v7f) · Fee-limit chip, spending drawer, "Your cards", "Which card to use where", the benefits checklist; the sample wallets moved to the **Strategies** tab (ranked for you, "Use this strategy" → the Lab's target and the plan). `v7fPart3.test.jsx`.
 - **F2** · PASS (v7c re-run; v7d Part 4) · Every eligible card is listed; with a fee limit, cards that would break it stay in the sheet under "Over your fee limit" with their total fees, how far over, and "Fits if you drop the … ($X fee)" when one swap is enough ("Chase Sapphire Reserve — $1,135 in fees, $735 over your $400 limit. No single swap makes it fit."). `screenshots/v7d/F2-over-limit-sheet.png`; `v7dPart4.test.jsx`.
 - **F3** · PASS · `F3-compare.png`; `v6Lab.test.jsx` › "tap a slot → alternatives → compare…".
 - **F4** · PASS · `v7PartD.test.jsx` › "D2 · add alongside vs replace".
@@ -153,7 +160,7 @@ status changed.
 ### G. Explore and card detail
 - **G1** · FIXED · (above)
 - **G2** · PASS · `G1-explore.png`; `v6Explore.ui.test.jsx` › tiles test.
-- **G3** · PASS (v7e) · Card detail adds "Your benefits" (editable, live totals, Reset), "Where you could use this" for hotel credits ("Hong Kong · Cordis Hong Kong (THC) · ~$256/night · 2 nights $512 − $300 = $212 out of pocket · worth $188 to you", search link, data date) and the ticket comparison. `v7ePart2.test.jsx`, `v7ePart3.test.jsx`, `v7ePart4.test.jsx`.
+- **G3** · PASS (v7f) · Card detail adds, per hotel credit, the 3 best-value hotels in your destinations with "See all in Hotels →", and on the Ritz-Carlton and Sapphire Reserve pages a Ritz-vs-Reserve comparison (lounges and guests, credits, points, fee, how hard to get, net, holding both). `v7fPart1.test.jsx`, `v7fPart2.test.jsx`.
 - **G4** · FIXED (v7c re-run: holds) · Held-card wording unchanged ("Worth ≈ $X a year to you after its fee"). `v6Review.test.jsx`.
 
 ### H. Checkout, Near me, Offers
@@ -166,7 +173,7 @@ status changed.
 
 ### I. Process rules
 - **I1** · PASS (v7d re-run) · `acceptance.test.jsx` › "no cpp / MR / UR / multiplier / breakage in visible strings" passes with the v7d copy; the perk step still has no "credit".
-- **I2** · PASS (v7e re-run) · 1,715 tests pass; build OK; issuer differences and owner questions 9–10 in `docs/PROGRESS.md`.
+- **I2** · PASS (v7f re-run) · 1,748 tests pass (+ 19 extension tests); build OK; blocked sources, the personal-use lists and owner questions 11–12 in `docs/PROGRESS.md` and `docs/THIRD_PARTY.md`.
 - **I3** · PASS · `acceptance.test.jsx` › ".gitignore covers card art, fonts, backgrounds, screenshots"; the connector stores only an encrypted session (`connector/README.md`), never passwords or card numbers.
 
 ### v7c 5e (no checklist ID) — now vs later

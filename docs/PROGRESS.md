@@ -2267,7 +2267,37 @@ Draft email (owner to send, one per site):
 - Golden: unchanged. Tests: `v7fPart3.test.jsx` (9) — Trifecta pooling, Amex
   duo Uber Cash, one value per program.
 
-## Questions for the owner (v7c, v7d, v7e)
+## v7f Part 4 · acceptance re-run and report (2026-11-23)
+
+- `docs/ACCEPTANCE_REPORT.md`: B1, C9, C14, E4, F1, G3, I2 re-checked; no
+  status changed. 1,748 tests + 19 extension tests; build OK; the dev app
+  loads the 4,027-hotel personal list ("List via AwardHelper · Edit list via
+  edithotelsearch.com — for personal use"), the build doesn't.
+- Fixed while checking: the Hotels tab said "4027 properties we have prices
+  for" — now "4,027 properties, 37 with dated prices (the rest show an
+  estimate until you save a price)".
+
+**Database:** research + owner data (public build) 37 properties — Edit 27 ·
+FHR 3 · THC 8 · Select Hotels 3; with the personal-use lists (dev only)
+**4,027 — Edit 1,296 · FHR 1,938 · THC 1,471 · 678 in both Amex and Chase
+programs** (AwardHelper 3,407: FHR 1,938 · THC 1,469; edithotelsearch 1,285).
+
+**Top strategies for the owner's profile** (three cards, Light spending,
+$200 a night, Hong Kong / Shanghai / Taipei / Tokyo / Rome, 3 nights a trip):
+1. Hotel loyalist — Marriott Bonvoy Boundless: **+$532** a year (Best for you)
+2. Amex Gold + Platinum: **+$514**
+3. Chase Trifecta (Sapphire Reserve): **+$461**
+4. Simple cash — Robinhood Gold (what you have): **+$457**
+5. Amex Gold + Platinum + Blue Business Plus: **+$439** (a business card)
+
+**Ritz-Carlton:** not shown for the owner — 4+ trips ✓ and Marriott ✓, but
+"travel with others" and "plan around perks" are unanswered (No by default).
+Next to the best wallet it's **−$270** a year (Sapphire Reserve −$119); if
+both answers were Yes: Specialty options, path "Boundless now → switch after
+12 months", −$235 a year beside the best wallet; as a strategy (Boundless
+then Ritz) +$496, fourth.
+
+## Questions for the owner (v7c, v7d, v7e, v7f)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do
    you see them on your account / statement? (The Visa Infinite benefits PDF
