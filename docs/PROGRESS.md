@@ -2328,6 +2328,30 @@ then Ritz) +$496, fourth.
   The hotel change is local, per “commit and stop.” The preceding issuer-art
   commit `1350821` was already pushed and deployed successfully.
 
+## Platinum Lodging Credit; markup and taxes on estimated P (2026-11-24)
+
+- **Amex Platinum "$600 Lodging Credit"** ($300 Jan–Jun + $300 Jul–Dec):
+  prepaid FHR, THC or Airbnb Luxe through Amex Travel. Minimums: THC 2,
+  Airbnb Luxe 2, FHR 1 through 2026-12-31 and 2 from 2027-01-01 (dated, on
+  the credit). Read 2026-11-24 on
+  americanexpress.com/en-us/travel/benefits/lodging-credit/ ("$600 Lodging
+  Credit"). The card page (…/card/platinum/) still says "$600 Hotel Credit"
+  and lists FHR/THC only. The credit keeps its old id, so saved benefit
+  overrides still apply. The database has no Airbnb Luxe listings, so
+  Airbnb Luxe adds eligibility but no valued stays yet.
+- **P from a public-rate estimate** (city × luxury tier) now includes a
+  portal markup (8%) and taxes/fees (15%), both editable in the trips step:
+  P = estimate × 1.08 × 1.15. Saved portal quotes, QTG (fee-inclusive) and
+  Nextcard observations are program prices and stay as seen. The v7e
+  formula is unchanged. Show the math gives P's breakdown and the formula
+  for each allocated stay.
+- Owner profile (`node scripts/hotel-credit-report.mjs [--local]`): the
+  public build is unchanged (Reserve $385, Platinum $254). On local lists the
+  estimated hotels lose to dated Nextcard ones: Reserve $533 → $385 (Edit
+  $236 → $88, Kimpton Qiantan $303); Platinum $306 → $254 (Lodging $428 →
+  $376, Cordis Hong Kong $256).
+- 1,770 tests; production build passes.
+
 ## Questions for the owner (v7c, v7d, v7e, v7f)
 1. **Venture X**: its page no longer shows the $300 travel credit or the
    10,000 anniversary miles. They're kept, counted $0 until confirmed — do

@@ -41,11 +41,11 @@ describe("3.2 · the app uses the realistic rate, never the lowest alone", () =>
     expect(sh.rate).toBe(Math.round(242 * 1.25));
   });
   it("Platinum FHR/THC in Hong Kong at $200: Cordis at ~$256 → $300 − 2 × $56 = $188 a half-year", () => {
-    const r = hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), trip(["hongkong"]));
+    const r = hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Lodging Credit/), trip(["hongkong"]));
     expect(r.use.best).toMatchObject({ hotel: "Cordis Hong Kong", rate: 256, n: 2, value: 188 });
     expect(r.value).toBe(376);           // both halves (trips spread evenly)
-    expect(r.note).toContain("Jan–Jun hotel credit: Cordis Hong Kong, Hong Kong, 2 nights — $188 to you");
-    expect(r.note).toContain("Jul–Dec hotel credit: Cordis Hong Kong, Hong Kong, 2 nights — $188 to you");
+    expect(r.note).toContain("Jan–Jun lodging credit: Cordis Hong Kong, Hong Kong, 2 nights — $188 to you");
+    expect(r.note).toContain("Jul–Dec lodging credit: Cordis Hong Kong, Hong Kong, 2 nights — $188 to you");
     expect(r.note).toContain("Nextcard average · seen Oct 2026");
   });
   it("a city with no price data counts $0", () => {
@@ -59,7 +59,7 @@ describe("3.3 · each credit's own rules", () => {
   it("semiannual: the second half counts only with hotel nights in both halves", () => {
     const one = trip(["hongkong"], { months: [3, 4] });
     expect(halvesWithHotel(one)).toBe(1);
-    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), one).value).toBe(188);
+    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Lodging Credit/), one).value).toBe(188);
     expect(halvesWithHotel(trip(["hongkong"], { months: [3, 9] }))).toBe(2);
   });
   it("the Reserve's two $250 Edit credits each need a separate 2-night stay", () => {
@@ -81,12 +81,12 @@ describe("3.3 · each credit's own rules", () => {
     const fhrOnly = trip(["paris"], { hotelBudget: 700, breakfast: 30 });
     const b = benefitBreakdown(BY_ID["amex-plat"], fhrOnly);
     const bf = b.items.find((i) => /breakfast/.test(i.label));
-    if (b.items.find((i) => /Fine Hotels/.test(i.label))?.hotelUse?.best?.program === "fhr") expect(bf.value).toBeGreaterThan(0);
+    if (b.items.find((i) => /Lodging Credit/.test(i.label))?.hotelUse?.best?.program === "fhr") expect(bf.value).toBeGreaterThan(0);
     expect(benefitBreakdown(BY_ID["amex-plat"], trip(["paris"], { hotelBudget: 700 })).items.find((i) => /breakfast/.test(i.label))).toBeUndefined();
     expect(b.extras.map((x) => x.label).join(" ")).toMatch(/upgrade/i);
   });
   it("owner #10: no travel-site gate — the formula decides even without a 'Yes'", () => {
-    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Fine Hotels/), trip(["hongkong"], {}, { portalHotels: false })).value).toBe(376);
+    expect(hotelProgramValue(BY_ID["amex-plat"], credit("amex-plat", /Lodging Credit/), trip(["hongkong"], {}, { portalHotels: false })).value).toBe(376);
   });
 });
 

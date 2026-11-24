@@ -76,18 +76,18 @@ export const AUDIT = {
   "amex-plat": {
     group: 2, batch: 1, checked: D, source: `${AMEX}platinum/`,
     creditSources: {
-      "$600 Fine Hotels + Resorts / Hotel Collection credit ($300 per half-year)": { source: "https://www.americanexpress.com/en-us/travel/benefits/lodging-credit/", checked: "2026-11-24" },
+      "$600 Lodging Credit ($300 Jan–Jun + $300 Jul–Dec)": { source: "https://www.americanexpress.com/en-us/travel/benefits/lodging-credit/", checked: "2026-11-24", also: "https://www.americanexpress.com/us/credit-cards/card/platinum/" },
     },
     changed: [
       "Earn cap: + 5x flights on up to $500,000 a year",
-      "$600 hotel credit: The Hotel Collection needs 2+ nights; from Jan 1, 2027 Fine Hotels + Resorts too (noted)",
+      "$600 Lodging Credit (renamed from hotel credit, 2026-11-24): + Airbnb Luxe (prepaid via Amex Travel, 2+ nights); The Hotel Collection 2+ nights; Fine Hotels + Resorts 1+ night through 2026-12-31, 2+ from 2027-01-01 (date-aware)",
       "Credit classes: hotel credit = portal-tied (split, $0 unless planned around); Uber Cash, Uber One, airline fee, CLEAR+, Resy, digital entertainment, lululemon, Walmart+, Oura = easy",
       "+ Global Entry ($120 every 4 years) / TSA PreCheck (up to $85) fee credit — it was missing (All Benefits list, batch 2 re-read)",
       "Marriott Gold, Hilton Gold (enroll), trip delay, trip cancellation / interruption, car rental cover confirmed in the All Benefits list",
     ],
     unverified: [{ key: "fx", what: "No foreign transaction fee (not in the benefit list)" }],
     quotes: {
-      "$600 Fine Hotels + Resorts / Hotel Collection credit ($300 per half-year)": "Get up to $300 in statement credits semi-annually on prepaid Fine Hotels + Resorts® program or The Hotel Collection bookings through American Express Travel using your Platinum Card®. ($600 Hotel Credit)",
+      "$600 Lodging Credit ($300 Jan–Jun + $300 Jul–Dec)": "Get up to $300 in statement credits semi-annually for up to a total of $600 in statement credit per calendar year … on prepaid Fine Hotels + Resorts® and The Hotel Collection properties … and prepaid Airbnb Luxe' bookings with Airbnb made through Amextravel.com or the Amex Travel App™. The Hotel Collection and Airbnb Luxe bookings require a minimum two-night stay. Effective January 1, 2027, Fine Hotels + Resorts® bookings will require a minimum two-night stay. ($600 Lodging Credit, read 2026-11-24)",
       "$200 Uber Cash ($15 a month + $20 in December)": "Add your Platinum Card® to your Uber account to start receiving $15 in Uber Cash each month, plus a bonus $20 in December. ($200 Uber Cash)",
       "$120 Uber One membership credit": "You can get up to $120 in statement credits each calendar year after you purchase an auto-renewing Uber One membership with the Card.",
       "$200 airline fee credit (one airline you pick)": "Earn up to $200 per calendar year in statement credits after incidental fees, such as checked bags and in-flight refreshments, are charged by your one selected qualifying airline to your Card.",

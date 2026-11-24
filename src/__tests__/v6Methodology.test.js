@@ -139,7 +139,7 @@ describe("benefits U(W)", () => {
     expect(creditUsage(gold, dunkin, P({ brands: { habits: { dunkin: { answer: "few" } } } })).value).toBe(21);   // 3 months × $7
   });
   it("split hotel / travel credits are $0 by default", () => {
-    for (const [id, re] of [["csr", /The Edit/], ["amex-plat", /Fine Hotels/], ["hilton-aspire", /resort/]]) {
+    for (const [id, re] of [["csr", /The Edit/], ["amex-plat", /Lodging Credit/], ["hilton-aspire", /resort/]]) {
       const c = BY_ID[id].credits.find((x) => re.test(x.name));
       const u = creditUsage(BY_ID[id], c, P({ travel: { trips: 6, hotelNights: 10 }, brands: { hotels: ["hilton"] } }));
       expect(u.factor, id).toBe(0);

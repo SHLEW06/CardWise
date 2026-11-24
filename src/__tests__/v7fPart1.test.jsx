@@ -18,7 +18,7 @@ afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
 const HK = (extra = {}, top = {}) => normalizeProfile({ ...top, travel: { hotelNights: 8, hotelBudget: 200, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 4 }] }], ...extra } });
-const fhrThc = BY_ID["amex-plat"].credits.find((c) => /Fine Hotels/.test(c.name));
+const fhrThc = BY_ID["amex-plat"].credits.find((c) => /Lodging Credit/.test(c.name));
 const CORDIS = "hongkong-cordis-hong-kong";
 
 describe("1a · the property list", () => {

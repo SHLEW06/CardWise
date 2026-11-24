@@ -165,7 +165,7 @@ it("detail shows three hotels per city, source/date, working stay marks and map 
   fireEvent.click(within(lists[0]).getAllByRole("button", { name: "I'd stay here" })[0]);
   expect(within(screen.getAllByRole("list", { name: /Best hotels for/ })[0]).getAllByRole("button", { name: "I'd stay here" })[0]).toHaveAttribute("aria-pressed", "true");
   fireEvent.click(within(hotels).getByRole("button", { name: "See on map · Hong Kong" }));
-  expect(filter).toEqual({ city: "Hong Kong", cityKey: "hongkong", programs: ["fhr", "thc"], view: "map" });
+  expect(filter).toEqual({ city: "Hong Kong", cityKey: "hongkong", programs: ["fhr", "thc", "airbnbLuxe"], view: "map" });
   cleanup();
   render(<HotelExplorer profile={p()} filter={filter} />);
   expect(screen.getByLabelText("Search a city, region or hotel")).toHaveValue("Hong Kong");

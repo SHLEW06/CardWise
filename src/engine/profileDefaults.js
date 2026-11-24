@@ -256,6 +256,11 @@ export function normalizeProfile(p = {}) {
   travel.breakfast = Number.isFinite(Number(travel.breakfast)) && Number(travel.breakfast) > 0 ? Math.round(Number(travel.breakfast)) : 0;
   travel.onProperty = travel.onProperty === true;
   travel.portalMarkup = Number.isFinite(Number(travel.portalMarkup)) && Number(travel.portalMarkup) >= 0 && Number(travel.portalMarkup) <= 1 ? Number(travel.portalMarkup) : 0.1;
+  /* 2026-11-24: program-hotel price estimates (FHR/THC/Edit …): portal markup
+     and taxes/fees added to a public-rate estimate (never to a saved quote). */
+  const frac = (x, d) => (x != null && x !== "" && Number.isFinite(Number(x)) && Number(x) >= 0 && Number(x) <= 1 ? Number(x) : d);
+  travel.hotelMarkup = frac(travel.hotelMarkup, 0.08);
+  travel.hotelTaxes = frac(travel.hotelTaxes, 0.15);
   /* v7f 1c: "I just want the credit's value" (default) / "I'd pay more for a nicer hotel" (+ $X a night for luxury) */
   travel.hotelStyle = travel.hotelStyle === "nicer" ? "nicer" : "value";
   /* v7f Part 2: who they travel with (lounge guests) and whether they'd plan

@@ -350,7 +350,7 @@ export function pctBackFor(card, category, profile, wallet = []) {
 /* ── benefits ────────────────────────────────────────────────────────────── */
 
 const slug = (s) => String(s).toLowerCase().replace(/\(.*?\)/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
-export const creditId = (card, credit) => `${card.id}#${slug(credit.name)}`;
+export const creditId = (card, credit) => `${card.id}#${credit.key || slug(credit.name)}`;
 
 const isTravelKind = (k) => k === "hotel" || k === "portal" || k === "airline";
 /** Split / hard-to-use travel credit: a hotel, portal or airline credit paid

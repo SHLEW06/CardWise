@@ -61,7 +61,7 @@ describe("#10 · no travel-site gate", () => {
   it("hotel credits use the formula with no yes/no; the question is gone", () => {
     const p = normalizeProfile({ travel: { hotelNights: 6, hotelBudget: 250, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 4 }] }] } });
     expect(p.brands.portalHotels).toBe(false);
-    expect(benefitBreakdown(BY_ID["amex-plat"], p).items.find((i) => /Fine Hotels/.test(i.label)).value).toBeGreaterThan(0);
+    expect(benefitBreakdown(BY_ID["amex-plat"], p).items.find((i) => /Lodging Credit/.test(i.label)).value).toBeGreaterThan(0);
     render(<Survey initialMode="quick" initialStepId="brands" initialProfile={p} />);
     expect(screen.queryByTestId("portal-hotels")).toBeNull();
   });

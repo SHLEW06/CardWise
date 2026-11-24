@@ -10,6 +10,14 @@
    Value to you = the v7e formula clamp(C − n × max(0, P − B), 0, C), with
    B = their nightly budget in that city (+ "I'd pay up to $X more" for a
    luxury hotel when their hotel style is "I'd pay more for a nicer hotel").
+
+   2026-11-24: when P is the city × luxury-tier *public-rate estimate*, the
+   price you'd actually pay through the card's program is higher:
+     P = estimate × (1 + portal markup) × (1 + taxes and fees)
+   markup 8% and taxes/fees 15% by default, both editable (travel.hotelMarkup,
+   travel.hotelTaxes). A saved portal quote is already the program's price,
+   taxes included, so nothing is added; the dated QTG (fee-inclusive) and
+   Nextcard observations are program prices too, so they are left as seen.
    ========================================================================== */
 import { HOTEL_PROPERTIES, HOTEL_DB_LOG } from "../../data/hotels/properties.generated.js";
 import { HOTEL_RATES } from "../../data/hotels/hotelRates.generated.js";
@@ -34,8 +42,28 @@ export function useLocalHotels(local) {
   HOTEL_SOURCE.kind = "lists";
   HOTEL_SOURCE.notes = local.log.sources.map((s) => s.note);
 }
-export const PROGRAM_CREDIT = { edit: 250, fhr: 300, thc: 300, selectHotels2026: 250 };
-export const PROGRAM_NAME = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", selectHotels2026: "Select Hotels (2026)" };
+export const PROGRAM_CREDIT = { edit: 250, fhr: 300, thc: 300, airbnbLuxe: 300, selectHotels2026: 250 };
+export const PROGRAM_NAME = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", airbnbLuxe: "Airbnb Luxe", selectHotels2026: "Select Hotels (2026)" };
+export const DEFAULT_HOTEL_MARKUP = 0.08;
+export const DEFAULT_HOTEL_TAXES = 0.15;
+const pctOf = (x) => `${Math.round(x * 1000) / 10}%`;
+
+/** The price P the formula uses: the realistic rate, plus the program's markup
+ * and taxes/fees only when that rate is a public-rate estimate. */
+export function programPrice(r, travel = {}) {
+  if (r.basis !== "estimate") {
+    const what = r.basis === "saved" ? "your saved portal quote" : r.basis === "qtg" ? "QTG program price, fees included" : "observed program price";
+    return { ...r, baseRate: r.rate, markup: 0, taxes: 0, adjusted: false, math: `$${r.rate} ${what} (no markup or taxes added)` };
+  }
+  const markup = travel?.hotelMarkup ?? DEFAULT_HOTEL_MARKUP;
+  const taxes = travel?.hotelTaxes ?? DEFAULT_HOTEL_TAXES;
+  const rate = Math.round(r.rate * (1 + markup) * (1 + taxes));
+  return {
+    ...r, rate, baseRate: r.rate, markup, taxes, adjusted: true,
+    label: `City × luxury-tier estimate $${r.rate} + ${pctOf(markup)} portal markup + ${pctOf(taxes)} taxes and fees · no observed price date`,
+    math: `$${r.rate} public-rate estimate × (1 + ${pctOf(markup)} portal markup) × (1 + ${pctOf(taxes)} taxes and fees) = $${rate}`,
+  };
+}
 export const TIER_NAME = { 1: "Upscale", 2: "Luxury", 3: "Ultra-luxury" };
 /* Estimate when no rate is known: the city's everyday budget × the tier. */
 export const TIER_MULTIPLIER = { 1: 1.4, 2: 2.2, 3: 3.5 };
@@ -90,11 +118,11 @@ export function budgetFor(hotel, travel = {}) {
 
 /** Value to you of one program credit at one hotel (v7e formula). */
 export function valueToYou(hotel, program, profile, { C = PROGRAM_CREDIT[program], today, minNights = 1 } = {}) {
-  const r = realisticRate(hotel, program, profile, today);
+  const r = programPrice(realisticRate(hotel, program, profile, today), profile?.travel);
   const B = budgetFor(hotel, profile?.travel);
   const n = Math.max(hotel.minNights?.[program] || 1, minNights, 1);
   const value = Math.max(0, Math.min(C, C - n * Math.max(0, r.rate - B.value)));
-  return { value: Math.round(value), rate: r.rate, rateLabel: r.label, rateBasis: r.basis, rateDate: r.date, rateSource: r.source, rateSourceKey: r.sourceKey, n, budget: B.value, budgetBasis: B.basis, cost: n * r.rate, after: Math.max(0, n * r.rate - C), C };
+  return { value: Math.round(value), rate: r.rate, baseRate: r.baseRate, markup: r.markup, taxes: r.taxes, priceMath: r.math, rateLabel: r.label, rateBasis: r.basis, rateDate: r.date, rateSource: r.source, rateSourceKey: r.sourceKey, n, budget: B.value, budgetBasis: B.basis, cost: n * r.rate, after: Math.max(0, n * r.rate - C), C };
 }
 
 export const markOf = (profile, id) => profile?.hotelMarks?.[id] || HOTEL_BY_ID[id]?.aliases?.map((alias) => profile?.hotelMarks?.[alias]).find(Boolean) || null;

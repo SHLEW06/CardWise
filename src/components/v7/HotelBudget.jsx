@@ -9,8 +9,10 @@ import { HotelStyle } from "./HotelExplorer.jsx";
 import { CITY_HOTEL_BUDGET, DEFAULT_HOTEL_BUDGET } from "../../data/cityHotelBudget.js";
 import { destinationsOf } from "../../engine/v5/hotelCredits.js";
 import { DEFAULT_NIGHTS_PER_TRIP } from "../../engine/profileDefaults.js";
+import { DEFAULT_HOTEL_MARKUP, DEFAULT_HOTEL_TAXES } from "../../engine/v5/hotelDb.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const pctInput = (raw, fallback) => { const v = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(v) ? Math.min(100, v) / 100 : fallback; };
 const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) && n > 0 ? n : null; };
 
 export default function HotelBudget({ n, t, setTravel }) {
@@ -60,6 +62,16 @@ export default function HotelBudget({ n, t, setTravel }) {
         <input inputMode="numeric" aria-label="Travel-site markup percent" value={Math.round((t.portalMarkup ?? 0.1) * 100)} onChange={(e) => { const v = parseInt(String(e.target.value).replace(/\D/g, ""), 10); setTravel({ portalMarkup: Number.isFinite(v) ? Math.min(100, v) / 100 : 0.1 }); }} />
         % <span className="habit-tag">{t.portalMarkup != null && t.portalMarkup !== 0.1 ? "your number" : "estimate"}</span>
       </label>
+      <p className="t-caption">When a program hotel (Fine Hotels + Resorts, The Hotel Collection, The Edit) has no saved quote, its price is a public-rate estimate. We add:</p>
+      <label className="habit-adjust t-caption">Portal markup
+        <input inputMode="numeric" aria-label="Program hotel portal markup percent" value={Math.round((t.hotelMarkup ?? DEFAULT_HOTEL_MARKUP) * 100)} onChange={(e) => setTravel({ hotelMarkup: pctInput(e.target.value, DEFAULT_HOTEL_MARKUP) })} />
+        % <span className="habit-tag">{t.hotelMarkup != null && t.hotelMarkup !== DEFAULT_HOTEL_MARKUP ? "your number" : "estimate"}</span>
+      </label>
+      <label className="habit-adjust t-caption">Taxes and fees
+        <input inputMode="numeric" aria-label="Program hotel taxes and fees percent" value={Math.round((t.hotelTaxes ?? DEFAULT_HOTEL_TAXES) * 100)} onChange={(e) => setTravel({ hotelTaxes: pctInput(e.target.value, DEFAULT_HOTEL_TAXES) })} />
+        % <span className="habit-tag">{t.hotelTaxes != null && t.hotelTaxes !== DEFAULT_HOTEL_TAXES ? "your number" : "estimate"}</span>
+      </label>
+      <p className="t-caption">A price you save from the program's site is used as is: nothing is added.</p>
     </fieldset>
   );
 }

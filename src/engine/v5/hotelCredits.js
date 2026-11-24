@@ -25,7 +25,7 @@ import { DESTINATIONS } from "../../data/routes.js";
 import { DEFAULT_NIGHTS_PER_TRIP, hotelNights } from "../profileDefaults.js";
 
 export const DEFAULT_PORTAL_MARKUP = 0.10;
-export const PROGRAM_LABEL = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", selectHotels2026: "Select Hotels (2026)", renowned: "Renowned Hotels and Resorts" };
+export const PROGRAM_LABEL = { edit: "The Edit", fhr: "Fine Hotels + Resorts", thc: "The Hotel Collection", airbnbLuxe: "Airbnb Luxe", selectHotels2026: "Select Hotels (2026)", renowned: "Renowned Hotels and Resorts" };
 export const PROGRAM_SEARCH = {
   edit: "https://travelsecure.chase.com/",
   fhr: "https://www.americanexpress.com/en-us/travel/discover/fine-hotels-resorts/",
@@ -33,7 +33,12 @@ export const PROGRAM_SEARCH = {
 };
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-const chunkLabel = (hp, k) => hp.periods === "half" ? `${k === 0 ? "Jan–Jun" : "Jul–Dec"} hotel credit` : `${hp.label || PROGRAM_LABEL[hp.programs?.[0]] || "Hotel"} credit ${k + 1}`;
+const chunkLabel = (hp, k) => hp.periods === "half" ? `${k === 0 ? "Jan–Jun" : "Jul–Dec"} ${(hp.label || "hotel").toLowerCase()} credit` : `${hp.label || PROGRAM_LABEL[hp.programs?.[0]] || "Hotel"} credit ${k + 1}`;
+/** "Show the math" for one allocated stay: P (with markup/taxes when it is an
+ * estimate), then the v7e formula. */
+export const hotelMathLine = (a, C) => a.value > 0 && a.priceMath
+  ? `${a.label}: ${a.hotel}, ${a.nights} night${a.nights === 1 ? "" : "s"} · P = ${a.priceMath} · ${money(C)} − ${a.nights} × (${money(a.rate)} − ${money(a.budget)}) = ${money(a.value)}`
+  : `${a.label}: ${money(a.value || 0)}${a.reason ? ` — ${a.reason}` : ""}`;
 export const hotelAllocationNote = (allocations) => allocations.map((a) => `${a.label}: ${a.value > 0 ? `${a.hotel}, ${a.name}, ${a.nights} nights — ${money(a.value)} to you · ~${money(a.rate)}/night · ${a.rateLabel}` : `${money(0)} — ${a.reason}`}`).join("; ");
 
 /** The formula, on its own (tests use the research table's exact rates). */

@@ -171,7 +171,7 @@ describe("4.4 · generic credit chips are gone — worked out from other answers
   });
   it("travel-site hotel credits: the formula decides, no yes/no (owner #10)", () => {
     const P = { travel: { hotelNights: 6, hotelBudget: 300, airports: [{ code: "JFK", trips: 4, destinations: [{ key: "hongkong", trips: 2 }, { key: "shanghai", trips: 2 }] }] } };
-    for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["amex-plat", /Fine Hotels/]]) expect(valueOf(id, re, {}, P), id).toBeGreaterThan(0);
+    for (const [id, re] of [["csp", /Chase Travel hotel/], ["delta-reserve", /Delta Stays/], ["amex-plat", /Lodging Credit/]]) expect(valueOf(id, re, {}, P), id).toBeGreaterThan(0);
     expect(valueOf("united-quest", /Renowned/, {}, P)).toBe(0);      // no price data for Renowned Hotels
   });
   it("the step has no travel-site question and no travel-credit chips", () => {

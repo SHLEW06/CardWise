@@ -4,7 +4,7 @@ import { HOTEL_BY_ID, googleHotelsUrl, markOf, hotelMarksWith } from "../../engi
 import { PROGRAM_LABEL, PROGRAM_SEARCH, topHotelsFor, nightBudgetText } from "../../engine/v5/hotelCredits.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
-const SHORT = { edit: "The Edit", fhr: "FHR", thc: "THC", selectHotels2026: "Select Hotels (2026)" };
+const SHORT = { edit: "The Edit", fhr: "FHR", thc: "THC", airbnbLuxe: "Airbnb Luxe", selectHotels2026: "Select Hotels (2026)" };
 
 /** Receives allocated benefits from walletValue; never computes a second total. */
 export default function HotelCreditUses({ cardId, detail, profile, onProfileChange, onOpenHotels }) {
