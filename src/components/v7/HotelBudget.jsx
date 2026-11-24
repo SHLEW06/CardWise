@@ -58,16 +58,16 @@ export default function HotelBudget({ n, t, setTravel }) {
         <Choice radio pill selected={!t.onProperty} onSelect={() => setTravel({ onProperty: false })}>No</Choice>
         <Choice radio pill selected={!!t.onProperty} onSelect={() => setTravel({ onProperty: true })}>Yes</Choice>
       </div>
-      <label className="habit-adjust t-caption">Card travel sites cost more than booking direct by about
+      <label className="habit-adjust t-caption">Markup for any-hotel card travel sites (Chase Travel, Capital One Travel, Citi Travel, Bilt Travel, Delta Stays, United Hotels):
         <input inputMode="numeric" aria-label="Travel-site markup percent" value={Math.round((t.portalMarkup ?? 0.1) * 100)} onChange={(e) => { const v = parseInt(String(e.target.value).replace(/\D/g, ""), 10); setTravel({ portalMarkup: Number.isFinite(v) ? Math.min(100, v) / 100 : 0.1 }); }} />
         % <span className="habit-tag">{t.portalMarkup != null && t.portalMarkup !== 0.1 ? "your number" : "estimate"}</span>
       </label>
-      <p className="t-caption">When a program hotel (Fine Hotels + Resorts, The Hotel Collection, The Edit) has no saved quote, its price is a public-rate estimate. We add:</p>
-      <label className="habit-adjust t-caption">Portal markup
+      <p className="t-caption">When a program hotel has no saved quote, its price is a public-rate estimate. We add:</p>
+      <label className="habit-adjust t-caption">Markup for program hotels (Amex Fine Hotels + Resorts, The Hotel Collection; Chase The Edit, Select Hotels, Renowned Hotels):
         <input inputMode="numeric" aria-label="Program hotel portal markup percent" value={Math.round((t.hotelMarkup ?? DEFAULT_HOTEL_MARKUP) * 100)} onChange={(e) => setTravel({ hotelMarkup: pctInput(e.target.value, DEFAULT_HOTEL_MARKUP) })} />
         % <span className="habit-tag">{t.hotelMarkup != null && t.hotelMarkup !== DEFAULT_HOTEL_MARKUP ? "your number" : "estimate"}</span>
       </label>
-      <label className="habit-adjust t-caption">Taxes and fees
+      <label className="habit-adjust t-caption">Taxes and fees for program hotels (same sites):
         <input inputMode="numeric" aria-label="Program hotel taxes and fees percent" value={Math.round((t.hotelTaxes ?? DEFAULT_HOTEL_TAXES) * 100)} onChange={(e) => setTravel({ hotelTaxes: pctInput(e.target.value, DEFAULT_HOTEL_TAXES) })} />
         % <span className="habit-tag">{t.hotelTaxes != null && t.hotelTaxes !== DEFAULT_HOTEL_TAXES ? "your number" : "estimate"}</span>
       </label>
