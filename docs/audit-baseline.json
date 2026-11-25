@@ -1,0 +1,4695 @@
+{
+  "commit": "07f63c4",
+  "rows": [
+    {
+      "id": "P01",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 122,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P02",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 212,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P03",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "delta-plat",
+        "discover-student"
+      ],
+      "net": 702,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "delta-plat",
+        "discover-student"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "delta-plat"
+      ]
+    },
+    {
+      "id": "P04",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "freedom-rise"
+      ],
+      "net": 279,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "freedom-rise"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "freedom-rise"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P05",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 349,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P06",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 216,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P07",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student"
+      ],
+      "net": 173,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P08",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P09",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "delta-plat",
+        "robinhood-gold",
+        "bilt-blue"
+      ],
+      "net": 1116,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex",
+        "bilt-blue"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat"
+      ]
+    },
+    {
+      "id": "P10",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "alaska-visa",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1179,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "alaska-visa",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "alaska-visa",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P11",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P12",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 745,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P13",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 628,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P14",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1851,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P15",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "bcp"
+      ],
+      "net": 1666,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "bcp"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "bcp"
+      ]
+    },
+    {
+      "id": "P16",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe"
+      ],
+      "net": 1892,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "citi-aa-globe"
+      ]
+    },
+    {
+      "id": "P17",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 892,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P18",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 910,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P19",
+      "firstCard": "delta-plat",
+      "wallet": [
+        "delta-plat",
+        "robinhood-gold",
+        "marriott-brilliant"
+      ],
+      "net": 2528,
+      "actions": {
+        "survey": "apply:delta-plat",
+        "home": null,
+        "lab": "apply:delta-plat"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "robinhood-gold",
+        "marriott-brilliant",
+        "bcp"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat",
+        "marriott-brilliant"
+      ]
+    },
+    {
+      "id": "P20",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "robinhood-gold",
+        "marriott-boundless"
+      ],
+      "net": 2447,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P21",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "citi-aa-globe",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1402,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "citi-aa-globe",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-aa-globe",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P22",
+      "firstCard": "sw-premier",
+      "wallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1526,
+      "actions": {
+        "survey": "apply:sw-premier",
+        "home": null,
+        "lab": "apply:sw-premier"
+      },
+      "surveyWallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-premier",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P23",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "alaska-visa",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1382,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "alaska-visa",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "alaska-visa",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P24",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1361,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P25",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "marriott-brilliant"
+      ],
+      "net": 1737,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "marriott-brilliant"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "marriott-brilliant"
+      ]
+    },
+    {
+      "id": "P26",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "robinhood-gold",
+        "marriott-boundless"
+      ],
+      "net": 2578,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P27",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "bilt-palladium",
+        "hyatt"
+      ],
+      "net": 1483,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "bilt-palladium",
+        "hyatt",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "bilt-palladium",
+        "hyatt"
+      ]
+    },
+    {
+      "id": "P28",
+      "firstCard": "delta-plat",
+      "wallet": [
+        "delta-plat",
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 1098,
+      "actions": {
+        "survey": "apply:delta-plat",
+        "home": null,
+        "lab": "apply:delta-plat"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat"
+      ]
+    },
+    {
+      "id": "P29",
+      "firstCard": "bcp",
+      "wallet": [
+        "freedom-flex",
+        "bcp",
+        "freedom-unlimited"
+      ],
+      "net": 743,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:bcp",
+        "lab": "apply:bcp"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bcp"
+      ]
+    },
+    {
+      "id": "P30",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "freedom-flex",
+        "amex-green"
+      ],
+      "net": 648,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "downgrade:amex-green",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "amex-green"
+      ]
+    },
+    {
+      "id": "P31",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "freedom-flex",
+        "united-explorer",
+        "csr"
+      ],
+      "net": 707,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex",
+        "united-explorer"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "united-explorer",
+        "csr"
+      ]
+    },
+    {
+      "id": "P32",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "citi-double-cash"
+      ],
+      "net": 650,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P33",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "marriott-boundless",
+        "freedom-flex",
+        "venture-x"
+      ],
+      "net": 1044,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": "apply:united-explorer",
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless",
+        "venture-x"
+      ]
+    },
+    {
+      "id": "P34",
+      "firstCard": "bcp",
+      "wallet": [
+        "citi-aa-globe",
+        "bcp",
+        "venture",
+        "amex-green"
+      ],
+      "net": 665,
+      "actions": {
+        "survey": "apply:citi-strata",
+        "home": "apply:bcp",
+        "lab": "apply:citi-aa-globe"
+      },
+      "surveyWallet": [
+        "citi-strata",
+        "citi-aa-globe",
+        "citi-double-cash"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-aa-globe",
+        "bcp",
+        "venture",
+        "amex-green"
+      ]
+    },
+    {
+      "id": "P35",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "apple-card"
+      ],
+      "net": 733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P36",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P37",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 763,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P38",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1289,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P39",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 874,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P40",
+      "firstCard": "bilt-palladium",
+      "wallet": [
+        "bilt-palladium",
+        "delta-plat",
+        "discover-it"
+      ],
+      "net": 1235,
+      "actions": {
+        "survey": "apply:bilt-palladium",
+        "home": null,
+        "lab": "apply:bilt-palladium"
+      },
+      "surveyWallet": [
+        "bilt-palladium",
+        "delta-plat",
+        "discover-it"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bilt-palladium",
+        "delta-plat"
+      ]
+    },
+    {
+      "id": "P41",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee"
+      ],
+      "net": 212,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": null,
+        "lab": "apply:citi-strata-no-fee"
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P42",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "united-explorer"
+      ],
+      "net": 3730,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "united-explorer",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "united-explorer"
+      ]
+    },
+    {
+      "id": "P43",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 791,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P44",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 764,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P45",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P46",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 224,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P47",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student",
+        "savor-one"
+      ],
+      "net": 560,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student",
+        "savor-one"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": [
+        "savor-one"
+      ]
+    },
+    {
+      "id": "P48",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 793,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P49",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 876,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P50",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 471,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P51",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "bilt-blue",
+        "discover-it"
+      ],
+      "net": 1070,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "bilt-blue",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P52",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive"
+      ],
+      "net": 2616,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "aa-executive"
+      ]
+    },
+    {
+      "id": "P53",
+      "firstCard": "citi-aa-globe",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe"
+      ],
+      "net": 5030,
+      "actions": {
+        "survey": "apply:citi-aa-globe",
+        "home": null,
+        "lab": "apply:citi-aa-globe"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "citi-aa-globe"
+      ]
+    },
+    {
+      "id": "P54",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 394,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P55",
+      "firstCard": "citi-aa-platinum",
+      "wallet": [
+        "citi-aa-platinum",
+        "bilt-blue",
+        "bcp",
+        "apple-card"
+      ],
+      "net": 846,
+      "actions": {
+        "survey": "apply:citi-aa-platinum",
+        "home": "apply:citi-aa-platinum",
+        "lab": "apply:citi-aa-platinum"
+      },
+      "surveyWallet": [
+        "citi-aa-platinum",
+        "bilt-blue",
+        "bcp"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-aa-platinum",
+        "bcp"
+      ]
+    },
+    {
+      "id": "P56",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata"
+      ],
+      "net": 1821,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata"
+      ]
+    },
+    {
+      "id": "P57",
+      "firstCard": "costco-citi",
+      "wallet": [
+        "robinhood-gold",
+        "costco-citi",
+        "amazon-prime",
+        "united-gateway",
+        "delta-gold"
+      ],
+      "net": 728,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:costco-citi",
+        "lab": "apply:costco-citi"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "costco-citi",
+        "delta-gold"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-gold"
+      ]
+    },
+    {
+      "id": "P58",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 200,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P59",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 863,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P60",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue",
+        "active-cash"
+      ],
+      "net": 466,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": "apply:bilt-blue",
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P61",
+      "firstCard": "sw-premier",
+      "wallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "united-explorer"
+      ],
+      "net": 1353,
+      "actions": {
+        "survey": "apply:sw-premier",
+        "home": null,
+        "lab": "apply:sw-premier"
+      },
+      "surveyWallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "united-explorer"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-premier",
+        "marriott-boundless",
+        "united-explorer"
+      ]
+    },
+    {
+      "id": "P62",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "freedom-flex",
+        "citi-double-cash"
+      ],
+      "net": 840,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex",
+        "citi-double-cash"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P63",
+      "firstCard": "delta-plat",
+      "wallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "savor",
+        "bcp",
+        "discover-it",
+        "freedom-unlimited"
+      ],
+      "net": 1672,
+      "actions": {
+        "survey": "apply:delta-plat",
+        "home": "apply:delta-plat",
+        "lab": "apply:delta-plat"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "bcp",
+        "discover-it"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat",
+        "marriott-boundless",
+        "bcp"
+      ]
+    },
+    {
+      "id": "P64",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 845,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P65",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe"
+      ],
+      "net": 4115,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "citi-aa-globe",
+        "delta-plat"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "citi-aa-globe"
+      ]
+    },
+    {
+      "id": "P66",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "net": 1793,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bcp"
+      ]
+    },
+    {
+      "id": "P67",
+      "firstCard": "sw-premier",
+      "wallet": [
+        "robinhood-gold",
+        "sw-premier",
+        "freedom-flex"
+      ],
+      "net": 2401,
+      "actions": {
+        "survey": "apply:sw-premier",
+        "home": null,
+        "lab": "apply:sw-premier"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "sw-premier",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-premier"
+      ]
+    },
+    {
+      "id": "P68",
+      "firstCard": "c1-secured",
+      "wallet": [
+        "c1-secured",
+        "discover-it-secured"
+      ],
+      "net": 1977,
+      "actions": {
+        "survey": "apply:c1-secured",
+        "home": null,
+        "lab": "apply:c1-secured"
+      },
+      "surveyWallet": [
+        "c1-secured",
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P69",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "bilt-blue"
+      ],
+      "net": 596,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "bilt-blue"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P70",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 613,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P71",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "robinhood-gold",
+        "united-explorer",
+        "marriott-boundless",
+        "freedom-flex",
+        "delta-gold"
+      ],
+      "net": 4866,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": "apply:united-explorer",
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "united-explorer",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless",
+        "delta-gold"
+      ]
+    },
+    {
+      "id": "P72",
+      "firstCard": "sw-premier",
+      "wallet": [
+        "robinhood-gold",
+        "sw-premier",
+        "marriott-boundless",
+        "amazon-prime"
+      ],
+      "net": 3709,
+      "actions": {
+        "survey": "apply:sw-premier",
+        "home": "apply:sw-premier",
+        "lab": "apply:sw-premier"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "sw-premier",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-premier",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P73",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "robinhood-gold",
+        "united-explorer"
+      ],
+      "net": 1025,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "united-explorer"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer"
+      ]
+    },
+    {
+      "id": "P74",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 332,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P75",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless"
+      ],
+      "net": 490,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P76",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "freedom-flex",
+        "apple-card"
+      ],
+      "net": 1852,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P77",
+      "firstCard": "sw-plus",
+      "wallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "sw-plus",
+        "freedom-flex"
+      ],
+      "net": 2259,
+      "actions": {
+        "survey": "apply:sw-plus",
+        "home": "apply:sw-plus",
+        "lab": "apply:sw-plus"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "sw-plus",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "sw-plus"
+      ]
+    },
+    {
+      "id": "P78",
+      "firstCard": "freedom-rise",
+      "wallet": [
+        "savor",
+        "freedom-rise",
+        "boa-customized"
+      ],
+      "net": 1219,
+      "actions": {
+        "survey": "apply:freedom-rise",
+        "home": "apply:freedom-rise",
+        "lab": "apply:freedom-rise"
+      },
+      "surveyWallet": [
+        "savor",
+        "freedom-rise"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "freedom-rise"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P79",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "jetblue-plus",
+        "marriott-boundless"
+      ],
+      "net": 865,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "jetblue-plus",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "jetblue-plus",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P80",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 805,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P81",
+      "firstCard": "sw-premier",
+      "wallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "wf-autograph",
+        "freedom-flex",
+        "venture-one"
+      ],
+      "net": 1288,
+      "actions": {
+        "survey": "apply:sw-premier",
+        "home": "downgrade:venture-one",
+        "lab": "apply:sw-premier"
+      },
+      "surveyWallet": [
+        "sw-premier",
+        "marriott-boundless",
+        "wf-autograph",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-premier",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P82",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 229,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P83",
+      "firstCard": "citi-strata",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive",
+        "venture-x",
+        "boa-customized"
+      ],
+      "net": 2116,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:citi-strata",
+        "lab": "apply:citi-strata"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "aa-executive",
+        "venture-x"
+      ]
+    },
+    {
+      "id": "P84",
+      "firstCard": "citi-strata",
+      "wallet": [
+        "citi-strata",
+        "citi-aa-platinum",
+        "citi-double-cash"
+      ],
+      "net": 1880,
+      "actions": {
+        "survey": "apply:citi-strata",
+        "home": null,
+        "lab": "apply:citi-strata"
+      },
+      "surveyWallet": [
+        "citi-strata",
+        "citi-aa-platinum",
+        "citi-double-cash",
+        "costco-citi"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "citi-aa-platinum"
+      ]
+    },
+    {
+      "id": "P85",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "net": 1733,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bcp"
+      ]
+    },
+    {
+      "id": "P86",
+      "firstCard": "citi-aa-globe",
+      "wallet": [
+        "citi-aa-globe",
+        "citi-strata",
+        "quicksilver"
+      ],
+      "net": 550,
+      "actions": {
+        "survey": "apply:citi-aa-globe",
+        "home": "downgrade:quicksilver",
+        "lab": "apply:citi-aa-globe"
+      },
+      "surveyWallet": [
+        "citi-aa-globe",
+        "citi-strata"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-aa-globe",
+        "citi-strata"
+      ]
+    },
+    {
+      "id": "P87",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex",
+        "hyatt"
+      ],
+      "net": 1964,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "freedom-flex",
+        "united-explorer"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "hyatt"
+      ]
+    },
+    {
+      "id": "P88",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "savor"
+      ],
+      "net": 1126,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P89",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "citi-strata",
+        "marriott-boundless",
+        "citi-double-cash",
+        "freedom-flex",
+        "delta-blue"
+      ],
+      "net": 2186,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "downgrade:freedom-flex",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "citi-strata",
+        "marriott-boundless",
+        "citi-double-cash"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P90",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 243,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P91",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student"
+      ],
+      "net": 229,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P92",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student",
+        "savor-one"
+      ],
+      "net": 563,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student",
+        "savor-one"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": [
+        "savor-one"
+      ]
+    },
+    {
+      "id": "P93",
+      "firstCard": "savor-one",
+      "wallet": [
+        "freedom-flex",
+        "savor-one",
+        "costco-citi",
+        "discover-student"
+      ],
+      "net": 1555,
+      "actions": {
+        "survey": "apply:savor-one",
+        "home": "apply:savor-one",
+        "lab": "apply:savor-one"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "savor-one",
+        "costco-citi",
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": [
+        "savor-one"
+      ]
+    },
+    {
+      "id": "P94",
+      "firstCard": "sw-priority",
+      "wallet": [
+        "robinhood-gold",
+        "sw-priority",
+        "marriott-boundless"
+      ],
+      "net": 4977,
+      "actions": {
+        "survey": "apply:sw-priority",
+        "home": null,
+        "lab": "apply:sw-priority"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "sw-priority",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "sw-priority",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P95",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 238,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P96",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "bcp",
+        "freedom-flex"
+      ],
+      "net": 1060,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "bcp",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "bcp"
+      ]
+    },
+    {
+      "id": "P97",
+      "firstCard": null,
+      "wallet": [
+        "amex-bce",
+        "freedom-flex",
+        "apple-card"
+      ],
+      "net": 650,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "amex-bce",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P98",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "atmos-summit",
+        "costco-citi"
+      ],
+      "net": 4372,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "atmos-summit",
+        "costco-citi"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "atmos-summit"
+      ]
+    },
+    {
+      "id": "P99",
+      "firstCard": "aa-executive",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive"
+      ],
+      "net": 4833,
+      "actions": {
+        "survey": "apply:aa-executive",
+        "home": null,
+        "lab": "apply:aa-executive"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive",
+        "delta-gold"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "aa-executive"
+      ]
+    },
+    {
+      "id": "P100",
+      "firstCard": "citi-aa-platinum",
+      "wallet": [
+        "citi-aa-platinum"
+      ],
+      "net": 575,
+      "actions": {
+        "survey": "apply:citi-aa-platinum",
+        "home": null,
+        "lab": "apply:citi-aa-platinum"
+      },
+      "surveyWallet": [
+        "citi-aa-platinum"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-aa-platinum"
+      ]
+    },
+    {
+      "id": "P101",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "bcp",
+        "discover-it",
+        "united-explorer"
+      ],
+      "net": 2143,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "bcp",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "bcp",
+        "united-explorer"
+      ]
+    },
+    {
+      "id": "P102",
+      "firstCard": "freedom-rise",
+      "wallet": [
+        "savor-one",
+        "freedom-rise",
+        "discover-student"
+      ],
+      "net": 2262,
+      "actions": {
+        "survey": "apply:freedom-rise",
+        "home": null,
+        "lab": "apply:freedom-rise"
+      },
+      "surveyWallet": [
+        "savor-one",
+        "freedom-rise",
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "freedom-rise",
+        "discover-student"
+      ],
+      "annualFeeCards": [
+        "savor-one"
+      ]
+    },
+    {
+      "id": "P103",
+      "firstCard": null,
+      "wallet": [
+        "costco-citi",
+        "venture-one"
+      ],
+      "net": 252,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": "downgrade:venture-one",
+        "lab": null
+      },
+      "surveyWallet": [
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P104",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless"
+      ],
+      "net": 405,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P105",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 841,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P106",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 431,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P107",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "robinhood-gold",
+        "united-explorer",
+        "marriott-boundless"
+      ],
+      "net": 4903,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": null,
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "united-explorer",
+        "amex-gold",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P108",
+      "firstCard": "one-key",
+      "wallet": [
+        "one-key",
+        "discover-it"
+      ],
+      "net": 677,
+      "actions": {
+        "survey": "apply:one-key",
+        "home": null,
+        "lab": "apply:one-key"
+      },
+      "surveyWallet": [
+        "one-key",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P109",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "net": 1897,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "bcp",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bcp"
+      ]
+    },
+    {
+      "id": "P110",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 502,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P111",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless"
+      ],
+      "net": 524,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P112",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive",
+        "discover-it"
+      ],
+      "net": 5026,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "citi-strata",
+        "aa-executive",
+        "discover-it"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "citi-strata",
+        "aa-executive"
+      ]
+    },
+    {
+      "id": "P113",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "united-explorer",
+        "amex-bce"
+      ],
+      "net": 2363,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": "apply:united-explorer",
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "marriott-boundless",
+        "united-explorer",
+        "freedom-flex"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "united-explorer"
+      ]
+    },
+    {
+      "id": "P114",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "delta-plat",
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "net": 1795,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "delta-plat",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-plat",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P115",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless"
+      ],
+      "net": 390,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P116",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "bilt-obsidian"
+      ],
+      "net": 2034,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "bilt-obsidian"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "bilt-obsidian"
+      ]
+    },
+    {
+      "id": "P117",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "sw-premier"
+      ],
+      "net": 555,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": null,
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "sw-premier"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless",
+        "sw-premier"
+      ]
+    },
+    {
+      "id": "P118",
+      "firstCard": "delta-gold",
+      "wallet": [
+        "robinhood-gold",
+        "delta-gold",
+        "amex-gold",
+        "active-cash"
+      ],
+      "net": 5362,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:delta-gold",
+        "lab": "apply:citi-strata"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "delta-plat"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-gold",
+        "amex-gold"
+      ]
+    },
+    {
+      "id": "P119",
+      "firstCard": "freedom-rise",
+      "wallet": [
+        "freedom-rise",
+        "bcp"
+      ],
+      "net": 336,
+      "actions": {
+        "survey": "apply:freedom-rise",
+        "home": "apply:freedom-rise",
+        "lab": "apply:freedom-rise"
+      },
+      "surveyWallet": [
+        "freedom-rise",
+        "bcp"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "freedom-rise"
+      ],
+      "annualFeeCards": [
+        "bcp"
+      ]
+    },
+    {
+      "id": "P120",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 784,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P121",
+      "firstCard": "usb-altitude-go",
+      "wallet": [
+        "usb-altitude-go",
+        "discover-it"
+      ],
+      "net": 598,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P122",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "net": 614,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P123",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 686,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P124",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex"
+      ],
+      "net": 162,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P125",
+      "firstCard": null,
+      "wallet": [
+        "active-cash"
+      ],
+      "net": 133,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P126",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex"
+      ],
+      "net": 162,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P127",
+      "firstCard": "usb-altitude-go",
+      "wallet": [
+        "usb-altitude-go",
+        "discover-it"
+      ],
+      "net": 793,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P128",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "net": 775,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P129",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 830,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P130",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee",
+        "discover-it"
+      ],
+      "net": 863,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": null,
+        "lab": "apply:citi-strata-no-fee"
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P131",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee",
+        "active-cash",
+        "discover-it"
+      ],
+      "net": 915,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": "apply:citi-strata-no-fee",
+        "lab": "apply:citi-strata-no-fee"
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P132",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 924,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P133",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee",
+        "discover-it"
+      ],
+      "net": 531,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": null,
+        "lab": "apply:citi-strata-no-fee"
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P134",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "net": 501,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P135",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 484,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P136",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex"
+      ],
+      "net": 408,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P137",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "net": 513,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P138",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 473,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P139",
+      "firstCard": "costco-citi",
+      "wallet": [
+        "costco-citi"
+      ],
+      "net": 448,
+      "actions": {
+        "survey": "apply:costco-citi",
+        "home": null,
+        "lab": "apply:costco-citi"
+      },
+      "surveyWallet": [
+        "costco-citi"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P140",
+      "firstCard": null,
+      "wallet": [
+        "active-cash"
+      ],
+      "net": 432,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P141",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 588,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P142",
+      "firstCard": "active-cash",
+      "wallet": [
+        "active-cash",
+        "savor",
+        "discover-it"
+      ],
+      "net": 1464,
+      "actions": {
+        "survey": "apply:active-cash",
+        "home": null,
+        "lab": "apply:active-cash"
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P143",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "active-cash",
+        "freedom-flex",
+        "discover-it"
+      ],
+      "net": 1560,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "active-cash",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P144",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 1792,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P145",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "quicksilver"
+      ],
+      "net": 333,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P146",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "quicksilver"
+      ],
+      "net": 333,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P147",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 686,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P148",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 686,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P149",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 924,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P150",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 924,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P151",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "quicksilver",
+        "discover-it"
+      ],
+      "net": 1792,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P152",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "quicksilver",
+        "discover-it"
+      ],
+      "net": 1792,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P153",
+      "firstCard": null,
+      "wallet": [],
+      "net": 0,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P154",
+      "firstCard": null,
+      "wallet": [],
+      "net": 0,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P155",
+      "firstCard": "active-cash",
+      "wallet": [
+        "active-cash"
+      ],
+      "net": 108,
+      "actions": {
+        "survey": "apply:active-cash",
+        "home": null,
+        "lab": "apply:active-cash"
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P156",
+      "firstCard": "active-cash",
+      "wallet": [
+        "active-cash"
+      ],
+      "net": 108,
+      "actions": {
+        "survey": "apply:active-cash",
+        "home": null,
+        "lab": "apply:active-cash"
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P157",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 480,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P158",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 480,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P159",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 540,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P160",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "net": 540,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P161",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue"
+      ],
+      "net": 240,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P162",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue"
+      ],
+      "net": 300,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P163",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue"
+      ],
+      "net": 300,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P164",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue",
+        "active-cash"
+      ],
+      "net": 480,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P165",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue",
+        "active-cash"
+      ],
+      "net": 480,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P166",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue",
+        "active-cash",
+        "discover-it"
+      ],
+      "net": 735,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P167",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "bilt-blue",
+        "active-cash",
+        "discover-it"
+      ],
+      "net": 735,
+      "actions": {
+        "survey": "apply:bilt-blue",
+        "home": null,
+        "lab": "apply:bilt-blue"
+      },
+      "surveyWallet": [
+        "bilt-blue"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P168",
+      "firstCard": "bilt-blue",
+      "wallet": [
+        "active-cash",
+        "bilt-blue",
+        "discover-it"
+      ],
+      "net": 900,
+      "actions": {
+        "survey": "apply:active-cash",
+        "home": null,
+        "lab": "apply:active-cash"
+      },
+      "surveyWallet": [
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P169",
+      "firstCard": "savor",
+      "wallet": [
+        "savor"
+      ],
+      "net": 353,
+      "actions": {
+        "survey": "apply:savor",
+        "home": null,
+        "lab": "apply:savor"
+      },
+      "surveyWallet": [
+        "savor"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P170",
+      "firstCard": "savor",
+      "wallet": [
+        "savor"
+      ],
+      "net": 353,
+      "actions": {
+        "survey": "apply:savor",
+        "home": null,
+        "lab": "apply:savor"
+      },
+      "surveyWallet": [
+        "savor"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P171",
+      "firstCard": "wf-autograph",
+      "wallet": [
+        "wf-autograph"
+      ],
+      "net": 161,
+      "actions": {
+        "survey": "apply:wf-autograph",
+        "home": null,
+        "lab": "apply:wf-autograph"
+      },
+      "surveyWallet": [
+        "wf-autograph"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P172",
+      "firstCard": "wf-autograph",
+      "wallet": [
+        "wf-autograph"
+      ],
+      "net": 161,
+      "actions": {
+        "survey": "apply:wf-autograph",
+        "home": null,
+        "lab": "apply:wf-autograph"
+      },
+      "surveyWallet": [
+        "wf-autograph"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P173",
+      "firstCard": null,
+      "wallet": [
+        "discover-it"
+      ],
+      "net": 156,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P174",
+      "firstCard": null,
+      "wallet": [
+        "discover-it"
+      ],
+      "net": 156,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P175",
+      "firstCard": null,
+      "wallet": [
+        "citi-custom-cash"
+      ],
+      "net": 312,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "citi-custom-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P176",
+      "firstCard": null,
+      "wallet": [
+        "citi-custom-cash"
+      ],
+      "net": 312,
+      "actions": {
+        "survey": null,
+        "home": null,
+        "lab": null
+      },
+      "surveyWallet": [
+        "citi-custom-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P177",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student"
+      ],
+      "net": 106,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P178",
+      "firstCard": "discover-student",
+      "wallet": [
+        "discover-student"
+      ],
+      "net": 106,
+      "actions": {
+        "survey": "apply:discover-student",
+        "home": null,
+        "lab": "apply:discover-student"
+      },
+      "surveyWallet": [
+        "discover-student"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [
+        "discover-student"
+      ],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P179",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 102,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P180",
+      "firstCard": "discover-it-secured",
+      "wallet": [
+        "discover-it-secured"
+      ],
+      "net": 102,
+      "actions": {
+        "survey": "apply:discover-it-secured",
+        "home": null,
+        "lab": "apply:discover-it-secured"
+      },
+      "surveyWallet": [
+        "discover-it-secured"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P181",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 738,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P182",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 738,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": null,
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P183",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex"
+      ],
+      "net": 498,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": null,
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P184",
+      "firstCard": "usb-altitude-go",
+      "wallet": [
+        "usb-altitude-go",
+        "discover-it"
+      ],
+      "net": 422,
+      "actions": {
+        "survey": "apply:usb-altitude-go",
+        "home": null,
+        "lab": "apply:usb-altitude-go"
+      },
+      "surveyWallet": [
+        "usb-altitude-go"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P185",
+      "firstCard": "delta-gold",
+      "wallet": [
+        "delta-gold",
+        "active-cash"
+      ],
+      "net": 622,
+      "actions": {
+        "survey": "apply:delta-gold",
+        "home": "apply:delta-gold",
+        "lab": "apply:delta-gold"
+      },
+      "surveyWallet": [
+        "delta-gold",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-gold"
+      ]
+    },
+    {
+      "id": "P186",
+      "firstCard": "delta-gold",
+      "wallet": [
+        "delta-gold",
+        "active-cash"
+      ],
+      "net": 622,
+      "actions": {
+        "survey": "apply:delta-gold",
+        "home": "apply:delta-gold",
+        "lab": "apply:delta-gold"
+      },
+      "surveyWallet": [
+        "delta-gold",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-gold"
+      ]
+    },
+    {
+      "id": "P187",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "marriott-boundless",
+        "active-cash"
+      ],
+      "net": 992,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": "apply:united-explorer",
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P188",
+      "firstCard": "united-explorer",
+      "wallet": [
+        "united-explorer",
+        "marriott-boundless",
+        "active-cash"
+      ],
+      "net": 1008,
+      "actions": {
+        "survey": "apply:united-explorer",
+        "home": "apply:united-explorer",
+        "lab": "apply:united-explorer"
+      },
+      "surveyWallet": [
+        "united-explorer",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "united-explorer",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P189",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "net": 383,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": "apply:freedom-flex"
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P190",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "delta-gold",
+        "marriott-boundless",
+        "active-cash"
+      ],
+      "net": 763,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:delta-gold"
+      },
+      "surveyWallet": [
+        "delta-gold",
+        "marriott-boundless"
+      ],
+      "defaultsChanged": true,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "delta-gold",
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P191",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "active-cash"
+      ],
+      "net": 490,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P192",
+      "firstCard": "marriott-boundless",
+      "wallet": [
+        "marriott-boundless",
+        "active-cash"
+      ],
+      "net": 519,
+      "actions": {
+        "survey": "apply:marriott-boundless",
+        "home": "apply:marriott-boundless",
+        "lab": "apply:marriott-boundless"
+      },
+      "surveyWallet": [
+        "marriott-boundless",
+        "freedom-flex"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "marriott-boundless"
+      ]
+    },
+    {
+      "id": "P193",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee",
+        "active-cash",
+        "discover-it"
+      ],
+      "net": 915,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": "apply:citi-strata-no-fee",
+        "lab": null
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P194",
+      "firstCard": "citi-strata-no-fee",
+      "wallet": [
+        "citi-strata-no-fee",
+        "active-cash",
+        "discover-it"
+      ],
+      "net": 915,
+      "actions": {
+        "survey": "apply:citi-strata-no-fee",
+        "home": "apply:citi-strata-no-fee",
+        "lab": "apply:citi-strata-no-fee"
+      },
+      "surveyWallet": [
+        "citi-strata-no-fee",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P195",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash",
+        "amex-green"
+      ],
+      "net": 464,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "downgrade:amex-green",
+        "lab": null
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "amex-green"
+      ]
+    },
+    {
+      "id": "P196",
+      "firstCard": "freedom-flex",
+      "wallet": [
+        "freedom-flex",
+        "active-cash",
+        "amex-green"
+      ],
+      "net": 464,
+      "actions": {
+        "survey": "apply:freedom-flex",
+        "home": "apply:freedom-flex",
+        "lab": null
+      },
+      "surveyWallet": [
+        "freedom-flex",
+        "active-cash"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": [
+        "amex-green"
+      ]
+    },
+    {
+      "id": "P197",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 924,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P198",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it",
+        "quicksilver"
+      ],
+      "net": 924,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P199",
+      "firstCard": "discover-it",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 840,
+      "actions": {
+        "survey": null,
+        "home": "apply:discover-it",
+        "lab": null
+      },
+      "surveyWallet": [
+        "robinhood-gold"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": false,
+      "studentCards": [],
+      "annualFeeCards": []
+    },
+    {
+      "id": "P200",
+      "firstCard": "robinhood-gold",
+      "wallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "net": 780,
+      "actions": {
+        "survey": "apply:robinhood-gold",
+        "home": "apply:robinhood-gold",
+        "lab": "apply:robinhood-gold"
+      },
+      "surveyWallet": [
+        "robinhood-gold",
+        "discover-it"
+      ],
+      "defaultsChanged": false,
+      "waitlistedApply": true,
+      "studentCards": [],
+      "annualFeeCards": []
+    }
+  ]
+}

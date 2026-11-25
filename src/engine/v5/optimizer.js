@@ -136,9 +136,14 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
   }
 
   /* 1 — best adds beside the cards they keep */
-  const base = { ...profile, cardsHeld: kept };
+  // When held cards exceed the requested cap, retain the most useful first.
+  // The omitted accounts are disclosed by buildPlan, never silently kept.
+  const withinLimit = [...kept].sort((a, b) =>
+    walletValue(kept.filter(id => id !== a), profile).net - walletValue(kept.filter(id => id !== b), profile).net
+  ).slice(0, profile.maxCards);
+  const base = { ...profile, cardsHeld: withinLimit };
   /* The plan suggests at most `newCardComfort` new cards (default 3). */
-  const maxCards = Math.min(10, kept.length + profile.newCardComfort);
+  const maxCards = Math.min(profile.maxCards, withinLimit.length + Math.max(0, profile.newCardComfort));
   const plan = optimalWallet(base, { mode: "wallet", catalog, maxCards });
   const value = plan.value;
   const adds = plan.adds.map((id) => BY_ID[id]);

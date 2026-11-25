@@ -14,6 +14,7 @@ import { benefitBreakdown } from "../engine/v5/value.js";
 import { explainCard } from "../engine/v5/apply.js";
 import { saveV5Profile, loadV5Profile, toggleHeld } from "../state/v5Profile.js";
 import CardDetail from "../components/v6/CardDetail.jsx";
+import { buildPlan } from "../engine/v5/plan.js";
 import Home from "../components/v6/Home.jsx";
 
 afterEach(cleanup);
@@ -104,8 +105,8 @@ describe("5f.6 / 5f.8 · Home copy", () => {
     render(<Home profile={p} offers={[]} />);
     expect(screen.queryByText(/fee budget/i)).toBeNull();
     expect(screen.getByTestId("home-best")).toHaveTextContent(/^Best possible wallet for you: \$[\d,]+ a year$/);
-    const s = walletScore(p);
-    expect(screen.getByTestId("home-score-basis")).toHaveTextContent(`You're getting ${s.score}% of the most your cards could earn you. Best possible: +$${Math.round(s.best.value.N).toLocaleString("en-US")} a year over a basic 2% card.`);
+    const s = buildPlan(p);
+    expect(screen.getByTestId("home-score-basis")).toHaveTextContent(s.scoreText);
     expect(scoreBasisText(477, 1125)).toBe("You're getting 42% of the most your cards could earn you. Best possible: +$1,125 a year over a basic 2% card.");
   });
 });

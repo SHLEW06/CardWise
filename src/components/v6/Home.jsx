@@ -14,8 +14,9 @@ import FocalImage from "../v7/FocalImage.jsx";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 import { timelineLabel, applyTimeline } from "../../engine/v5/lab.js";
 import { Reveal, CountUp } from "./motion.jsx";
-import { walletScore, scoreBasisText } from "../../engine/v5/methodology.js";
-import { optimizeWallet } from "../../engine/v5/optimizer.js";
+import { buildPlan } from "../../engine/v5/plan.js";
+import PlanAdvice from "./PlanAdvice.jsx";
+
 import { describeOffer, isLive, offerValueFor } from "../../engine/offers/offerModel.js";
 import { matchStore, rankPurchase } from "../../engine/v5/checkout.js";
 import { queryNearbyStores } from "../../connector/nearby.js";
@@ -25,36 +26,13 @@ import { cardDisplayName } from "../../data/cardNames.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 
-/** The one recommendation for Home: a held card to cancel / switch if it
-    costs them, else the next card to get — each with its $ impact. */
-export function nextMove(rawProfile) {
-  const p = normalizeProfile(rawProfile);
-  const plan = optimizeWallet(p);
-  const drop = [...plan.skip, ...plan.keep.filter((k) => k.action === "downgrade" || k.action === "upgrade")]
-    .map((k) => ({ ...k, impact: Math.max(0, -(k.adds ?? 0)) }))
-    .sort((a, b) => b.impact - a.impact)[0];
-  const get = plan.getNext[0];
-  if (drop && drop.impact >= (get?.gain || 0) && drop.impact > 0) {
-    const card = BY_ID[drop.cardId];
-    const what = drop.action === "cancel" ? `Cancel your ${cardDisplayName(card)}` : drop.action === "upgrade" ? `Upgrade your ${cardDisplayName(card)} to the ${BY_ID[drop.upgradeTo].name}` : `Switch your ${cardDisplayName(card)} to the ${BY_ID[drop.downgradeTo].name}`;
-    return { kind: drop.action, cardId: drop.downgradeTo || drop.upgradeTo || drop.cardId, title: what, impact: drop.impact, sentence: drop.sentence };
-  }
-  if (get) {
-    /* v7 C1: a big loan within 12 months holds new cards until after it. */
-    const t = get.action === "upgrade" ? null : applyTimeline([...p.cardsHeld, get.cardId], p).find((x) => x.cardId === get.cardId);
-    const when = t?.afterLoan ? `${timelineLabel(t)}: a new card's credit check can nudge a loan rate up.` : null;
-    /* The plan's gain is measured beside the wallet it keeps; "Why this card?"
-       uses that same wallet so the two numbers agree. */
-    return { kind: get.action === "upgrade" ? "upgrade" : "apply", cardId: get.cardId, title: `${get.action === "upgrade" ? "Upgrade to" : "Get"} the ${cardDisplayName(BY_ID[get.cardId])}`, impact: Math.max(0, get.gain || 0), sentence: get.sentence, when, context: plan.wallet.filter((id) => id !== get.cardId) };
-  }
-  return null;
-}
+export const nextMove = (profile) => buildPlan(profile).nextMove;
 
 export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSetup }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);
   const cards = profile.cardsHeld.map((id) => BY_ID[id]).filter(Boolean);
-  const s = useMemo(() => walletScore(profile), [profile]);
-  const move = useMemo(() => (cards.length ? nextMove(profile) : null), [profile, cards.length]);
+  const s = useMemo(() => buildPlan(raw), [profile]);
+  const move = s.nextMove;
   const top = useMemo(() => offers.filter((o) => isLive(o) && o.status === "available" && profile.cardsHeld.includes(o.cardId))
     .map((o) => ({ o, v: offerValueFor(o, o.minSpend || 50).potential || o.reward || 0 })).sort((a, b) => b.v - a.v).slice(0, 3), [offers, profile]);
   const near = useNearYou(profile, offers);
@@ -68,6 +46,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             <p className="t-eyebrow">CardWise</p>
             <h1 className="t-hero">Start with the cards you carry.</h1>
             <p className="t-lead">Tell us how you spend and travel. We'll find the setup that pays you most — benefits first.</p>
+            <PlanAdvice plan={s} onEdit={onSetup} />
             <button className="btn btn-signal" onClick={onSetup}>Start setup <ArrowRight size={18} aria-hidden="true" /></button>
           </Reveal>
           <FocalImage slot="home" className="home-hero-focal" />
@@ -93,7 +72,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
           <div className="home-score">
             <ScoreDial score={s.score} size={120} caption="Score" />
             <div className="home-basis">
-              <p className="t-small" data-testid="home-score-basis">{scoreBasisText(s.current.N, s.best.value.N)}</p>
+              <p className="t-small" data-testid="home-score-basis">{s.scoreText}</p>
               <p className="t-caption" data-testid="home-best">Best possible wallet for you: <span className="t-value">{money(s.best.value.net)} a year</span></p>
             </div>
           </div>
@@ -102,6 +81,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
       </div>
 
       <div className="page home-below">
+        <PlanAdvice plan={s} onEdit={onSetup} />
         {move && (
           <Reveal className="panel next-move" id="next-move">
             <p className="t-eyebrow">Your next move</p>

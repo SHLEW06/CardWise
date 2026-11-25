@@ -19,7 +19,8 @@
 import { BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
 import { cardDisplayName } from "../../data/cardNames.js";
-import { optimalWallet, walletValue, eligibility, isChase } from "./methodology.js";
+import { buildPlan } from "./plan.js";
+import { walletValue, eligibility, isChase } from "./methodology.js";
 import { applyTimeline, APPLY_SPACING_MONTHS } from "./lab.js";
 import { applicationHurdle, explainCard } from "./apply.js";
 import { cardFee } from "./value.js";
@@ -76,7 +77,7 @@ function whyFor(id, wallet, profile, later, when) {
  */
 export function planRoadmap(rawProfile, { today = new Date() } = {}) {
   const p = normalizeProfile(rawProfile);
-  const nowRes = optimalWallet(p, { mode: p.cardsHeld.length ? "wallet" : "scratch" });
+  const nowRes = buildPlan(p).best;
   /* v7f Part 3: a strategy they chose ("Use this strategy") is the target;
      the roadmap orders its cards. */
   const target = p.targetStrategy && STRATEGY_BY_KEY[p.targetStrategy] ? strategyWallet(STRATEGY_BY_KEY[p.targetStrategy], p).wallet : null;
@@ -97,7 +98,7 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
     const nowAdds = nowWallet.filter((id) => !p.cardsHeld.includes(id) && eligibility(BY_ID[id], p).how === "apply");
     /* By then the now-wallet is theirs; its new cards count toward 5/24. */
     const f = normalizeProfile({ ...fp, cardsHeld: nowWallet, credit: { ...fp.credit, newCards24mo: p.credit.newCards24mo + nowAdds.length } });
-    const res = optimalWallet(f, { mode: "scratch" });
+    const res = buildPlan(f).best;
     const lw = res.wallet;
     later = { wallet: lw, value: walletValue(lw, f, { normalized: true }), month: G };
     const adds = lw.filter((id) => !nowWallet.includes(id));

@@ -18,7 +18,9 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
-import { optimalWallet, walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
+import { walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
+import { buildPlan } from "../../../engine/v5/plan.js";
+import PlanAdvice from "../PlanAdvice.jsx";
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { WalletChecklist } from "../../v7/BenefitChecklist.jsx";
 import { SpecialtyOptions } from "../../v7/Specialty.jsx";
@@ -62,28 +64,29 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
   const [samplesOn, setSamplesOn] = useState(false);
   const openCard = (id, slotKey = null) => onOpenCard?.(id, setup, slotKey);   // v7 D1 / v7b 5.2: full card detail, judged against this setup
 
-  const best = useMemo(() => optimalWallet(p), [p]);
+  const shared = useMemo(() => buildPlan(p, { wallet: custom, mode: saved?.cardsHeld?.length && mode === "scratch" ? "scratch" : "wallet" }), [p, custom, mode, saved]);
+  const best = shared.best;
   /* v7f Part 3: a strategy chosen in the Strategies tab is the target setup */
   const target = useMemo(() => (p.targetStrategy && STRATEGY_BY_KEY[p.targetStrategy] ? { ...STRATEGY_BY_KEY[p.targetStrategy], ...strategyWallet(STRATEGY_BY_KEY[p.targetStrategy], p) } : null), [p]);
-  const mine = useMemo(() => (target ? { wallet: target.wallet } : mode === "wallet" ? optimalWallet(p, { mode: "wallet" }) : best), [p, mode, best, target]);
+  const mine = best;
   /* Changing the budget, spending or mode re-optimizes: a swap is kept only
      until then. */
   useEffect(() => { setCustom(null); }, [p, mode]);
-  const setup = custom || mine.wallet;
-  const value = useMemo(() => walletValue(setup, p), [setup, p]);
-  const tiles = useMemo(() => walletCards(setup, p, value), [setup, p, value]);
-  const where = useMemo(() => useWhereRows(value, p), [value, p]);
-  const dropped = useMemo(() => heldNotKept(setup, p), [setup, p]);
-  const score = scoreFrom(value.N, best.value.N);
+  const setup = shared.preview.wallet;
+  const value = shared.preview.value;
+  const tiles = shared.preview.tiles;
+  const where = shared.preview.where;
+  const dropped = shared.preview.dropped;
+  const score = shared.score;
   /* "Your wallet now" — the same number Home shows (same function, same budget). */
-  const nowValue = useMemo(() => walletValue(p.cardsHeld, p), [p]);
-  const nowScore = scoreFrom(nowValue.N, best.value.N);
+  const nowValue = shared.current;
+  const nowScore = shared.score;
   const sameAsHeld = [...setup].sort().join() === [...p.cardsHeld].sort().join();
 
   useEffect(() => { if (!toast) return undefined; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t); }, [toast]);
 
   const swap = (alt, slotKey) => {
-    const after = walletValue(alt.setup, p);
+    const after = buildPlan(p, { wallet: alt.setup }).preview.value;
     setToast(swapSentence(value, after, alt.cardId, slotKey, alt.displaced));
     setCustom(alt.setup);
     setSheet(null);
@@ -91,6 +94,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
 
   return (
     <section className="page lab">
+      <PlanAdvice plan={shared} onEdit={() => setDrawer(true)} />
       <Reveal as="header" className="lab-head">
         <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">
@@ -98,7 +102,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
           {target && <p className="t-caption" data-testid="lab-target">Target: {target.label} · <button type="button" className="link" onClick={() => onSaveProfile?.({ ...normalizeProfile(saved), targetStrategy: null })}>Clear target</button></p>}
           <p className="t-eyebrow" data-testid="lab-mode">Wallet Lab · {mode === "wallet" && p.cardsHeld.length ? `Built from your ${p.cardsHeld.length} card${p.cardsHeld.length === 1 ? "" : "s"}` : "Starting from zero"}</p>
           <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
-          <p className="t-caption lab-basis">{scoreBasisText(value.N, best.value.N)}</p>
+          <p className="t-caption lab-basis">{shared.scoreText}</p>
           <dl className="lab-refs">
             {!sameAsHeld && <div><dt>Your wallet now</dt><dd className="t-value" data-testid="lab-now-score">{nowScore} <span className="t-caption">· {money(nowValue.net)} a year</span></dd></div>}
             <div><dt>Best possible wallet for you</dt><dd className="t-value" data-testid="lab-best"><CountUp value={best.value.net} /> <span className="t-caption">a year</span></dd></div>
@@ -205,7 +209,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
 
       {/* v7 D5: panels start collapsed. */}
       <div className="lab-panels">
-        <Fold title="Keep or cancel"><KeepOrCancel profile={p} onOpenCard={openCard} /></Fold>
+        <Fold title="Keep or cancel"><KeepOrCancel profile={p} plan={shared} onOpenCard={openCard} /></Fold>
         <Fold title="When to apply"><WhenToApply setup={setup} profile={p} onOpenCard={openCard} /></Fold>
         <Fold title="Your plan"><PlanTimeline profile={p} /></Fold>
         <Fold title="Credits you'd plan around"><PlanAround setup={setup} profile={draft} onChange={(planAround) => setDraft({ ...draft, planAround })} /></Fold>
@@ -458,8 +462,8 @@ function Samples({ profile, onLoad }) {
 }
 
 /* ── panels ─────────────────────────────────────────────────────────────── */
-function KeepOrCancel({ profile, onOpenCard }) {
-  const verdicts = useMemo(() => heldCardVerdicts(profile), [profile]);
+function KeepOrCancel({ profile, plan, onOpenCard }) {
+  const verdicts = plan.heldAdvice;
   return (
     <>
       {!verdicts.length && <p className="t-caption">Add the cards you have (Profile → Your answers) to see which ones earn their keep.</p>}

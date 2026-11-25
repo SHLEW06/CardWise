@@ -26,9 +26,10 @@ import { SPEND_PRESETS, SCORE_BUCKETS, withSpendYear, withMonthlySpend, normaliz
 
 import { searchPlaces, placeName, placeShort, isIntl, suggestRoutes, ROUTE_DATA_SOURCE } from "../../../engine/v5/tripRoutes.js";
 import { loyaltyStrategies, applyStrategy } from "../../../engine/v5/plans.js";
-import { optimalWallet } from "../../../engine/v5/methodology.js";
+import { buildPlan } from "../../../engine/v5/plan.js";
+import PlanAdvice from "../../v6/PlanAdvice.jsx";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
-import { walletScore } from "../../../engine/v5/methodology.js";
+
 import { applyTimeline, monthLabel } from "../../../engine/v5/lab.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { STEP_DEFS, stepsFor, draftFrom, MODES } from "../../../state/surveyAnswers.js";
@@ -829,15 +830,15 @@ function YourPointsStep({ d, headRef }) {
 
 /* ── Step 9: your best setup ─────────────────────────────────────────── */
 
-function RevealStep({ d, set, headRef }) {
+export function RevealStep({ d, set, headRef }) {
   /* v7c 5e.2: two tabs — Now (today's best wallet) and Your plan. */
   const [tab, setTab] = useState("now");
-  const s = useMemo(() => walletScore(d), [d]);
+  const s = useMemo(() => buildPlan(d), [d]);
   const best = s.best;
   const has = d.cardsHeld.length > 0;
   /* Review #9: "Get now" lists only what to apply for now (likely approvals,
      one at a time); the rest go to "When to apply", in order. */
-  const plan = useMemo(() => applyTimeline(best.wallet, d), [best, d]);
+  const plan = s.timeline;
   const held = best.wallet.filter((id) => d.cardsHeld.includes(id));
   const now = plan.filter((t) => t.month === 0).map((t) => t.cardId);
   const later = plan.filter((t) => t.month > 0);
@@ -846,6 +847,8 @@ function RevealStep({ d, set, headRef }) {
       <Head headRef={headRef} eyebrow="Your best setup"
         title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
         sub={d.feeLimit != null ? `With the answers you gave, and your fee limit of $${d.feeLimit.toLocaleString("en-US")} a year.` : "With the answers you gave. No fee limit: each card is in only if it pays for itself."} />
+      <PlanAdvice plan={s} onEdit={(step) => document.dispatchEvent(new CustomEvent("cardwise-edit-answer", { detail: step }))} />
+      <p className="t-caption">{s.scoreText}</p>
       <FeeLimitCost profile={d} onRemove={set ? () => set({ feeLimit: null }) : null} />
       <div className="segmented reveal-tabs" role="tablist" aria-label="Now or later">
         <button role="tab" aria-selected={tab === "now"} className="segmented-item" onClick={() => setTab("now")}>Now</button>

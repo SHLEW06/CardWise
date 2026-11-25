@@ -18,6 +18,7 @@ import { rankPurchase, matchStore } from "../engine/v5/checkout.js";
 import { applyTimeline } from "../engine/v5/lab.js";
 import { SAPPHIRE_LEFT_PRIORITY_PASS } from "../data/loungeLocations.js";
 import { LOUNGE_VISIT_VALUE, LOUNGE_RETAIL_CAP } from "../data/benefitUsage.js";
+import { buildPlan } from "../engine/v5/plan.js";
 import Home from "../components/v6/Home.jsx";
 import WalletLab from "../components/v6/lab/WalletLab.jsx";
 import CardDetail from "../components/v6/CardDetail.jsx";
@@ -87,18 +88,14 @@ describe("2 · required memberships count as fees unless already paid", () => {
 
 describe("3 · Wallet Score is explainable and the same on Home and in Wallet Lab", () => {
   const P = { cardsHeld: ["amex-gold", "freedom-unlimited", "csp", "robinhood-gold"], feeBudget: 500, spend: spend({ dining: 600, groceries: 700, other: 600 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
-  it("score = round(100 × shown extra ÷ shown best extra)", () => {
-    const s = walletScore(P);
-    expect(s.score).toBe(scoreFrom(s.current.N, s.best.value.N));
+  it("score divides current annual net by recommended annual net", () => {
+    const s = buildPlan(P);
+    expect(s.score).toBe(scoreFrom(s.current.net, s.best.value.net));
     render(<Home profile={P} offers={[]} />);
-    /* v7c 5f.8: plain words, same numbers. */
-    const basis = screen.getByTestId("home-score-basis").textContent;
-    const [, score, best] = basis.match(/^You're getting (\d+)% of the most your cards could earn you\. Best possible: \+\$([\d,]+) a year over a basic 2% card\.$/);
-    expect(Number(score)).toBe(s.score);
-    expect(Number(best.replace(/,/g, ""))).toBe(Math.round(s.best.value.N));
+    expect(screen.getByTestId("home-score-basis")).toHaveTextContent(s.scoreText);
   });
   it("Wallet Lab labels a suggested setup and shows 'Your wallet now' = Home's score", () => {
-    const home = walletScore(P).score;
+    const home = buildPlan(P).score;
     render(<WalletLab profile={P} />);
     expect(screen.getByRole("meter", { name: "Wallet Score, suggested setup" })).toBeInTheDocument();
     expect(screen.getByTestId("lab-now-score").textContent).toMatch(new RegExp(`^${home} `));
