@@ -43,14 +43,14 @@ describe("5f.1 · 'I have this card'", () => {
 
 describe("5f.2 · credits not picked count $0 (no haircuts)", () => {
   it("the Platinum's Resy, lululemon, Oura, Walmart+, digital entertainment, Uber One and CLEAR are all $0 and listed as unused", () => {
-    const b = benefitBreakdown(BY_ID["amex-plat"], normalizeProfile({ travel: TRAVEL }));
+    const b = benefitBreakdown(BY_ID["amex-plat"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: TRAVEL }));
     for (const re of [/Resy/, /lululemon/, /Oura/, /Walmart\+/, /digital entertainment/, /Uber One/, /CLEAR/]) {
       expect(b.items.some((i) => re.test(i.label)), String(re)).toBe(false);
       expect(b.unused.some((u) => re.test(u.label)), String(re)).toBe(true);
     }
   });
   it("picked ones count 100%, capped at actual spend", () => {
-    const b = benefitBreakdown(BY_ID["amex-plat"], normalizeProfile({ travel: TRAVEL, brands: { habits: { lululemon: { answer: "monthly" }, clear: { answer: "pay" } } } }));
+    const b = benefitBreakdown(BY_ID["amex-plat"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: TRAVEL, brands: { habits: { lululemon: { answer: "monthly" }, clear: { answer: "pay" } } } }));
     expect(b.items.find((i) => /lululemon/.test(i.label)).value).toBe(300);
     expect(b.items.find((i) => /CLEAR/.test(i.label)).value).toBe(219);
   });
@@ -63,12 +63,12 @@ describe("5f.2 · credits not picked count $0 (no haircuts)", () => {
 
 describe("5f.3 / 5f.4 · status and trip delay $0; lounges one line", () => {
   it("status and trip delay are Nice extras, not counted", () => {
-    const v = walletValue(["amex-plat"], normalizeProfile({ travel: TRAVEL, brands: { hotels: ["marriott", "hilton"] } }));
+    const v = walletValue(["amex-plat"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: TRAVEL, brands: { hotels: ["marriott", "hilton"] } }));
     expect(v.benefits.some((b) => b.kind === "status" || b.kind === "protection")).toBe(false);
     expect(v.perCard[0].extras.map((x) => x.kind)).toEqual(expect.arrayContaining(["status"]));
   });
   it("lounges: one benefit per wallet, the best network, the same number in the detail and the total", () => {
-    const p = normalizeProfile({ travel: { ...TRAVEL, homeAirport: "ATL" }, brands: { airlines: ["delta"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { ...TRAVEL, homeAirport: "ATL" }, brands: { airlines: ["delta"] } });
     const v = walletValue(["amex-plat", "delta-reserve"], p);
     const lounges = v.benefits.filter((b) => b.kind === "lounge");
     expect(lounges).toHaveLength(1);
@@ -82,7 +82,7 @@ describe("5f.3 / 5f.4 · status and trip delay $0; lounges one line", () => {
 
 describe("5f.5 · one number per idea", () => {
   it("the headline, 'Why this card?' and 'Worth applying?' all lead with the net after the application cost", () => {
-    const p = normalizeProfile({ cardsHeld: ["freedom-unlimited"], spend: { dining: 1500, groceries: 1500 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["freedom-unlimited"], spend: { dining: 1500, groceries: 1500 } });
     const e = explainCard("amex-gold", ["freedom-unlimited"], p, walletValue);
     render(<CardDetail cardId="amex-gold" profile={p} onClose={() => {}} />);
     const net = `$${Math.round(e.net).toLocaleString("en-US")}`;
@@ -91,7 +91,7 @@ describe("5f.5 · one number per idea", () => {
     expect(screen.getByTestId("why-amex-gold")).toHaveTextContent(new RegExp(`\\+\\${net} a year after that cost`));
   });
   it("a category says 'adds $X over your current card' in the why-line and 'earns $Y' in the earning list", () => {
-    const p = normalizeProfile({ cardsHeld: ["citi-double-cash"], spend: { dining: 1500 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["citi-double-cash"], spend: { dining: 3000 } });
     render(<CardDetail cardId="amex-gold" profile={p} onClose={() => {}} />);
     expect(screen.getByTestId("why-line")).toHaveTextContent(/adds \$[\d,]+ over your current card/);
     expect(screen.getAllByText(/^earns \$[\d,]+ a year on \$[\d,]+$/).length).toBeGreaterThan(0);
@@ -112,13 +112,13 @@ describe("5f.6 / 5f.8 · Home copy", () => {
 });
 
 describe("5f.7 · the transfer line only when the card unlocks something new", () => {
-  const P = { travel: TRAVEL, brands: { hotels: ["marriott"] } };
+  const P = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", travel: TRAVEL, brands: { hotels: ["marriott"] } };
   it("no 'Opens transfers to…' on the Platinum beside an MR card that already transfers", () => {
-    const p = normalizeProfile({ ...P, cardsHeld: ["amex-gold", "freedom-unlimited"] });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...P, cardsHeld: ["amex-gold", "freedom-unlimited"] });
     expect(explainCard("amex-plat", p.cardsHeld, p, walletValue).ecosystem).toEqual([]);
   });
   it("shown when it's their first card that can transfer (the owner's three cards have none)", () => {
-    const p = normalizeProfile({ ...P, cardsHeld: THREE });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...P, cardsHeld: THREE });
     expect(explainCard("amex-plat", THREE, p, walletValue).ecosystem[0].text).toMatch(/^Opens transfers to /);
   });
 });

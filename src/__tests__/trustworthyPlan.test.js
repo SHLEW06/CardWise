@@ -12,7 +12,7 @@ describe("one trustworthy plan", () => {
     expect(p.nextMove?.kind).not.toBe("apply");
   });
   it("scores current annual net against the same recommended annual net", () => {
-    const p = buildPlan({ cardsHeld: ["freedom-unlimited"], credit: { score: 770 } });
+    const p = buildPlan({ cardsHeld: ["freedom-unlimited"], spend: { other: 500 }, credit: { score: 770 } });
     expect(p.score).toBe(Math.max(0, Math.min(100, Math.round(100*p.current.net/p.best.value.net))));
     expect(p.scoreText).toContain(String(p.score));
     expect(buildPlan({}).score).toBeNull();

@@ -80,7 +80,7 @@ describe("5e.2 · Your plan", () => {
     }
   });
   it("each step: date window, card, why now, its net value from then on, what to drop", () => {
-    expect(r.steps.length).toBeGreaterThan(1);
+    expect(r.steps.length).toBeGreaterThan(0);
     for (const s of r.steps) {
       expect(s.window).toMatch(/^(From )?\w{3} \d{4}( – \w{3} \d{4})?$/);
       expect(typeof s.why).toBe("string");

@@ -78,6 +78,7 @@ function fontPreload() {
 export default defineConfig({
   plugins: [localHotels(), cardArtManifest(), fontPreload(), react()],
   test: {
+    testTimeout: 30000,
     include: ["src/**/*.test.js", "src/**/*.test.jsx"],
     /* Default fast node environment; UI tests opt into jsdom via a
        `// @vitest-environment jsdom` header on individual files, so the

@@ -255,6 +255,7 @@ export function allBenefits(value) {
     for (const u of pc.unused || []) rows.push({ cardId: pc.cardId, label: u.label, value: 0, face: u.face || 0, flags: ["Not used"], reason: u.reason });
     /* v7c 5.1: spend-gated credits are never counted. */
     for (const g of pc.gated || []) rows.push({ cardId: pc.cardId, label: g.label, value: 0, face: g.face || 0, flags: ["Unlocks with spending"], reason: g.spend ? `Needs $${g.spend.toLocaleString("en-US")} a year on this card` : "Needs a spending threshold" });
+    for (const t of pc.temporary || []) rows.push({ cardId: pc.cardId, label: t.label, value: 0, face: t.face, flags: ["Temporary"], reason: `Ends ${t.endsAt}; up to $${t.value} separately, excluded from recurring annual value` });
     /* v7c 5b.2: status and protections — unscored "Nice extras", no $. */
     const seen = new Set(rows.filter((r) => r.extra).map((r) => r.label));
     for (const x of pc.extras || []) if (!seen.has(x.label)) { seen.add(x.label); rows.push({ cardId: pc.cardId, label: x.label, value: 0, face: 0, flags: ["Nice extra"], reason: null, extra: true, kind: x.kind }); }

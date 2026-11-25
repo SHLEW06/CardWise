@@ -19,7 +19,7 @@ afterEach(cleanup);
 beforeEach(() => { window.scrollTo = () => {}; });
 beforeAll(async () => { await loadGeneratedBrands(); });
 
-const P = { cardsHeld: ["amex-gold", "freedom-unlimited", "citi-double-cash", "robinhood-gold"], feeBudget: 500, brands: { airlines: ["united"] } };
+const P = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", cardsHeld: ["amex-gold", "freedom-unlimited", "citi-double-cash", "robinhood-gold"], feeBudget: 500, brands: { airlines: ["united"] } };
 
 describe("store dictionary", () => {
   it("≥ 3,000 US brands: curated + name-suggestion-index (BSD-3-Clause, notice kept)", () => {
@@ -56,7 +56,7 @@ describe("ranking (A5 rules on the v5 engine)", () => {
   it("Freedom alone is 1.5%, not 2.25% (v5 point value)", () => {
     const r = rankPurchase({ store: matchStore("home depot") }, { cardsHeld: ["freedom-unlimited"] });
     expect(r.rows[0].pct).toBeCloseTo(1.5, 9);
-    expect(r.rows[0].cpp).toBe(cardCpp(BY_ID["freedom-unlimited"], normalizeProfile({}), ["freedom-unlimited"]));
+    expect(r.rows[0].cpp).toBe(cardCpp(BY_ID["freedom-unlimited"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }), ["freedom-unlimited"]));
   });
   it("Costco takes only Visa in store; the Costco Visa leads there", () => {
     const r = rankPurchase({ store: matchStore("costco"), channel: "in" }, { cardsHeld: ["amex-gold", "costco-citi"] });

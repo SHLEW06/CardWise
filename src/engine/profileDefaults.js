@@ -93,21 +93,21 @@ export const DEFAULT_NEW_CARD_COMFORT = 3;
 
 export const DEFAULT_PROFILE = Object.freeze({
   cardsHeld: [],
-  wants: "both",                       // "cash" | "travel" | "both" (v5; drives default partner picks)
+  wants: "cash",                       // a skipped goal never implies transfer redemptions
   feeBudget: 100,
-  spend: SPEND_PRESETS.typical,        // monthly $
+  spend: Object.fromEntries(SPEND_CATEGORIES.map(k => [k, 0])),
   gasAt: "regular",                    // "regular" | "costco" | "both"
   warehouseClub: "costco",             // "costco" | "sams" | "bjs"
   travel: {
     homeAirport: null,                 // NEVER defaulted
     trips: 0,                          // round trips (flights) per year
-    hotelNights: null,                 // paid nights per year; null → trips × 2
+    hotelNights: 0,
     lounges: "no",                     // "no" | "sometimes" | "yes"
     intlShare: 0,                      // share of trips that are international (0 | 0.3 | 0.8); lounge practicality
     cabin: "economy",                  // v7: "economy" | "premium" | "business" | "mixed"
     booking: "direct",                 // v7: "direct" | "portal" | "best" (whichever pays more)
-    bags: null,                        // v7: { perTrip, share } — bags per trip, share of trips with bags; null = not asked
-    airlinePerks: null,                // v7: ["bags","boarding","companion","upgrades"]; null = not asked
+    bags: { perTrip: 0, share: 0 },
+    airlinePerks: [],
   },
   brands: { airlines: [], hotels: [], everyday: [], perks: [], perksMaybe: [] },   // perksMaybe: "would use if a card paid for it" (v7 A5b)
   credit: { score: SCORE_BUCKETS.unsure, noHistory: false, newCards24mo: 0, pastAmex: [], pastChase: [], loan: "none" },
@@ -162,15 +162,15 @@ export function normalizeProfile(p = {}) {
   const travel = { ...d.travel, ...(p.travel || {}) };
   travel.homeAirport = travel.homeAirport ? String(travel.homeAirport).toUpperCase() : null;
   travel.trips = num(travel.trips);
-  travel.hotelNights = travel.hotelNights == null ? null : num(travel.hotelNights);
+  travel.hotelNights = travel.hotelNights == null ? 0 : num(travel.hotelNights);
   travel.intlShare = Math.max(0, Math.min(1, Number(travel.intlShare) || 0));
   if (!LOUNGE_ANSWERS.includes(travel.lounges)) travel.lounges = "no";
   if (!CABINS.includes(travel.cabin)) travel.cabin = "economy";
   if (!BOOKING.includes(travel.booking)) travel.booking = "direct";
   travel.bags = travel.bags && typeof travel.bags === "object"
     ? { perTrip: Math.min(4, num(travel.bags.perTrip)), share: Math.max(0, Math.min(1, Number(travel.bags.share) || 0)) }
-    : null;
-  travel.airlinePerks = Array.isArray(travel.airlinePerks) ? travel.airlinePerks.filter((k) => AIRLINE_PERKS.includes(k)) : null;
+    : { perTrip: 0, share: 0 };
+  travel.airlinePerks = Array.isArray(p.travel?.airlinePerks) ? p.travel.airlinePerks.filter((k) => AIRLINE_PERKS.includes(k)) : (travel.bags.perTrip > 0 ? ["bags"] : []);
   /* v7b Part 3: home airports (metros count once), each with trips, work
      flag and destinations. When given, they decide trips, the home airport,
      the international share and (on "Best value") the airlines. */
@@ -235,8 +235,8 @@ export function normalizeProfile(p = {}) {
      "Let CardWise pick". */
   const hotelAnswered = ["auto", "manual", "none"].includes(travel.hotelChoice);   // "none" = no hotel program (strategies, older profiles)
   const askedUs = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).some((h) => HOTEL_AUTO_CHIPS.includes(h));
-  travel.hotelChoice = hotelAnswered ? travel.hotelChoice : realHotels.length ? "manual" : travel.airports.length || askedUs ? "auto" : "none";
-  if (travel.hotelChoice === "manual" && !realHotels.length) travel.hotelChoice = "auto";
+  travel.hotelChoice = hotelAnswered ? travel.hotelChoice : realHotels.length ? "manual" : "none";
+  if (travel.hotelChoice === "manual" && !realHotels.length) travel.hotelChoice = "none";
   /* An old "Independent / whatever's cheapest" chip becomes where they stay:
      alone → independent; beside brands → a mix. */
   const hadIndependent = lower(p.brands?.hotelsPicked ?? p.brands?.hotels).includes("independent");
@@ -323,6 +323,8 @@ export function normalizeProfile(p = {}) {
   for (const [cur, xs] of Object.entries(p.partnerPicks || {})) if (Array.isArray(xs)) partnerPicks[cur] = lower(xs);
 
   return {
+    // Persist missing-answer provenance through save/load and normalization.
+    assumedFields: Array.isArray(p.assumedFields) ? [...p.assumedFields] : missingAnswers(p),
     cardsHeld: Array.from(new Set(p.cardsHeld || [])),
     isStudent: typeof p.isStudent === "boolean" ? p.isStudent : null,
     canAffordDeposit: typeof p.canAffordDeposit === "boolean" ? p.canAffordDeposit : null,
@@ -331,6 +333,9 @@ export function normalizeProfile(p = {}) {
     paymentBehavior: ["always", "sometimes", "usually"].includes(p.paymentBehavior) ? p.paymentBehavior : null,
     averageBalance: p.averageBalance != null ? num(p.averageBalance) : null,
     apr: p.apr != null ? Math.min(1, num(p.apr)) : null,
+    rotatingActivation: ["yes", "no", "unsure"].includes(p.rotatingActivation) ? p.rotatingActivation : "no",
+    groceryStore: ["supermarket", "superstore", "warehouse"].includes(p.groceryStore) ? p.groceryStore : null,
+    biltCashAnnualUse: num(p.biltCashAnnualUse),
     wants,
     feeBudget,
     spend,                             // monthly view (yearly ÷ 12)
@@ -354,7 +359,7 @@ export function normalizeProfile(p = {}) {
       const nights = travel.hotelNights != null ? travel.hotelNights : travel.trips * DEFAULT_NIGHTS_PER_TRIP;
       const pick = wantsPick ? pickHotelProgram({ airports: travel.airports.length ? travel.airports : [{ code: travel.homeAirport || "X", trips: travel.trips || 1, destinations: [] }], nights, mode: p.valueMode || "typical" }) : null;
       /* Auto values the picked program only; manual values their brands. */
-      let hotels = wantsPick ? (pick ? [pick.program] : []) : hotelsPicked;
+      let hotels = wantsPick ? (pick ? [pick.program] : []) : travel.hotelChoice === "none" ? [] : hotelsPicked;
       let valuedAirlines = airlines;
       let shown = pick;
       /* v7c 2.1: the chosen strategy's programs are the ones valued — for
@@ -463,7 +468,7 @@ export function cleanOverrides(o) {
 }
 
 export const hotelNights = (profile) =>
-  profile.travel.hotelNights != null ? profile.travel.hotelNights : profile.travel.trips * DEFAULT_NIGHTS_PER_TRIP;
+  profile.travel.hotelNights ?? 0;
 
 /** Set one spend row from a YEARLY amount (keeps spend/spendYear in step). */
 export function withSpendYear(profile, key, yearly) {
@@ -483,9 +488,20 @@ export function annualSpend(profile) {
   const y = profile.spendYear;
   const out = {};
   for (const k of SPEND_CATEGORIES) out[k] = y ? y[k] || 0 : (profile.spend[k] || 0) * 12;
-  if (!out.flights) out.flights = profile.travel.trips * TRAVEL_SPEND_PER_TRIP.flights;
-  if (!out.hotels) out.hotels = profile.travel.hotelNights != null ? profile.travel.hotelNights * HOTEL_NIGHT_COST : profile.travel.trips * TRAVEL_SPEND_PER_TRIP.hotels;
+  if (!out.hotels) out.hotels = (profile.travel.hotelNights || 0) * HOTEL_NIGHT_COST;
   return out;
+}
+
+export function missingAnswers(p) {
+  const keys = [];
+  for (const k of ["wants", "maxCards", "newCardComfort", "isStudent", "canAffordDeposit", "paymentBehavior", "rotatingActivation", "groceryStore", "memberships", "biltCashAnnualUse"])
+    if (p[k] == null) keys.push(k);
+  for (const k of ["bags", "lounges", "hotelNights", "hotelChoice", "booking", "companions", "hotelBudget", "hotelMarkup", "hotelTaxes", "breakfast", "onProperty", "stayStyle", "airlinePerks"])
+    if (p.travel?.[k] == null && !(k === "hotelChoice" && (p.brands?.hotelsPicked || p.brands?.hotels || []).length) && !(k === "hotelNights" && (p.travel?.tripRows || []).some(r => r.nights != null))) keys.push(`travel.${k}`);
+  if (p.credit?.score == null && !p.credit?.noHistory) keys.push("credit.score");
+  if (p.credit?.newCards24mo == null) keys.push("credit.newCards24mo");
+  if (SPEND_CATEGORIES.some(k => p.spend?.[k] == null && p.spendYear?.[k] == null)) keys.push("spend");
+  return keys;
 }
 
 export const totalAnnualSpend = (profile) => Object.values(annualSpend(profile)).reduce((a, b) => a + b, 0);

@@ -13,7 +13,7 @@ import { FLEX_CURRENCIES } from "../engine/v5/pointValues.js";
 import { BY_ID } from "../data/cards/index.js";
 
 afterEach(cleanup);
-const ME = normalizeProfile({ cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], brands: { airlines: ["delta"], hotels: ["hyatt", "marriott"] }, travel: { trips: 7 } });
+const ME = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], brands: { airlines: ["delta"], hotels: ["hyatt", "marriott"] }, travel: { trips: 7 } });
 
 describe("2.1 every flexible currency held appears", () => {
   it("Amex Gold → Amex points shows beside Chase", () => {
@@ -23,7 +23,7 @@ describe("2.1 every flexible currency held appears", () => {
     expect(screen.getByTestId("held-chase")).toHaveTextContent("Chase points");
   });
   it("a cash card that converts counts too (Quicksilver beside a Venture → Capital One miles)", () => {
-    expect(currenciesFor(normalizeProfile({ cardsHeld: ["quicksilver", "venture"] }), BY_ID)).toContain("c1");
+    expect(currenciesFor(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["quicksilver", "venture"] }), BY_ID)).toContain("c1");
   });
 });
 

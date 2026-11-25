@@ -8,7 +8,7 @@ import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { render, screen, within, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { BY_ID } from "../data/cards/index.js";
-import { normalizeProfile } from "../engine/profileDefaults.js";
+import { SPEND_PRESETS, normalizeProfile } from "../engine/profileDefaults.js";
 import { walletValue, slotsFor, SLOT_DEFS, optimalWallet } from "../engine/v5/methodology.js";
 import { alternativesForSlot } from "../engine/v5/lab.js";
 import { earnRate, buckets } from "../engine/v5/value.js";
@@ -23,11 +23,11 @@ const AIRPORTS = [
   { code: "BDL", trips: 1 },
 ];
 const THREE = ["freedom-unlimited", "robinhood-gold", "delta-gold"];
-const OWNER = { credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
+const OWNER = { spend: SPEND_PRESETS.typical, wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
 
 describe("5d.1 · one card, one slot", () => {
   it("a card never fills two role slots; its other jobs are tags", () => {
-    const p = normalizeProfile({ ...OWNER, travel: { ...OWNER.travel, lounges: "yes" }, brands: { hotels: ["marriott"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...OWNER, travel: { ...OWNER.travel, lounges: "yes" }, brands: { hotels: ["marriott"] } });
     const setup = [...THREE, "marriott-brilliant"];
     const slots = slotsFor(walletValue(setup, p), p);
     const roles = slots.filter((s) => ["hotelKeeper", "airlineKeeper", "lounge"].includes(s.key) && s.cardId);
@@ -102,7 +102,7 @@ describe("5d.4 · the catch-all line", () => {
     expect(sharedText(s)).toBeNull();
   });
   it("a second card is named only where it beats the first", () => {
-    const p = normalizeProfile({ cardsHeld: ["citi-double-cash", "freedom-unlimited"], spend: { other: 1000, drugstores: 100 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["citi-double-cash", "freedom-unlimited"], spend: { other: 1000, drugstores: 100 } });
     const s = slotsFor(walletValue(["citi-double-cash", "freedom-unlimited"], p), p).find((x) => x.key === "everyday");
     expect(s.cardId).toBe("citi-double-cash");
     expect(sharedText(s)).toBe("Chase Freedom Unlimited earns more on drugstores: 3%");

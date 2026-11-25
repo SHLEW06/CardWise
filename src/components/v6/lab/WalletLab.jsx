@@ -51,7 +51,7 @@ export function sharedText(s) {
   return s.beats.map((b) => `${cardDisplayName(BY_ID[b.cardId])} earns more on ${BUCKET_WORDS[b.bucket] || b.bucket}: ${Math.round(b.pct * 10) / 10}%`).join(" · ");
 }
 
-export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, onGo }) {
+export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, onGo, onEditAnswers }) {
   const [draft, setDraft] = useState(() => normalizeProfile(saved));
   useEffect(() => { setDraft(normalizeProfile(saved)); }, [saved]);
   const p = useDeferredValue(draft);
@@ -94,7 +94,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
 
   return (
     <section className="page lab">
-      <PlanAdvice plan={shared} onEdit={() => setDrawer(true)} />
+      <PlanAdvice plan={shared} onEdit={onEditAnswers || (() => setDrawer(true))} />
       <Reveal as="header" className="lab-head">
         <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
         <div className="lab-numbers">

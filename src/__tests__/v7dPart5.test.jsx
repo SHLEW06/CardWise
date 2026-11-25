@@ -17,7 +17,7 @@ import Survey from "../components/v5/survey/Survey.jsx";
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
-const prof = (tickets, extra = {}) => normalizeProfile({ ...extra, brands: { habits: { tickets, ...(extra.habits || {}) } } });
+const prof = (tickets, extra = {}) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...extra, brands: { habits: { tickets, ...(extra.habits || {}) } } });
 const credit = (id, re) => BY_ID[id].credits.find((c) => re.test(c.name));
 
 describe("5.1 · 'Concert, sports and show tickets' in 'Going out'", () => {
@@ -32,7 +32,7 @@ describe("5.1 · 'Concert, sports and show tickets' in 'Going out'", () => {
     expect(HABIT_BY_KEY.livenation).toBeUndefined();
   });
   it("in the survey (v7e Part 2): $ a year, purchases, where you buy, U.S. events", () => {
-    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({})} />);
+    render(<Survey initialMode="quick" initialStepId="brands" initialProfile={normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", })} />);
     const row = screen.getByTestId("habit-tickets");
     expect(row).toHaveTextContent("How much do you spend on concert, sports and show tickets a year?");
     fireEvent.change(within(row).getByLabelText("Yearly spending: Concert, sports and show tickets"), { target: { value: "300" } });
@@ -44,7 +44,7 @@ describe("5.1 · 'Concert, sports and show tickets' in 'Going out'", () => {
   it("old StubHub / Live Nation answers move to the new row", () => {
     expect(migrateTicketHabits({ stubhub: { answer: "few" }, livenation: { answer: "monthly" } })).toEqual({ tickets: { answer: "monthly", apps: ["stubhub", "ticketmaster"] } });
     /* v7e: the row is amount-first — a frequency becomes its estimate (3 × $150) */
-    expect(normalizeProfile({ brands: { habits: { stubhub: { answer: "few" } } } }).brands.habits.tickets).toMatchObject({ spend: 450, count: 3, apps: ["stubhub"], us: true });
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { habits: { stubhub: { answer: "few" } } } }).brands.habits.tickets).toMatchObject({ spend: 450, count: 3, apps: ["stubhub"], us: true });
   });
 });
 
@@ -65,7 +65,7 @@ describe("5.2 · credits mapped to sites, from the card data", () => {
 
 describe("regression · 'one airline you pick' still picks an airline with fees left", () => {
   it("beside a Delta Gold (Delta bags waived), the Platinum's airline fee credit uses United / American bag fees", () => {
-    const p = normalizeProfile({ cardsHeld: ["delta-gold"], brands: { airlines: ["delta"] }, travel: { airports: [
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["delta-gold"], brands: { airlines: ["delta"] }, travel: { bags: { perTrip: 1, share: 1 }, airports: [
       { code: "ATL", trips: 4, destinations: [{ key: "seoul", trips: 1 }] },
       { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] }, { code: "BDL", trips: 1 }] } });
     const fee = walletValue(["delta-gold", "amex-plat"], p).benefits.find((b) => /airline fee credit/.test(b.label));

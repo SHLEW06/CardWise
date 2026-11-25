@@ -20,7 +20,7 @@ beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 const cont = () => fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
 /* A profile like the owner's (docs: report-back profile). */
-const ME = {
+const ME = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",
   cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "freedom-flex", "robinhood-gold"],
   feeBudget: 1000,
   travel: { homeAirport: "ATL", trips: 8, hotelNights: 20, lounges: "sometimes", intlShare: 0.3 },
@@ -31,21 +31,21 @@ const ME = {
 
 describe("A1 · spend stored yearly", () => {
   it("a yearly total is the stored truth; monthly is yearly ÷ 12", () => {
-    const p = normalizeProfile({ spendYear: { groceries: 7250 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  spendYear: { groceries: 7250 } });
     expect(annualSpend(p).groceries).toBe(7250);
     expect(p.spend.groceries).toBeCloseTo(7250 / 12, 9);
   });
   it("flights, hotels and rentals default to yearly entry; the rest monthly", () => {
-    const u = normalizeProfile({}).spendUnits;
+    const u = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }).spendUnits;
     expect([u.flights, u.hotels, u.rentals]).toEqual(["year", "year", "year"]);
     expect(u.dining).toBe("month");
   });
   it("an older writer that edits monthly spend still wins", () => {
-    const p = normalizeProfile({ spendYear: { warehouse: 0 }, spend: { warehouse: 300 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  spendYear: { warehouse: 0 }, spend: { warehouse: 300 } });
     expect(annualSpend(p).warehouse).toBe(3600);
   });
   it("withSpendYear keeps both views in step", () => {
-    const p = normalizeProfile(withSpendYear(normalizeProfile({}), "online", 1000));
+    const p = normalizeProfile(withSpendYear(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }), "online", 1000));
     expect(p.spendYear.online).toBe(1000);
     expect(p.spend.online).toBeCloseTo(1000 / 12, 9);
   });
@@ -53,23 +53,23 @@ describe("A1 · spend stored yearly", () => {
 
 describe("A2 · travel details", () => {
   it("cabin, booking, bags and airline perks normalize with defaults", () => {
-    const t = normalizeProfile({}).travel;
-    expect(t).toMatchObject({ cabin: "economy", booking: "direct", bags: null, airlinePerks: null });
-    const u = normalizeProfile({ travel: { cabin: "business", booking: "best", bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags", "nope"] } }).travel;
+    const t = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }).travel;
+    expect(t).toMatchObject({ cabin: "economy", booking: "direct", bags: { perTrip: 0, share: 0 }, airlinePerks: [] });
+    const u = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { cabin: "business", booking: "best", bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags", "nope"] } }).travel;
     expect(u).toMatchObject({ cabin: "business", booking: "best", bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags"] });
   });
   it("bag value = fee × min(card bags, bags per trip) × 2 ways × trips × share of trips", () => {
     const card = BY_ID["delta-gold"];
-    const p = normalizeProfile({ travel: { trips: 8, bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags"] }, brands: { airlines: ["delta"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", spend: { dining: 500, groceries: 500 }, credit: { score: 790 }, travel: { trips: 8, bags: { perTrip: 2, share: 0.5 }, airlinePerks: ["bags"] }, brands: { airlines: ["delta"] } });
     /* v7c 5.4: the Gold frees two bags on domestic Delta flights (Amex page, 2026-11-22). */
     expect(bagValue(card, p)).toBe(BAG_FEE * 2 * 0.5 * 8 * 2);
-    expect(bagValue(card, normalizeProfile({ ...p, travel: { ...p.travel, intlShare: 1, tripRows: [] } }))).toBe(BAG_FEE * 1 * 0.5 * 8 * 2);
-    expect(bagValue(card, normalizeProfile({ travel: { trips: 8, airlinePerks: ["boarding"] } }))).toBe(0);
+    expect(bagValue(card, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...p, travel: { ...p.travel, intlShare: 1, tripRows: [] } }))).toBe(BAG_FEE * 1 * 0.5 * 8 * 2);
+    expect(bagValue(card, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 8, airlinePerks: ["boarding"] } }))).toBe(0);
   });
   it("a companion certificate counts only if companion fares were picked (when asked)", () => {
     const card = BY_ID["delta-plat"];
-    const base = { travel: { trips: 6 }, brands: { airlines: ["delta"] } };
-    const asked = (perks) => benefitBreakdown(card, normalizeProfile({ ...base, travel: { ...base.travel, airlinePerks: perks } })).items.some((i) => i.kind === "companion");
+    const base = { travel: { trips: 6, airlinePerks: ["companion"] }, brands: { airlines: ["delta"] } };
+    const asked = (perks) => benefitBreakdown(card, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { ...base.travel, airlinePerks: perks } })).items.some((i) => i.kind === "companion");
     expect(asked(["companion"])).toBe(true);
     expect(asked(["bags"])).toBe(false);
     expect(benefitBreakdown(card, normalizeProfile(base)).items.some((i) => i.kind === "companion")).toBe(true);   // not asked → v6 behaviour
@@ -88,7 +88,7 @@ describe("A5 · perks: already use, would use, already have", () => {
     expect(lulu({})).toBe(0);
   });
   it("v7c Part 4: cards share the spending — two Uber credits never pay back more than is spent on Uber", () => {
-    const p = normalizeProfile({ brands: { perks: ["uber"] } });   // → rideshare about monthly on Uber: 12 × $25
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { perks: ["uber"] } });   // → rideshare about monthly on Uber: 12 × $25
     const v = walletValue(["amex-gold", "amex-plat"], p);
     const uber = v.benefits.filter((b) => /Uber Cash/.test(b.label)).reduce((t, b) => t + b.value, 0);
     expect(uber).toBeLessThanOrEqual(300);
@@ -96,19 +96,19 @@ describe("A5 · perks: already use, would use, already have", () => {
   });
   it("TSA PreCheck / Global Entry counts only when picked (travel extras)", () => {
     const card = BY_ID["boa-premium"];   // has a Global Entry / TSA PreCheck credit
-    const ge = (brands) => benefitBreakdown(card, normalizeProfile({ travel: { trips: 4 }, brands })).items.some((i) => /Global Entry|TSA/i.test(i.label));
+    const ge = (brands) => benefitBreakdown(card, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4 }, brands })).items.some((i) => /Global Entry|TSA/i.test(i.label));
     expect(ge({})).toBe(false);
     expect(ge({ perks: ["globalentry"] })).toBe(true);
     expect(ge({ perksMaybe: ["globalentry"] })).toBe(true);
   });
   it("a perk can't be both 'use' and 'would use'", () => {
-    expect(normalizeProfile({ brands: { perks: ["oura"], perksMaybe: ["oura", "resy"] } }).brands.perksMaybe).toEqual(["resy"]);
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { perks: ["oura"], perksMaybe: ["oura", "resy"] } }).brands.perksMaybe).toEqual(["resy"]);
   });
 });
 
 describe("A6 · lounges", () => {
   it("four answers; 'Decide later' is valued like a few visits a year", () => {
-    expect(normalizeProfile({ travel: { trips: 4, lounges: "later" } }).travel.lounges).toBe("later");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4, lounges: "later" } }).travel.lounges).toBe("later");
     expect(LOUNGE_INTEREST.later).toBe(LOUNGE_INTEREST.sometimes);
   });
 });
@@ -136,7 +136,7 @@ describe("A4 · loyalty strategy helper", () => {
   it("using a strategy saves ONE choice; its programs are the ones valued (v7c 2.1)", () => {
     const patch = applyStrategy({ ...ME, brands: { airlines: [], hotels: ["unsure"] } }, { key: "delta+hyatt", airlines: ["delta"], hotels: ["hyatt"], feeders: [] });
     expect(patch.travel.strategy).toEqual({ key: "delta+hyatt", airlines: ["delta"], hotels: ["hyatt"], auto: false });
-    const p = normalizeProfile({ ...ME, brands: { airlines: [], hotels: ["unsure"] }, ...patch });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...ME, brands: { airlines: [], hotels: ["unsure"] }, ...patch });
     expect(p.brands.airlines).toContain("delta");
     expect(p.brands.hotels).toEqual(["hyatt"]);
   });
@@ -144,9 +144,9 @@ describe("A4 · loyalty strategy helper", () => {
 
 describe("A8 · big loans", () => {
   it("none / 12–24 months / within 12 months", () => {
-    expect(normalizeProfile({}).credit.loan).toBe("none");
-    expect(normalizeProfile({ credit: { loan: "12" } }).credit.loan).toBe("12");
-    expect(normalizeProfile({ credit: { loan: "soon" } }).credit.loan).toBe("none");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }).credit.loan).toBe("none");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  credit: { loan: "12" } }).credit.loan).toBe("12");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  credit: { loan: "soon" } }).credit.loan).toBe("none");
   });
 });
 

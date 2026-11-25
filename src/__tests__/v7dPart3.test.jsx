@@ -20,12 +20,12 @@ import Profile from "../components/v6/Profile.jsx";
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
-const OWNER = {
+const OWNER = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",
   cardsHeld: ["freedom-unlimited", "robinhood-gold", "delta-gold"], memberships: ["robinhood-gold"],
   brands: { airlines: ["delta"], hotels: ["hyatt", "marriott"] },
   travel: { airports: [{ code: "ATL", trips: 4, destinations: [{ key: "seoul", trips: 1 }] }, { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] }, { code: "BDL", trips: 1 }] },
 };
-const DELTA_FLYER = { cardsHeld: ["delta-gold", "amex-gold"], brands: { airlines: ["delta"] }, partnerPicks: { amex: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 6 }, { from: "ATL", to: "MSP", trips: 2 }] } };
+const DELTA_FLYER = { wants: "travel", cardsHeld: ["delta-gold", "amex-gold"], brands: { airlines: ["delta"] }, partnerPicks: { amex: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 6 }, { from: "ATL", to: "MSP", trips: 2 }] } };
 
 describe("3.1 · one line per row about what unlocks more value", () => {
   it("the Chase row says 'Add a Sapphire …' once", () => {

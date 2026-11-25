@@ -30,11 +30,11 @@ describe("B1 · valuation modes", () => {
     expect(u.high).toBeCloseTo(1.3, 9);
   });
   it("the mode sets a picked program's value (co-brand miles)", () => {
-    const at = (valueMode) => currencyValue("hyatt", normalizeProfile({ valueMode, brands: { hotels: ["hyatt"] } })).cpp;
+    const at = (valueMode) => currencyValue("hyatt", normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  valueMode, brands: { hotels: ["hyatt"] } })).cpp;
     expect([at("conservative"), at("typical"), at("optimistic")]).toEqual([1.5, 1.65, 1.8]);
   });
   it("the mode flows through transfers (Amex → Hyatt is not a partner; Chase → Hyatt 4:3 beside a Preferred)", () => {
-    const p = (valueMode) => normalizeProfile({ valueMode, brands: { hotels: ["hyatt"] } });
+    const p = (valueMode) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  valueMode, brands: { hotels: ["hyatt"] } });
     expect(cardPointValue(BY_ID["freedom-unlimited"], p("conservative"), ["csp"]).cpp).toBeCloseTo(1.5 * 0.75, 9);
     expect(cardPointValue(BY_ID["freedom-unlimited"], p("optimistic"), ["csr"]).cpp).toBeCloseTo(1.8, 9);
   });
@@ -47,7 +47,7 @@ describe("B1 · valuation modes", () => {
 
 describe("B2 · the Hyatt chip says what it means", () => {
   it("Hyatt's own value, then a Chase point at 4:3 and at 1:1", () => {
-    const opt = partnerOptions("chase", ["csp"], normalizeProfile({ brands: { hotels: ["hyatt"] } })).find((p) => p.key === "hyatt");
+    const opt = partnerOptions("chase", ["csp"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { hotels: ["hyatt"] } })).find((p) => p.key === "hyatt");
     const t = ratioSentence("chase", opt);
     expect(t).toMatch(/^1\.65¢ is what a Hyatt point is worth\./);
     expect(t).toMatch(/4:3 \(Sapphire Preferred or Ink Preferred\) becomes 0\.75 Hyatt points: 1\.24¢/);
@@ -57,16 +57,16 @@ describe("B2 · the Hyatt chip says what it means", () => {
 
 describe("B3 · co-brand discounts (TakeOff 15)", () => {
   it("Delta miles are worth value ÷ 0.85 beside a Gold / Platinum / Reserve, not beside Blue — when Delta flies their trips (v7d 3.4)", () => {
-    const p = normalizeProfile({ brands: { airlines: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { airlines: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
     expect(cardPointValue(BY_ID["delta-gold"], p).cpp).toBeCloseTo(1.2 / 0.85, 9);
     expect(cardPointValue(BY_ID["delta-blue"], p).cpp).toBeCloseTo(1.2, 9);
     /* no routes to justify it → 1.2¢ (owner, 2026-11-23) */
-    expect(cardPointValue(BY_ID["delta-gold"], normalizeProfile({ brands: { airlines: ["delta"] } })).cpp).toBeCloseTo(1.2, 9);
+    expect(cardPointValue(BY_ID["delta-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { airlines: ["delta"] } })).cpp).toBeCloseTo(1.2, 9);
     expect(CO_BRAND_DISCOUNTS.delta.cards).not.toContain("delta-blue");
     expect(programCpp("delta", "typical", ["amex-gold", "delta-plat"]).discount.name).toBe("TakeOff 15");
   });
   it("Amex points moved to Delta also go further beside a Delta card", () => {
-    const p = normalizeProfile({ partnerPicks: { amex: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  partnerPicks: { amex: ["delta"] }, travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }] } });
     expect(cardPointValue(BY_ID["amex-gold"], p, ["delta-gold"]).cpp).toBeCloseTo(1.2 / 0.85, 9);
     expect(cardPointValue(BY_ID["amex-gold"], p, []).cpp).toBeCloseTo(1.2, 9);
   });
@@ -74,28 +74,28 @@ describe("B3 · co-brand discounts (TakeOff 15)", () => {
 
 describe("B4 · program base points for booking direct", () => {
   it("Hyatt picker booking direct: 5 base points × Hyatt value on hotels; none through portals", () => {
-    const p = normalizeProfile({ brands: { hotels: ["hyatt"] }, travel: { booking: "direct" } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { hotels: ["hyatt"] }, travel: { booking: "direct" } });
     const b = directBase(p, "hotels");
     expect(b).toMatchObject({ program: "hyatt", perDollar: 5 });
     expect(b.pct).toBeCloseTo(5 * 1.65, 9);
-    expect(directBase(normalizeProfile({ ...p, travel: { booking: "portal" } }), "hotels")).toBeNull();
+    expect(directBase(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...p, travel: { booking: "portal" } }), "hotels")).toBeNull();
     expect(directBase(p, "dining")).toBeNull();
   });
 });
 
 describe("B6 · audit fixes (issuer pages, 2026-11-20)", () => {
   it("Marriott Bold: restaurants 1x; groceries 2x", () => {
-    const p = normalizeProfile({});
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", });
     expect(earnRate(BY_ID["marriott-bold"], "dining", p)).toBe(1);
     expect(earnRate(BY_ID["marriott-bold"], "groceries", p)).toBe(2);
   });
   it("IHG no-fee card: 3x grocery stores", () => {
-    expect(earnRate(BY_ID["ihg-traveler"], "groceries", normalizeProfile({}))).toBe(3);
+    expect(earnRate(BY_ID["ihg-traveler"], "groceries", normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }))).toBe(3);
   });
   it("JetBlue Plus: $100+ Vacations credit and 5,000 anniversary points; Altitude Connect: Global Entry / TSA credit", () => {
     expect(BY_ID["jetblue-plus"].credits[0].name).toMatch(/JetBlue Vacations package of \$100\+/);
     expect(BY_ID["jetblue-plus"].anniversaryPoints).toBe(5000);
-    const items = benefitBreakdown(BY_ID["usb-altitude-connect"], normalizeProfile({ travel: { trips: 4 }, brands: { perks: ["globalentry"] } })).items;
+    const items = benefitBreakdown(BY_ID["usb-altitude-connect"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4 }, brands: { perks: ["globalentry"] } })).items;
     expect(items.some((i) => /Global Entry/.test(i.label))).toBe(true);
   });
 });

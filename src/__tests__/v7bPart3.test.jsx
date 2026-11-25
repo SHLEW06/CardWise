@@ -7,7 +7,7 @@ import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
-import { normalizeProfile, ROBINHOOD_GOLD_APY, TYPICAL_HYSA_APY } from "../engine/profileDefaults.js";
+import { SPEND_PRESETS, normalizeProfile, ROBINHOOD_GOLD_APY, TYPICAL_HYSA_APY } from "../engine/profileDefaults.js";
 import { inferAirlines, defaultFrom, nonstopFrom } from "../engine/v5/routes.js";
 import { pickHotelProgram } from "../engine/v5/hotelPick.js";
 import { rankCurrencies } from "../engine/v5/plans.js";
@@ -31,7 +31,7 @@ const AIRPORTS = [
   { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] },
   { code: "BDL", trips: 1 },
 ];
-const G = { credit: { score: 790 },
+const G = { spend: SPEND_PRESETS.typical, wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 },
   cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500,
   travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 },
   brands: { hotels: ["hyatt", "marriott", "independent"] },
@@ -86,7 +86,7 @@ describe("Golden · lounge middle answer", () => {
     for (const o of lounge.options) expect(Number.isFinite(o.net)).toBe(true);
   });
   it("the middle answer values lounges at the bundle factor", () => {
-    const yes = benefitBreakdown(BY_ID["venture-x"], normalizeProfile({ ...G, travel: { ...G.travel, lounges: "yes" } })).items.find((i) => i.kind === "lounge").value;
+    const yes = benefitBreakdown(BY_ID["venture-x"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...G, travel: { ...G.travel, lounges: "yes" } })).items.find((i) => i.kind === "lounge").value;
     const bundle = benefitBreakdown(BY_ID["venture-x"], normalizeProfile(G)).items.find((i) => i.kind === "lounge").value;
     expect(bundle).toBeLessThan(yes);
     expect(LOUNGE_BUNDLE_FACTOR).toBe(0.6);
@@ -95,7 +95,7 @@ describe("Golden · lounge middle answer", () => {
 
 describe("3.4 / 4.5 bags × trips on THAT airline", () => {
   it("United Quest no longer gets bags for an ATL Delta flyer", () => {
-    const atl = normalizeProfile({ travel: { airports: [{ code: "ATL", trips: 8 }], bags: { perTrip: 1, share: 1 } } });
+    const atl = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { airports: [{ code: "ATL", trips: 8 }], bags: { perTrip: 1, share: 1 } } });
     expect(bagValue(BY_ID["united-quest"], { ...atl, brands: { ...atl.brands, airlines: ["delta", "united"] } })).toBe(0);
     expect(bagValue(BY_ID["delta-gold"], atl)).toBe(BAG_FEE * 1 * 8 * 2);
   });
@@ -103,7 +103,7 @@ describe("3.4 / 4.5 bags × trips on THAT airline", () => {
 
 describe("3.7 hotels by footprint", () => {
   it("v7c: 'Let CardWise pick' picks the program strongest where they go, in one sentence", () => {
-    const p = normalizeProfile({ ...G, travel: { ...G.travel, hotelChoice: "auto" } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...G, travel: { ...G.travel, hotelChoice: "auto" } });
     expect(p.brands.hotelPick.program).toBe(pickHotelProgram({ airports: AIRPORTS, nights: 20 }).program);
     expect(p.brands.hotelPick.sentence).toMatch(/^We'd pick \w+: strong in \d of your \d destinations/);
     expect(p.brands.hotels).toEqual([p.brands.hotelPick.program]);
@@ -113,16 +113,16 @@ describe("3.7 hotels by footprint", () => {
     expect(p.travel).toMatchObject({ hotelChoice: "manual", stayStyle: "mix" });
     expect(p.brands.hotels).toEqual(["hyatt", "marriott"]);
     expect(p.brands.hotelPick).toBeNull();
-    expect(normalizeProfile({ brands: { hotels: ["independent"] } }).travel).toMatchObject({ hotelChoice: "auto", stayStyle: "independent" });
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { hotels: ["independent"] } }).travel).toMatchObject({ hotelChoice: "none", stayStyle: "independent" });
   });
 });
 
 describe("3.10 Robinhood cash", () => {
   it("Gold is offset only by extra interest over a typical HYSA — $0 at 3.6% vs 4.2%", () => {
     expect([ROBINHOOD_GOLD_APY, TYPICAL_HYSA_APY]).toEqual([3.6, 4.2]);
-    const m = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ robinhoodCash: 50000 }));
+    const m = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  robinhoodCash: 50000 }));
     expect(m).toMatchObject({ annual: 50, offset: 0, counted: 50 });
-    const better = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ robinhoodCash: 50000, rates: { robinhoodGoldApy: 4.5, hysaApy: 4.2 } }));
+    const better = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  robinhoodCash: 50000, rates: { robinhoodGoldApy: 4.5, hysaApy: 4.2 } }));
     expect(better).toMatchObject({ offset: 50, counted: 0 });   // 50,000 × 0.3% = $150, capped at the $50 fee
   });
 });

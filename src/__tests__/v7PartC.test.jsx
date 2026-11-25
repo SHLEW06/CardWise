@@ -15,10 +15,10 @@ import { BY_ID } from "../data/cards/index.js";
 
 afterEach(cleanup);
 
-const ME = {
+const ME = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",
   cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "freedom-flex", "robinhood-gold"],
   feeBudget: 1000,
-  spend: { dining: 600, groceries: 450, warehouse: 0, gas: 120, ev: 0, transit: 60, flights: 0, hotels: 0, rentals: 0, streaming: 40, drugstores: 30, online: 300, rent: 0, phone: 120, other: 500 },
+  spend: { dining: 600, groceries: 450, warehouse: 0, gas: 120, ev: 0, transit: 60, flights: 250, hotels: 0, rentals: 0, streaming: 40, drugstores: 30, online: 300, rent: 0, phone: 120, other: 500 },
   travel: { homeAirport: "ATL", trips: 8, hotelNights: 20, lounges: "sometimes", intlShare: 0.3 },
   brands: { airlines: ["delta"], hotels: ["hyatt", "marriott"] },
   credit: { score: 760, newCards24mo: 2 },
@@ -27,16 +27,16 @@ const ME = {
 
 describe("C1 · is it worth the application?", () => {
   it("base $75; + a 5/24 slot for a non-Chase card when a Chase card is in the plan; + big loan in 12–24 months", () => {
-    const p = normalizeProfile({ credit: { newCards24mo: 2 } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  credit: { newCards24mo: 2 } });
     expect(applicationHurdle(BY_ID.bcp, p, ["bcp"]).total).toBe(HURDLE_BASE);
     expect(applicationHurdle(BY_ID.bcp, p, ["bcp", "csp"]).total).toBe(HURDLE_BASE + HURDLE_524_SLOT);
     expect(applicationHurdle(BY_ID.csp, p, ["bcp", "csp"]).total).toBe(HURDLE_BASE);
-    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ credit: { newCards24mo: 5 } }), ["bcp", "csp"]).total).toBe(HURDLE_BASE);
-    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ credit: { loan: "12-24" } }), ["bcp"]).total).toBe(HURDLE_BASE + HURDLE_LOAN_SOON);
-    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ cardsHeld: ["bcp"] }), ["bcp"]).total).toBe(0);
+    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  credit: { newCards24mo: 5 } }), ["bcp", "csp"]).total).toBe(HURDLE_BASE);
+    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  credit: { loan: "12-24" } }), ["bcp"]).total).toBe(HURDLE_BASE + HURDLE_LOAN_SOON);
+    expect(applicationHurdle(BY_ID.bcp, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  cardsHeld: ["bcp"] }), ["bcp"]).total).toBe(0);
   });
   it("optional: a welcome bonus offsets the first-year hurdle", () => {
-    const off = applicationHurdle(BY_ID.bcp, normalizeProfile({ bonusOffsetsHurdle: true }), ["bcp"]);
+    const off = applicationHurdle(BY_ID.bcp, normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  bonusOffsetsHurdle: true }), ["bcp"]);
     expect(off.total).toBe(Math.max(0, HURDLE_BASE - (BY_ID.bcp.sub?.estimatedValueUsd || 0)));
   });
   it("Yes / Marginal / No", () => {

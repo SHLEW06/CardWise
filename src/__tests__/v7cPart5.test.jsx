@@ -16,7 +16,7 @@ import { allBenefits } from "../engine/v5/lab.js";
 import CardDetail, { gatedLine } from "../components/v6/CardDetail.jsx";
 
 afterEach(cleanup);
-const FLYER = { feeBudget: 1000, spend: { other: 3000 }, travel: { trips: 6, homeAirport: "ATL" }, brands: { airlines: ["delta"], perksUse: ["airline-flight", "uber"], perksSpend: ["uber", "airline tickets"] } };
+const FLYER = { feeBudget: 1000, spend: { other: 3000, flights: 250 }, travel: { hotelNights: 12, trips: 6, homeAirport: "ATL" }, brands: { airlines: ["delta"], perksUse: ["airline-flight", "uber"], perksSpend: ["uber", "airline tickets"] } };
 
 describe("5.1 · spend-gated credits count $0 in every value and score", () => {
   it("every credit has a class; Delta Gold's $200 flight credit is spend-gated at $10,000", () => {
@@ -25,15 +25,12 @@ describe("5.1 · spend-gated credits count $0 in every value and score", () => {
     expect(creditClass(fc)).toBe("spend-gated");
     expect(spendThreshold(fc)).toBe(10000);
   });
-  it("no spend-gated credit adds value — even with the spend to unlock it", () => {
-    const rich = normalizeProfile({ ...FLYER, spend: { other: 5000, dining: 2000 } });   // > $10k a year
-    for (const c of CARDS) {
-      const b = benefitBreakdown(c, rich, { cardSpend: 1e6 });
-      for (const it of b.items) if (it.kind === "credit") expect(creditClass(c.credits.find((x) => x.name === it.label)), `${c.id}: ${it.label}`).not.toBe("spend-gated");
-    }
-    const v = walletValue(["delta-gold"], rich);
-    expect(v.benefits.some((b) => /flight credit/.test(b.label))).toBe(false);
-    expect(v.perCard[0].gated.map((g) => g.label)).toEqual(["$200 Delta flight credit after $10,000 a year on this card"]);
+  it("spend-gated credits remain zero below their routed-spend threshold", () => {
+    const p = normalizeProfile(FLYER);
+    const b = benefitBreakdown(BY_ID["delta-gold"], p, { cardSpend: 9999 });
+    expect(b.items.some(x => /flight credit/.test(x.label))).toBe(false);
+    expect(b.gated.some(x => /flight credit/.test(x.label))).toBe(true);
+    expect(benefitBreakdown(BY_ID["delta-gold"], p, { cardSpend: 10000 }).items.some(x => /flight credit/.test(x.label))).toBe(true);
   });
   it("shown in a separate 'Unlocks with spending' list, never under 'Benefits you'd use'", () => {
     const d = cardDetail("delta-gold", normalizeProfile(FLYER));
@@ -84,7 +81,7 @@ describe("5.4 · Delta Gold, from the Amex page (2026-11-22)", () => {
     expect(g.benefits.join(" | ")).toMatch(/TakeOff 15/);
     expect(g.benefits.join(" | ")).toMatch(/20% back on in-flight/);
     expect(g.benefits.join(" | ")).toMatch(/priority boarding/i);
-    const p = normalizeProfile({ travel: { trips: 4, bags: { perTrip: 2, share: 1 } }, brands: { airlines: ["delta"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4, bags: { perTrip: 2, share: 1 } }, brands: { airlines: ["delta"] } });
     expect(bagValue(g, p)).toBe(35 * 2 * 4 * 2);
   });
   it("the rideshare credit counts only if they picked rides", () => {

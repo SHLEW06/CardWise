@@ -12,7 +12,7 @@ import { walletValue } from "../engine/v5/methodology.js";
 import WalletLab from "../components/v6/lab/WalletLab.jsx";
 
 afterEach(cleanup);
-const P = {
+const P = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",
   cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500,
   travel: { airports: [{ code: "ATL", trips: 4, destinations: [{ key: "seoul", trips: 1 }] }, { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] }, { code: "BDL", trips: 1 }], lounges: "bundle", hotelNights: 20 },
   brands: { hotels: ["hyatt", "marriott", "independent"] },
@@ -20,13 +20,13 @@ const P = {
 
 describe("C8 · Best value is the default on skip", () => {
   it("hotels: no picks + airports → CardWise picks a program", () => {
-    const p = normalizeProfile({ travel: { airports: [{ code: "ATL", trips: 4 }], hotelNights: 10 } });
-    expect(p.travel.hotelChoice).toBe("auto");
-    expect(p.brands.hotelPick?.program).toBeTruthy();
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { airports: [{ code: "ATL", trips: 4 }], hotelNights: 10 } });
+    expect(p.travel.hotelChoice).toBe("none");
+    expect(p.brands.hotelPick).toBeNull();
     expect(p.travel.airlineChoice).toBe("auto");
   });
   it("older profiles keep their answers", () => {
-    expect(normalizeProfile({ brands: { hotels: ["hyatt"] } }).travel.hotelChoice).toBe("manual");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { hotels: ["hyatt"] } }).travel.hotelChoice).toBe("manual");
   });
 });
 
@@ -34,9 +34,10 @@ describe("E12 / E13 · the numbers on Home agree", () => {
   it("the next move's +$ equals 'Why this card?' gain", () => {
     /* v7c: with the audited data the test profile's next move is a switch
        (Amex Gold → Green); the agreement check needs a "get a card" move. */
-    const m = nextMove({ ...P, cardsHeld: ["freedom-unlimited"], memberships: [] });
+    const input = { ...P, spend: { dining: 1000, groceries: 500 }, cardsHeld: ["freedom-unlimited"], memberships: [] };
+    const m = nextMove(input);
     expect(m.kind).toBe("apply");
-    const e = explainCard(m.cardId, m.context, P, walletValue);
+    const e = explainCard(m.cardId, m.context, input, walletValue);
     expect(Math.round(e.gain)).toBe(Math.round(m.impact));
   });
 });

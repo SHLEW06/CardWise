@@ -1,0 +1,31 @@
+// Labels correspond to editable survey steps. Saved provenance survives
+// normalization; an explicit edit clears the matching assumption.
+export const ASSUMPTIONS = {
+  "credit.score": ["credit", "credit is unknown; only cards needing 670 or less are considered"],
+  "credit.newCards24mo": ["credit", "recent applications are unknown; confirm Chase 5/24 eligibility before applying"],
+  isStudent: ["credit", "student eligibility is unconfirmed; student cards are excluded"],
+  canAffordDeposit: ["credit", "deposit affordability is unconfirmed; secured cards are excluded"],
+  paymentBehavior: ["credit", "payment habits are unconfirmed; rewards shown before any interest"],
+  "travel.bags": ["travel", "you check no bags"],
+  "travel.lounges": ["travel", "you do not want lounge access"],
+  "travel.hotelNights": ["travel", "you have no paid hotel nights"],
+  "travel.hotelChoice": ["travel", "no hotel program unless you choose one"],
+  "travel.booking": ["travel", "you book directly"],
+  "travel.companions": ["travel", "no lounge guests"],
+  "travel.hotelBudget": ["travel", "hotel prices use an estimated budget until you enter yours"],
+  "travel.hotelMarkup": ["travel", "estimated hotel prices include 8% portal markup"],
+  "travel.hotelTaxes": ["travel", "estimated hotel prices include 15% taxes and fees"],
+  "travel.breakfast": ["travel", "breakfast has no extra value"],
+  "travel.onProperty": ["travel", "no on-property spending"],
+  "travel.stayStyle": ["travel", "hotel stay style is unconfirmed"],
+  "travel.airlinePerks": ["travel", "no unselected airline perks"],
+  spend: ["spend", "unanswered spending categories are $0"],
+  wants: ["spend", "you want cash back"],
+  maxCards: ["credit", "a limit of six cards"],
+  newCardComfort: ["credit", "at most three new cards"],
+  rotatingActivation: ["spend", "you will not activate quarterly categories"],
+  groceryStore: ["spend", "grocery merchants are unconfirmed; no supermarket bonus"],
+  memberships: ["fee", "no paid memberships"],
+  biltCashAnnualUse: ["spend", "Bilt Cash only has value for unlocking housing points"],
+};
+export const assumptionsFor = profile => (profile.assumedFields || []).filter(key => ASSUMPTIONS[key]).map(key => ({ key, step: ASSUMPTIONS[key][0], label: ASSUMPTIONS[key][1] }));

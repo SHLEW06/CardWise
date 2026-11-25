@@ -22,7 +22,7 @@ describe("C19 · mode question first wherever 'Let CardWise pick' exists", () =>
     const cases = [
       { mode: "How do you pick airlines?", auto: "Let CardWise pick", manual: "I'll choose", chips: () => screen.queryByText("Star Alliance") },
       { mode: "Which lounges?", auto: "Let CardWise pick the best value", manual: "I'll choose", chips: () => screen.queryByRole("group", { name: "Lounge networks" }) },
-      { mode: "How do you pick hotels?", auto: "Let CardWise pick the best program for me", manual: "I have brands I like", chips: () => screen.queryByRole("group", { name: "Hotel brands you like" }) },
+      { mode: "How do you pick hotels?", auto: "No hotel program", manual: "I have brands I like", chips: () => screen.queryByRole("group", { name: "Hotel brands you like" }) },
     ];
     for (const c of cases) {
       const g = screen.getByRole("radiogroup", { name: c.mode });
@@ -51,15 +51,15 @@ describe("C19 · mode question first wherever 'Let CardWise pick' exists", () =>
 
 describe("C19 · the engine never holds a contradiction", () => {
   it("hotels: 'Let CardWise pick' never also values brand picks; brands never also get a pick", () => {
-    const auto = normalizeProfile({ ...FLYER, travel: { ...FLYER.travel, hotelChoice: "auto" }, brands: { hotelsPicked: ["hilton"] } });
+    const auto = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...FLYER, travel: { ...FLYER.travel, hotelChoice: "auto" }, brands: { hotelsPicked: ["hilton"] } });
     expect(auto.brands.hotels).toEqual([auto.brands.hotelPick.program]);
-    const manual = normalizeProfile({ ...FLYER, travel: { ...FLYER.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["hilton"] } });
+    const manual = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...FLYER, travel: { ...FLYER.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["hilton"] } });
     expect(manual.brands.hotels).toEqual(["hilton"]);
     expect(manual.brands.hotelPick).toBeNull();
   });
   it("lounges: 'Let CardWise pick' clears networks; perks: 'already spend' is only asked about picked perks", () => {
-    expect(normalizeProfile({ travel: { trips: 2, lounges: "yes", loungeChoice: "auto", loungeNetworks: ["centurion"] } }).travel.loungeNetworks).toEqual([]);
-    const p = normalizeProfile({ brands: { perksUse: ["uber"], perksSpend: ["uber", "doordash"] } });
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 2, lounges: "yes", loungeChoice: "auto", loungeNetworks: ["centurion"] } }).travel.loungeNetworks).toEqual([]);
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { perksUse: ["uber"], perksSpend: ["uber", "doordash"] } });
     expect(p.brands.perks).toEqual(["uber"]);
     expect(p.brands.perksMaybe).toEqual([]);
   });

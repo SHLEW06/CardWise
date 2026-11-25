@@ -8,7 +8,7 @@ import { render, screen, fireEvent, cleanup, within, waitFor } from "@testing-li
 import "@testing-library/jest-dom/vitest";
 import Survey from "../components/v5/survey/Survey.jsx";
 import { saveV5Profile, loadV5Profile } from "../state/v5Profile.js";
-import { normalizeProfile } from "../engine/profileDefaults.js";
+import { SPEND_PRESETS, normalizeProfile } from "../engine/profileDefaults.js";
 import { loyaltyStrategies, transferLine, flexFeeds, smallestSet, applyStrategy } from "../engine/v5/plans.js";
 import { optimalWallet } from "../engine/v5/methodology.js";
 import { BY_ID } from "../data/cards/index.js";
@@ -21,7 +21,7 @@ const AIRPORTS = [
   { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] },
   { code: "BDL", trips: 1, destinations: [] },
 ];
-const G = { credit: { score: 790 }, cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500, travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20, hotelChoice: "auto" } };
+const G = { spend: SPEND_PRESETS.typical, wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500, travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20, hotelChoice: "auto" } };
 
 describe("2.2 · transfer wording", () => {
   it("Chase → Hyatt depends on the card; Chase → Marriott is 1:1 from any Chase card that can transfer", () => {
@@ -61,7 +61,7 @@ describe("2.3–2.4 · smallest set, net, fees, why", () => {
     expect(list.map((s) => s.net)).toEqual([...list.map((s) => s.net)].sort((a, b) => b - a));
   });
   it("a second same-program card that doesn't clear its hurdle beside the first is left out, and says so", () => {
-    const p = normalizeProfile({ ...G, travel: { ...G.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["marriott"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...G, travel: { ...G.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["marriott"] } });
     const r = optimalWallet(p);
     /* Force a weak duplicate: Bevy beside Brilliant. */
     const fake = { ...r, wallet: [...new Set([...r.wallet, "marriott-brilliant", "marriott-bevy"])], worth: { ...r.worth, "marriott-bevy": { verdict: "Yes", gain: 1 } } };
@@ -96,7 +96,7 @@ describe("2.1 · one choice", () => {
   }, 30000);
   it("the default is saved as the default and re-picked when answers change", () => {
     const top = loyaltyStrategies(G)[0];
-    const p = normalizeProfile({ ...G, ...applyStrategy(G, top, { auto: true }) });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...G, ...applyStrategy(G, top, { auto: true }) });
     expect(p.travel.strategy).toMatchObject({ key: top.key, auto: true });
     expect(p.brands.hotels).toEqual(top.hotels);
     /* "We'd pick …" names the program actually valued. */

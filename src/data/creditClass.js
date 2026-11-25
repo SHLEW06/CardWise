@@ -23,6 +23,7 @@ const PORTAL_WORDS = /delta stays|the edit\b|fine hotels|hotel collection|renown
 
 /** Yearly card spend that unlocks a credit, if it has one (else 0). */
 export function spendThreshold(credit) {
+  if (Number(credit?.requiresSpend) > 0) return Number(credit.requiresSpend);
   if (Number(credit?.spend) > 0) return Number(credit.spend);
   const n = String(credit?.name || "");
   const k = n.match(/w\/ \$(\d+)k spend/i) || n.match(/after \$(\d+)k\b/i);

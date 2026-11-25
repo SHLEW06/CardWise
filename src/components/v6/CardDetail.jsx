@@ -277,7 +277,7 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             <ul className="rows">
               {d.topEarning.map((e) => (
                 <li key={e.bucket} className="earn-row">
-                  <span>{BUCKET_LABEL[e.bucket][0].toUpperCase() + BUCKET_LABEL[e.bucket].slice(1)}</span>
+                  <span>{(BUCKET_LABEL[e.bucket] || e.bucket).replace(/^./, x => x.toUpperCase())}</span>
                   <span className="t-value">{pct(e.pct)}</span>
                   <span className="t-caption">earns {money(e.value)} a year on {money(e.dollars)}</span>
                 </li>

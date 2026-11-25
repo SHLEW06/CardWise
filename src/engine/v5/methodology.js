@@ -27,7 +27,7 @@ import { BANK_CURRENCIES, backPct } from "./valuation.js";
 import { applicationHurdle, minHurdle, worthVerdict, keeperHotelOptions, airlineKeeperValue } from "./apply.js";
 
 export const BASELINE_PCT = 2;           // "Rewards over a 2% card"
-export const MAX_CANDIDATES = 30;
+export const MAX_CANDIDATES = 50;
 export const C1_PERSONAL_LIMIT = 2;      // Capital One: about two personal cards at a time
 /* A card has to add more than this a year to be worth carrying (v5's
    MIN_GAIN, kept): the search scores N − MIN_GAIN × cards, so a sixth card
@@ -182,7 +182,7 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   const alloc = allocateSpend(cards, profile, opts.alloc || {});
   const perCard = cards.map((c) => {
     const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids, deferNightBudget: true });
-    return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [], extras: b.extras || [] };
+    return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [], temporary: b.temporary || [], extras: b.extras || [] };
   });
   const U = dedupeBenefits(perCard, profile);
   const F = cards.reduce((t, c) => t + cardFee(c, profile), 0);
@@ -225,10 +225,10 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
   const fees = Object.fromEntries(cards.map((c) => [c.id, cardFee(c, profile)]));
   /* Benefits barely depend on the wallet: only spend-gated perks and
      anniversary points do. Cache the rest. */
-  const gated = (c) => (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
+  const gated = (c) => (c.credits || []).some(cr => cr.requiresSpend || cr.spend) || (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
   const fixed = {};
   const allIds = cards.map((c) => c.id);
-  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds } : {}), deferNightBudget: true }).items;
+  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds, cardSpend: totalAnnualSpend(profile) } : {}), deferNightBudget: true }).items;
   /* Optimistic: every point valued as if its unlock card were in the wallet. */
   const optCpp = optimistic ? Object.fromEntries(cards.map((c) => [c.id, cardPointValue(c, profile, allIds).cpp])) : null;
   const memo = new Map();
@@ -239,7 +239,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
       if (memo.has(key)) return memo.get(key);
       const ids = set.map((c) => c.id);
       const cpp = optCpp || walletCpp(set, profile);
-      const alloc = allocateSpend(set, profile, { spend, lanes, cpp });
+      const alloc = allocateSpend(set, profile, { spend, lanes, cpp, optimistic });
       const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, wallet: ids, deferNightBudget: true }).items }));
       const U = dedupeBenefits(perCard, profile).total;
       const F = set.reduce((t, c) => t + fees[c.id], 0);

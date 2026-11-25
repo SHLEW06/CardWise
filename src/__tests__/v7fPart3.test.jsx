@@ -38,14 +38,14 @@ describe("3.1 · the built-in strategies", () => {
 
 describe("3.6 · the tests the brief asks for", () => {
   it("Chase Trifecta: Freedom points count at Sapphire value only when a Sapphire is in the set", () => {
-    const p = normalizeProfile({ ...ME, partnerPicks: { chase: ["hyatt"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...ME, partnerPicks: { chase: ["hyatt"] } });
     const fu = BY_ID["freedom-unlimited"];
     expect(cardPointValue(fu, p, ["freedom-unlimited", "freedom-flex"]).cpp).toBe(1);
     expect(cardPointValue(fu, p, STRATEGY_BY_KEY["chase-trifecta-csr"].cards).cpp).toBeGreaterThan(1);
     expect(cardPointValue(fu, p, STRATEGY_BY_KEY["chase-trifecta-csr"].cards).cpp).toBeCloseTo(cardPointValue(BY_ID.csr, p, STRATEGY_BY_KEY["chase-trifecta-csr"].cards).cpp, 9);
   });
   it("Amex duo: Uber Cash isn't double-counted — Gold and Platinum stack only up to the actual Uber spending", () => {
-    const p = normalizeProfile({ ...ME, brands: { ...ME.brands, habits: { takeout: { answer: "few", apps: ["ubereats"], spend: 90 }, rideshare: { answer: "few", apps: ["uber"], spend: 60 } } } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...ME, brands: { ...ME.brands, habits: { takeout: { answer: "few", apps: ["ubereats"], spend: 90 }, rideshare: { answer: "few", apps: ["uber"], spend: 60 } } } });
     const v = walletValue(["amex-gold", "amex-plat"], p);
     const uber = v.benefits.filter((b) => /Uber Cash/.test(b.label)).reduce((t, b) => t + b.value, 0);
     const pools = profilePools(p);

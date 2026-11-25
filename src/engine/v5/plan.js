@@ -6,6 +6,7 @@ import { optimizeWallet } from "./optimizer.js";
 import { walletValue, scoreFrom, heldCardVerdicts, optimalWallet } from "./methodology.js";
 import { applyTimeline, timelineLabel, walletCards, useWhereRows, heldNotKept } from "./lab.js";
 import { cardFee } from "./value.js";
+import { assumptionsFor } from "./assumptions.js";
 
 export function buildPlan(raw = {}, options = {}) {
   const profile = normalizeProfile(raw);
@@ -15,7 +16,10 @@ export function buildPlan(raw = {}, options = {}) {
   const current = walletValue(profile.cardsHeld, profile);
   const value = walletValue(wallet, profile);
   const best = { wallet, value, upgrades: Object.fromEntries(recommendation.getNext.filter(x => x.upgradeFrom).map(x => [x.cardId, x.upgradeFrom])) };
-  const timeline = carries ? [] : applyTimeline(wallet, profile);
+  const timeline = carries ? [] : applyTimeline(wallet, profile).map(t => {
+    const down = recommendation.keep.find(k => k.action === "downgrade" && k.downgradeTo === t.cardId);
+    return down ? { ...t, how: "downgrade", from: down.cardId, month: 0, notes: ["Product-change your existing account; no rewards application."] } : t;
+  });
   const original = heldCardVerdicts(profile);
   const heldAdvice = original.map(v => {
     if (wallet.includes(v.cardId)) return { ...v, action: "keep" };
@@ -38,11 +42,8 @@ export function buildPlan(raw = {}, options = {}) {
       sentence: recommendation.getNext.find(x => x.cardId === first.cardId)?.sentence || "The next card in your recommended wallet.",
       when: first.month ? `${timelineLabel(first)}. ${first.notes.join(" ")}` : null, context: wallet.filter(id => id !== first.cardId) };
   }
-  const assumptions = [], warnings = [];
+  const assumptions = assumptionsFor(profile), warnings = [];
   const interestCost = carries && profile.averageBalance != null && profile.apr != null ? Math.round(profile.averageBalance * profile.apr) : null;
-  if (profile.credit.score == null && !profile.credit.noHistory) assumptions.push({ key: "credit.score", step: "credit", label: "credit is unknown; only cards needing 670 or less are considered" });
-  if (profile.isStudent == null) assumptions.push({ key: "isStudent", step: "credit", label: "student eligibility is unconfirmed; student cards are excluded" });
-  if (profile.paymentBehavior == null) assumptions.push({ key: "paymentBehavior", step: "credit", label: "payment habits are unconfirmed; rewards shown before any interest" });
   if (profile.credit.noHistory && profile.isStudent !== true && profile.canAffordDeposit !== true) warnings.push({ key: "deposit", message: "Before choosing a secured card, tell us whether you can afford its refundable deposit." });
   if (carries) {
     const message = interestCost == null ? "Interest can cost more than rewards. Enter your average balance and APR to estimate it; pause rewards applications and pay down the balance." : `Your balance costs about $${interestCost.toLocaleString("en-US")} a year in interest (average balance × APR). Pause rewards applications and pay down the balance.`;

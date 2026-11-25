@@ -8,7 +8,8 @@ import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { render, screen, within, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { BY_ID } from "../data/cards/index.js";
-import { normalizeProfile } from "../engine/profileDefaults.js";
+import { SPEND_PRESETS, normalizeProfile } from "../engine/profileDefaults.js";
+import { buildPlan } from "../engine/v5/plan.js";
 import { optimalWallet, walletValue, cardFits, SAME_PROGRAM_MIN, MIN_GAIN, sampleWallets } from "../engine/v5/methodology.js";
 import { walletCards, useWhereRows, heldNotKept, alternativesForSlot } from "../engine/v5/lab.js";
 import { HOTEL_CURRENCIES, AIRLINE_CURRENCIES } from "../engine/v5/value.js";
@@ -25,7 +26,7 @@ const AIRPORTS = [
   { code: "BDL", trips: 1 },
 ];
 const THREE = ["freedom-unlimited", "robinhood-gold", "delta-gold"];
-const OWNER = { credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
+const OWNER = { spend: SPEND_PRESETS.typical, wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
 
 describe("5d-2.1 · the mode is clear and held cards never vanish", () => {
   it("defaults to 'From my wallet' with cards, labelled 'Built from your 3 cards'", () => {
@@ -55,7 +56,7 @@ describe("5d-2.1 · the mode is clear and held cards never vanish", () => {
 
 describe("5d-2.2 · two sections", () => {
   const p = normalizeProfile(OWNER);
-  const setup = optimalWallet(p, { mode: "wallet" }).wallet;
+  const setup = buildPlan(p).wallet;
   it("'Your cards': one tile per card — counted value minus its fee, its jobs as tags, why it's there", () => {
     const tiles = walletCards(setup, p);
     expect(tiles.map((t) => t.cardId).sort()).toEqual([...setup].sort());
@@ -115,8 +116,8 @@ describe("5d-2.3 / 5d-2.4 · one program, one card; the owner's three cards re-r
 
 describe("5d-2.5 · no fee budget anywhere", () => {
   it("the optimizer, card fit, samples and slot sheets ignore a saved fee budget", () => {
-    const a = optimalWallet({ ...OWNER, feeBudget: 0 }, { mode: "wallet" });
-    const b = optimalWallet({ ...OWNER, feeBudget: 5000 }, { mode: "wallet" });
+    const a = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...OWNER, feeBudget: 0 }, { mode: "wallet" });
+    const b = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...OWNER, feeBudget: 5000 }, { mode: "wallet" });
     expect(a.wallet).toEqual(b.wallet);
     expect(Object.values(cardFits({ ...OWNER, feeBudget: 0 })).every((f) => f.fitsBudget)).toBe(true);
     expect(sampleWallets({ ...OWNER, feeBudget: 0 }).map((s) => s.wallet)).toEqual(sampleWallets({ ...OWNER, feeBudget: 5000 }).map((s) => s.wallet));

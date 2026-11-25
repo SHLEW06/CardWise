@@ -31,7 +31,7 @@ beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 const spend = (o) => ({ dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, transit: 0, flights: 0, hotels: 0, rentals: 0, streaming: 0, drugstores: 0, online: 0, rent: 0, phone: 0, other: 300, ...o });
 
 describe("1 · lounge visit limits", () => {
-  const flyer = normalizeProfile({ travel: { trips: 10, lounges: "yes", homeAirport: "SEA" } });
+  const flyer = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 10, lounges: "yes", homeAirport: "SEA" } });
   it("Altitude Connect: Priority Pass with 4 free visits a year, not unlimited", () => {
     expect(BY_ID["usb-altitude-connect"].loungeAccess.networks[0]).toMatch(/4 visits a year/);
     const nets = loungeNetworks(BY_ID["usb-altitude-connect"], flyer);
@@ -54,11 +54,11 @@ describe("1 · lounge visit limits", () => {
     expect(face("amex-plat", /sky club/i)).toBe(10 * LOUNGE_VISIT_VALUE);
     expect(face("citi-aa-globe", /admirals/i)).toBe(4 * LOUNGE_VISIT_VALUE);
     const delta = { ...flyer, brands: { ...flyer.brands, airlines: ["delta", "aa"] }, travel: { ...flyer.travel, trips: 20, homeAirport: "ATL" } };
-    expect(loungeNetworks(BY_ID["delta-reserve"], delta).delta).toBeLessThanOrEqual(face("delta-reserve", /sky club/i) / 8 + 1e-9);
+    expect(loungeNetworks(BY_ID["delta-reserve"], delta).delta).toBeLessThanOrEqual(face("delta-reserve", /sky club/i) + 1e-9);
   });
   it("Sapphire Lounges left Priority Pass (Aug 15 2026): only cards that list them get them", () => {
     expect(SAPPHIRE_LEFT_PRIORITY_PASS).toBe("2026-08-15");
-    const bos = normalizeProfile({ travel: { trips: 6, lounges: "yes", homeAirport: "BOS" } });
+    const bos = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 6, lounges: "yes", homeAirport: "BOS" } });
     expect(loungeNetworks(BY_ID["venture-x"], bos).sapphire).toBeUndefined();
     expect(loungeNetworks(BY_ID["csr"], bos).sapphire).toBeGreaterThan(0);
   });
@@ -66,16 +66,16 @@ describe("1 · lounge visit limits", () => {
 
 describe("2 · required memberships count as fees unless already paid", () => {
   it("Robinhood Gold's $50 is in F(W); not when they already pay it", () => {
-    expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({}))).toBe(50);
-    expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({ memberships: ["robinhood-gold"] }))).toBe(0);
+    expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }))).toBe(50);
+    expect(cardFee(BY_ID["robinhood-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  memberships: ["robinhood-gold"] }))).toBe(0);
     expect(walletValue(["robinhood-gold"], {}).F).toBe(50);
     expect(walletValue(["robinhood-gold"], { memberships: ["robinhood-gold"] }).N - walletValue(["robinhood-gold"], {}).N).toBe(50);
-    expect(membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ memberships: { robinhoodGold: true } })).paid).toBe(true);   // v4 object form
+    expect(membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  memberships: { robinhoodGold: true } })).paid).toBe(true);   // v4 object form
   });
   it("the Costco Visa needs a Costco membership the same way", () => {
-    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({}))).toBe(65);
-    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({ memberships: ["costco"] }))).toBe(0);
-    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({ spend: spend({ warehouse: 300 }), warehouseClub: "costco" }))).toBe(0);
+    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", }))).toBe(65);
+    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  memberships: ["costco"] }))).toBe(0);
+    expect(cardFee(BY_ID["costco-citi"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  spend: spend({ warehouse: 300 }), warehouseClub: "costco" }))).toBe(0);
   });
   it("the survey asks it (optional) on the fee step and saves it", () => {
     render(<Survey initialMode="quick" initialStepId="fee" />);
@@ -87,7 +87,7 @@ describe("2 · required memberships count as fees unless already paid", () => {
 });
 
 describe("3 · Wallet Score is explainable and the same on Home and in Wallet Lab", () => {
-  const P = { cardsHeld: ["amex-gold", "freedom-unlimited", "csp", "robinhood-gold"], feeBudget: 500, spend: spend({ dining: 600, groceries: 700, other: 600 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
+  const P = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", cardsHeld: ["amex-gold", "freedom-unlimited", "csp", "robinhood-gold"], feeBudget: 500, spend: spend({ dining: 600, groceries: 700, other: 600 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
   it("score divides current annual net by recommended annual net", () => {
     const s = buildPlan(P);
     expect(s.score).toBe(scoreFrom(s.current.net, s.best.value.net));

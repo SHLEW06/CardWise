@@ -19,7 +19,7 @@ import { saveV5Profile, loadV5Profile } from "../state/v5Profile.js";
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
-const T = (tickets, extra = {}) => normalizeProfile({ ...extra, brands: { habits: { tickets, ...(extra.habits || {}) } } });
+const T = (tickets, extra = {}) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...extra, brands: { habits: { tickets, ...(extra.habits || {}) } } });
 const cr = (id, re) => BY_ID[id].credits.find((c) => re.test(c.name));
 const val = (id, re, p) => benefitBreakdown(BY_ID[id], p).items.find((i) => re.test(i.label))?.value || 0;
 

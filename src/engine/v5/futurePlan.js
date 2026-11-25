@@ -77,14 +77,15 @@ function whyFor(id, wallet, profile, later, when) {
  */
 export function planRoadmap(rawProfile, { today = new Date() } = {}) {
   const p = normalizeProfile(rawProfile);
-  const nowRes = buildPlan(p).best;
+  const nowPlan = buildPlan(p);
+  const nowRes = nowPlan.best;
   /* v7f Part 3: a strategy they chose ("Use this strategy") is the target;
      the roadmap orders its cards. */
   const target = p.targetStrategy && STRATEGY_BY_KEY[p.targetStrategy] ? strategyWallet(STRATEGY_BY_KEY[p.targetStrategy], p).wallet : null;
   const nowWallet = target || nowRes.wallet;
   const nowValue = walletValue(nowWallet, p, { normalized: true });
   const steps = [];
-  for (const t of applyTimeline(nowWallet, p)) {
+  for (const t of (target ? applyTimeline(nowWallet, p) : nowPlan.timeline)) {
     const id = t.cardId;
     const net = Math.round(gainIn(id, nowWallet, p) - (t.how === "upgrade" ? 0 : applicationHurdle(BY_ID[id], p, nowWallet).total));
     /* 5e.4: a closed card is only ever an upgrade path. */

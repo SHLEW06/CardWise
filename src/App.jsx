@@ -247,10 +247,10 @@ export default function App() {
 
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
-      {tab === "home" && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={() => { setSurveyStep(null); setScreen("survey"); }} />}
+      {tab === "home" && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={(step) => { setSurveyStep(typeof step === "string" ? step : null); setScreen("survey"); }} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
-      {tab === "lab" && <WalletLab profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} onGo={setTab} />}
+      {tab === "lab" && <WalletLab onEditAnswers={(step) => { setSurveyStep(step); setScreen("survey"); }} profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} onGo={setTab} />}
       {tab === "strategies" && <Strategies profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onGo={setTab} onOpenCard={openCard} />}
       {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
       {tab === "hotels" && <HotelExplorer profile={v5} filter={hotelFilter} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}

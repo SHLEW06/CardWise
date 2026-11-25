@@ -52,7 +52,16 @@ export default function Survey({ initialProfile, initialStepId = null, editOnly 
     if (!initialStepId || !STEP_DEFS.some((s) => s.id === initialStepId)) return 0;
     return Math.max(0, stepsFor(initialMode || "thorough").indexOf(initialStepId));
   });
-  const set = (patch) => setD((prev) => ({ ...prev, ...patch }));
+  const set = (patch, answered = []) => setD((prev) => {
+    const changed = (prev.assumedFields || []).filter(key => {
+      const path = key.split(".");
+      const root = path[0];
+      if (!(root in patch)) return false;
+      const get = o => path.reduce((v,k) => v?.[k],o);
+      return JSON.stringify(get(prev)) !== JSON.stringify(get({ ...prev, ...patch }));
+    });
+    return { ...prev, ...patch, assumedFields: (prev.assumedFields || []).filter(key => ![...changed, ...answered].includes(key)) };
+  });
   const id = mode ? steps[i] : "mode";
   const last = steps.length - 1;
   const headRef = useRef(null);
@@ -92,7 +101,7 @@ export default function Survey({ initialProfile, initialStepId = null, editOnly 
         {id === "mode" ? (
           <ModeStep headRef={headRef} onPick={(m) => { setMode(m); setI(0); }} />
         ) : (
-          <Step id={id} d={d} set={set} mode={mode} headRef={headRef} />
+          <Step id={id} d={d} set={set} mode={mode} headRef={headRef} onEdit={(step) => setI(Math.max(0, steps.indexOf(step)))} />
         )}
       </section>
 
@@ -124,7 +133,7 @@ function ModeStep({ headRef, onPick }) {
   );
 }
 
-function Step({ id, d, set, mode, headRef }) {
+function Step({ id, d, set, mode, headRef, onEdit }) {
   switch (id) {
     case "cards": return <CardsStep d={d} set={set} headRef={headRef} />;
     case "spend": return <SpendStep d={d} set={set} mode={mode} headRef={headRef} />;
@@ -164,7 +173,7 @@ function Step({ id, d, set, mode, headRef }) {
         </>
       );
     case "yourPoints": return <YourPointsStep d={d} headRef={headRef} />;
-    case "reveal": return <RevealStep d={d} set={set} headRef={headRef} />;
+    case "reveal": return <RevealStep d={d} set={set} headRef={headRef} onEdit={onEdit} />;
     default: return null;
   }
 }
@@ -249,6 +258,10 @@ function SpendStep({ d, set, mode, headRef }) {
   return (
     <>
       <Head headRef={headRef} eyebrow="Spending" title="What do you spend?" sub="Rough numbers are fine. Each row can be monthly or yearly — use Yearly to type a total for the year if your costs vary." />
+      <AnswerChoice title="What would you like to earn?" value={d.wants} options={[["cash", "Cash back"], ["travel", "Travel points"], ["both", "Both"]]} onChange={wants => set({ wants }, ["wants"])} />
+      <AnswerChoice title="Will you activate quarterly bonus categories?" value={d.rotatingActivation} options={[["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]]} onChange={rotatingActivation => set({ rotatingActivation }, ["rotatingActivation"])} />
+      <AnswerChoice title="Where do you buy most groceries?" value={d.groceryStore} options={[["supermarket", "Supermarket"], ["superstore", "Walmart or Target"], ["warehouse", "Warehouse club"]]} onChange={groceryStore => set({ groceryStore }, ["groceryStore"])} />
+      {d.spend.rent > 0 && <label className="field">Bilt Cash credits you'd use each year ($, optional)<input type="number" min="0" value={d.biltCashAnnualUse || 0} onChange={e => set({ biltCashAnnualUse: Math.max(0, Number(e.target.value)) }, ["biltCashAnnualUse"])} /><span className="t-caption">Only credits for purchases you'd make anyway. Otherwise we compare housing points with Bilt Cash used to unlock housing points.</span></label>}
       <div className="spend-presets">
         <div className="chip-wrap" role="group" aria-label="Start from">
           {[["light", "Light"], ["typical", "Typical"], ["heavy", "Heavy"]].map(([k, l]) => (
@@ -470,7 +483,7 @@ function TravelStep({ d, set, mode, headRef }) {
   const n = useMemo(() => normalizeProfile(d), [d]);
   const t = d.travel;
   const rows = t.tripRows || [];
-  const setTravel = (patch) => set({ travel: { ...t, ...patch } });
+  const setTravel = (patch) => set({ travel: { ...t, ...patch } }, Object.keys(patch).map(k => `travel.${k}`));
   /* Rows are the stored truth; trips follow them. */
   const setRows = (list) => setTravel({ tripRows: list, airports: [], trips: list.reduce((x, r) => x + (r.trips || 0), 0), ...(list.length ? {} : { lounges: "no" }) });
   const routes = n.travel.inferred?.routes || [];
@@ -483,7 +496,7 @@ function TravelStep({ d, set, mode, headRef }) {
   const loungeAuto = (t.loungeChoice || (t.loungeNetworks?.length ? "manual" : "auto")) === "auto";
   const hotelsPicked = d.brands.hotelsPicked ?? d.brands.hotels;
   const setHotels = (hotelsPicked) => set({ brands: { ...d.brands, hotelsPicked, hotels: hotelsPicked } });
-  const nights = t.hotelNights ?? (n.travel.trips ? n.travel.trips * 2 : 0);
+  const nights = t.hotelNights ?? 0;
   const bagCount = t.bags ? t.bags.perTrip : null;
   return (
     <>
@@ -599,7 +612,8 @@ export function HotelQuestions({ d, n, t, set, setTravel }) {
       <fieldset className="survey-group" data-testid="hotel-mode">
         <legend className="t-h3" id="q-hotel-mode">How do you pick hotels?</legend>
         <div className="choice-stack" role="radiogroup" aria-labelledby="q-hotel-mode">
-          <Choice radio selected={!manual} onSelect={() => set({ travel: { ...t, hotelChoice: "auto" }, brands: { ...d.brands, hotelsPicked: [], hotels: [] } })}>Let CardWise pick the best program for me</Choice>
+          <Choice radio selected={t.hotelChoice === "none"} onSelect={() => setTravel({ hotelChoice: "none" })}>No hotel program</Choice>
+          <Choice radio selected={t.hotelChoice === "auto"} onSelect={() => set({ travel: { ...t, hotelChoice: "auto" }, brands: { ...d.brands, hotelsPicked: [], hotels: [] } }, ["travel.hotelChoice"])}>Let CardWise pick the best program for me</Choice>
           <Choice radio selected={manual} onSelect={() => setTravel({ hotelChoice: "manual" })}>I have brands I like</Choice>
         </div>
         {manual && <ToggleChips options={HOTEL_BRANDS} picked={picked} onChange={setPicked} label="Hotel brands you like" limit={HOTEL_BRANDS.length} />}
@@ -749,19 +763,21 @@ const scoreKey = (c) => (c.noHistory ? "none" : c.score == null ? "unsure" : Obj
 
 function CreditStep({ d, set, mode, headRef }) {
   const c = d.credit;
-  const setCredit = (patch) => set({ credit: { ...c, ...patch } });
+  const setCredit = (patch) => set({ credit: { ...c, ...patch } }, Object.keys(patch).map(k => `credit.${k}`));
   return (
     <>
       <Head headRef={headRef} eyebrow="Credit" title="Your credit" sub="Used only to show how likely an approval is and when to apply. Nothing here is a credit check." />
-      <AnswerChoice title="Are you a student?" value={d.isStudent} options={[[true, "Yes"], [false, "No"]]} onChange={isStudent => set({ isStudent })} />
-      <AnswerChoice title="Do you pay your statement balance in full?" value={d.paymentBehavior} options={[["always", "Always"], ["sometimes", "Sometimes carry a balance"], ["usually", "Usually carry a balance"]]} onChange={paymentBehavior => set({ paymentBehavior })} />
+      <label className="field">Most cards you want to carry<input type="number" min="1" max="10" value={d.maxCards} onChange={e => set({ maxCards: Math.max(1, Math.min(10, Number(e.target.value))) }, ["maxCards"])} /></label>
+      <label className="field">New cards you're comfortable opening<input type="number" min="0" max="10" value={d.newCardComfort} onChange={e => set({ newCardComfort: Math.max(0, Math.min(10, Number(e.target.value))) }, ["newCardComfort"])} /></label>
+      <AnswerChoice title="Are you a student?" value={d.isStudent} options={[[true, "Yes"], [false, "No"]]} onChange={isStudent => set({ isStudent }, ["isStudent"])} />
+      <AnswerChoice title="Do you pay your statement balance in full?" value={d.paymentBehavior} options={[["always", "Always"], ["sometimes", "Sometimes carry a balance"], ["usually", "Usually carry a balance"]]} onChange={paymentBehavior => set({ paymentBehavior }, ["paymentBehavior"])} />
       {["sometimes", "usually"].includes(d.paymentBehavior) && <fieldset className="survey-group">
         <legend className="t-h3">What does interest cost you?</legend>
         <label className="field">Average carried balance ($)<input type="number" min="0" value={d.averageBalance ?? ""} onChange={e => set({ averageBalance: e.target.value === "" ? null : Number(e.target.value) })} /></label>
         <label className="field">APR (%)<input type="number" min="0" max="100" value={d.apr == null ? "" : Math.round(d.apr * 10000) / 100} onChange={e => set({ apr: e.target.value === "" ? null : Number(e.target.value) / 100 })} /></label>
         <p className="t-caption">We'll pause rewards applications and focus on interest and cards with no yearly fee.</p>
       </fieldset>}
-      <AnswerChoice title="Could you afford a refundable deposit for a secured card?" value={d.canAffordDeposit} options={[[true, "Yes"], [false, "No"]]} onChange={canAffordDeposit => set({ canAffordDeposit })} />
+      <AnswerChoice title="Could you afford a refundable deposit for a secured card?" value={d.canAffordDeposit} options={[[true, "Yes"], [false, "No"]]} onChange={canAffordDeposit => set({ canAffordDeposit }, ["canAffordDeposit"])} />
       <AnswerChoice title="Have you been invited to apply for the Robinhood Gold Card?" value={d.invitedCards?.includes("robinhood-gold") || false} options={[[true, "Yes, I have an invitation"], [false, "No / still on the waitlist"]]} onChange={invited => set({ invitedCards: invited ? ["robinhood-gold"] : [] })} />
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-score">Credit score</legend>
@@ -846,7 +862,7 @@ function YourPointsStep({ d, headRef }) {
 
 /* ── Step 9: your best setup ─────────────────────────────────────────── */
 
-export function RevealStep({ d, set, headRef }) {
+export function RevealStep({ d, set, headRef, onEdit }) {
   /* v7c 5e.2: two tabs — Now (today's best wallet) and Your plan. */
   const [tab, setTab] = useState("now");
   const s = useMemo(() => buildPlan(d), [d]);
@@ -863,7 +879,7 @@ export function RevealStep({ d, set, headRef }) {
       <Head headRef={headRef} eyebrow="Your best setup"
         title={has ? "Here's how close your wallet is." : "Here's the wallet that pays you most."}
         sub={d.feeLimit != null ? `With the answers you gave, and your fee limit of $${d.feeLimit.toLocaleString("en-US")} a year.` : "With the answers you gave. No fee limit: each card is in only if it pays for itself."} />
-      <PlanAdvice plan={s} onEdit={(step) => document.dispatchEvent(new CustomEvent("cardwise-edit-answer", { detail: step }))} />
+      <PlanAdvice plan={s} onEdit={onEdit} />
       <p className="t-caption">{s.scoreText}</p>
       <FeeLimitCost profile={d} onRemove={set ? () => set({ feeLimit: null }) : null} />
       <div className="segmented reveal-tabs" role="tablist" aria-label="Now or later">

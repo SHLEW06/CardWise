@@ -81,7 +81,7 @@ function keysFor(card, category, profile) {
   const brand = cardBrand(card);
   const brandPicked = pickedBrand(profile, brand);
   switch (category) {
-    case "groceries": return ["Groceries", ...(profile.brands.everyday.includes("whole foods") ? ["WholeFoods"] : [])];
+    case "groceries": return profile.groceryStore === "supermarket" ? ["Groceries", ...(profile.brands.everyday.includes("whole foods") ? ["WholeFoods"] : [])] : profile.groceryStore === "warehouse" ? keysFor(card, "warehouse", profile) : [];
     case "dining": return ["Dining", "Restaurants"];
     case "warehouse": {
       const club = profile.warehouseClub;
@@ -117,7 +117,7 @@ function keysFor(card, category, profile) {
 
 /** Points per $ this card earns on one category (before caps), for this person. */
 export function earnRate(card, category, profile) {
-  if (category === "rent") return has(card.earnRates, "Rent") ? card.earnRates.Rent : 0;   // most cards can't pay rent without a fee
+  if (category === "rent") return card.pointCurrency === "bilt" ? 0 : has(card.earnRates, "Rent") ? card.earnRates.Rent : 0; // Bilt housing is calculated after everyday routing
   if (category === "gas" && profile.gasAt === "costco") return earnRate(card, "gasCostco", profile);
   return bestKey(card, keysFor(card, category, profile))[0];
 }
@@ -165,7 +165,7 @@ export function lanesFor(card, profile, spend = buckets(profile)) {
   for (const [bucket, dollars] of Object.entries(spend)) {
     if (!dollars || !usable(card, bucket, profile)) continue;
     const baseRate = bucket === "rent" ? 0 : general;
-    const [rate, key] = bucket === "rent" ? [has(r, "Rent") ? r.Rent : 0, "Rent"] : bestKey(card, keysFor(card, bucket, profile));
+    const [rate, key] = bucket === "rent" ? [card.pointCurrency === "bilt" ? Math.max(1.25, 3000 / dollars) : has(r, "Rent") ? r.Rent : 0, "Rent"] : bestKey(card, keysFor(card, bucket, profile));
     const ci = capFor(card, key);
     /* v7c 5b.5: a hotel or airline card's big multiplier is for stays /
        flights at THAT brand — its share of the hotel spending (split between
@@ -193,8 +193,9 @@ export function lanesFor(card, profile, spend = buckets(profile)) {
     /* Rotating 5% (Freedom Flex, Discover it, Chase Freedom): a share of each
        eligible category, $1,500 a quarter. */
     const rot = card.rotating || (has(r, "Rotating") ? { rate: r.Rotating, quarterlyCap: 1500 } : null);
-    if (rot && ROTATING_ELIGIBLE.includes(bucket === "gasCostco" ? "gas" : bucket)) {
-      out.push({ cardId: card.id, bucket, rate: rot.rate, pools: [{ id: `${card.id}#rot`, cap: rot.quarterlyCap * 4 }, { id: `rotating#${bucket}`, cap: dollars * ROTATING_SHARE }], exclusive: null, rotating: true });
+    const activation = profile.rotatingActivation === "yes" ? 1 : profile.rotatingActivation === "unsure" ? 0.5 : 0;
+    if (rot && activation && ROTATING_ELIGIBLE.includes(bucket === "gasCostco" ? "gas" : bucket) && !(bucket === "groceries" && profile.groceryStore !== "supermarket")) {
+      out.push({ cardId: card.id, bucket, rate: rot.rate, pools: [{ id: `${card.id}#rot`, cap: rot.quarterlyCap * 4 }, { id: `rotating#${bucket}`, cap: dollars * ROTATING_SHARE * activation }], exclusive: null, rotating: true });
     }
     /* One store's own earn key applies to that store's share of online spend. */
     if (bucket === "online") {
@@ -232,7 +233,7 @@ export function ticketCreditCover(cards, profile) {
   if (!Object.keys(ticketPools).length) return { total: 0, byCard: {} };
   const items = [];
   for (const c of cards) for (const cr of c.credits || []) {
-    if (cr.unverified || creditClass(cr) === "spend-gated" || !creditDraws(cr).some((d) => d.habit === "tickets")) continue;
+    if (cr.unverified || cr.endsAt || creditClass(cr) === "spend-gated" || !creditDraws(cr).some((d) => d.habit === "tickets")) continue;
     const ids = poolsForCredit(cr, ticketPools);
     const r = poolCreditValue(cr, ids, ticketPools, { pick: creditPick(cr) });
     if (r.value > 0) items.push({ id: `${c.id}#${cr.name}`, cardId: c.id, credit: cr.name, face: cr.annual, value: r.value, pools: r.pools, pick: r.pick });
@@ -274,6 +275,7 @@ export function allocateSpend(cards, profile, opts = {}) {
   const perCard = Object.fromEntries(cards.map((c) => [c.id, { value: 0, dollars: 0 }]));
   let total = 0;
   for (const l of lanes) {
+    if (!opts.optimistic && l.bucket === "rent" && cards.find(c => c.id === l.cardId)?.pointCurrency === "bilt") continue;
     if (!(left[l.bucket] > 0) || l.pct <= 0) continue;
     if (l.exclusive) {
       const used = exclusiveUsed[l.exclusive];
@@ -293,6 +295,38 @@ export function allocateSpend(cards, profile, opts = {}) {
     perCard[l.cardId].value += value;
     perCard[l.cardId].dollars += room;
     total += value;
+  }
+  // Bilt 2.0: only spend actually routed to this card unlocks housing value.
+  // Annual totals assume an even monthly pattern; never claim a monthly
+  // threshold is met from the whole household's spend on other cards.
+  const bilts = cards.filter(c => c.pointCurrency === "bilt");
+  if (!opts.optimistic && bilts.length) {
+    const rent = spend.rent || 0;
+    const options = bilts.map(c => {
+      const everyday = perCard[c.id].dollars;
+      const ratio = rent > 0 ? everyday / rent : 0;
+      const multiplier = ratio >= 1 ? 1.25 : ratio >= 0.75 ? 1 : ratio >= 0.5 ? 0.75 : ratio >= 0.25 ? 0.5 : 0;
+      const housingPoints = rent > 0 ? multiplier ? rent * multiplier : 250 * 12 : 0;
+      const housing = housingPoints * cpp[c.id] / 100;
+      const cash = everyday * 0.04;
+      const credits = Math.min(cash, profile.biltCashAnnualUse || 0);
+      const unlockPoints = Math.min(rent, Math.max(0, cash - credits) / 0.03);
+      const flexible = credits + unlockPoints * cpp[c.id] / 100;
+      return { cardId: c.id, housingPoints, multiplier, everyday, housing, flexible, value: Math.max(housing, flexible), mode: flexible > housing ? "flexible" : "housing" };
+    }).sort((a,b) => b.value-a.value);
+    const b = options[0];
+    if (b?.value > 0) {
+      const row = { cardId: b.cardId, dollars: rent, rate: rent ? b.value * 100 / (rent * cpp[b.cardId] || 1) : 0, cpp: cpp[b.cardId], pct: rent ? b.value*100/rent : 0, value: b.value, rotating: false, bilt: b };
+      (byBucket.rent ||= []).push(row);
+      perCard[b.cardId].value += b.value;
+      // Housing payments never qualify as everyday card spend for credits.
+      total += b.value;
+      left.rent = 0;
+    }
+  } else if (opts.optimistic && bilts.length) {
+    // Loose upper bound for membership/housing interactions in the exact
+    // search: it must never underestimate a feasible Bilt extension.
+    total += Math.min(profile.biltCashAnnualUse || 0, bilts.reduce((t,c) => t + (perCard[c.id]?.dollars || 0) * 0.04, 0));
   }
   return { total, byBucket, perCard, cpp, unallocated: left };
 }
@@ -392,7 +426,7 @@ export function bagFees(profile, airline) {
   const perks = profile.travel.airlinePerks;
   const trips = airline ? airlineTrips(profile, airline) : profile.travel.trips;
   if (perks && !perks.includes("bags")) return { yearly: 0, perTrip: 0, trips };
-  const perTrip = ans ? ans.perTrip * ans.share : 1;
+  const perTrip = ans ? ans.perTrip * ans.share : 0;
   return { yearly: BAG_FEE * perTrip * trips * 2, perTrip, trips };
 }
 /** Airlines they fly (from the trips step), else the ones they named. */
@@ -598,7 +632,7 @@ export function bagValue(card, profile) {
   const perks = profile.travel.airlinePerks;
   if (perks && !perks.includes("bags")) return 0;
   /* Not asked → one bag a trip (the card may cover more; they may not check them). */
-  const used = ans ? Math.min(free, ans.perTrip) * ans.share : 1;
+  const used = ans ? Math.min(free, ans.perTrip) * ans.share : 0;
   /* v7b 4.5: bags per trip × trips on THAT airline × the bag fee. */
   return BAG_FEE * used * airlineTrips(profile, cardBrand(card)) * 2;
 }
@@ -636,7 +670,7 @@ export function loungeNetworks(card, profile) {
     const companions = profile.travel.companions || 0;
     const allow = nk === "prioritypass" ? (l.ppGuests ?? l.guests ?? 0) : (l.guests ?? 0);
     const guests = companions > 0 ? Math.min(companions, allow === "unlimited" ? companions : allow) : 0;
-    const val = loungeFace(n) * LOUNGE_FACE_SHARE * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare) * bundle * (1 + guests);
+    const val = loungeFace(n) * (profile.travel.lounges === "yes" ? 1 : LOUNGE_FACE_SHARE) * loungeCoverage(n, profile.travel.homeAirport, profile.travel.intlShare) * bundle * (1 + guests);
     out[key] = Math.max(out[key] || 0, val);
   }
   return out;
@@ -716,17 +750,23 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   const pickedCardBrand = pickedBrand(profile, brand);
 
   const gated = [];
+  const temporary = [];
   const tryFree = [];
   for (const c of card.credits || []) {
     /* v7c 5.1: spend-gated credits are never counted — listed apart. */
-    if (creditClass(c) === "spend-gated") {
-      gated.push({ id: creditId(card, c), label: c.name, face: c.annual, spend: spendThreshold(c) });
+    const threshold = c.requiresSpend || spendThreshold(c);
+    if (threshold > (ctx.cardSpend || 0) || creditClass(c) === "spend-gated" && !threshold) {
+      gated.push({ id: creditId(card, c), label: c.name, face: c.annual, spend: threshold });
       continue;
     }
     /* v7c Part 6: a credit the issuer page doesn't show counts $0. */
     const u = c.unverified ? { factor: 0, reason: "Not on the issuer's page — counted $0" } : creditUsage(card, c, profile);
     const id = creditId(card, c);
     const value = Math.round(u.value ?? c.annual * u.factor);
+    if (c.endsAt) {
+      temporary.push({ id, label: c.name, face: c.annual, value: Math.max(0, value), endsAt: c.endsAt, requiresSpend: threshold, reason: "Temporary credit; excluded from recurring annual value" });
+      continue;
+    }
     /* v7c Part 4: habit credits share their spending pools across the
        wallet (a new card isn't credited for Uber spending another card
        already pays back). */
@@ -834,7 +874,7 @@ export function benefitBreakdown(card, profile, ctx = {}) {
     }
     kept = out.filter((i) => i.value > 0 || i.overridden);
   }
-  return { total: kept.reduce((t, i) => t + i.value, 0), items: kept, unused, gated, extras, nightBudget: nb.dropped.length ? nb : null };
+  return { total: kept.reduce((t, i) => t + i.value, 0), items: kept, unused, gated, temporary, extras, nightBudget: nb.dropped.length ? nb : null };
 }
 
 export const benefitValue = (card, profile) => benefitBreakdown(card, profile).total;

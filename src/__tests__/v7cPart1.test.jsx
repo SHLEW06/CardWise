@@ -22,18 +22,18 @@ const cont = () => fireEvent.click(screen.getByRole("button", { name: /Continue|
 const FLYER = { travel: { airports: [{ code: "ATL", trips: 4, destinations: [{ key: "tokyo", trips: 1 }, { key: "shanghai", trips: 1 }] }], hotelNights: 12 } };
 
 describe("1 · How do you pick hotels?", () => {
-  it("is one radio question; 'Let CardWise pick the best program for me' is the default", () => {
+  it("is one radio question; no hotel program is the cautious default", () => {
     saveV5Profile(FLYER);
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
     const g = screen.getByRole("radiogroup", { name: "How do you pick hotels?" });
     const radios = within(g).getAllByRole("radio");
-    expect(radios.map((r) => r.textContent)).toEqual(["Let CardWise pick the best program for me", "I have brands I like"]);
+    expect(radios.map((r) => r.textContent)).toEqual(["No hotel program", "Let CardWise pick the best program for me", "I have brands I like"]);
     expect(radios[0]).toHaveAttribute("aria-checked", "true");
     /* No brand chips until "I have brands I like". */
     expect(screen.queryByRole("button", { name: "Marriott" })).toBeNull();
     expect(screen.queryByText(/whatever's cheapest|Not sure — help me choose|Best value: let CardWise decide/)).toBeNull();
     cont();
-    expect(loadV5Profile().travel.hotelChoice).toBe("auto");
+    expect(loadV5Profile().travel.hotelChoice).toBe("none");
   });
   it("brand chips appear only after 'I have brands I like'; several are fine; switching back clears them", () => {
     saveV5Profile(FLYER);
@@ -53,15 +53,16 @@ describe("1 · How do you pick hotels?", () => {
     expect(p.brands.hotels).toEqual([p.brands.hotelPick.program]);   // never both a pick and brands
   });
   it("brands I like → those brands are valued, nothing else", () => {
-    const p = normalizeProfile({ ...FLYER, travel: { ...FLYER.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["hilton", "ihg"] } });
+    const p = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...FLYER, travel: { ...FLYER.travel, hotelChoice: "manual" }, brands: { hotelsPicked: ["hilton", "ihg"] } });
     expect(p.brands.hotels).toEqual(["hilton", "ihg"]);
     expect(p.brands.hotelPick).toBeNull();
   });
   it("the pick reads as one sentence, e.g. \"We'd pick Marriott: strong in 3 of your 3 destinations, incl. Shanghai and Tokyo\"", () => {
-    const p = normalizeProfile(FLYER);
+    const p = normalizeProfile({ ...FLYER, travel: { ...FLYER.travel, hotelChoice: "auto" } });
     expect(p.brands.hotelPick.sentence).toMatch(/^We'd pick (Marriott|Hilton|Hyatt|IHG): strong in \d of your 3 destinations(, incl\. .+)?$/);
     saveV5Profile(FLYER);
     render(<Survey initialMode="quick" initialStepId="travel" initialProfile={loadV5Profile()} />);
+    fireEvent.click(screen.getByRole("radio", { name: "Let CardWise pick the best program for me" }));
     const pick = screen.getByTestId("hotel-pick");
     expect(pick).toHaveTextContent(p.brands.hotelPick.sentence);
     fireEvent.click(within(pick).getByRole("button", { name: "Why?" }));
@@ -85,8 +86,8 @@ describe("1.4 · Where do you usually stay?", () => {
   it("independent stayers get less from hotel points, status and free nights", () => {
     expect(STAY_STYLE_FACTOR).toEqual({ chains: 1, mix: 0.75, independent: 0.4 });
     const base = { travel: { trips: 4, hotelNights: 15, hotelChoice: "manual" }, brands: { hotels: ["hyatt"] } };
-    const chains = normalizeProfile({ ...base, travel: { ...base.travel, stayStyle: "chains" } });
-    const indie = normalizeProfile({ ...base, travel: { ...base.travel, stayStyle: "independent" } });
+    const chains = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { ...base.travel, stayStyle: "chains" } });
+    const indie = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { ...base.travel, stayStyle: "independent" } });
     expect(stayFactor(normalizeProfile(base))).toBe(1);   // not asked = chains
     expect(cppOf("hyatt", indie)).toBeLessThan(cppOf("hyatt", chains));
     const night = (p) => benefitBreakdown(BY_ID.hyatt, p).items.filter((i) => i.kind === "freeNight").reduce((t, i) => t + i.value, 0);
@@ -105,7 +106,7 @@ describe("1.6 · the same pattern for airlines and lounges", () => {
     expect(screen.getByText("Star Alliance")).toBeInTheDocument();
   });
   it("lounges: 'Which lounges?' is a mode question; networks only for 'I'll choose'; auto ignores old networks", () => {
-    expect(normalizeProfile({ travel: { trips: 4, lounges: "yes", loungeChoice: "auto", loungeNetworks: ["centurion"] } }).travel.loungeNetworks).toEqual([]);
-    expect(normalizeProfile({ travel: { trips: 4, lounges: "yes", loungeNetworks: ["centurion"] } }).travel.loungeChoice).toBe("manual");
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4, lounges: "yes", loungeChoice: "auto", loungeNetworks: ["centurion"] } }).travel.loungeNetworks).toEqual([]);
+    expect(normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  travel: { trips: 4, lounges: "yes", loungeNetworks: ["centurion"] } }).travel.loungeChoice).toBe("manual");
   });
 });

@@ -10,20 +10,20 @@ exports[`P01: Freshman, no credit history (Thorough) 1`] = `
 
 exports[`P02: Sophomore, no cards, Quick path 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 212,
+  "first": "usb-altitude-go",
+  "net": 182,
   "wallet": [
-    "freedom-flex",
+    "usb-altitude-go",
   ],
 }
 `;
 
 exports[`P03: Student w/ Discover Student, flies ATL→BDL 3x (Quick) 1`] = `
 {
-  "first": "one-key",
-  "net": 329,
+  "first": "active-cash",
+  "net": 205,
   "wallet": [
-    "one-key",
+    "active-cash",
     "discover-student",
   ],
 }
@@ -31,10 +31,10 @@ exports[`P03: Student w/ Discover Student, flies ATL→BDL 3x (Quick) 1`] = `
 
 exports[`P04: Student w/ Freedom Rise, delivery + Uber heavy, 705 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 279,
+  "first": "usb-altitude-go",
+  "net": 261,
   "wallet": [
-    "freedom-flex",
+    "usb-altitude-go",
     "freedom-rise",
   ],
 }
@@ -42,10 +42,10 @@ exports[`P04: Student w/ Freedom Rise, delivery + Uber heavy, 705 1`] = `
 
 exports[`P05: Grad student, Amazon heavy, Prime member (Quick) 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 303,
+  "first": "active-cash",
+  "net": 272,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
@@ -61,7 +61,7 @@ exports[`P06: Intl student JFK→PEK 1x + 2 domestic, no history 1`] = `
 exports[`P07: Student, fair credit 640 after a late payment 1`] = `
 {
   "first": "savor-one",
-  "net": 145,
+  "net": 109,
   "wallet": [
     "savor-one",
   ],
@@ -70,35 +70,31 @@ exports[`P07: Student, fair credit 640 after a late payment 1`] = `
 
 exports[`P08: Student, skipped everything (Quick, defaults) 1`] = `
 {
-  "first": "active-cash",
-  "net": 616,
+  "first": "aa-mileup",
+  "net": 0,
   "wallet": [
-    "active-cash",
-    "discover-it",
+    "aa-mileup",
   ],
 }
 `;
 
 exports[`P09: New grad NYC, $2,000 rent, dining + transit, 705 1`] = `
 {
-  "first": "delta-plat",
-  "net": 1116,
+  "first": "bilt-blue",
+  "net": 688,
   "wallet": [
-    "delta-plat",
     "bilt-blue",
-    "discover-it",
+    "usb-altitude-go",
   ],
 }
 `;
 
 exports[`P10: New grad SF, wants travel, 4 trips SFO→SEA, 770 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1179,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "alaska-visa",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
@@ -106,21 +102,19 @@ exports[`P10: New grad SF, wants travel, 4 trips SFO→SEA, 770 1`] = `
 exports[`P11: New grad Chicago, cash, typical (Quick) 1`] = `
 {
   "first": "active-cash",
-  "net": 616,
+  "net": 458,
   "wallet": [
     "active-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P12: New grad Austin, gas-heavy commuter, cash (Quick) 1`] = `
 {
-  "first": "discover-it",
-  "net": 728,
+  "first": "active-cash",
+  "net": 569,
   "wallet": [
-    "amex-bce",
-    "discover-it",
+    "active-cash",
     "wf-autograph",
   ],
 }
@@ -128,175 +122,162 @@ exports[`P12: New grad Austin, gas-heavy commuter, cash (Quick) 1`] = `
 
 exports[`P13: New grad, wants 1 card only, typical, 705 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 508,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P14: Suburban family, Costco, groceries $1,200, 770 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1583,
+  "first": "active-cash",
+  "net": 1271,
   "wallet": [
-    "marriott-boundless",
-    "citi-strata-no-fee",
-    "freedom-flex",
+    "active-cash",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P15: Disney family, 2 MCO trips, Disney+ subscriber, 705 1`] = `
 {
-  "first": "citi-strata",
-  "net": 1652,
+  "first": "citi-double-cash",
+  "net": 1341,
   "wallet": [
-    "citi-strata",
     "citi-double-cash",
-    "bcp",
+    "citi-strata",
   ],
 }
 `;
 
 exports[`P16: CLT American Airlines family, 4 trips, bags 1`] = `
 {
-  "first": "citi-strata",
-  "net": 1875,
+  "first": "citi-double-cash",
+  "net": 1556,
   "wallet": [
-    "citi-strata",
-    "citi-aa-globe",
+    "citi-aa-platinum",
     "citi-double-cash",
+    "citi-strata",
   ],
 }
 `;
 
 exports[`P17: Walmart+ family, groceries $900, cash (Quick) 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 758,
+  "first": "active-cash",
+  "net": 554,
   "wallet": [
-    "citi-strata-no-fee",
-    "discover-it",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P18: Family, Prime + Target shopper, $800 groceries 1`] = `
 {
-  "first": "bcp",
-  "net": 931,
+  "first": "active-cash",
+  "net": 566,
   "wallet": [
     "active-cash",
-    "bcp",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P19: ATL Delta consultant, 12 trips, lounges yes, 820 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 2460,
+  "first": "active-cash",
+  "net": 1217,
   "wallet": [
-    "delta-plat",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
+    "usb-altitude-go",
+    "usb-altitude-connect",
   ],
 }
 `;
 
 exports[`P20: EWR United flyer, 10 trips, 30% intl, 770 1`] = `
 {
-  "first": "united-explorer",
-  "net": 2236,
+  "first": "active-cash",
+  "net": 1087,
   "wallet": [
-    "united-explorer",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
+    "usb-altitude-go",
   ],
 }
 `;
 
 exports[`P21: DFW American flyer, 8 trips, bags, 770 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1402,
+  "first": "citi-aa-platinum",
+  "net": 944,
   "wallet": [
-    "citi-aa-globe",
-    "marriott-boundless",
-    "freedom-flex",
+    "citi-aa-platinum",
+    "citi-double-cash",
+    "citi-strata",
   ],
 }
 `;
 
 exports[`P22: DAL Southwest flyer, 8 trips, 705 1`] = `
 {
-  "first": "sw-premier",
-  "net": 1526,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "sw-premier",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P23: SEA Alaska flyer, 6 trips, 770 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1382,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "alaska-visa",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P24: BOS JetBlue flyer, 6 trips (Quick) 1`] = `
 {
-  "first": "wf-autograph",
-  "net": 832,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "wf-autograph",
-    "discover-it",
-    "amex-bce",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P25: LAX intl flyer, NRT 2x + LHR 1x, business cabin, 820 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1823,
+  "first": "citi-double-cash",
+  "net": 1443,
   "wallet": [
-    "citi-strata",
-    "marriott-boundless",
     "citi-double-cash",
+    "citi-strata",
+    "usb-altitude-connect",
   ],
 }
 `;
 
 exports[`P26: Marriott road warrior, 40 nights, ORD 10 trips, 770 1`] = `
 {
-  "first": "united-explorer",
-  "net": 2367,
+  "first": "marriott-brilliant",
+  "net": 1461,
   "wallet": [
-    "united-explorer",
-    "marriott-boundless",
-    "freedom-flex",
+    "marriott-brilliant",
+    "bilt-palladium",
+    "usb-altitude-go",
   ],
 }
 `;
 
 exports[`P27: Hyatt fan, 20 nights, 6 trips, 770 1`] = `
 {
-  "first": "united-explorer",
-  "net": 1483,
+  "first": "hyatt",
+  "net": 1009,
   "wallet": [
-    "united-explorer",
     "bilt-palladium",
     "hyatt",
   ],
@@ -305,12 +286,11 @@ exports[`P27: Hyatt fan, 20 nights, 6 trips, 770 1`] = `
 
 exports[`P28: Hilton family, 15 nights, 4 trips (Quick) 1`] = `
 {
-  "first": "wf-autograph",
-  "net": 825,
+  "first": "active-cash",
+  "net": 614,
   "wallet": [
+    "active-cash",
     "wf-autograph",
-    "discover-it",
-    "amex-bce",
   ],
 }
 `;
@@ -318,11 +298,10 @@ exports[`P28: Hilton family, 15 nights, 4 trips (Quick) 1`] = `
 exports[`P29: Holds Sapphire Preferred + Freedom Unlimited (Quick) 1`] = `
 {
   "first": "freedom-flex",
-  "net": 696,
+  "net": 412,
   "wallet": [
-    "freedom-flex",
-    "amex-bce",
     "freedom-unlimited",
+    "freedom-flex",
   ],
 }
 `;
@@ -330,10 +309,9 @@ exports[`P29: Holds Sapphire Preferred + Freedom Unlimited (Quick) 1`] = `
 exports[`P30: Holds Amex Platinum + Gold, uses no credits, 1 trip 1`] = `
 {
   "first": "amex-green",
-  "net": 648,
+  "net": 308,
   "wallet": [
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
     "amex-green",
   ],
 }
@@ -341,23 +319,19 @@ exports[`P30: Holds Amex Platinum + Gold, uses no credits, 1 trip 1`] = `
 
 exports[`P31: Holds Sapphire Reserve, 2 trips, DoorDash monthly 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 707,
+  "first": "freedom-unlimited",
+  "net": 412,
   "wallet": [
-    "marriott-boundless",
-    "freedom-flex",
-    "united-explorer",
-    "csr",
+    "freedom-unlimited",
   ],
 }
 `;
 
 exports[`P32: Holds Citi Double Cash only, cash (Quick) 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 650,
+  "first": null,
+  "net": 458,
   "wallet": [
-    "freedom-flex",
     "citi-double-cash",
   ],
 }
@@ -365,12 +339,9 @@ exports[`P32: Holds Citi Double Cash only, cash (Quick) 1`] = `
 
 exports[`P33: Holds Venture X, 6 trips, 770 1`] = `
 {
-  "first": "united-explorer",
-  "net": 1044,
+  "first": null,
+  "net": 92,
   "wallet": [
-    "united-explorer",
-    "marriott-boundless",
-    "freedom-flex",
     "venture-x",
   ],
 }
@@ -379,10 +350,8 @@ exports[`P33: Holds Venture X, 6 trips, 770 1`] = `
 exports[`P34: At 5/24 (6 new cards), holds Amex Gold + Venture 1`] = `
 {
   "first": "amex-green",
-  "net": 665,
+  "net": 263,
   "wallet": [
-    "citi-aa-globe",
-    "bcp",
     "venture",
     "amex-green",
   ],
@@ -392,10 +361,9 @@ exports[`P34: At 5/24 (6 new cards), holds Amex Gold + Venture 1`] = `
 exports[`P35: Holds Apple Card only (Quick) 1`] = `
 {
   "first": "active-cash",
-  "net": 616,
+  "net": 458,
   "wallet": [
     "active-cash",
-    "discover-it",
     "apple-card",
   ],
 }
@@ -403,116 +371,106 @@ exports[`P35: Holds Apple Card only (Quick) 1`] = `
 
 exports[`P36: Holds Discover it + Quicksilver (Quick) 1`] = `
 {
-  "first": "usb-altitude-go",
-  "net": 651,
+  "first": "wf-autograph",
+  "net": 475,
   "wallet": [
-    "usb-altitude-go",
-    "discover-it",
+    "wf-autograph",
     "quicksilver",
+    "discover-it",
   ],
 }
 `;
 
 exports[`P37: EV commuter, transit + EV charging, 705 1`] = `
 {
-  "first": "bcp",
-  "net": 764,
+  "first": "active-cash",
+  "net": 480,
   "wallet": [
-    "bcp",
     "active-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P38: Foodie, $900 dining, Resy weekly, 820 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1289,
+  "first": "active-cash",
+  "net": 765,
   "wallet": [
-    "delta-plat",
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
+    "usb-altitude-go",
   ],
 }
 `;
 
 exports[`P39: Non-Amazon online shopper $600/mo (Quick) 1`] = `
 {
-  "first": "amex-bce",
-  "net": 854,
+  "first": "active-cash",
+  "net": 542,
   "wallet": [
-    "amex-bce",
-    "discover-it",
-    "wf-autograph",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P40: Renter $2,500 rent, 770 1`] = `
 {
-  "first": "bilt-palladium",
-  "net": 1235,
+  "first": "bilt-blue",
+  "net": 529,
   "wallet": [
-    "bilt-palladium",
-    "delta-plat",
-    "discover-it",
+    "bilt-blue",
   ],
 }
 `;
 
 exports[`P41: Low spender retiree $1k/mo, no fees ever, 820 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 212,
+  "first": "active-cash",
+  "net": 200,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P42: High spender $10k+/mo, 10 trips, lounges, 820 1`] = `
 {
-  "first": "united-explorer",
-  "net": 3703,
+  "first": "venture",
+  "net": 2792,
   "wallet": [
-    "citi-strata",
-    "united-explorer",
-    "citi-double-cash",
+    "venture",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P43: Uber power user (rides + Eats weekly, Uber One), 770 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 763,
+  "first": "active-cash",
+  "net": 596,
   "wallet": [
-    "bcp",
-    "freedom-flex",
+    "active-cash",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P44: Costco-only shopper, Costco gas (Quick) 1`] = `
 {
-  "first": "discover-it",
-  "net": 773,
+  "first": "active-cash",
+  "net": 664,
   "wallet": [
     "active-cash",
     "costco-citi",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P45: Mortgage within 12 months, 770 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 704,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "freedom-flex",
-    "bcp",
+    "active-cash",
   ],
 }
 `;
@@ -527,10 +485,10 @@ exports[`P46: Rebuilding, score under 580 1`] = `
 
 exports[`P47: Fair credit 640, typical spend 1`] = `
 {
-  "first": "savor-one",
-  "net": 404,
+  "first": "quicksilver-one",
+  "net": 305,
   "wallet": [
-    "savor-one",
+    "quicksilver-one",
   ],
 }
 `;
@@ -538,32 +496,29 @@ exports[`P47: Fair credit 640, typical spend 1`] = `
 exports[`P48: Robinhood Gold member, $20k cash there (Quick) 1`] = `
 {
   "first": "active-cash",
-  "net": 616,
+  "net": 458,
   "wallet": [
     "active-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P49: Fee limit $100, wants travel, 3 trips, 770 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 876,
+  "first": "active-cash",
+  "net": 458,
   "wallet": [
-    "marriott-boundless",
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P50: Rideshare driver, gas $400, phone $100 (Quick) 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 509,
+  "first": "wf-autograph",
+  "net": 370,
   "wallet": [
-    "citi-strata-no-fee",
-    "discover-it",
+    "wf-autograph",
   ],
 }
 `;
@@ -571,11 +526,10 @@ exports[`P50: Rideshare driver, gas $400, phone $100 (Quick) 1`] = `
 exports[`P51: young professional; pays rent by card; doesn't fly; member: amazon-prime; Uber Eats weekly 1`] = `
 {
   "first": "bilt-blue",
-  "net": 943,
+  "net": 665,
   "wallet": [
     "bilt-blue",
     "usb-altitude-go",
-    "discover-it",
   ],
 }
 `;
@@ -583,23 +537,22 @@ exports[`P51: young professional; pays rent by card; doesn't fly; member: amazon
 exports[`P52: family; dining-heavy; MIA, 4 trips/yr; lounges: sometimes; member: costco, amazon-prime; pays for CLEAR 1`] = `
 {
   "first": "active-cash",
-  "net": 1830,
+  "net": 1626,
   "wallet": [
-    "wf-autograph",
     "active-cash",
-    "discover-it",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P53: high earner; gas-heavy; PHX, 13 trips/yr incl. intl; checks 2 bags on 100% of trips; 15 paid hotel nights; prefers Ihg; score 720; member: costco 1`] = `
 {
-  "first": "citi-strata",
-  "net": 4929,
+  "first": "citi-aa-platinum",
+  "net": 3558,
   "wallet": [
-    "citi-strata",
-    "citi-aa-globe",
-    "citi-double-cash",
+    "active-cash",
+    "wf-autograph",
+    "citi-aa-platinum",
   ],
 }
 `;
@@ -617,11 +570,9 @@ exports[`P54: student; Costco-heavy; doesn't fly; score 680; member: costco 1`] 
 exports[`P55: new grad; pays rent by card; DCA, 8 trips/yr; checks 1 bag on 50% of trips; 0 paid hotel nights; score 680; holds Apple Card; lululemon a few times a year 1`] = `
 {
   "first": "citi-aa-platinum",
-  "net": 846,
+  "net": 397,
   "wallet": [
     "citi-aa-platinum",
-    "bilt-blue",
-    "bcp",
     "apple-card",
   ],
 }
@@ -629,12 +580,11 @@ exports[`P55: new grad; pays rent by card; DCA, 8 trips/yr; checks 1 bag on 50% 
 
 exports[`P56: family; balanced; MIA, 2 trips/yr; checks 1 bag on 100% of trips; member: costco, amazon-prime, robinhood-gold; pays for Uber One, pays for Disney+, Uber Eats weekly 1`] = `
 {
-  "first": "one-key",
-  "net": 1447,
+  "first": "active-cash",
+  "net": 1254,
   "wallet": [
-    "one-key",
+    "active-cash",
     "wf-autograph",
-    "discover-it",
   ],
 }
 `;
@@ -642,12 +592,12 @@ exports[`P56: family; balanced; MIA, 2 trips/yr; checks 1 bag on 100% of trips; 
 exports[`P57: gig worker; Costco-heavy; PDX, 1 trips/yr; lounges: no; holds Prime Visa + Delta Gold + United Explorer; member: costco, amazon-prime; Uber monthly, Resy restaurants monthly, DoorDash monthly 1`] = `
 {
   "first": "united-gateway",
-  "net": 617,
+  "net": 527,
   "wallet": [
     "costco-citi",
     "amazon-prime",
+    "delta-blue",
     "united-gateway",
-    "delta-gold",
   ],
 }
 `;
@@ -662,21 +612,20 @@ exports[`P58: retiree; streaming-heavy; doesn't fly; score 560 1`] = `
 
 exports[`P59: young professional; dining-heavy; PDX, 11 trips/yr incl. intl; never checks bags; 0 paid hotel nights; score 790 1`] = `
 {
-  "first": "atmos-summit",
-  "net": 815,
+  "first": "usb-altitude-go",
+  "net": 615,
   "wallet": [
-    "atmos-summit",
-    "bcp",
+    "usb-altitude-go",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P60: retiree; pays rent by card; doesn't fly; holds Active Cash 1`] = `
 {
-  "first": "bilt-blue",
-  "net": 466,
+  "first": null,
+  "net": 178,
   "wallet": [
-    "bilt-blue",
     "active-cash",
   ],
 }
@@ -684,10 +633,10 @@ exports[`P60: retiree; pays rent by card; doesn't fly; holds Active Cash 1`] = `
 
 exports[`P61: student; EV charging; SAN, 11 trips/yr incl. intl; lounges: sometimes; member: amazon-prime, robinhood-gold 1`] = `
 {
-  "first": "usb-altitude-connect",
-  "net": 470,
+  "first": "usb-altitude-go",
+  "net": 202,
   "wallet": [
-    "usb-altitude-connect",
+    "usb-altitude-go",
   ],
 }
 `;
@@ -695,48 +644,44 @@ exports[`P61: student; EV charging; SAN, 11 trips/yr incl. intl; lounges: someti
 exports[`P62: gig worker; dining-heavy; BOS, 4 trips/yr; never checks bags; 12 paid hotel nights; lounges: yes; holds Citi Double Cash 1`] = `
 {
   "first": "usb-altitude-connect",
-  "net": 716,
+  "net": 603,
   "wallet": [
     "usb-altitude-connect",
     "citi-double-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P63: young professional; grocery-heavy; RDU, 6 trips/yr; 18 paid hotel nights; holds Savor + Marriott Boundless + Freedom Unlimited; DoorDash monthly, pays for Peloton, pays for CLEAR 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 1153,
+  "first": "marriott-bold",
+  "net": 638,
   "wallet": [
-    "marriott-boundless",
-    "savor",
-    "freedom-flex",
+    "active-cash",
     "freedom-unlimited",
+    "savor",
+    "marriott-bold",
   ],
 }
 `;
 
 exports[`P64: young professional; grocery-heavy; doesn't fly; score 790; fee limit $100 1`] = `
 {
-  "first": "bcp",
-  "net": 885,
+  "first": "active-cash",
+  "net": 523,
   "wallet": [
-    "bcp",
     "active-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P65: high earner; pharmacy-heavy; DCA, 8 trips/yr incl. intl; member: costco; Uber monthly 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 2856,
+  "first": "active-cash",
+  "net": 2404,
   "wallet": [
     "active-cash",
-    "citi-strata-no-fee",
-    "freedom-flex",
+    "wf-autograph",
   ],
 }
 `;
@@ -744,23 +689,22 @@ exports[`P65: high earner; pharmacy-heavy; DCA, 8 trips/yr incl. intl; member: c
 exports[`P66: family; pharmacy-heavy; doesn't fly; score 790; at 5/24; member: costco, amazon-prime, robinhood-gold 1`] = `
 {
   "first": "active-cash",
-  "net": 1440,
+  "net": 1228,
   "wallet": [
     "active-cash",
-    "bcp",
-    "discover-it",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P67: family; online-heavy; MCO, 8 trips/yr; checks 1 bag on 100% of trips; 0 paid hotel nights; score 790; member: costco 1`] = `
 {
-  "first": "sw-premier",
-  "net": 2070,
+  "first": "sw-plus",
+  "net": 1815,
   "wallet": [
-    "sw-premier",
     "active-cash",
-    "freedom-flex",
+    "wf-autograph",
+    "sw-plus",
   ],
 }
 `;
@@ -775,10 +719,9 @@ exports[`P68: high earner; dining-heavy; MSP, 19 trips/yr incl. intl; checks 2 b
 
 exports[`P69: student; pays rent by card; IAH, 2 trips/yr; never checks bags; 3 paid hotel nights; score 680 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 596,
+  "first": "bilt-blue",
+  "net": 294,
   "wallet": [
-    "marriott-boundless",
     "bilt-blue",
   ],
 }
@@ -787,36 +730,35 @@ exports[`P69: student; pays rent by card; IAH, 2 trips/yr; never checks bags; 3 
 exports[`P70: gig worker; Costco-heavy; doesn't fly; score 720; member: costco; pays for DashPass 1`] = `
 {
   "first": "active-cash",
-  "net": 566,
+  "net": 449,
   "wallet": [
     "active-cash",
-    "bcp",
   ],
 }
 `;
 
 exports[`P71: high earner; online-heavy; DEN, 13 trips/yr incl. intl; checks 1 bag on 100% of trips; 30 paid hotel nights; lounges: yes; score 720; holds Delta Gold + Freedom Flex; member: costco, amazon-prime 1`] = `
 {
-  "first": "united-explorer",
-  "net": 4054,
+  "first": "delta-blue",
+  "net": 3672,
   "wallet": [
     "united-explorer",
     "active-cash",
-    "marriott-boundless",
+    "csp",
     "freedom-flex",
-    "delta-gold",
+    "delta-blue",
   ],
 }
 `;
 
 exports[`P72: high earner; gas-heavy; BNA, 10 trips/yr; checks 1 bag on 50% of trips; holds Prime Visa; member: costco 1`] = `
 {
-  "first": "costco-citi",
-  "net": 2881,
+  "first": "active-cash",
+  "net": 2587,
   "wallet": [
     "active-cash",
+    "wf-autograph",
     "costco-citi",
-    "citi-strata-no-fee",
     "amazon-prime",
   ],
 }
@@ -824,31 +766,31 @@ exports[`P72: high earner; gas-heavy; BNA, 10 trips/yr; checks 1 bag on 50% of t
 
 exports[`P73: young professional; Costco-heavy; EWR, 6 trips/yr; checks 1 bag on 50% of trips; 9 paid hotel nights; prefers Hilton; score 790; member: costco 1`] = `
 {
-  "first": "united-explorer",
-  "net": 853,
+  "first": "active-cash",
+  "net": 657,
   "wallet": [
-    "united-explorer",
-    "freedom-flex",
+    "active-cash",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P74: new grad; balanced; DEN, 2 trips/yr incl. intl; checks 1 bag on 50% of trips; 0 paid hotel nights; lounges: no; score 680; member: amazon-prime 1`] = `
 {
-  "first": "one-key",
-  "net": 295,
+  "first": "active-cash",
+  "net": 247,
   "wallet": [
-    "one-key",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P75: new grad; balanced; LAS, 4 trips/yr incl. intl; never checks bags 1`] = `
 {
-  "first": "one-key",
-  "net": 305,
+  "first": "active-cash",
+  "net": 230,
   "wallet": [
-    "one-key",
+    "active-cash",
   ],
 }
 `;
@@ -856,11 +798,10 @@ exports[`P75: new grad; balanced; LAS, 4 trips/yr incl. intl; never checks bags 
 exports[`P76: family; balanced; SEA, 4 trips/yr; checks 1 bag on 50% of trips; 0 paid hotel nights; lounges: no; score 720; holds Apple Card + Freedom Flex; member: costco; fee limit $100 1`] = `
 {
   "first": "active-cash",
-  "net": 1715,
+  "net": 1284,
   "wallet": [
     "active-cash",
     "freedom-flex",
-    "bcp",
     "apple-card",
   ],
 }
@@ -869,12 +810,11 @@ exports[`P76: family; balanced; SEA, 4 trips/yr; checks 1 bag on 50% of trips; 0
 exports[`P77: family; gas-heavy; BNA, 5 trips/yr incl. intl; holds Freedom Flex; member: costco, amazon-prime 1`] = `
 {
   "first": "active-cash",
-  "net": 1831,
+  "net": 1447,
   "wallet": [
     "active-cash",
     "costco-citi",
     "freedom-flex",
-    "discover-it",
   ],
 }
 `;
@@ -882,7 +822,7 @@ exports[`P77: family; gas-heavy; BNA, 5 trips/yr incl. intl; holds Freedom Flex;
 exports[`P78: family; balanced; DTW, 1 trips/yr; checks 2 bags on 100% of trips; 2 paid hotel nights; prefers Marriott; score 640; mortgage within 12 months; holds BofA Customized Cash + Savor; member: costco, amazon-prime 1`] = `
 {
   "first": "quicksilver-one",
-  "net": 1180,
+  "net": 999,
   "wallet": [
     "savor",
     "quicksilver-one",
@@ -894,7 +834,7 @@ exports[`P78: family; balanced; DTW, 1 trips/yr; checks 2 bags on 100% of trips;
 exports[`P79: student; dining-heavy; BOS, 3 trips/yr incl. intl; checks 1 bag on 100% of trips; lounges: no; member: amazon-prime; has PreCheck/Global Entry 1`] = `
 {
   "first": "wf-autograph",
-  "net": 429,
+  "net": 350,
   "wallet": [
     "wf-autograph",
   ],
@@ -903,11 +843,11 @@ exports[`P79: student; dining-heavy; BOS, 3 trips/yr incl. intl; checks 1 bag on
 
 exports[`P80: young professional; online-heavy; doesn't fly 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 752,
+  "first": "active-cash",
+  "net": 608,
   "wallet": [
-    "freedom-flex",
-    "amex-bce",
+    "active-cash",
+    "usb-altitude-go",
   ],
 }
 `;
@@ -915,11 +855,9 @@ exports[`P80: young professional; online-heavy; doesn't fly 1`] = `
 exports[`P81: gig worker; transit-heavy; LAS, 8 trips/yr incl. intl; holds Venture X + Venture + Autograph; member: amazon-prime 1`] = `
 {
   "first": "venture-one",
-  "net": 771,
+  "net": 390,
   "wallet": [
-    "usb-altitude-connect",
     "wf-autograph",
-    "discover-it",
     "venture-one",
   ],
 }
@@ -935,25 +873,23 @@ exports[`P82: student; online-heavy; SAN, 3 trips/yr; checks 1 bag on 50% of tri
 
 exports[`P83: family; grocery-heavy; PHX, 2 trips/yr; 0 paid hotel nights; holds Venture X + BofA Customized Cash; member: costco; Lyft weekly, has PreCheck/Global Entry, lululemon a few times a year 1`] = `
 {
-  "first": "savor",
-  "net": 1476,
+  "first": "wf-autograph",
+  "net": 1121,
   "wallet": [
-    "savor",
-    "usb-altitude-connect",
+    "wf-autograph",
     "venture-x",
     "boa-customized",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P84: family; balanced; CLT, 4 trips/yr; checks 2 bags on 100% of trips; 6 paid hotel nights; prefers Hyatt; lounges: yes; score 720; member: costco, amazon-prime; lululemon a few times a year, Dunkin' weekly, Uber Eats weekly; fee limit $250 1`] = `
 {
-  "first": "citi-strata",
-  "net": 1880,
+  "first": "citi-double-cash",
+  "net": 1669,
   "wallet": [
-    "citi-strata",
     "citi-aa-platinum",
+    "citi-strata",
     "citi-double-cash",
   ],
 }
@@ -962,11 +898,10 @@ exports[`P84: family; balanced; CLT, 4 trips/yr; checks 2 bags on 100% of trips;
 exports[`P85: family; EV charging; doesn't fly; member: costco, amazon-prime; Lyft weekly, has PreCheck/Global Entry 1`] = `
 {
   "first": "active-cash",
-  "net": 1418,
+  "net": 1216,
   "wallet": [
     "active-cash",
-    "savor",
-    "discover-it",
+    "wf-autograph",
   ],
 }
 `;
@@ -974,10 +909,10 @@ exports[`P85: family; EV charging; doesn't fly; member: costco, amazon-prime; Ly
 exports[`P86: new grad; balanced; MIA, 4 trips/yr; checks 1 bag on 100% of trips; 0 paid hotel nights; score 720; holds Citi Strata Premier + Venture X + World of Hyatt; pays for CLEAR, lululemon a few times a year 1`] = `
 {
   "first": "quicksilver",
-  "net": 550,
+  "net": 430,
   "wallet": [
-    "citi-aa-globe",
-    "citi-strata",
+    "citi-aa-platinum",
+    "citi-double-cash",
     "quicksilver",
   ],
 }
@@ -986,11 +921,10 @@ exports[`P86: new grad; balanced; MIA, 4 trips/yr; checks 1 bag on 100% of trips
 exports[`P87: family; streaming-heavy; SFO, 2 trips/yr; holds World of Hyatt; member: costco, amazon-prime; Dunkin' weekly 1`] = `
 {
   "first": "active-cash",
-  "net": 1530,
+  "net": 1311,
   "wallet": [
     "active-cash",
     "wf-autograph",
-    "discover-it",
     "hyatt",
   ],
 }
@@ -998,11 +932,11 @@ exports[`P87: family; streaming-heavy; SFO, 2 trips/yr; holds World of Hyatt; me
 
 exports[`P88: gig worker; Costco-heavy; DEN, 8 trips/yr; never checks bags; 24 paid hotel nights; score 790; holds Savor; member: costco, robinhood-gold 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1096,
+  "first": "costco-citi",
+  "net": 828,
   "wallet": [
-    "marriott-boundless",
     "costco-citi",
+    "bilt-palladium",
     "savor",
   ],
 }
@@ -1010,14 +944,12 @@ exports[`P88: gig worker; Costco-heavy; DEN, 8 trips/yr; never checks bags; 24 p
 
 exports[`P89: family; transit-heavy; DCA, 2 trips/yr incl. intl; never checks bags; holds Citi Double Cash + Sapphire Reserve + Delta Gold; member: costco 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 1823,
+  "first": "freedom-unlimited",
+  "net": 1358,
   "wallet": [
     "citi-double-cash",
-    "citi-strata-no-fee",
-    "freedom-flex",
-    "usb-altitude-go",
-    "discover-it",
+    "wf-autograph",
+    "freedom-unlimited",
     "delta-blue",
   ],
 }
@@ -1033,32 +965,32 @@ exports[`P90: student; grocery-heavy; PDX, 8 trips/yr incl. intl; never checks b
 
 exports[`P91: new grad; streaming-heavy; doesn't fly; score 640 1`] = `
 {
-  "first": "savor-one",
-  "net": 203,
+  "first": "quicksilver-one",
+  "net": 141,
   "wallet": [
-    "savor-one",
+    "quicksilver-one",
   ],
 }
 `;
 
 exports[`P92: young professional; EV charging; SAN, 3 trips/yr; never checks bags; 0 paid hotel nights; lounges: sometimes; score 640; Dunkin' weekly, Lyft weekly 1`] = `
 {
-  "first": "savor-one",
-  "net": 411,
+  "first": "quicksilver-one",
+  "net": 314,
   "wallet": [
-    "savor-one",
+    "quicksilver-one",
   ],
 }
 `;
 
 exports[`P93: family; online-heavy; ATL, 1 trips/yr; never checks bags; 0 paid hotel nights; score 640; holds Freedom Flex + Costco Citi; member: costco; Lyft weekly 1`] = `
 {
-  "first": "savor-one",
-  "net": 1421,
+  "first": "quicksilver-one",
+  "net": 1144,
   "wallet": [
-    "freedom-flex",
-    "savor-one",
     "costco-citi",
+    "quicksilver-one",
+    "freedom-flex",
   ],
 }
 `;
@@ -1066,11 +998,11 @@ exports[`P93: family; online-heavy; ATL, 1 trips/yr; never checks bags; 0 paid h
 exports[`P94: high earner; online-heavy; BNA, 14 trips/yr; checks 2 bags on 100% of trips; member: costco 1`] = `
 {
   "first": "active-cash",
-  "net": 3344,
+  "net": 2910,
   "wallet": [
     "active-cash",
+    "wf-autograph",
     "costco-citi",
-    "citi-strata-no-fee",
   ],
 }
 `;
@@ -1085,21 +1017,21 @@ exports[`P95: retiree; transit-heavy; JFK, 4 trips/yr; checks 2 bags on 100% of 
 
 exports[`P96: young professional; streaming-heavy; MIA, 2 trips/yr incl. intl; checks 1 bag on 100% of trips; 2 paid hotel nights; prefers Marriott; score 720; member: amazon-prime; Lyft weekly, pays for Walmart+ 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 1060,
+  "first": "citi-double-cash",
+  "net": 743,
   "wallet": [
-    "marriott-boundless",
-    "bcp",
-    "freedom-flex",
+    "citi-double-cash",
+    "citi-strata",
   ],
 }
 `;
 
 exports[`P97: gig worker; grocery-heavy; doesn't fly; holds Freedom Flex + Blue Cash Everyday + Apple Card; DoorDash monthly 1`] = `
 {
-  "first": null,
-  "net": 650,
+  "first": "active-cash",
+  "net": 506,
   "wallet": [
+    "active-cash",
     "amex-bce",
     "freedom-flex",
     "apple-card",
@@ -1109,24 +1041,23 @@ exports[`P97: gig worker; grocery-heavy; doesn't fly; holds Freedom Flex + Blue 
 
 exports[`P98: high earner; transit-heavy; SEA, 14 trips/yr; checks 1 bag on 50% of trips; 0 paid hotel nights; score 790; member: costco; has PreCheck/Global Entry 1`] = `
 {
-  "first": "bilt-palladium",
-  "net": 4237,
+  "first": "alaska-visa",
+  "net": 3784,
   "wallet": [
-    "atmos-summit",
     "bilt-palladium",
-    "costco-citi",
+    "alaska-visa",
+    "bilt-obsidian",
   ],
 }
 `;
 
 exports[`P99: high earner; balanced; PHX, 19 trips/yr incl. intl; 0 paid hotel nights; member: costco, amazon-prime; DoorDash monthly, pays for Uber One, pays for Peloton 1`] = `
 {
-  "first": "one-key",
-  "net": 2848,
+  "first": "active-cash",
+  "net": 2410,
   "wallet": [
-    "one-key",
     "active-cash",
-    "usb-altitude-connect",
+    "wf-autograph",
   ],
 }
 `;
@@ -1134,23 +1065,23 @@ exports[`P99: high earner; balanced; PHX, 19 trips/yr incl. intl; 0 paid hotel n
 exports[`P100: student; grocery-heavy; DFW, 6 trips/yr; checks 2 bags on 100% of trips; 9 paid hotel nights; prefers Hilton; score 680; member: amazon-prime 1`] = `
 {
   "first": "citi-aa-platinum",
-  "net": 575,
+  "net": 538,
   "wallet": [
     "citi-aa-platinum",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P101: family; transit-heavy; MIA, 2 trips/yr; checks 1 bag on 50% of trips; 6 paid hotel nights; lounges: no; score 720; at 5/24; holds United Explorer + Discover it; member: costco; Uber Eats weekly, pays for Disney+ 1`] = `
 {
-  "first": "citi-strata",
-  "net": 2106,
+  "first": "citi-double-cash",
+  "net": 1684,
   "wallet": [
-    "citi-strata",
     "citi-double-cash",
-    "bcp",
-    "discover-it",
+    "citi-strata",
     "united-explorer",
+    "discover-it",
   ],
 }
 `;
@@ -1158,7 +1089,7 @@ exports[`P101: family; transit-heavy; MIA, 2 trips/yr; checks 1 bag on 50% of tr
 exports[`P102: high earner; pharmacy-heavy; ORD, 14 trips/yr; checks 1 bag on 50% of trips; 0 paid hotel nights; score 640; member: costco 1`] = `
 {
   "first": "savor-one",
-  "net": 1958,
+  "net": 1598,
   "wallet": [
     "savor-one",
     "quicksilver-one",
@@ -1169,7 +1100,7 @@ exports[`P102: high earner; pharmacy-heavy; ORD, 14 trips/yr; checks 1 bag on 50
 exports[`P103: new grad; gas-heavy; JFK, 3 trips/yr; never checks bags; 9 paid hotel nights; score 640; holds Costco Citi + Venture; member: amazon-prime; pays for DashPass; fee limit $0 1`] = `
 {
   "first": "venture-one",
-  "net": 252,
+  "net": 220,
   "wallet": [
     "costco-citi",
     "venture-one",
@@ -1179,21 +1110,21 @@ exports[`P103: new grad; gas-heavy; JFK, 3 trips/yr; never checks bags; 9 paid h
 
 exports[`P104: retiree; pharmacy-heavy; BNA, 2 trips/yr; checks 1 bag on 50% of trips; member: amazon-prime; Uber monthly, Resy restaurants monthly 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 239,
+  "first": "active-cash",
+  "net": 190,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P105: young professional; pharmacy-heavy; doesn't fly; score 790; member: amazon-prime; pays for Uber One, Uber Eats weekly, Dunkin' weekly 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 810,
+  "first": "active-cash",
+  "net": 634,
   "wallet": [
-    "freedom-flex",
-    "bcp",
+    "active-cash",
+    "usb-altitude-go",
   ],
 }
 `;
@@ -1209,22 +1140,21 @@ exports[`P106: young professional; Costco-heavy; doesn't fly; score 560; member:
 exports[`P107: high earner; dining-heavy; DEN, 13 trips/yr incl. intl; checks 1 bag on 100% of trips; 30 paid hotel nights; score 790; member: costco 1`] = `
 {
   "first": "united-explorer",
-  "net": 4511,
+  "net": 3813,
   "wallet": [
+    "active-cash",
+    "wf-autograph",
     "united-explorer",
-    "amex-gold",
-    "marriott-boundless",
   ],
 }
 `;
 
 exports[`P108: young professional; gas-heavy; LAS, 1 trips/yr; checks 2 bags on 100% of trips; 0 paid hotel nights; lounges: sometimes; score 790; member: amazon-prime; has PreCheck/Global Entry; fee limit $0 1`] = `
 {
-  "first": "one-key",
-  "net": 677,
+  "first": "active-cash",
+  "net": 461,
   "wallet": [
-    "one-key",
-    "discover-it",
+    "active-cash",
   ],
 }
 `;
@@ -1232,22 +1162,20 @@ exports[`P108: young professional; gas-heavy; LAS, 1 trips/yr; checks 2 bags on 
 exports[`P109: family; pharmacy-heavy; doesn't fly; member: costco, robinhood-gold 1`] = `
 {
   "first": "active-cash",
-  "net": 1483,
+  "net": 1288,
   "wallet": [
     "active-cash",
-    "savor",
-    "discover-it",
+    "wf-autograph",
   ],
 }
 `;
 
 exports[`P110: gig worker; online-heavy; doesn't fly; pays for Peloton, Dunkin' weekly 1`] = `
 {
-  "first": "amex-bce",
-  "net": 543,
+  "first": "active-cash",
+  "net": 374,
   "wallet": [
-    "amex-bce",
-    "discover-it",
+    "active-cash",
   ],
 }
 `;
@@ -1255,7 +1183,7 @@ exports[`P110: gig worker; online-heavy; doesn't fly; pays for Peloton, Dunkin' 
 exports[`P111: student; streaming-heavy; DEN, 8 trips/yr; never checks bags; lounges: yes; member: amazon-prime 1`] = `
 {
   "first": "usb-altitude-connect",
-  "net": 380,
+  "net": 274,
   "wallet": [
     "usb-altitude-connect",
   ],
@@ -1264,12 +1192,11 @@ exports[`P111: student; streaming-heavy; DEN, 8 trips/yr; never checks bags; lou
 
 exports[`P112: high earner; online-heavy; PHL, 11 trips/yr incl. intl; holds Discover it; member: costco, amazon-prime; pays for Peloton, has PreCheck/Global Entry 1`] = `
 {
-  "first": "one-key",
-  "net": 3242,
+  "first": "active-cash",
+  "net": 2586,
   "wallet": [
-    "one-key",
     "active-cash",
-    "usb-altitude-connect",
+    "wf-autograph",
     "discover-it",
   ],
 }
@@ -1277,68 +1204,64 @@ exports[`P112: high earner; online-heavy; PHL, 11 trips/yr incl. intl; holds Dis
 
 exports[`P113: family; dining-heavy; DEN, 4 trips/yr; holds Blue Cash Everyday; member: costco, amazon-prime 1`] = `
 {
-  "first": "wf-autograph",
-  "net": 1870,
+  "first": "active-cash",
+  "net": 1597,
   "wallet": [
     "active-cash",
     "wf-autograph",
     "amex-bce",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P114: gig worker; dining-heavy; ATL, 11 trips/yr incl. intl; pays for Walmart+, pays for Disney+, Resy restaurants monthly; wants at most 2 cards 1`] = `
 {
-  "first": "usb-altitude-connect",
-  "net": 738,
-  "wallet": [
-    "usb-altitude-connect",
-    "discover-it",
-  ],
-}
-`;
-
-exports[`P115: new grad; streaming-heavy; MSP, 1 trips/yr; 3 paid hotel nights; prefers Marriott 1`] = `
-{
   "first": "one-key",
-  "net": 277,
+  "net": 353,
   "wallet": [
     "one-key",
   ],
 }
 `;
 
+exports[`P115: new grad; streaming-heavy; MSP, 1 trips/yr; 3 paid hotel nights; prefers Marriott 1`] = `
+{
+  "first": "active-cash",
+  "net": 244,
+  "wallet": [
+    "active-cash",
+  ],
+}
+`;
+
 exports[`P116: family; pays rent by card; ORD, 4 trips/yr; never checks bags; 6 paid hotel nights; prefers Hyatt; lounges: yes; score 790; member: costco, robinhood-gold; Uber monthly, Dunkin' weekly, pays for CLEAR; fee limit $100 1`] = `
 {
-  "first": "hyatt",
-  "net": 1818,
+  "first": "bilt-obsidian",
+  "net": 1679,
   "wallet": [
-    "hyatt",
-    "bilt-blue",
-    "freedom-flex",
+    "bilt-obsidian",
+    "usb-altitude-connect",
   ],
 }
 `;
 
 exports[`P117: retiree; online-heavy; AUS, 4 trips/yr; checks 1 bag on 50% of trips; 6 paid hotel nights; score 790; DoorDash monthly, pays for CLEAR, Dunkin' weekly 1`] = `
 {
-  "first": "marriott-boundless",
-  "net": 555,
+  "first": "bilt-palladium",
+  "net": 326,
   "wallet": [
-    "marriott-boundless",
-    "sw-premier",
+    "bilt-palladium",
   ],
 }
 `;
 
 exports[`P118: high earner; grocery-heavy; BOS, 19 trips/yr incl. intl; 0 paid hotel nights; lounges: yes; holds Active Cash; member: costco; wants at most 2 cards 1`] = `
 {
-  "first": "savor",
-  "net": 3081,
+  "first": "wf-autograph",
+  "net": 2719,
   "wallet": [
     "active-cash",
-    "savor",
+    "wf-autograph",
   ],
 }
 `;
@@ -1346,7 +1269,7 @@ exports[`P118: high earner; grocery-heavy; BOS, 19 trips/yr incl. intl; 0 paid h
 exports[`P119: new grad; Costco-heavy; LAS, 2 trips/yr; checks 2 bags on 100% of trips; 0 paid hotel nights; lounges: yes; score 640; holds Blue Cash Preferred; member: costco; pays for Peloton, pays for DashPass 1`] = `
 {
   "first": null,
-  "net": 215,
+  "net": 46,
   "wallet": [
     "bcp",
   ],
@@ -1355,32 +1278,29 @@ exports[`P119: new grad; Costco-heavy; LAS, 2 trips/yr; checks 2 bags on 100% of
 
 exports[`P120: young professional; transit-heavy; doesn't fly; member: amazon-prime 1`] = `
 {
-  "first": "discover-it",
-  "net": 768,
+  "first": "active-cash",
+  "net": 487,
   "wallet": [
-    "discover-it",
-    "amex-bce",
-    "wf-autograph",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P121: BLS household food and fuel anchor / one card, $0 fees 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 483,
+  "first": "active-cash",
+  "net": 428,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P122: BLS household food and fuel anchor / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 614,
+  "first": null,
+  "net": 428,
   "wallet": [
-    "freedom-flex",
     "active-cash",
   ],
 }
@@ -1388,21 +1308,20 @@ exports[`P122: BLS household food and fuel anchor / keep Active Cash, up to two 
 
 exports[`P123: BLS household food and fuel anchor / two cards, $100 fee ceiling 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 692,
+  "first": "active-cash",
+  "net": 428,
   "wallet": [
-    "bcp",
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P124: Retired single, low card spend / one card, $0 fees 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 162,
+  "first": "active-cash",
+  "net": 133,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
@@ -1419,30 +1338,30 @@ exports[`P125: Retired single, low card spend / keep Active Cash, up to two card
 
 exports[`P126: Retired single, low card spend / two cards, $100 fee ceiling 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 162,
+  "first": "active-cash",
+  "net": 133,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P127: Two earners, restaurant-heavy / one card, $0 fees 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 659,
+  "first": "freedom-unlimited",
+  "net": 547,
   "wallet": [
-    "freedom-flex",
+    "freedom-unlimited",
   ],
 }
 `;
 
 exports[`P128: Two earners, restaurant-heavy / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 775,
+  "first": "usb-altitude-go",
+  "net": 689,
   "wallet": [
-    "freedom-flex",
+    "usb-altitude-go",
     "active-cash",
   ],
 }
@@ -1451,30 +1370,29 @@ exports[`P128: Two earners, restaurant-heavy / keep Active Cash, up to two cards
 exports[`P129: Two earners, restaurant-heavy / two cards, $100 fee ceiling 1`] = `
 {
   "first": "usb-altitude-go",
-  "net": 793,
+  "net": 689,
   "wallet": [
     "usb-altitude-go",
-    "discover-it",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P130: Family of five, supermarkets / one card, $0 fees 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 709,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P131: Family of five, supermarkets / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 778,
+  "first": null,
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
     "active-cash",
   ],
 }
@@ -1482,31 +1400,29 @@ exports[`P131: Family of five, supermarkets / keep Active Cash, up to two cards 
 
 exports[`P132: Family of five, supermarkets / two cards, $100 fee ceiling 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 863,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
-    "discover-it",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P133: Rural long-distance commuter / one card, $0 fees 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 422,
+  "first": "active-cash",
+  "net": 362,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P134: Rural long-distance commuter / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 501,
+  "first": null,
+  "net": 362,
   "wallet": [
-    "freedom-flex",
     "active-cash",
   ],
 }
@@ -1514,30 +1430,29 @@ exports[`P134: Rural long-distance commuter / keep Active Cash, up to two cards 
 
 exports[`P135: Rural long-distance commuter / two cards, $100 fee ceiling 1`] = `
 {
-  "first": "bcp",
-  "net": 463,
+  "first": "active-cash",
+  "net": 362,
   "wallet": [
-    "bcp",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P136: Urban car-free renter; rent paid by ACH / one card, $0 fees 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 408,
+  "first": "active-cash",
+  "net": 355,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P137: Urban car-free renter; rent paid by ACH / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 513,
+  "first": null,
+  "net": 355,
   "wallet": [
-    "freedom-flex",
     "active-cash",
   ],
 }
@@ -1545,10 +1460,10 @@ exports[`P137: Urban car-free renter; rent paid by ACH / keep Active Cash, up to
 
 exports[`P138: Urban car-free renter; rent paid by ACH / two cards, $100 fee ceiling 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 408,
+  "first": "active-cash",
+  "net": 355,
   "wallet": [
-    "freedom-flex",
+    "active-cash",
   ],
 }
 `;
@@ -1595,11 +1510,10 @@ exports[`P142: High-spend household with childcare accepting cards fee-free / on
 
 exports[`P143: High-spend household with childcare accepting cards fee-free / keep Active Cash, up to two cards 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 1380,
+  "first": null,
+  "net": 1154,
   "wallet": [
     "active-cash",
-    "freedom-flex",
   ],
 }
 `;
@@ -1607,20 +1521,18 @@ exports[`P143: High-spend household with childcare accepting cards fee-free / ke
 exports[`P144: High-spend household with childcare accepting cards fee-free / two cards, $100 fee ceiling 1`] = `
 {
   "first": "active-cash",
-  "net": 1334,
+  "net": 1154,
   "wallet": [
     "active-cash",
-    "discover-it",
   ],
 }
 `;
 
 exports[`P145: Budget 1 / pays statements in full 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 333,
+  "first": null,
+  "net": 189,
   "wallet": [
-    "freedom-flex",
     "quicksilver",
   ],
 }
@@ -1628,10 +1540,9 @@ exports[`P145: Budget 1 / pays statements in full 1`] = `
 
 exports[`P146: Budget 1 / ongoing purchase debt; no spare cash 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 333,
+  "first": null,
+  "net": 189,
   "wallet": [
-    "freedom-flex",
     "quicksilver",
   ],
 }
@@ -1639,10 +1550,10 @@ exports[`P146: Budget 1 / ongoing purchase debt; no spare cash 1`] = `
 
 exports[`P147: Budget 2 / pays statements in full 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 548,
+  "first": "usb-altitude-go",
+  "net": 454,
   "wallet": [
-    "freedom-flex",
+    "usb-altitude-go",
     "quicksilver",
   ],
 }
@@ -1650,10 +1561,10 @@ exports[`P147: Budget 2 / pays statements in full 1`] = `
 
 exports[`P148: Budget 2 / ongoing purchase debt; no spare cash 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 548,
+  "first": "usb-altitude-go",
+  "net": 454,
   "wallet": [
-    "freedom-flex",
+    "usb-altitude-go",
     "quicksilver",
   ],
 }
@@ -1661,10 +1572,10 @@ exports[`P148: Budget 2 / ongoing purchase debt; no spare cash 1`] = `
 
 exports[`P149: Budget 3 / pays statements in full 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 743,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
     "quicksilver",
   ],
 }
@@ -1672,10 +1583,10 @@ exports[`P149: Budget 3 / pays statements in full 1`] = `
 
 exports[`P150: Budget 3 / ongoing purchase debt; no spare cash 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 743,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
     "quicksilver",
   ],
 }
@@ -1786,7 +1697,7 @@ exports[`P160: $18,000 uncategorized / Gold subscriber / invited 1`] = `
 exports[`P161: $2,000 monthly rent + $0 other per month 1`] = `
 {
   "first": "bilt-blue",
-  "net": 240,
+  "net": 30,
   "wallet": [
     "bilt-blue",
   ],
@@ -1796,7 +1707,7 @@ exports[`P161: $2,000 monthly rent + $0 other per month 1`] = `
 exports[`P162: $2,000 monthly rent + $499 other per month 1`] = `
 {
   "first": "bilt-blue",
-  "net": 300,
+  "net": 140,
   "wallet": [
     "bilt-blue",
   ],
@@ -1806,7 +1717,7 @@ exports[`P162: $2,000 monthly rent + $499 other per month 1`] = `
 exports[`P163: $2,000 monthly rent + $500 other per month 1`] = `
 {
   "first": "bilt-blue",
-  "net": 300,
+  "net": 180,
   "wallet": [
     "bilt-blue",
   ],
@@ -1816,7 +1727,7 @@ exports[`P163: $2,000 monthly rent + $500 other per month 1`] = `
 exports[`P164: $2,000 monthly rent + $999 other per month 1`] = `
 {
   "first": "bilt-blue",
-  "net": 360,
+  "net": 280,
   "wallet": [
     "bilt-blue",
   ],
@@ -1826,7 +1737,7 @@ exports[`P164: $2,000 monthly rent + $999 other per month 1`] = `
 exports[`P165: $2,000 monthly rent + $1,000 other per month 1`] = `
 {
   "first": "bilt-blue",
-  "net": 360,
+  "net": 300,
   "wallet": [
     "bilt-blue",
   ],
@@ -1855,30 +1766,30 @@ exports[`P167: $2,000 monthly rent + $1,500 other per month 1`] = `
 
 exports[`P168: $2,000 monthly rent + $2,000 other per month 1`] = `
 {
-  "first": "active-cash",
-  "net": 480,
+  "first": "bilt-blue",
+  "net": 540,
   "wallet": [
-    "active-cash",
+    "bilt-blue",
   ],
 }
 `;
 
 exports[`P169: Food merchant / all at supermarkets 1`] = `
 {
-  "first": "savor",
-  "net": 353,
+  "first": "active-cash",
+  "net": 259,
   "wallet": [
-    "savor",
+    "active-cash",
   ],
 }
 `;
 
 exports[`P170: Food merchant / all at in-store Walmart supercenters 1`] = `
 {
-  "first": "savor",
-  "net": 353,
+  "first": "active-cash",
+  "net": 259,
   "wallet": [
-    "savor",
+    "active-cash",
   ],
 }
 `;
@@ -1906,7 +1817,7 @@ exports[`P172: Phone and utilities / all local electric utility; card fee zero 1
 exports[`P173: Rotating card held / never activates 1`] = `
 {
   "first": null,
-  "net": 156,
+  "net": 78,
   "wallet": [
     "discover-it",
   ],
@@ -1916,7 +1827,7 @@ exports[`P173: Rotating card held / never activates 1`] = `
 exports[`P174: Rotating card held / activates; supermarket is eligible for one quarter, no other matches 1`] = `
 {
   "first": null,
-  "net": 156,
+  "net": 78,
   "wallet": [
     "discover-it",
   ],
@@ -2001,10 +1912,10 @@ exports[`P182: Quick, no history; score skipped 1`] = `
 
 exports[`P183: 5/24 boundary, four accounts 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 498,
+  "first": "freedom-unlimited",
+  "net": 423,
   "wallet": [
-    "freedom-flex",
+    "freedom-unlimited",
   ],
 }
 `;
@@ -2022,7 +1933,7 @@ exports[`P184: 5/24 boundary, five accounts 1`] = `
 exports[`P185: Delta, pays own first bag 1`] = `
 {
   "first": "delta-gold",
-  "net": 622,
+  "net": 592,
   "wallet": [
     "delta-gold",
     "active-cash",
@@ -2033,7 +1944,7 @@ exports[`P185: Delta, pays own first bag 1`] = `
 exports[`P186: Delta, elite status already waives first bag 1`] = `
 {
   "first": "delta-gold",
-  "net": 622,
+  "net": 592,
   "wallet": [
     "delta-gold",
     "active-cash",
@@ -2055,7 +1966,7 @@ exports[`P187: United, self-funded business trips 1`] = `
 exports[`P188: United, company card pays airfare, hotel and all bags 1`] = `
 {
   "first": "united-explorer",
-  "net": 772,
+  "net": 597,
   "wallet": [
     "united-explorer",
     "active-cash",
@@ -2065,10 +1976,9 @@ exports[`P188: United, company card pays airfare, hotel and all bags 1`] = `
 
 exports[`P189: Four family visits, explicitly no hotel or bag 1`] = `
 {
-  "first": "freedom-flex",
-  "net": 383,
+  "first": null,
+  "net": 271,
   "wallet": [
-    "freedom-flex",
     "active-cash",
   ],
 }
@@ -2076,10 +1986,9 @@ exports[`P189: Four family visits, explicitly no hotel or bag 1`] = `
 
 exports[`P190: Same four visits, skipped hotel and bag fields 1`] = `
 {
-  "first": "delta-gold",
-  "net": 551,
+  "first": null,
+  "net": 271,
   "wallet": [
-    "delta-gold",
     "active-cash",
   ],
 }
@@ -2088,7 +1997,7 @@ exports[`P190: Same four visits, skipped hotel and bag fields 1`] = `
 exports[`P191: Four paid Marriott nights; repeatable $90 maximum avoided per award 1`] = `
 {
   "first": "marriott-boundless",
-  "net": 490,
+  "net": 477,
   "wallet": [
     "marriott-boundless",
     "active-cash",
@@ -2099,7 +2008,7 @@ exports[`P191: Four paid Marriott nights; repeatable $90 maximum avoided per awa
 exports[`P192: Four paid Marriott nights; repeatable $240 maximum avoided per award 1`] = `
 {
   "first": "marriott-boundless",
-  "net": 519,
+  "net": 506,
   "wallet": [
     "marriott-boundless",
     "active-cash",
@@ -2119,10 +2028,9 @@ exports[`P193: One card only, already holds Active Cash 1`] = `
 
 exports[`P194: Can manage two, already holds Active Cash 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 778,
+  "first": null,
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
     "active-cash",
   ],
 }
@@ -2131,7 +2039,7 @@ exports[`P194: Can manage two, already holds Active Cash 1`] = `
 exports[`P195: Platinum renewal, no credits, no travel 1`] = `
 {
   "first": "amex-green",
-  "net": 320,
+  "net": 278,
   "wallet": [
     "active-cash",
     "amex-green",
@@ -2142,7 +2050,7 @@ exports[`P195: Platinum renewal, no credits, no travel 1`] = `
 exports[`P196: Gold renewal, no credits, no travel 1`] = `
 {
   "first": "amex-green",
-  "net": 320,
+  "net": 278,
   "wallet": [
     "active-cash",
     "amex-green",
@@ -2152,10 +2060,10 @@ exports[`P196: Gold renewal, no credits, no travel 1`] = `
 
 exports[`P197: Family shopper, before mortgage closes 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 743,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
     "quicksilver",
   ],
 }
@@ -2163,10 +2071,10 @@ exports[`P197: Family shopper, before mortgage closes 1`] = `
 
 exports[`P198: Same family, after mortgage has closed 1`] = `
 {
-  "first": "citi-strata-no-fee",
-  "net": 743,
+  "first": "active-cash",
+  "net": 576,
   "wallet": [
-    "citi-strata-no-fee",
+    "active-cash",
     "quicksilver",
   ],
 }
@@ -2184,11 +2092,11 @@ exports[`P199: Already holds Gold Card, keeps membership anyway 1`] = `
 
 exports[`P200: Already holds rotating card, no new applications wanted 1`] = `
 {
-  "first": "bcp",
-  "net": 661,
+  "first": "active-cash",
+  "net": 480,
   "wallet": [
+    "active-cash",
     "discover-it",
-    "bcp",
   ],
 }
 `;

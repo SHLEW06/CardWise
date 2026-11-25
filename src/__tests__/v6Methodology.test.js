@@ -14,7 +14,7 @@ import { walletValue, optimalWallet, walletScore, cardFits, heldCardVerdicts, sl
 import { breakevenPrice, portalBreakeven } from "../engine/v5/breakeven.js";
 
 const spend = (o) => ({ dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, transit: 0, flights: 0, hotels: 0, rentals: 0, streaming: 0, drugstores: 0, online: 0, rent: 0, phone: 0, other: 300, ...o });
-const P = (o = {}) => normalizeProfile(o);
+const P = (o = {}) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", ...o });
 
 /* ── Part E — point values ────────────────────────────────────────────── */
 describe("Part E — partner-based point values", () => {
@@ -176,7 +176,7 @@ describe("benefits U(W)", () => {
     const no = P({ travel: { trips: 4, lounges: "no", homeAirport: "SEA" } });
     const v = (p) => benefitBreakdown(BY_ID["amex-plat"], p).items.find((i) => i.kind === "lounge")?.value || 0;
     const nets = benefitBreakdown(BY_ID["amex-plat"], yes).items.find((i) => i.kind === "lounge").networks;
-    expect(nets.centurion).toBeCloseTo(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE * 1, 6);        // Centurion at SEA
+    expect(nets.centurion).toBeCloseTo(LOUNGE_RETAIL_CAP * 1, 6);        // Centurion at SEA
     expect(v(yes)).toBe(Math.round(Math.max(...Object.values(nets))));                       // best network only
     expect(v(no)).toBe(0);
     /* No Centurion lounge at BDL → coverage drops. */
@@ -195,7 +195,7 @@ describe("benefits U(W)", () => {
     expect(one.U).toBeGreaterThan(0);
   });
   it("two cards from the same airline don't waive two sets of bag fees", () => {
-    const p = P({ travel: { trips: 6 }, brands: { airlines: ["delta"] } });
+    const p = P({ travel: { trips: 6, bags: { perTrip: 1, share: 1 } }, brands: { airlines: ["delta"] } });
     const v = walletValue(["delta-gold", "delta-plat"], p);
     expect(v.benefits.filter((b) => b.kind === "bags")).toHaveLength(1);
   });
@@ -226,21 +226,21 @@ describe("net value and the optimal wallet", () => {
   });
   it("v7c 5d-2.5: one optimal lineup whatever the saved fee budget, ≤ 6 cards, deterministic", () => {
     const base = { spend: spend({ dining: 600, groceries: 600, gas: 200, flights: 300, other: 900 }), travel: { trips: 4, lounges: "yes", homeAirport: "ORD" }, brands: { airlines: ["united"], hotels: ["hyatt"] }, credit: { score: 770 } };
-    const first = optimalWallet({ ...base, feeBudget: 0 });
+    const first = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, feeBudget: 0 });
     for (const B of [0, 100, 250, 500, 750, 1000, 1500, Infinity]) {
-      const r = optimalWallet({ ...base, feeBudget: B });
+      const r = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, feeBudget: B });
       expect(r.wallet, `budget ${B}`).toEqual(first.wallet);
       expect(r.wallet.length).toBeLessThanOrEqual(6);
-      expect(optimalWallet({ ...base, feeBudget: B }).wallet).toEqual(r.wallet);
+      expect(optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, feeBudget: B }).wallet).toEqual(r.wallet);
     }
   });
   it("respects issuer rules: 5/24 blocks Chase applications; Capital One ≤ 2 personal cards", () => {
-    const r = optimalWallet({ feeBudget: 1000, credit: { newCards24mo: 5 }, brands: { airlines: ["united", "aeroplan"] }, travel: { trips: 4 } });
+    const r = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  feeBudget: 1000, credit: { newCards24mo: 5 }, brands: { airlines: ["united", "aeroplan"] }, travel: { trips: 4 } });
     expect(r.wallet.filter((id) => /^Chase/.test(BY_ID[id].issuer))).toEqual([]);
     expect(eligibility(BY_ID.csp, P({ credit: { newCards24mo: 5 } })).ok).toBe(false);
     expect(eligibility(BY_ID.csp, P({ credit: { newCards24mo: 5 }, cardsHeld: ["csp"] })).ok).toBe(true);
     for (const B of [0, 500, Infinity]) {
-      const w = optimalWallet({ feeBudget: B, brands: { airlines: ["aeroplan", "turkish"] }, travel: { trips: 6 } }).wallet;
+      const w = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  feeBudget: B, brands: { airlines: ["aeroplan", "turkish"] }, travel: { trips: 6 } }).wallet;
       expect(w.filter((id) => BY_ID[id].issuer === "Capital One").length).toBeLessThanOrEqual(2);
     }
   });
@@ -251,12 +251,12 @@ describe("net value and the optimal wallet", () => {
       { feeBudget: 400, spend: spend({ dining: 500, groceries: 500, other: 800 }), travel: { trips: 4, hotelNights: 10 }, brands: { hotels: ["hyatt"] } },
       { feeBudget: 1500, spend: spend({ dining: 1200, groceries: 900, flights: 500, hotels: 400, other: 1500 }), travel: { trips: 10, lounges: "yes", homeAirport: "JFK" }, brands: { airlines: ["united", "aeroplan", "flyingblue"], hotels: ["hyatt", "hilton"], perks: ["uber", "resy", "clear"] } },
     ];
-    const times = shapes.map((s, i) => { const t = performance.now(); optimalWallet({ ...s, maxCards: 6 - (i % 2) }); return performance.now() - t; });
+    const times = shapes.map((s, i) => { const t = performance.now(); optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...s, maxCards: 6 - (i % 2) }); return performance.now() - t; });
     expect(Math.max(...times)).toBeLessThan(150 * 3);       // CI slack for cold JIT
     expect(times.sort((a, b) => a - b)[Math.floor(times.length / 2)]).toBeLessThan(150);
   });
   it("Wallet Score = 100 × N(current) / N(best), clamped to 0–100", () => {
-    const p = { feeBudget: 300, cardsHeld: ["citi-double-cash"] };
+    const p = { wants: "both", spend: spend({ dining: 500, groceries: 500 }), feeBudget: 300, cardsHeld: ["citi-double-cash"] };
     const s = walletScore(p);
     expect(s.score).toBe(Math.max(0, Math.min(100, Math.round((100 * s.current.N) / s.best.value.N))));
     /* v7 C1: cards you hold carry no application hurdle, so holding the best
@@ -264,10 +264,10 @@ describe("net value and the optimal wallet", () => {
     let q = { ...p, cardsHeld: s.best.wallet };
     for (let i = 0; i < 3; i++) q = { ...q, cardsHeld: walletScore(q).best.wallet };
     expect(walletScore(q).score).toBe(100);
-    expect(walletScore({ feeBudget: 300 }).score).toBe(0);   // no cards: below a 2% card
+    expect(walletScore({ feeBudget: 300, spend: spend({ dining: 500 }) }).score).toBe(0);   // no cards: below a 2% card
   });
   it("card fit = 100 × Δk / max Δ; 'doesn't add value' when Δk ≤ 0", () => {
-    const fits = cardFits({ feeBudget: 300, cardsHeld: ["citi-double-cash"] });
+    const fits = cardFits({ spend: spend({ dining: 500, groceries: 500 }), feeBudget: 300, cardsHeld: ["citi-double-cash"] });
     const rows = Object.values(fits);
     expect(Math.max(...rows.filter((r) => r.fitsBudget).map((r) => r.fit ?? 0))).toBe(100);
     for (const r of rows) if (r.delta <= 0) expect(r.fit).toBeNull();
@@ -294,7 +294,7 @@ describe("net value and the optimal wallet", () => {
 /* ── Golden profiles (Part G) ─────────────────────────────────────────── */
 describe("golden profiles", () => {
   it("1. student, dining + groceries, fair credit → a lineup where every fee pays for itself (no budget cap, v7c)", () => {
-    const r = optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 640 } });
+    const r = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 640 } });
     expect(r.wallet.length).toBeGreaterThan(0);
     /* any fee is there only because the card more than covers it */
     for (const id of r.wallet) if (BY_ID[id].annualFee > 0) expect(r.value.N - walletValue(r.wallet.filter((x) => x !== id), { feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 640 } }).N, id).toBeGreaterThan(0);
@@ -302,16 +302,16 @@ describe("golden profiles", () => {
     for (const id of r.wallet) expect(BY_ID[id].cardType, id).not.toBe("secured");
     /* Secured cards only below 580 or with no credit history. */
     for (const credit of [{ score: 550 }, { noHistory: true }]) {
-      const w = optimalWallet({ canAffordDeposit: true, feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit }).wallet;
+      const w = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  canAffordDeposit: true, feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit }).wallet;
       expect(w.length).toBeGreaterThan(0);
       for (const id of w) expect(["secured", "student"], `${JSON.stringify(credit)} ${id}`).toContain(BY_ID[id].cardType);
       if (credit.score) for (const id of w) expect(BY_ID[id].cardType).toBe("secured");
     }
     /* 670+: neither builder type. */
-    for (const id of optimalWallet({ feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 705 } }).wallet) expect(["secured", "student"]).not.toContain(BY_ID[id].cardType);
+    for (const id of optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  feeBudget: 0, spend: spend({ dining: 400, groceries: 400 }), credit: { score: 705 } }).wallet) expect(["secured", "student"]).not.toContain(BY_ID[id].cardType);
   });
   it("2. Costco family with Costco gas → the Costco Visa, unless a 3%-everywhere card leaves it under its application hurdle", () => {
-    const p = { invitedCards: ["robinhood-gold"], credit: { score: 790 }, feeBudget: 100, spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" };
+    const p = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", invitedCards: ["robinhood-gold"], credit: { score: 790 }, feeBudget: 100, spend: spend({ groceries: 600, warehouse: 500, gas: 300, dining: 200 }), gasAt: "costco" };
     /* v7 C1: beside Robinhood Gold's 3% the Costco Visa adds only Costco gas
        at 5% vs 3% (≈ $72 a year) — under the $75 hurdle + $25 minimum gain. */
     const r = optimalWallet(p);
@@ -326,7 +326,7 @@ describe("golden profiles", () => {
     expect(slotsFor(noRH.value, p).find((s) => s.key === "warehouse").cardId).toBe("costco-citi");
   });
   it("3. foodie who picked Dunkin', Resy and Uber, high dining + groceries, $400 → Amex Gold", () => {
-    const p = { credit: { score: 790 }, feeBudget: 400, wants: "travel", spend: spend({ dining: 1200, groceries: 1000 }), travel: { trips: 2 }, brands: { perks: ["dunkin", "resy", "uber"], airlines: ["aeroplan", "flyingblue"] } };
+    const p = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, feeBudget: 400, wants: "travel", spend: spend({ dining: 1200, groceries: 1000 }), travel: { trips: 2 }, brands: { perks: ["dunkin", "resy", "uber"], airlines: ["aeroplan", "flyingblue"] } };
     const r = optimalWallet(p);
     expect(r.wallet).toContain("amex-gold");
     /* Reasoning: its picked credits count, and 4x is priced at their MR value. */
@@ -338,7 +338,7 @@ describe("golden profiles", () => {
   });
   it("4. Hyatt picker, $400 → World of Hyatt; Freedom points priced at transfer value beside a Sapphire", () => {
     /* v7d: the fee cap is the optional fee limit (the old feeBudget is ignored since v7c) */
-    const p = { credit: { score: 790 }, feeLimit: 400, spend: spend({ dining: 500, groceries: 500, other: 800 }), travel: { trips: 4, hotelNights: 10 }, brands: { hotels: ["hyatt"] } };
+    const p = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, feeLimit: 400, spend: spend({ dining: 500, groceries: 500, other: 800 }), travel: { trips: 4, hotelNights: 10 }, brands: { hotels: ["hyatt"] } };
     const r = optimalWallet(p);
     expect(r.wallet).toContain("hyatt");
     const n = normalizeProfile(p);
@@ -347,9 +347,9 @@ describe("golden profiles", () => {
     expect(r.value.F).toBeLessThanOrEqual(400);
   });
   it("5. ATL Delta flyer, $1,000: lounge Yes counts lounge value; lounge No → no lounge value, no lounge-first card", () => {
-    const base = { credit: { score: 790 }, feeBudget: 1000, spend: spend({ dining: 500, groceries: 500, flights: 400, other: 900 }), brands: { airlines: ["delta"] } };
-    const yes = optimalWallet({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } });
-    const no = optimalWallet({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "no" } });
+    const base = { wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", credit: { score: 790 }, feeBudget: 1000, spend: spend({ dining: 500, groceries: 500, flights: 400, other: 900 }), brands: { airlines: ["delta"] } };
+    const yes = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", bags: { perTrip: 1, share: 1 } } });
+    const no = optimalWallet({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "no", bags: { perTrip: 1, share: 1 } } });
     expect(no.value.benefits.some((b) => b.dedupe === "lounge")).toBe(false);
     for (const w of [yes, no]) expect(w.wallet.some((id) => BY_ID[id].pointCurrency === "delta")).toBe(true);
     expect(no.wallet).not.toContain("delta-reserve");
@@ -358,29 +358,29 @@ describe("golden profiles", () => {
        the $650 Reserve for this flyer; Sky Club access on the Reserve is
        still worth more to them than ATL's Priority Pass (Concourse F,
        international: 0.4 practicality for a domestic flyer). */
-    const prof = normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } });
+    const prof = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", bags: { perTrip: 1, share: 1 } } });
     const res = benefitBreakdown(BY_ID["delta-reserve"], prof).items.find((b) => b.kind === "lounge");
     expect(res.value).toBeGreaterThan(0);
-    expect(res.value).toBeLessThanOrEqual(Math.round(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE));
+    expect(res.value).toBeLessThanOrEqual(Math.round(LOUNGE_RETAIL_CAP));
     expect(res.label).toMatch(/Sky Club/);
-    const pp = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes" } })).find((b) => b.key === "prioritypass");
+    const pp = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", bags: { perTrip: 1, share: 1 } } })).find((b) => b.key === "prioritypass");
     expect(pp.coverage).toBeCloseTo(0.4, 9);
     expect(pp.lounges.map((l) => l.concourse)).toEqual(["F", "F"]);
-    expect(pp.value).toBe(Math.round(LOUNGE_RETAIL_CAP * LOUNGE_FACE_SHARE * 0.4));
+    expect(pp.value).toBe(Math.round(LOUNGE_RETAIL_CAP * 0.4));
     /* Mostly international flyers pass Concourse F: Priority Pass counts in full again. */
-    const intl = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", intlShare: 0.8 } })).find((b) => b.key === "prioritypass");
+    const intl = loungeBreakdown(BY_ID["venture-x"], normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...base, travel: { trips: 8, homeAirport: "ATL", lounges: "yes", bags: { perTrip: 1, share: 1 }, intlShare: 0.8 } })).find((b) => b.key === "prioritypass");
     expect(intl.coverage).toBeCloseTo(0.8 + 0.2 * 0.4, 9);
   });
   it("6. Sapphire Reserve vs Robinhood Gold on dining: Chase wins above 1.0¢, ties at 1.0¢", () => {
     const w = ["csr", "robinhood-gold"];
-    const at = (picks) => normalizeProfile({ brands: { airlines: picks }, spend: spend({ dining: 500 }) });
+    const at = (picks) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  brands: { airlines: picks }, spend: spend({ dining: 500 }) });
     const tie = at([]);
     expect(pctBackFor(BY_ID.csr, "dining", tie, w)).toBe(3);
     expect(pctBackFor(BY_ID["robinhood-gold"], "dining", tie, w)).toBe(3);
     const above = at(["united"]);                       // 1.2¢
     expect(pctBackFor(BY_ID.csr, "dining", above, w)).toBeGreaterThan(3);
     expect(walletValue(w, above).earning.byBucket.dining[0].cardId).toBe("csr");
-    const below = normalizeProfile({ ...above, cardsHeld: [] });
+    const below = normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...above, cardsHeld: [] });
     expect(pctBackFor(BY_ID.csr, "dining", below, ["csr"])).toBeCloseTo(3.6, 9);
   });
   it("7. non-traveler holding Amex Platinum, no brands → cancel or downgrade", () => {
@@ -413,7 +413,7 @@ describe("Part I — portal breakeven", () => {
     expect(hyatt.breakeven).toBeLessThan(flight.breakeven);
   });
   it("one line out, the math behind it, and pay-with-points flagged as select bookings only", () => {
-    const r = portalBreakeven({ kind: "flight", direct: 400, portal: 400 }, { cardsHeld: ["csr", "robinhood-gold"], brands: { airlines: ["united"] } });
+    const r = portalBreakeven({ kind: "flight", direct: 400, portal: 400 }, { wants: "both", cardsHeld: ["csr", "robinhood-gold"], brands: { airlines: ["united"] } });
     expect(r.line).toMatch(/^(Book on Chase Travel up to \$\d+ — it's \$\d+ net direct\.|Book direct)/);
     expect(r.math.formula).toBe("P* = (net_D − L) / (1 − e_P × v)");
     expect(r.payWithPoints.note).toMatch(/select bookings/);

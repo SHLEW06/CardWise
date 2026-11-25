@@ -15,7 +15,7 @@ afterEach(cleanup);
 const zero = { dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, transit: 0, flights: 0, hotels: 0, rentals: 0, streaming: 0, drugstores: 0, online: 0, rent: 0, phone: 0, other: 0 };
 
 describe("D4 · slot % (Robinhood showed 2.3% in Online shopping)", () => {
-  const p = { cardsHeld: ["robinhood-gold", "freedom-flex"], memberships: ["robinhood-gold"], spend: { ...zero, online: 400, other: 300 } };
+  const p = { rotatingActivation: "yes", cardsHeld: ["robinhood-gold", "freedom-flex"], memberships: ["robinhood-gold"], spend: { ...zero, online: 400, other: 300 } };
   it("the slot shows the lead card's own rate; 'overall' includes the rotating 5%", () => {
     const v = walletValue(["robinhood-gold", "freedom-flex"], p);
     const online = slotsFor(v, p).find((s) => s.key === "online");
@@ -64,7 +64,7 @@ describe("D3 · compare", () => {
 });
 
 describe("Wallet Lab screen", () => {
-  const P = { feeBudget: 400, cardsHeld: ["citi-double-cash"], spend: { ...zero, dining: 400, groceries: 500, other: 600 } };
+  const P = { rotatingActivation: "yes", wants: "both", groceryStore: "supermarket", rotatingActivation: "yes", feeBudget: 400, cardsHeld: ["citi-double-cash"], spend: { ...zero, dining: 400, groceries: 500, other: 600 } };
   it("D1: clicking a slot's card opens its full detail, judged against the setup", () => {
     const onOpen = vi.fn();
     render(<WalletLab profile={P} onOpenCard={onOpen} />);
