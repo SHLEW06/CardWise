@@ -60,13 +60,16 @@ All calculations run in your browser. There are no AI calls, and the app needs n
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 1,770 tests (Vitest)
+npm test           # Vitest engine, UI and 200-persona regressions
 npm run build      # production build → dist/
+npm run keys       # rotate the connector token locally; preserves its vault key
 ```
 
 **Deploy:** `npm run build && firebase deploy --only hosting`
 
 The public build uses a 37-hotel research database. On `npm run dev`, the app also loads larger personal hotel lists if you've generated them locally (`npm run hotel-db`). Those are gitignored and never included in the public build.
+
+Survey results, Home and Wallet Lab share `src/engine/v5/plan.js`. Skipped spending/travel answers count cautiously and appear as editable assumptions. Reproduce the audit with `node scripts/simulate.mjs`; see [the fix report](docs/AUDIT_FIX_REPORT.md). The build fails if `dist/` contains the connector token name or any nonempty `.env.local` value. Production bank sync expects a connector reverse proxy at `/connector`; development uses the local connector URL and dev-only token.
 
 **Built with:** React 18, Vite 5, Vitest, Firebase Hosting.
 

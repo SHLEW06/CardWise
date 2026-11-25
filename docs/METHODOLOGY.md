@@ -1,5 +1,23 @@
 # CardWise value methodology (v6)
 
+## Current rules — 2026-11-25 trust audit
+
+This section supersedes older defaults and score descriptions below. `buildPlan(profile)` is the recommendation contract for Survey, Home and Wallet Lab. It combines the constrained wallet, current and recommended annual net, first action, timeline, held-account advice, assumptions and warnings. Lab swaps are explicit what-if previews.
+
+- Score is `clamp(round(100 × current.net / best.net), 0, 100)`; no held cards means no score. When best net is nonpositive, the shared score helper handles the zero denominator without NaN. Both annual dollar figures are shown. Marginal/actual losses remain signed.
+- Card count is capped at `min(maxCards, kept + newCardComfort)`. Zero new-card comfort permits existing-account changes only. The exact branch-and-bound search is retained, with 50 shortlisted candidates.
+- Missing spending rows are $0; bags and paid hotel nights default to zero; no hotel program or lounge usage is invented. Explicit paid nights can imply a $150/night spending estimate. Missing goals use cash. Every modeled survey default has saved assumption provenance and an edit link.
+- Unknown credit admits only cards needing 670 or less. Student cards need affirmative student status; secured cards need deposit affordability. A first-card user choosing one card receives an eligible no-annual-fee option even if it does not clear application friction. If eligibility depends on a missing deposit answer, the next action asks for that answer instead of fabricating eligibility.
+- Balance carriers see interest (`average balance × APR`) first, pause new rewards applications and use only no-fee plans. Waitlisted/invitation cards need an invitation before an application; waitlist links are separate. A new paid membership must improve recurring net by at least $50 beyond the best plan without that membership.
+- Rotating 5% applies only with activation (unsure: half the eligible share). A supermarket bonus needs a compatible grocery-merchant answer. Legacy phone/utility spending is split using the confirmed phone-plan share; unknown bills receive no phone-plan bonus.
+- Cash goals use verified cash-out values rather than partner-transfer values; missing cash-out routes count $0 and are tracked in `DATA_TODO.md`. Explicit willingness to pay for lounges uses retail value, with coverage and guest rules retained.
+- Temporary/dated credits are displayed separately and excluded from recurring ranking. Spend conditions use card spending after routing, including category-specific conditions. User overrides cannot restore a temporary offer to recurring value.
+- Bilt housing uses the card's actual routed everyday spending: 250 points/month below 25% of housing; 0.5X at 25%, 0.75X at 50%, 1X at 75%, 1.25X at 100%. The engine compares housing-only with 4% restricted Bilt Cash, valued only against user-confirmed credit uses or housing unlocks ($30 per 1,000 points). Annual projections assume even monthly spending. Existing hotel-credit price precedence and shared-night rules are retained.
+
+Issuer checks: [2026-11-25 verification](data/verification-2026-11-25.md). Reproduce the results with `node scripts/simulate.mjs`; snapshots and real-screen rendering cover all 200 original profiles. The report separately shows the explicit new-answer replay so hidden facts are never silently treated as original survey inputs.
+
+## Historical methodology details
+
 How CardWise turns a survey into "≈ $X a year", the best wallet at a fee
 budget, the Wallet Score, card fit scores and the portal breakeven.
 Spec: `docs/REDESIGN_SPEC.md` §20 and §22. Code: `src/engine/v5/`

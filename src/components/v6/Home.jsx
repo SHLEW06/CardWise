@@ -12,7 +12,6 @@ import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
 import FocalImage from "../v7/FocalImage.jsx";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
-import { timelineLabel, applyTimeline } from "../../engine/v5/lab.js";
 import { Reveal, CountUp } from "./motion.jsx";
 import { buildPlan } from "../../engine/v5/plan.js";
 import PlanAdvice from "./PlanAdvice.jsx";

@@ -15,6 +15,7 @@ for (const persona of personas) it(`${persona.id}: ${persona.label}`, () => {
     renderToStaticMarkup(React.createElement(Home, { profile: persona.profile })),
     renderToStaticMarkup(React.createElement(WalletLab, { profile: persona.profile })),
   ].map(action);
+  if (p.score == null) expect(renderToStaticMarkup(React.createElement(WalletLab, { profile: persona.profile }))).not.toContain('role="meter"');
   const first = p.nextMove ? `${p.nextMove.kind}:${p.nextMove.cardId}` : null;
   expect(actions).toEqual([first, first, first]);
   expect(p.wallet.length).toBeLessThanOrEqual(p.profile.maxCards);
@@ -26,3 +27,9 @@ for (const persona of personas) it(`${persona.id}: ${persona.label}`, () => {
   if (p.score != null) { expect(p.score).toBeGreaterThanOrEqual(0); expect(p.score).toBeLessThanOrEqual(100); }
   expect({ first: p.nextMove?.cardId || null, wallet: p.wallet, net: p.best.value.net }).toMatchSnapshot();
 }, 30000);
+it("recommendation screens cannot invoke independent optimizers or scores", () => {
+  for (const path of ["v5/survey/Survey.jsx", "v6/Home.jsx", "v6/lab/WalletLab.jsx"]) {
+    const source = readFileSync(new URL(`../components/${path}`, import.meta.url), "utf8");
+    expect(source).not.toMatch(/\b(?:optimalWallet|optimizeWallet|walletScore)\s*\(/);
+  }
+});

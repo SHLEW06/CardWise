@@ -18,14 +18,14 @@ import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
 import { normalizeProfile } from "../../../engine/profileDefaults.js";
-import { walletValue, slotsFor, sampleWallets, heldCardVerdicts, scoreFrom, scoreBasisText } from "../../../engine/v5/methodology.js";
+import { slotsFor, sampleWallets } from "../../../engine/v5/methodology.js";
 import { buildPlan } from "../../../engine/v5/plan.js";
 import PlanAdvice from "../PlanAdvice.jsx";
 import { FeeLimitChip, FeeLimitCost } from "../../v7/FeeLimit.jsx";
 import { WalletChecklist } from "../../v7/BenefitChecklist.jsx";
 import { SpecialtyOptions } from "../../v7/Specialty.jsx";
 import { STRATEGY_BY_KEY, strategyWallet } from "../../../engine/v5/strategies.js";
-import { ticketCreditText, alternativesForSlot, swapSentence, applyTimeline, timelineLabel, allBenefits, costcoSlotNote, walletCards, useWhereRows, heldNotKept } from "../../../engine/v5/lab.js";
+import { ticketCreditText, alternativesForSlot, swapSentence, timelineLabel, allBenefits, costcoSlotNote } from "../../../engine/v5/lab.js";
 import { benefitBreakdown, cardFee } from "../../../engine/v5/value.js";
 import { saveStrategy, loadStrategies, deleteStrategy } from "../../../firebase/firestore.js";
 import CardFace from "../../v5/CardFace.jsx";
@@ -96,7 +96,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
     <section className="page lab">
       <PlanAdvice plan={shared} onEdit={onEditAnswers || (() => setDrawer(true))} />
       <Reveal as="header" className="lab-head">
-        <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />
+        {score != null && <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />}
         <div className="lab-numbers">
           {/* v7c 5d-2.1: say which mode the page is in. */}
           {target && <p className="t-caption" data-testid="lab-target">Target: {target.label} · <button type="button" className="link" onClick={() => onSaveProfile?.({ ...normalizeProfile(saved), targetStrategy: null })}>Clear target</button></p>}
@@ -210,7 +210,7 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
       {/* v7 D5: panels start collapsed. */}
       <div className="lab-panels">
         <Fold title="Keep or cancel"><KeepOrCancel profile={p} plan={shared} onOpenCard={openCard} /></Fold>
-        <Fold title="When to apply"><WhenToApply setup={setup} profile={p} onOpenCard={openCard} /></Fold>
+        <Fold title="When to apply"><WhenToApply plan={shared} profile={p} onOpenCard={openCard} /></Fold>
         <Fold title="Your plan"><PlanTimeline profile={p} /></Fold>
         <Fold title="Credits you'd plan around"><PlanAround setup={setup} profile={draft} onChange={(planAround) => setDraft({ ...draft, planAround })} /></Fold>
         <Fold title="Welcome bonuses"><WelcomeBonuses setup={setup} profile={p} /></Fold>
@@ -472,8 +472,8 @@ function KeepOrCancel({ profile, plan, onOpenCard }) {
           <li key={v.cardId} className="verdict-row">
             <button className="verdict-photo" onClick={() => onOpenCard?.(v.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[v.cardId])}`}><CardFace card={BY_ID[v.cardId]} /></button>
             <span className="verdict-name">{cardDisplayName(BY_ID[v.cardId])}</span>
-            <span className={`tag ${v.action === "keep" ? "tag-good" : "tag-warn"}`}>{v.action === "keep" ? "Keep" : v.action === "downgrade" ? `Switch to ${BY_ID[v.to].name}` : "Cancel"}</span>
-            <span className="t-caption verdict-why">{v.action === "keep" ? `Adds ${money(v.adds)} a year to your wallet${v.fee ? ` after its ${money(v.fee)} fee` : ""}.` : v.action === "downgrade" ? `Costs you ${money(-v.adds)} a year; switching saves ${money(v.gain)}.` : `Costs you ${money(-v.adds)} a year more than it gives back.`}</span>
+            <span className={`tag ${v.action === "keep" ? "tag-good" : "tag-warn"}`}>{v.action === "keep" ? "Keep" : ["downgrade", "upgrade"].includes(v.action) ? `Switch to ${BY_ID[v.to].name}` : v.action === "left out" ? "Left out" : "Cancel"}</span>
+            <span className="t-caption verdict-why">{v.action === "left out" ? "This no-fee account is not needed in the earning plan; keeping it open costs nothing." : v.action === "keep" ? `Adds ${money(v.adds)} a year to your wallet${v.fee ? ` after its ${money(v.fee)} fee` : ""}.` : v.action === "downgrade" ? `Costs you ${money(-v.adds)} a year; switching saves ${money(v.gain)}.` : `Costs you ${money(-v.adds)} a year more than it gives back.`}</span>
           </li>
         ))}
       </ul>
@@ -481,8 +481,8 @@ function KeepOrCancel({ profile, plan, onOpenCard }) {
   );
 }
 
-function WhenToApply({ setup, profile, onOpenCard }) {
-  const plan = useMemo(() => applyTimeline(setup, profile), [setup, profile]);
+function WhenToApply({ plan: shared, profile, onOpenCard }) {
+  const plan = shared.timeline;
   return (
     <>
       <p className="t-caption">{profile.credit.newCards24mo} new card{profile.credit.newCards24mo === 1 ? "" : "s"} in the last 24 months{profile.credit.newCards24mo >= 5 ? " — Chase will likely say no for now." : "."}</p>

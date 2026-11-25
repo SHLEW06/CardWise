@@ -21,6 +21,7 @@ describe("one trustworthy plan", () => {
     const p = buildPlan({ cardsHeld: ["amex-plat", "csp"], maxCards: 1, travel: { trips: 0 } });
     for (const id of ["amex-plat", "csp"].filter(id => !p.wallet.includes(id))) {
       expect(p.heldAdvice.find(x => x.cardId === id)?.action).toMatch(/cancel|downgrade|upgrade/);
+      expect(p.preview.dropped.find(x => x.cardId === id)?.action).toBe(p.heldAdvice.find(x => x.cardId === id)?.action);
     }
     expect(p.wallet.length).toBeLessThanOrEqual(normalizeProfile({ maxCards: 1 }).maxCards);
   });
@@ -45,7 +46,16 @@ describe("availability and eligibility", () => {
   it("asks about deposit affordability before offering a secured card", () => {
     const p = buildPlan({ credit: { noHistory: true }, isStudent: false });
     expect(p.wallet.some(id => BY_ID[id].cardType === "secured")).toBe(false);
-    expect(p.warnings.some(x => /deposit/i.test(x.message))).toBe(true);
+    expect(p.assumptions.some(x => x.key === "canAffordDeposit")).toBe(true);
+  });
+  it("gives a rebuilding first-card user an explicit deposit question instead of a dead end", () => {
+    const p = buildPlan({ credit: { score: 550 }, isStudent: false, maxCards: 1, spend: { other: 100 } });
+    expect(p.wallet).toEqual([]);
+    expect(p.nextMove?.kind).toBe("confirm-deposit");
+    expect(p.warnings.some(x => x.key === "deposit")).toBe(true);
+    const answered = buildPlan({ credit: { score: 550 }, isStudent: false, canAffordDeposit: true, maxCards: 1, spend: { other: 100 } });
+    expect(answered.wallet).toHaveLength(1);
+    expect(BY_ID[answered.wallet[0]].annualFee).toBe(0);
   });
   it("unknown credit only admits cards needing 670 or less", () => {
     const p = buildPlan({});

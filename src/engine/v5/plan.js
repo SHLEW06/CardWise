@@ -44,7 +44,12 @@ export function buildPlan(raw = {}, options = {}) {
   }
   const assumptions = assumptionsFor(profile), warnings = [];
   const interestCost = carries && profile.averageBalance != null && profile.apr != null ? Math.round(profile.averageBalance * profile.apr) : null;
-  if (profile.credit.noHistory && profile.isStudent !== true && profile.canAffordDeposit !== true) warnings.push({ key: "deposit", message: "Before choosing a secured card, tell us whether you can afford its refundable deposit." });
+  const needsDepositAnswer = !wallet.length && profile.newCardComfort > 0 && !carries && (profile.credit.noHistory || profile.credit.score != null && profile.credit.score < 580) && profile.canAffordDeposit !== true;
+  if (needsDepositAnswer) {
+    const declined = profile.canAffordDeposit === false;
+    warnings.push({ key: "deposit", message: declined ? "No eligible unsecured starter is on file at this credit level, and you said a deposit is unaffordable. No new card is recommended until an affordable option is confirmed." : "Before choosing a secured card, tell us whether you can afford its refundable deposit. We won't assume you can." });
+    nextMove = { kind: declined ? "review-eligibility" : "confirm-deposit", cardId: null, title: declined ? "Review affordable ways to build credit" : "Can you afford a refundable security deposit?", impact: 0, sentence: warnings.at(-1).message, editStep: "credit" };
+  }
   if (carries) {
     const message = interestCost == null ? "Interest can cost more than rewards. Enter your average balance and APR to estimate it; pause rewards applications and pay down the balance." : `Your balance costs about $${interestCost.toLocaleString("en-US")} a year in interest (average balance × APR). Pause rewards applications and pay down the balance.`;
     warnings.push({ key: "interest", message });
@@ -56,6 +61,7 @@ export function buildPlan(raw = {}, options = {}) {
   const scoreText = score == null ? "Add your first card to see a wallet score." : `You're getting ${score}% of your best annual net value: $${current.net.toLocaleString("en-US")} now ÷ $${value.net.toLocaleString("en-US")} with the recommended wallet, after fees.`;
   const previewWallet = options.wallet || (options.mode === "scratch" ? optimalWallet(profile, { maxCards: Math.min(profile.maxCards, profile.cardsHeld.length + profile.newCardComfort) }).wallet : wallet);
   const previewValue = previewWallet === wallet ? value : walletValue(previewWallet, profile);
+  const previewDrops = previewWallet === wallet ? heldAdvice.filter(x => x.action !== "keep").map(x => ({ ...x, effect: Math.max(0, x.gain || -x.adds), reason: x.action === "left out" ? "This no-fee card is not needed for earning; keeping the account open costs nothing." : `The recommended wallet leaves out this account${x.fee ? ` with its $${x.fee} yearly fee` : ""}.` })) : heldNotKept(previewWallet, profile);
   return { profile, current, best, wallet, nextMove, timeline, score, scoreText, assumptions, warnings, heldAdvice, interestCost, waitlist,
-    preview: { wallet: previewWallet, value: previewValue, tiles: walletCards(previewWallet, profile, previewValue), where: useWhereRows(previewValue, profile), dropped: heldNotKept(previewWallet, profile) } };
+    preview: { wallet: previewWallet, value: previewValue, tiles: walletCards(previewWallet, profile, previewValue), where: useWhereRows(previewValue, profile), dropped: previewDrops } };
 }

@@ -30,7 +30,7 @@ import { buildPlan } from "../../../engine/v5/plan.js";
 import PlanAdvice from "../../v6/PlanAdvice.jsx";
 import { explainPoints } from "../../../engine/v5/pointsExplained.js";
 
-import { applyTimeline, monthLabel } from "../../../engine/v5/lab.js";
+import { monthLabel } from "../../../engine/v5/lab.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { STEP_DEFS, stepsFor, draftFrom, MODES } from "../../../state/surveyAnswers.js";
 import { saveV5Profile } from "../../../state/v5Profile.js";
@@ -670,8 +670,8 @@ function AirlinePerks({ t, setTravel }) {
 /* v7 A6 "Decide later": the best wallet with lounge access and without it. */
 function LoungeCompare({ d }) {
   const two = useMemo(() => [
-    { key: "yes", title: "With lounges (most trips)", r: optimalWallet({ ...d, travel: { ...d.travel, lounges: "yes" } }) },
-    { key: "no", title: "Without lounges", r: optimalWallet({ ...d, travel: { ...d.travel, lounges: "no" } }) },
+    { key: "yes", title: "With lounges (most trips)", r: buildPlan({ ...d, travel: { ...d.travel, lounges: "yes" } }).best },
+    { key: "no", title: "Without lounges", r: buildPlan({ ...d, travel: { ...d.travel, lounges: "no" } }).best },
   ], [d]);
   return (
     <div className="compare-two" data-testid="lounge-compare">

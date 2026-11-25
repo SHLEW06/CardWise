@@ -1,11 +1,13 @@
 // Run on the pre-fix engine. Frozen evidence; never consumes hidden facts as input.
 import { readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { optimalWallet, walletValue } from "../src/engine/v5/methodology.js";
 import { optimizeWallet } from "../src/engine/v5/optimizer.js";
 import { applyTimeline } from "../src/engine/v5/lab.js";
 import { normalizeProfile } from "../src/engine/profileDefaults.js";
 import { BY_ID } from "../src/data/cards/index.js";
 const personas = JSON.parse(readFileSync("cardwise_personas_200.json")).personas;
+if (!execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).startsWith("07f63c4")) throw new Error("Baseline capture must run from archived commit 07f63c4, with this script and the unchanged persona input copied into that checkout. Use scripts/simulate.mjs for current results.");
 const rows = personas.map(({ id, profile: raw }) => {
   const p = normalizeProfile(raw);
   const survey = optimalWallet(p);
