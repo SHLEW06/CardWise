@@ -97,7 +97,8 @@ export const CARDS = [
   {
     id: "savor-one", name: "SavorOne", issuer: "Capital One", network: "VISA",
     annualFee: 39, currency: "Cash back", pointCurrency: "cash",
-    earnRates: { Dining: 3, Entertainment: 3, Groceries: 3, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
+    earnRates: { Dining: 3, Entertainment: 3, Groceries: 3, Streaming: 3, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
+    earnRatesSource: "https://www.capitalone.com/credit-cards/savor/", earnRatesChecked: "2026-11-25",
     credits: [],
     benefits: ["3x dining, entertainment & groceries", "5x on hotels & car rentals via Capital One Travel", "8% cash back on Capital One Entertainment", "No annual fee", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
@@ -115,7 +116,8 @@ export const CARDS = [
   {
     id: "savor", name: "Capital One Savor", issuer: "Capital One", network: "MASTERCARD",
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
-    earnRates: { Dining: 3, Entertainment: 3, Groceries: 3, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
+    earnRates: { Dining: 3, Entertainment: 3, Groceries: 3, Streaming: 3, General: 1 }, portalMultipliers: { Hotels: 5, Car: 5 },
+    earnRatesSource: "https://www.capitalone.com/credit-cards/savor/", earnRatesChecked: "2026-11-25",
     credits: [],
     benefits: ["3% dining, entertainment, groceries & streaming", "5% on hotels & car rentals via Capital One Travel", "8% on Capital One Entertainment", "No annual fee", "No foreign transaction fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

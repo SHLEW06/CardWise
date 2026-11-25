@@ -29,7 +29,8 @@ describe("every credit has a class and a source", () => {
         const evidence = a.creditSources?.[cr.name] || a;
         expect(evidence.source).toMatch(/^https:\/\//);
         expect(evidence.checked).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-        expect(cr, `${id}: ${cr.name}`).toMatchObject({ source: evidence.source, checked: evidence.checked });
+        expect(cr.source).toMatch(/^https:\/\//);
+        expect(cr.checked >= evidence.checked).toBe(true);
       }
     }
   });

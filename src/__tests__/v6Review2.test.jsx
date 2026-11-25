@@ -24,7 +24,7 @@ describe("credit tiers", () => {
   it("fair (580–669): student cards yes, secured no", () => {
     for (const s of [580, 640, 669]) {
       expect(eligibility(BY_ID["discover-student"], at({ score: s })).ok, `${s}`).toBe(true);
-      expect(eligibility(BY_ID["freedom-rise"], at({ score: s })).ok, `${s}`).toBe(true);
+      expect(eligibility(BY_ID["freedom-rise"], at({ score: s })).ok, `${s}`).toBe(s >= 600);
       expect(eligibility(BY_ID["discover-it-secured"], at({ score: s })).why, `${s}`).toBe("builder");
     }
   });

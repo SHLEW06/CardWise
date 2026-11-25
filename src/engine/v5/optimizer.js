@@ -105,6 +105,7 @@ function sentenceFor(card, profile, value, extra = {}) {
 
 export function optimizeWallet(rawProfile, catalog = CARDS) {
   const profile = normalizeProfile(rawProfile);
+  if (!profile.cardsHeld.length && profile.maxCards === 1) catalog = catalog.filter(c => (c.annualFee || 0) === 0);
   const atFiveTwentyFour = profile.credit.newCards24mo >= 5;
   const heldIds = profile.cardsHeld.filter((id) => BY_ID[id]);
 

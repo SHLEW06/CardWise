@@ -40,7 +40,7 @@ const pct = (p) => formatPctBack(p);   // v7 G: one formatter
 export const BUCKET_LABEL = {
   dining: "dining", groceries: "groceries", warehouse: "warehouse clubs", gas: "gas", gasCostco: "gas at Costco", ev: "EV charging",
   transit: "rides and transit", flights: "flights", hotels: "hotels", rentals: "vacation rentals", streaming: "streaming",
-  drugstores: "drugstores", online: "online shopping", rent: "rent", phone: "phone and utilities", other: "everything else",
+  drugstores: "drugstores", online: "online shopping", rent: "rent", phone: "phone plans", utilities: "internet and utilities", other: "everything else",
 };
 
 /* v7c 5b.4: one icon per benefit type, from the engine's `kind` / `type`

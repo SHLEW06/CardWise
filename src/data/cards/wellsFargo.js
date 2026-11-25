@@ -38,6 +38,8 @@ export const CARDS = [
     id: "wf-autograph", name: "Wells Fargo Autograph", issuer: "Wells Fargo", network: "VISA",
     annualFee: 0, currency: "WF Rewards", pointCurrency: "wf",
     earnRates: { Dining: 3, Flights: 3, Hotels: 3, Gas: 3, Transit: 3, Streaming: 3, Wireless: 3, General: 1 }, portalMultipliers: {},
+    earnRatesSource: "https://creditcards.wellsfargo.com/autograph-visa-credit-card/", earnRatesChecked: "2026-11-25",
+    phoneScope: "Cell phone and landline plans only; utilities excluded",
     credits: [], benefits: ["3x across many categories, no fee", "Transfers to a small partner set", "Cell phone protection"],
     transferAccess: ["wf"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],

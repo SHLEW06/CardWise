@@ -47,6 +47,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             <h1 className="t-hero">Start with the cards you carry.</h1>
             <p className="t-lead">Tell us how you spend and travel. We'll find the setup that pays you most — benefits first.</p>
             <PlanAdvice plan={s} onEdit={onSetup} />
+            <p className="t-caption">Recommended setup: {money(s.best.value.net)} a year after fees.</p>
             <button className="btn btn-signal" onClick={onSetup}>Start setup <ArrowRight size={18} aria-hidden="true" /></button>
           </Reveal>
           <FocalImage slot="home" className="home-hero-focal" />

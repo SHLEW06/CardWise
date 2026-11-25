@@ -25,6 +25,7 @@ export const ASSUMPTIONS = {
   newCardComfort: ["credit", "at most three new cards"],
   rotatingActivation: ["spend", "you will not activate quarterly categories"],
   groceryStore: ["spend", "grocery merchants are unconfirmed; no supermarket bonus"],
+  phonePlanShare: ["spend", "bills are unconfirmed; no phone-plan bonus"],
   memberships: ["fee", "no paid memberships"],
   biltCashAnnualUse: ["spend", "Bilt Cash only has value for unlocking housing points"],
 };

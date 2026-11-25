@@ -78,9 +78,10 @@ describe("5.3 / 5.5 · credits first, then the best earner", () => {
     const p = prof({ answer: "monthly", apps: ["stubhub"], spend: 600 });
     expect(buckets(p).tickets).toBe(600);
     const v = walletValue(["csr"], p);
-    expect(v.benefits.find((b) => /StubHub/.test(b.label)).value).toBe(300);
+    expect(v.benefits.find((b) => /StubHub/.test(b.label))).toBeUndefined();
+    expect(v.perCard[0].temporary.find(b => /StubHub/.test(b.label)).value).toBe(300);
     const rows = v.earning.byBucket.tickets;
-    expect(rows.reduce((t, r) => t + r.dollars, 0)).toBe(300);
+    expect(rows.reduce((t, r) => t + r.dollars, 0)).toBe(600);
     expect(rows[0]).toMatchObject({ cardId: "csr", rate: earnRate(BY_ID.csr, "tickets", p) });
   });
   it("Ticketmaster only: the CSR credit is $0; the Strata Elite Splurge (Live Nation) counts up to $200", () => {
@@ -109,6 +110,6 @@ describe("5.3 · 'Which card to use where' has a Tickets & events row", () => {
     const rows = useWhereRows(walletValue(["csr", "freedom-unlimited"], p), p);
     const t = rows.find((r) => r.key === "tickets");
     expect(t.label).toBe("Tickets & events");
-    expect(t.credits.map(ticketCreditText)).toEqual(["StubHub → Chase Sapphire Reserve ($300 credit covers your first $300)"]);
+    expect(t.credits).toEqual([]); // temporary credit is listed separately
   });
 });

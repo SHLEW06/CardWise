@@ -108,7 +108,8 @@ function keysFor(card, category, profile) {
     case "streaming": return ["Streaming", "Entertainment"];
     case "drugstores": return ["Drugstores"];
     case "online": return ["Online"];
-    case "phone": return ["Wireless", "Internet", "Utilities", "Mobile", ...(profile.brands.everyday.includes("t-mobile") ? ["TMobile"] : [])];
+    case "phone": return ["Wireless", "Mobile", ...(profile.brands.everyday.includes("t-mobile") ? ["TMobile"] : [])];
+    case "utilities": return ["Internet", "Utilities"];
     case "rent": return ["Rent"];
     case "tickets": return ["Entertainment"];       // v7d Part 5
     default: return [];
@@ -215,6 +216,11 @@ export function buckets(profile) {
   const costcoShare = profile.gasAt === "costco" ? 1 : profile.gasAt === "both" ? 0.5 : 0;
   out.gas = a.gas * (1 - costcoShare);
   out.gasCostco = a.gas * costcoShare;
+  // Stored phone is the legacy combined bills row. Only the confirmed
+  // phone-plan share qualifies for telephone-specific bonuses.
+  const phoneShare = profile.phonePlanShare ?? 0;
+  out.phone = (a.phone || 0) * phoneShare;
+  out.utilities = (a.phone || 0) * (1 - phoneShare);
   /* Owner, 2026-11-23 (#8): tickets are their own line in the spending step
      (no longer taken out of "everything else"). */
   if (!(out.tickets > 0)) delete out.tickets;
@@ -256,6 +262,12 @@ export function walletCpp(cards, profile) {
  *           perCard: { cardId: { value, dollars } }, cpp: { cardId: cpp } }
  */
 export function allocateSpend(cards, profile, opts = {}) {
+  const biltCards = cards.filter(c => c.pointCurrency === "bilt");
+  if (!opts.optimistic && !opts.biltMode && biltCards.length && profile.biltCashAnnualUse > 0) {
+    const housing = allocateSpend(cards, profile, { ...opts, biltMode: "housing" });
+    const flexible = allocateSpend(cards, profile, { ...opts, biltMode: "flexible" });
+    return flexible.total > housing.total ? flexible : housing;
+  }
   let spend = opts.spend || buckets(profile);
   /* v7d Part 5: ticket credits pay back their share first; the rest earns. */
   if (spend.tickets > 0) {
@@ -264,7 +276,10 @@ export function allocateSpend(cards, profile, opts = {}) {
   }
   const cpp = opts.cpp || walletCpp(cards, profile);
   const lanes = [];
-  for (const c of cards) for (const l of (opts.lanes?.[c.id] || lanesFor(c, profile, spend))) lanes.push({ ...l, pct: l.rate * cpp[c.id] });
+  for (const c of cards) for (const l of (opts.lanes?.[c.id] || lanesFor(c, profile, spend))) {
+    lanes.push({ ...l, pct: l.rate * cpp[c.id] });
+    if (opts.biltMode === "flexible" && c.pointCurrency === "bilt" && l.bucket !== "rent") lanes.push({ ...l, pct: l.rate * cpp[c.id] + 4, cashBonus: 4, pools: [...l.pools, { id: "bilt-cash-usable", cap: profile.biltCashAnnualUse / 0.04 }] });
+  }
   /* Ties go to the card whose bonus is FOR this spend (the Costco Visa's 2%
      at Costco over a flat 2% card), then bigger buckets, then card id. */
   lanes.sort((a, b) => b.pct - a.pct || (b.bonus ? 1 : 0) - (a.bonus ? 1 : 0) || (spend[b.bucket] - spend[a.bucket]) || (a.cardId < b.cardId ? -1 : a.cardId > b.cardId ? 1 : 0));
@@ -294,12 +309,13 @@ export function allocateSpend(cards, profile, opts = {}) {
     (byBucket[l.bucket] ||= []).push({ cardId: l.cardId, dollars: room, rate: l.rate, cpp: cpp[l.cardId], pct: l.pct, value, rotating: !!l.rotating, capped: l.pools.length > 0 });
     perCard[l.cardId].value += value;
     perCard[l.cardId].dollars += room;
+    if (l.cashBonus) perCard[l.cardId].cashBonus = (perCard[l.cardId].cashBonus || 0) + room * l.cashBonus / 100;
     total += value;
   }
   // Bilt 2.0: only spend actually routed to this card unlocks housing value.
   // Annual totals assume an even monthly pattern; never claim a monthly
   // threshold is met from the whole household's spend on other cards.
-  const bilts = cards.filter(c => c.pointCurrency === "bilt");
+  const bilts = biltCards;
   if (!opts.optimistic && bilts.length) {
     const rent = spend.rent || 0;
     const options = bilts.map(c => {
@@ -311,8 +327,10 @@ export function allocateSpend(cards, profile, opts = {}) {
       const cash = everyday * 0.04;
       const credits = Math.min(cash, profile.biltCashAnnualUse || 0);
       const unlockPoints = Math.min(rent, Math.max(0, cash - credits) / 0.03);
-      const flexible = credits + unlockPoints * cpp[c.id] / 100;
-      return { cardId: c.id, housingPoints, multiplier, everyday, housing, flexible, value: Math.max(housing, flexible), mode: flexible > housing ? "flexible" : "housing" };
+      const alreadyCountedCash = perCard[c.id].cashBonus || 0;
+      const flexible = Math.max(0, credits - alreadyCountedCash) + unlockPoints * cpp[c.id] / 100;
+      const useFlexible = opts.biltMode === "flexible" || flexible > housing;
+      return { cardId: c.id, housingPoints, multiplier, everyday, housing, flexible, value: useFlexible ? flexible : housing, mode: useFlexible ? "flexible" : "housing" };
     }).sort((a,b) => b.value-a.value);
     const b = options[0];
     if (b?.value > 0) {
@@ -755,15 +773,19 @@ export function benefitBreakdown(card, profile, ctx = {}) {
   for (const c of card.credits || []) {
     /* v7c 5.1: spend-gated credits are never counted — listed apart. */
     const threshold = c.requiresSpend || spendThreshold(c);
-    if (threshold > (ctx.cardSpend || 0) || creditClass(c) === "spend-gated" && !threshold) {
-      gated.push({ id: creditId(card, c), label: c.name, face: c.annual, spend: threshold });
+    const temporaryCredit = c.endsAt || /through (?:[A-Za-z]+ )?20\d{2}|20\d{2} only/i.test(c.name);
+    const routed = c.spendCategory ? ctx.categorySpend?.[c.spendCategory] || 0 : ctx.cardSpend || 0;
+    if (threshold > routed || creditClass(c) === "spend-gated" && !threshold) {
+      const entry = { id: creditId(card, c), label: c.name, face: c.annual, spend: threshold, reason: "Projected spending on this card does not meet the condition" };
+      if (temporaryCredit) temporary.push({ ...entry, value: 0, endsAt: c.endsAt, requiresSpend: threshold });
+      else gated.push(entry);
       continue;
     }
     /* v7c Part 6: a credit the issuer page doesn't show counts $0. */
     const u = c.unverified ? { factor: 0, reason: "Not on the issuer's page — counted $0" } : creditUsage(card, c, profile);
     const id = creditId(card, c);
     const value = Math.round(u.value ?? c.annual * u.factor);
-    if (c.endsAt) {
+    if (temporaryCredit) {
       temporary.push({ id, label: c.name, face: c.annual, value: Math.max(0, value), endsAt: c.endsAt, requiresSpend: threshold, reason: "Temporary credit; excluded from recurring annual value" });
       continue;
     }

@@ -286,6 +286,7 @@ function inferCardFamily(card) {
 export function enrichCard(card, ART) {
   const id = card.id;
   const roleMeta = roleMetaFor(id);
+  const status = card.availabilityStatus || APP_ONLY_AVAILABILITY[id] || (card.appOnly ? "productChangeOnly" : "openToNewApplicants");
   return {
     /* existing schema preserved */
     verifiedAt: null,
@@ -293,7 +294,7 @@ export function enrichCard(card, ART) {
     ...card,
 
     /* new v3.1 fields with defaults — existing card.X always wins */
-    availability: card.availability || ({ inviteOnly: "invite", closed: "closed", productChangeOnly: "closed", downgradeOnly: "closed" }[card.availabilityStatus] || "open"),
+    availability: card.availability || ({ inviteOnly: "invite", closed: "closed", productChangeOnly: "closed", downgradeOnly: "closed" }[status] || "open"),
     availabilityStatus:
       card.availabilityStatus ||
       APP_ONLY_AVAILABILITY[id] ||

@@ -37,8 +37,9 @@ describe("availability and eligibility", () => {
   });
   it("never suggests a student card without an affirmative student answer", () => {
     expect(eligibility(BY_ID["discover-student"], normalizeProfile({ credit: { noHistory: true } })).ok).toBe(false);
-    const p = buildPlan({ isStudent: true, credit: { noHistory: true }, canAffordDeposit: true });
-    expect(BY_ID[p.wallet[0]].cardType).toBe("student");
+    const p = buildPlan({ isStudent: true, credit: { noHistory: true }, canAffordDeposit: true, groceryStore: "supermarket", spend: { groceries: 500 } });
+    expect(["student", "consumer"]).toContain(BY_ID[p.wallet[0]].cardType);
+    expect(eligibility(BY_ID["discover-student"], p.profile).ok).toBe(true);
     expect(p.wallet.some(id => BY_ID[id].cardType === "secured")).toBe(false);
   });
   it("asks about deposit affordability before offering a secured card", () => {

@@ -330,12 +330,14 @@ export function normalizeProfile(p = {}) {
     canAffordDeposit: typeof p.canAffordDeposit === "boolean" ? p.canAffordDeposit : null,
     invitedCards: Array.isArray(p.invitedCards) ? [...new Set(p.invitedCards)] : [],
     declinedMemberships: Array.isArray(p.declinedMemberships) ? [...new Set(p.declinedMemberships)] : [],
+    goldMembershipWilling: typeof p.goldMembershipWilling === "boolean" ? p.goldMembershipWilling : null,
     paymentBehavior: ["always", "sometimes", "usually"].includes(p.paymentBehavior) ? p.paymentBehavior : null,
     averageBalance: p.averageBalance != null ? num(p.averageBalance) : null,
     apr: p.apr != null ? Math.min(1, num(p.apr)) : null,
     rotatingActivation: ["yes", "no", "unsure"].includes(p.rotatingActivation) ? p.rotatingActivation : "no",
     groceryStore: ["supermarket", "superstore", "warehouse"].includes(p.groceryStore) ? p.groceryStore : null,
     biltCashAnnualUse: num(p.biltCashAnnualUse),
+    phonePlanShare: p.phonePlanShare == null ? null : Math.max(0, Math.min(1, num(p.phonePlanShare))),
     wants,
     feeBudget,
     spend,                             // monthly view (yearly ÷ 12)
@@ -494,7 +496,7 @@ export function annualSpend(profile) {
 
 export function missingAnswers(p) {
   const keys = [];
-  for (const k of ["wants", "maxCards", "newCardComfort", "isStudent", "canAffordDeposit", "paymentBehavior", "rotatingActivation", "groceryStore", "memberships", "biltCashAnnualUse"])
+  for (const k of ["wants", "maxCards", "newCardComfort", "isStudent", "canAffordDeposit", "paymentBehavior", "rotatingActivation", "groceryStore", "phonePlanShare", "memberships", "biltCashAnnualUse"])
     if (p[k] == null) keys.push(k);
   for (const k of ["bags", "lounges", "hotelNights", "hotelChoice", "booking", "companions", "hotelBudget", "hotelMarkup", "hotelTaxes", "breakfast", "onProperty", "stayStyle", "airlinePerks"])
     if (p.travel?.[k] == null && !(k === "hotelChoice" && (p.brands?.hotelsPicked || p.brands?.hotels || []).length) && !(k === "hotelNights" && (p.travel?.tripRows || []).some(r => r.nights != null))) keys.push(`travel.${k}`);

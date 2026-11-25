@@ -20,7 +20,7 @@ export const VERIFIED = "2026-11-18";
      cadence — "annual" | "semiannual" | "quarterly" | "monthly" | "4yr"
                (`annual` is always the per-year dollar amount; a $120 every-4-years
                Global Entry credit is annual: 30, cadence: "4yr"). */
-export const cred = (name, annual, use, kind = "merchant", cadence = "annual", opts = {}) => ({ name, annual, use, kind, cadence, endsAt: null, requiresSpend: 0, ...opts });
+export const cred = (name, annual, use, kind = "merchant", cadence = "annual", opts = {}) => ({ name, annual, use, kind, cadence, requiresSpend: 0, ...opts, endsAt: opts.endsAt || opts.endsOn || null });
 /* v7c Part 5 / 6: `opts` may carry
      cls     — "automatic" | "easy" | "niche" | "spend-gated" (see
                src/data/creditClass.js; derived when absent)

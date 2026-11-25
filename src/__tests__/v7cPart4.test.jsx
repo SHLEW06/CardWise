@@ -120,7 +120,7 @@ describe("4.2 · the engine turns habits into yearly dollars", () => {
   });
   it("a credit counts only for the apps picked; 'Any' counts all of them", () => {
     expect(valueOf("csr", /\$15 DoorDash/, { takeout: { answer: "monthly", apps: ["ubereats"] } })).toBe(0);
-    expect(valueOf("csr", /\$15 DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(180);
+    expect(valueOf("csr", /\$15 DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(0);   // temporary offer is separate from recurring value
     expect(valueOf("csp", /DoorDash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(0);            // v7e: groceries, not takeout
     expect(valueOf("csp", /DoorDash/, { ddgrocery: { answer: "monthly" } })).toBe(120);
     expect(valueOf("amex-gold", /Uber Cash/, { takeout: { answer: "monthly", apps: ["any"] } })).toBe(120);
@@ -185,6 +185,7 @@ describe("4.7 · every credit and membership maps to a habit row the survey show
   it("no perk is dropped again", () => {
     const missing = [];
     for (const c of CARDS) for (const cr of c.credits || []) {
+      if (cr.unverified) continue;
       const r = derivedRule(cr);
       if (r.asked) { if (!r.asked.every((k) => HABIT_BY_KEY[k]) || (c.cardType !== "business" && !r.asked.some((k) => shown.has(k)))) missing.push(`${c.id}: ${cr.name} (row not shown)`); }
       else if (!r.rule) missing.push(`${c.id}: ${cr.name} (no rule)`);

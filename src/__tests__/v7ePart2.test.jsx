@@ -21,7 +21,8 @@ beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
 const T = (tickets, extra = {}) => normalizeProfile({ wants: "both", groceryStore: "supermarket", rotatingActivation: "yes",  ...extra, brands: { habits: { tickets, ...(extra.habits || {}) } } });
 const cr = (id, re) => BY_ID[id].credits.find((c) => re.test(c.name));
-const val = (id, re, p) => benefitBreakdown(BY_ID[id], p).items.find((i) => re.test(i.label))?.value || 0;
+// Potential temporary payouts are inspected separately from recurring net.
+const val = (id, re, p) => { const b = benefitBreakdown(BY_ID[id], p); return [...b.items, ...b.temporary].find(i => re.test(i.label))?.value || 0; };
 
 describe("2.4 · golden: one $300 purchase a year (the owner's case)", () => {
   it("StubHub → the Reserve counts $150 (one purchase uses one half-year's $150)", () => {
@@ -77,10 +78,10 @@ describe("2.1 / 2.3 · sites with a % split; each dollar paid back at most once"
   it("credits first, then the rest earns: $600 split evenly, Reserve + Strata Elite", () => {
     const p = T({ spend: 600, count: 2, apps: ["ticketmaster", "stubhub"] });
     const cover = ticketCreditCover([BY_ID.csr, BY_ID["citi-strata-elite"]], p);
-    expect(cover.total).toBe(350);       // StubHub $300 in 1 purchase → $150; Ticketmaster $300 → $200
+    expect(cover.total).toBe(200);       // StubHub $300 in 1 purchase → $150; Ticketmaster $300 → $200
     const v = walletValue(["csr", "citi-strata-elite"], p);
     expect(buckets(p).tickets).toBe(600);
-    expect(v.earning.byBucket.tickets.reduce((t, r) => t + r.dollars, 0)).toBe(250);
+    expect(v.earning.byBucket.tickets.reduce((t, r) => t + r.dollars, 0)).toBe(400);
   });
   it("the survey row saves $ + purchases + sites + U.S.", () => {
     saveV5Profile({});

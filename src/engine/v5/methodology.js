@@ -62,7 +62,7 @@ export function scoreNeeded(card) {
 /* An unknown score ("Not sure") never blocks a card. No credit history:
    only secured and student cards. */
 export const approvalOk = (card, profile) => {
-  if (profile.credit.noHistory) return ["secured", "student"].includes(card.cardType);
+  if (profile.credit.noHistory) return card.acceptsNoHistory === true || ["secured", "student"].includes(card.cardType);
   return (profile.credit.score ?? 670) >= scoreNeeded(card);
 };
 /* Builder cards are for building credit, only suggested to someone who
@@ -89,6 +89,7 @@ export function eligibility(card, profile) {
   if (card.cardType === "secured" && profile.canAffordDeposit !== true) return { ok: false, why: "deposit" };
   if (card.cardType === "secured" && profile.isStudent && profile.credit.noHistory) return { ok: false, why: "prefer-unsecured-student" };
   if (profile.declinedMemberships?.includes(card.requiresSubscription?.name)) return { ok: false, why: "membership" };
+  if (card.requiresSubscription?.name === "Robinhood Gold" && profile.goldMembershipWilling === false) return { ok: false, why: "membership" };
   if (["student", "secured"].includes(card.cardType) && !builderFits(card, profile)) return { ok: false, why: "builder" };
   if (card.storeLocked && !profile.brands.everyday.includes(card.storeLocked)) return { ok: false, why: "store" };
   if (card.availabilityStatus === "productChangeOnly") {
@@ -181,7 +182,8 @@ export function walletValue(wallet, rawProfile, opts = {}) {
   const ids = cards.map((c) => c.id);
   const alloc = allocateSpend(cards, profile, opts.alloc || {});
   const perCard = cards.map((c) => {
-    const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, wallet: ids, deferNightBudget: true });
+    const categorySpend = Object.fromEntries(Object.entries(alloc.byBucket).map(([key, rows]) => [key, rows.filter(r => r.cardId === c.id).reduce((t,r) => t+r.dollars,0)]));
+    const b = benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id]?.dollars || 0, categorySpend, wallet: ids, deferNightBudget: true });
     return { cardId: c.id, items: b.items, unused: b.unused, gated: b.gated || [], temporary: b.temporary || [], extras: b.extras || [] };
   });
   const U = dedupeBenefits(perCard, profile);
@@ -228,7 +230,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
   const gated = (c) => (c.credits || []).some(cr => cr.requiresSpend || cr.spend) || (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
   const fixed = {};
   const allIds = cards.map((c) => c.id);
-  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds, cardSpend: totalAnnualSpend(profile) } : {}), deferNightBudget: true }).items;
+  for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds, cardSpend: totalAnnualSpend(profile), categorySpend: annualSpend(profile) } : {}), deferNightBudget: true }).items;
   /* Optimistic: every point valued as if its unlock card were in the wallet. */
   const optCpp = optimistic ? Object.fromEntries(cards.map((c) => [c.id, cardPointValue(c, profile, allIds).cpp])) : null;
   const memo = new Map();
@@ -240,7 +242,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
       const ids = set.map((c) => c.id);
       const cpp = optCpp || walletCpp(set, profile);
       const alloc = allocateSpend(set, profile, { spend, lanes, cpp, optimistic });
-      const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, wallet: ids, deferNightBudget: true }).items }));
+      const perCard = set.map((c) => ({ cardId: c.id, items: fixed[c.id] || benefitBreakdown(c, profile, { cardSpend: alloc.perCard[c.id].dollars, categorySpend: Object.fromEntries(Object.entries(alloc.byBucket).map(([key, rows]) => [key, rows.filter(r => r.cardId === c.id).reduce((t,r) => t+r.dollars,0)])), wallet: ids, deferNightBudget: true }).items }));
       const U = dedupeBenefits(perCard, profile).total;
       const F = set.reduce((t, c) => t + fees[c.id], 0);
       const bonus = profile.includeBonus ? set.reduce((t, c) => t + (profile.cardsHeld.includes(c.id) ? 0 : bonusValue(c)), 0) : 0;
@@ -597,7 +599,7 @@ export const SLOT_DEFS = [
   { key: "hotelKeeper", label: "Keeper hotel card" },
   { key: "airlineKeeper", label: "Keeper airline card" },
   { key: "lounge", label: "Lounge card" },
-  { key: "everyday", label: "Everyday catch-all", buckets: ["other", "phone", "transit", "drugstores", "streaming"] },
+  { key: "everyday", label: "Everyday catch-all", buckets: ["other", "phone", "utilities", "transit", "drugstores", "streaming"] },
   { key: "dining", label: "Dining", buckets: ["dining"] },
   { key: "groceries", label: "Groceries", buckets: ["groceries"] },
   { key: "warehouse", label: "Costco / wholesale", buckets: ["warehouse"] },

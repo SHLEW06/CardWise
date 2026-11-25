@@ -156,6 +156,7 @@ function Step({ id, d, set, mode, headRef, onEdit }) {
             <p className="t-caption">Robinhood's Gold card needs a Gold membership ($50 a year, billed annually). The only thing that offsets it is extra interest on cash you'd keep there, compared with a typical high-yield savings account (Gold {normalizeProfile(d).rates.robinhoodGoldApy}% vs about {normalizeProfile(d).rates.hysaApy}% elsewhere, November 2026).</p>
             <MoneySlider label="Cash at Robinhood" value={d.robinhoodCash || 0} max={100000} step={1000} onChange={(robinhoodCash) => set({ robinhoodCash })} />
           </fieldset>
+          <AnswerChoice title="Would you pay $50 a year for Robinhood Gold if the card saves enough?" value={d.goldMembershipWilling} options={[[true, "Yes"], [false, "No"]]} onChange={goldMembershipWilling => set({ goldMembershipWilling, declinedMemberships: goldMembershipWilling ? [] : ["Robinhood Gold"] }, ["goldMembershipWilling"])} />
           <fieldset className="survey-group" data-testid="fee-limit-q">
             <legend className="t-h3" id="fee-limit-q">Is there a most you'd pay in yearly card fees, in total?</legend>
             <FeeLimitChoice value={d.feeLimit ?? null} onChange={(feeLimit) => set({ feeLimit })} id="fee-limit" />
@@ -262,6 +263,7 @@ function SpendStep({ d, set, mode, headRef }) {
       <AnswerChoice title="Will you activate quarterly bonus categories?" value={d.rotatingActivation} options={[["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]]} onChange={rotatingActivation => set({ rotatingActivation }, ["rotatingActivation"])} />
       <AnswerChoice title="Where do you buy most groceries?" value={d.groceryStore} options={[["supermarket", "Supermarket"], ["superstore", "Walmart or Target"], ["warehouse", "Warehouse club"]]} onChange={groceryStore => set({ groceryStore }, ["groceryStore"])} />
       {d.spend.rent > 0 && <label className="field">Bilt Cash credits you'd use each year ($, optional)<input type="number" min="0" value={d.biltCashAnnualUse || 0} onChange={e => set({ biltCashAnnualUse: Math.max(0, Number(e.target.value)) }, ["biltCashAnnualUse"])} /><span className="t-caption">Only credits for purchases you'd make anyway. Otherwise we compare housing points with Bilt Cash used to unlock housing points.</span></label>}
+      <AnswerChoice title="How much of Phone, internet and utilities is phone plans?" value={d.phonePlanShare} options={[[0, "None"], [0.5, "About half"], [1, "All of it"]]} onChange={phonePlanShare => set({ phonePlanShare }, ["phonePlanShare"])} />
       <div className="spend-presets">
         <div className="chip-wrap" role="group" aria-label="Start from">
           {[["light", "Light"], ["typical", "Typical"], ["heavy", "Heavy"]].map(([k, l]) => (

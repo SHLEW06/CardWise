@@ -70,3 +70,9 @@ it("Bilt never gets housing multipliers from spend routed to another card", () =
   const a = allocateSpend([BY_ID["bilt-blue"],BY_ID["robinhood-gold"]],p);
   expect(a.byBucket.rent[0].value).toBe(30);
 });
+it("the usable 4% Bilt Cash option competes for actual everyday routing", () => {
+  const p = normalizeProfile({ wants: "travel", spend: { other: 1000 }, biltCashAnnualUse: 1000 });
+  const v = allocateSpend([BY_ID["bilt-blue"], BY_ID["active-cash"]], p);
+  expect(v.perCard["bilt-blue"].dollars).toBe(12000);
+  expect(v.total).toBe(600); // 1% ordinary points + 4% restricted credits explicitly valued by the user
+});

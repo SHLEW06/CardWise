@@ -32,7 +32,7 @@ const modeOf = (profile) => profile?.valueMode || DEFAULT_VALUE_MODE;
 export const CASH_CPP = 1.0;
 // A cash goal never silently uses travel redemption estimates. Unknown
 // cash-out routes count $0 until verified (see docs/DATA_TODO.md).
-export const CASH_OUT_CPP = { cash: 1, robinhood: 1, chase: 1, amex: 0.6, citi: 1, wf: 1, c1: 0, bilt: 0 };
+export const CASH_OUT_CPP = { cash: 1, robinhood: 1, chase: 1, amex: 0.6, citi: 0, wf: 1, c1: 0, bilt: 0 };
 export const FLEX_CURRENCIES = ["chase", "amex", "c1", "citi", "bilt", "wf"];
 export const CASH_LIKE = new Set(["cash", "robinhood"]);
 export { PARTNER_VALUATIONS_SOURCE };
@@ -82,7 +82,7 @@ export function partnerOptions(cur, wallet = [], profile = null) {
  *          shown, never priced in.
  */
 export function currencyValue(cur, profile, wallet = []) {
-  if (profile?.wants === "cash") return { cpp: CASH_OUT_CPP[cur] ?? 0, basis: "cash", unlocked: false, partners: [], upTo: null, note: (CASH_OUT_CPP[cur] ?? 0) === 0 ? "No verified cash-out rate on file; travel redemption value is not counted for your cash goal." : "Valued at the cash-out rate you would use." };
+  if (profile?.wants === "cash") return { cpp: cur === "citi" && ids(wallet).some(id => ["citi-double-cash", "citi-custom-cash"].includes(id)) ? 1 : CASH_OUT_CPP[cur] ?? 0, basis: "cash", unlocked: false, partners: [], upTo: null, note: (CASH_OUT_CPP[cur] ?? 0) === 0 ? "No verified cash-out rate on file; travel redemption value is not counted for your cash goal." : "Valued at the cash-out rate you would use." };
   if (!cur || CASH_LIKE.has(cur)) return { cpp: CASH_CPP, basis: "cash", unlocked: false, partners: [], upTo: null, note: null };
   const rule = TRANSFER_RULES[cur];
   if (!rule) {

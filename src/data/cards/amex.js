@@ -134,9 +134,10 @@ export const CARDS = [
   {
     id: "amex-green", name: "Amex Green", issuer: "American Express", network: "AMEX",
     annualFee: 150, currency: "Amex MR", pointCurrency: "amex",
-    earnRates: { Dining: 3, Transit: 3, Flights: 3, General: 1 }, portalMultipliers: {},
-    credits: [cred("CLEAR Plus credit", 189, "MEDIUM"), cred("LoungeBuddy credit", 100, "MEDIUM")],
-    benefits: ["3x dining, transit, and flights", "CLEAR Plus membership credit", "LoungeBuddy lounge credit", "No foreign transaction fee", "Transferable Amex MR"],
+    earnRates: { Dining: 3, Transit: 3, Travel: 3, Flights: 3, General: 1 }, portalMultipliers: {},
+    earnRatesSource: "https://www.americanexpress.com/en-us/travel/", earnRatesChecked: "2026-11-25",
+    credits: [cred("$219 CLEAR+ credit", 219, "MEDIUM", "membership", "annual", { source: "https://www.americanexpress.com/en-us/account/get-started/green/set-up-and-payments", checked: "2026-11-25" }), cred("LoungeBuddy credit", 100, "MEDIUM", "merchant", "annual", { unverified: true })],
+    benefits: ["3x dining, transit, and travel (including hotels and vacation rentals)", "$219 CLEAR+ membership credit", "No foreign transaction fee", "Transferable Amex MR"],
     transferAccess: ["amex"], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: [], travelProtections: ["Baggage insurance"], foreignTransactionFee: 0,
