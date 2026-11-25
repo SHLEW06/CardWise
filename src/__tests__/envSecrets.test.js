@@ -40,7 +40,7 @@ it("postbuild check finds the token name and .env.local values, and passes a cle
   const env = parseEnv("# comment\nVITE_CONNECTOR_TOKEN=s3cret-dev-token-123\nVITE_CONNECTOR_URL=\"http://127.0.0.1:8787\"\nVITE_FB_API_KEY=AIzaPublicKey\n");
   expect(env).toMatchObject({ VITE_CONNECTOR_TOKEN: "s3cret-dev-token-123", VITE_CONNECTOR_URL: "http://127.0.0.1:8787" });
   writeFileSync(join(dir, "assets/url.js"), 'const u="http://127.0.0.1:8787";');   // loopback URL: not a secret
-  expect(findLeaks(dir, env)).toEqual([]);
+  expect(findLeaks(dir, env)).toEqual([{ file: join("assets", "url.js"), what: "the value of VITE_CONNECTOR_URL from .env.local" }]);
   expect(findLeaks(dir, { VITE_CONNECTOR_URL: "https://my-tunnel.example.com" })).toEqual([]);
   writeFileSync(join(dir, "assets/remote.js"), 'const u="https://my-tunnel.example.com";');
   expect(findLeaks(dir, { VITE_CONNECTOR_URL: "https://my-tunnel.example.com" })).toEqual([{ file: join("assets", "remote.js"), what: "the value of VITE_CONNECTOR_URL from .env.local" }]);
@@ -52,5 +52,12 @@ it("postbuild check finds the token name and .env.local values, and passes a cle
     { file: join("assets", "b.js"), what: "the value of VITE_CONNECTOR_TOKEN from .env.local" },
     { file: join("assets", "c.js"), what: "the text VITE_CONNECTOR_TOKEN" },
   ]));
-  expect(leaks.some((l) => l.file.endsWith("d.js"))).toBe(false);
+  expect(leaks.some((l) => l.file.endsWith("d.js"))).toBe(true);
+});
+
+it("checks even short, public and quoted dotenv values without reporting their contents", () => {
+  const dir = mkdtempSync(join(tmpdir(), "cw-secret-"));
+  writeFileSync(join(dir, "a.js"), "abc public-firebase-value");
+  expect(findLeaks(dir, { SHORT: "abc", VITE_FB_TEST: "public-firebase-value" })).toHaveLength(2);
+  expect(parseEnv('TOKEN=secret # comment\nQUOTED="value # literal"')).toEqual({ TOKEN: "secret", QUOTED: "value # literal" });
 });

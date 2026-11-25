@@ -7,14 +7,6 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/* Firebase web config is public by design (it identifies the project; access
-   is enforced by Firebase rules), so .env.local VITE_FB_* values may ship. */
-const PUBLIC_BY_DESIGN = /^VITE_FB_/;
-const MIN_LENGTH = 6;   // shorter values ("true", "1") would match by chance
-/* A URL on this machine (the connector's http://127.0.0.1:8787 default, which
-   the source already contains) reveals nothing. */
-const isLoopbackUrl = (v) => { try { return /^(127\.\d+\.\d+\.\d+|localhost|\[::1\])$/.test(new URL(v).hostname); } catch { return false; } };
-
 /** KEY=value pairs from a dotenv file's text (comments and blanks skipped). */
 export function parseEnv(text) {
   const out = {};
@@ -22,7 +14,8 @@ export function parseEnv(text) {
     const m = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/.exec(line);
     if (!m) continue;
     let v = m[2];
-    if (/^(['"]).*\1$/.test(v)) v = v.slice(1, -1);
+    if (/^["']/.test(v)) v = v.slice(1, v.indexOf(v[0], 1));
+    else v = v.replace(/\s+#.*$/, "").trim();
     out[m[1]] = v;
   }
   return out;
@@ -40,7 +33,7 @@ function* files(dir) {
 export function findLeaks(dist, env = {}) {
   const needles = [{ what: "the text VITE_CONNECTOR_TOKEN", text: "VITE_CONNECTOR_TOKEN" }];
   for (const [k, v] of Object.entries(env)) {
-    if (PUBLIC_BY_DESIGN.test(k) || !v || v.length < MIN_LENGTH || isLoopbackUrl(v)) continue;
+    if (!v) continue;
     needles.push({ what: `the value of ${k} from .env.local`, text: v });
   }
   const out = [];

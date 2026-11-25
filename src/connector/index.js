@@ -30,7 +30,9 @@ import { createExtensionBridge } from "./extensionBridge.js";
    which makes Vite inline every VITE_ value into the public bundle. The dev
    token exists only on the dev server: in a production build DEV is false,
    so the branch (and the token's text) is removed. */
-export const CONNECTOR_URL = import.meta.env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787";
+export const CONNECTOR_URL = import.meta.env.DEV
+  ? import.meta.env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787"
+  : "/connector";
 const DEV_TOKEN = import.meta.env.DEV ? import.meta.env.VITE_CONNECTOR_TOKEN : undefined;
 
 export const connector = createConnectorClient({
