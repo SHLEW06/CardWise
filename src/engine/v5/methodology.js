@@ -63,7 +63,7 @@ export function scoreNeeded(card) {
    only secured and student cards. */
 export const approvalOk = (card, profile) => {
   if (profile.credit.noHistory) return ["secured", "student"].includes(card.cardType);
-  return profile.credit.score == null || profile.credit.score >= scoreNeeded(card);
+  return (profile.credit.score ?? 670) >= scoreNeeded(card);
 };
 /* Builder cards are for building credit, only suggested to someone who
    needs one: secured below 580 or no history; student below 670 or no
@@ -81,15 +81,25 @@ const isC1 = (card) => card.issuer === "Capital One" && card.cardType !== "busin
 /** Can this person have this card in a plan? → { ok, how: "held"|"apply"|"upgrade", from?, why? } */
 export function eligibility(card, profile) {
   const held = profile.cardsHeld;
+  const carries = ["sometimes", "usually"].includes(profile.paymentBehavior);
+  if (carries && cardFee(card, profile) > 0) return { ok: false, why: "balance-fee" };
   if (held.includes(card.id)) return { ok: true, how: "held" };
   if (card.cardType === "business") return { ok: false, why: "business" };
+  if (card.cardType === "student" && profile.isStudent !== true) return { ok: false, why: "student" };
+  if (card.cardType === "secured" && profile.canAffordDeposit !== true) return { ok: false, why: "deposit" };
+  if (card.cardType === "secured" && profile.isStudent && profile.credit.noHistory) return { ok: false, why: "prefer-unsecured-student" };
+  if (profile.declinedMemberships?.includes(card.requiresSubscription?.name)) return { ok: false, why: "membership" };
   if (["student", "secured"].includes(card.cardType) && !builderFits(card, profile)) return { ok: false, why: "builder" };
   if (card.storeLocked && !profile.brands.everyday.includes(card.storeLocked)) return { ok: false, why: "store" };
   if (card.availabilityStatus === "productChangeOnly") {
     const from = held.map((id) => BY_ID[id]).find((h) => h && h.cardFamily && h.cardFamily === card.cardFamily);
-    return from ? { ok: true, how: "upgrade", from: from.id } : { ok: false, why: "upgrade-only" };
+    return from && (!carries && profile.newCardComfort > 0 || cardFee(card, profile) <= cardFee(from, profile)) ? { ok: true, how: "upgrade", from: from.id } : { ok: false, why: "upgrade-only" };
   }
-  if (card.availabilityStatus !== "openToNewApplicants") return { ok: false, why: "closed" };
+  const invited = profile.invitedCards?.includes(card.id);
+  if (card.availability === "waitlist" && !invited) return { ok: false, why: "waitlist" };
+  if (card.availability === "invite" && !invited) return { ok: false, why: "invite" };
+  if (card.availability === "closed" || card.availabilityStatus !== "openToNewApplicants" && !invited) return { ok: false, why: "closed" };
+  if (carries || profile.newCardComfort <= 0) return { ok: false, why: "applications-paused" };
   if (isChase(card) && profile.credit.newCards24mo >= 5) return { ok: false, why: "5/24" };
   if (!approvalOk(card, profile)) return { ok: false, why: "credit" };
   return { ok: true, how: "apply" };
@@ -265,10 +275,11 @@ const keyOf = (o) => JSON.stringify(o, (k, v) => (v === Infinity ? "∞" : v));
 export function optimalWallet(rawProfile, options = {}) {
   const profile = normalizeProfile(rawProfile);
   const {
-    budget = profile.feeLimit ?? Infinity, mode = "scratch", maxCards = profile.maxCards,
+    budget = profile.feeLimit ?? Infinity, mode = "scratch", maxCards: requestedMax = profile.maxCards,
     filter = null, mustOneOf = null, require = null, catalog = CARDS, tag = "",
   } = options;
-  const ck = keyOf({ profile, budget, mode, maxCards, tag, mustOneOf, n: catalog.length, f: !!filter, r: !!require });
+  const maxCards = Math.max(0, Math.min(requestedMax, profile.maxCards, profile.cardsHeld.length + Math.max(0, profile.newCardComfort)));
+  const ck = keyOf({ profile, budget, mode, maxCards, tag, mustOneOf, catalog: catalog.map(c => c.id), f: !!filter, r: !!require });
   if (!filter && !require && cache.has(ck)) return cache.get(ck);
   if ((filter || require) && tag && cache.has(ck)) return cache.get(ck);
   const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();

@@ -324,6 +324,13 @@ export function normalizeProfile(p = {}) {
 
   return {
     cardsHeld: Array.from(new Set(p.cardsHeld || [])),
+    isStudent: typeof p.isStudent === "boolean" ? p.isStudent : null,
+    canAffordDeposit: typeof p.canAffordDeposit === "boolean" ? p.canAffordDeposit : null,
+    invitedCards: Array.isArray(p.invitedCards) ? [...new Set(p.invitedCards)] : [],
+    declinedMemberships: Array.isArray(p.declinedMemberships) ? [...new Set(p.declinedMemberships)] : [],
+    paymentBehavior: ["always", "sometimes", "usually"].includes(p.paymentBehavior) ? p.paymentBehavior : null,
+    averageBalance: p.averageBalance != null ? num(p.averageBalance) : null,
+    apr: p.apr != null ? Math.min(1, num(p.apr)) : null,
     wants,
     feeBudget,
     spend,                             // monthly view (yearly ÷ 12)

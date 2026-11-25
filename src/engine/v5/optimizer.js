@@ -22,10 +22,12 @@ import { cardValue, rolesFor, primaryRole, cardBrand, benefitBreakdown, earnRate
 import { pctBack, formatPctBack } from "./valuation.js";
 import {
   optimalWallet, walletValue, heldCardVerdicts, scoreNeeded, approvalOk, isChase,
+  eligibility,
 } from "./methodology.js";
 
 export { scoreNeeded, approvalOk };
 export const HUB_THRESHOLD = 0.2;            // airports.js hubAirlines share that counts as hub/focus
+export const MEMBERSHIP_MIN_ADVANTAGE = 50;
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const BRAND_NAMES = {
@@ -144,7 +146,18 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
   const base = { ...profile, cardsHeld: withinLimit };
   /* The plan suggests at most `newCardComfort` new cards (default 3). */
   const maxCards = Math.min(profile.maxCards, withinLimit.length + Math.max(0, profile.newCardComfort));
-  const plan = optimalWallet(base, { mode: "wallet", catalog, maxCards });
+  let plan = optimalWallet(base, { mode: "wallet", catalog, maxCards });
+  // Compare whole plans. The fee is already deducted, so this is an extra
+  // $50 margin for taking on a paid membership, not a substitute for its cost.
+  for (const name of new Set(plan.adds.map(id => BY_ID[id]?.requiresSubscription?.name).filter(Boolean))) {
+    const without = catalog.filter(c => c.requiresSubscription?.name !== name || heldIds.includes(c.id));
+    const alternative = optimalWallet(base, { mode: "wallet", catalog: without, maxCards });
+    if (plan.value.net - alternative.value.net < MEMBERSHIP_MIN_ADVANTAGE) plan = alternative;
+  }
+  if (!heldIds.length && profile.newCardComfort > 0 && !["sometimes", "usually"].includes(profile.paymentBehavior) && !plan.wallet.length) {
+    const firstCards = catalog.filter(c => cardFee(c, profile) === 0 && eligibility(c, profile).ok && !c.specialty).map(c => c.id);
+    if (firstCards.length) plan = optimalWallet(base, { catalog, maxCards: 1, mustOneOf: firstCards });
+  }
   const value = plan.value;
   const adds = plan.adds.map((id) => BY_ID[id]);
   /* Upgrades first, then Chase first while under 5/24, then by value. */

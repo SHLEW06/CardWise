@@ -23,7 +23,7 @@ const AIRPORTS = [
   { code: "BDL", trips: 1 },
 ];
 const THREE = ["freedom-unlimited", "robinhood-gold", "delta-gold"];
-const OWNER = { cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
+const OWNER = { credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
 
 describe("5d.1 · one card, one slot", () => {
   it("a card never fills two role slots; its other jobs are tags", () => {

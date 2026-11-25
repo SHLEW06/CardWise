@@ -21,7 +21,7 @@ const AIRPORTS = [
   { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] },
   { code: "BDL", trips: 1, destinations: [] },
 ];
-const G = { cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500, travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20, hotelChoice: "auto" } };
+const G = { credit: { score: 790 }, cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500, travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20, hotelChoice: "auto" } };
 
 describe("2.2 · transfer wording", () => {
   it("Chase → Hyatt depends on the card; Chase → Marriott is 1:1 from any Chase card that can transfer", () => {

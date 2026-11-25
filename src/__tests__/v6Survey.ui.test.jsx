@@ -22,20 +22,20 @@ const heading = () => screen.getByRole("heading", { level: 1 }).textContent;
 describe("steps (§19)", () => {
   it("ten steps (v7c: one perk step; 5e 'Will your spending change?' after spending); Quick asks the starred six + the reveal", () => {
     expect(STEP_DEFS.map((s) => s.id)).toEqual(["cards", "spend", "growth", "travel", "brands", "fee", "credit", "points", "yourPoints", "reveal"]);
-    expect(stepsFor("quick")).toEqual(["cards", "spend", "growth", "travel", "brands", "fee", "reveal"]);
+    expect(stepsFor("quick")).toEqual(["cards", "spend", "growth", "travel", "brands", "fee", "credit", "reveal"]);
     expect(stepsFor("thorough")).toHaveLength(10);
   });
   it("starts with Quick (2 min) or Thorough (6 min) and shows progress", () => {
     render(<Survey />);
     fireEvent.click(screen.getByRole("button", { name: /^Quick · 2 min/ }));
-    expect(screen.getByText("Step 1 of 7")).toBeInTheDocument();
+    expect(screen.getByText("Step 1 of 8")).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
     expect(heading()).toBe("Which cards do you have?");
   });
   it("every question is optional: Continue is always enabled, defaults fill the gaps", () => {
     const onDone = vi.fn();
     render(<Survey initialMode="quick" onDone={onDone} />);
-    for (let k = 0; k < 6; k++) { expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled(); cont(); }
+    for (let k = 0; k < 7; k++) { expect(screen.getByRole("button", { name: "Continue" })).toBeEnabled(); cont(); }
     expect(heading()).toMatch(/wallet/);
     fireEvent.click(screen.getByRole("button", { name: "Go to Home" }));
     const [p] = onDone.mock.calls[0];

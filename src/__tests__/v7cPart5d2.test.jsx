@@ -25,7 +25,7 @@ const AIRPORTS = [
   { code: "BDL", trips: 1 },
 ];
 const THREE = ["freedom-unlimited", "robinhood-gold", "delta-gold"];
-const OWNER = { cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
+const OWNER = { credit: { score: 790 }, cardsHeld: THREE, memberships: ["robinhood-gold"], travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 }, brands: { hotels: ["hyatt", "marriott"] } };
 
 describe("5d-2.1 · the mode is clear and held cards never vanish", () => {
   it("defaults to 'From my wallet' with cards, labelled 'Built from your 3 cards'", () => {

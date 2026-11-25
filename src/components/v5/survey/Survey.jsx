@@ -144,7 +144,7 @@ function Step({ id, d, set, mode, headRef }) {
           </fieldset>
           <fieldset className="survey-group" data-testid="robinhood-cash">
             <legend className="t-h3">Cash you'd keep at Robinhood <span className="t-caption">(optional)</span></legend>
-            <p className="t-caption">Robinhood's Gold card needs a Gold membership ($5 a month). The only thing that offsets it is extra interest on cash you'd keep there, compared with a typical high-yield savings account (Gold {normalizeProfile(d).rates.robinhoodGoldApy}% vs about {normalizeProfile(d).rates.hysaApy}% elsewhere, November 2026).</p>
+            <p className="t-caption">Robinhood's Gold card needs a Gold membership ($50 a year, billed annually). The only thing that offsets it is extra interest on cash you'd keep there, compared with a typical high-yield savings account (Gold {normalizeProfile(d).rates.robinhoodGoldApy}% vs about {normalizeProfile(d).rates.hysaApy}% elsewhere, November 2026).</p>
             <MoneySlider label="Cash at Robinhood" value={d.robinhoodCash || 0} max={100000} step={1000} onChange={(robinhoodCash) => set({ robinhoodCash })} />
           </fieldset>
           <fieldset className="survey-group" data-testid="fee-limit-q">
@@ -154,7 +154,7 @@ function Step({ id, d, set, mode, headRef }) {
           </fieldset>
         </>
       );
-    case "credit": return <CreditStep d={d} set={set} headRef={headRef} />;
+    case "credit": return <CreditStep d={d} set={set} mode={mode} headRef={headRef} />;
     case "points":
       return (
         <>
@@ -736,6 +736,10 @@ export function StrategyHelper({ d, set }) {
 /* ── Step 4: card perks — v7c Part 4 (revised), components/v5/survey/PerksStep.jsx ── */
 export { perksFromHeld, HABIT_ROWS, habitResult, giversLine } from "./PerksStep.jsx";
 
+export function AnswerChoice({ title, value, options, onChange }) {
+  return <fieldset className="survey-group"><legend className="t-h3">{title}</legend><div className="chip-wrap" role="radiogroup" aria-label={title}>{options.map(([key, label]) => <Choice key={String(key)} radio pill selected={value === key} onSelect={() => onChange(key)}>{label}</Choice>)}</div></fieldset>;
+}
+
 /* ── Step 6: credit profile ──────────────────────────────────────────── */
 
 const PAST = (issuer) => CARDS.filter((c) => c.issuer === issuer && c.cardType !== "business").map((c) => ({ key: c.id, label: c.name }));
@@ -743,18 +747,29 @@ const PAST_AMEX = PAST("American Express");
 const PAST_CHASE = PAST("Chase");
 const scoreKey = (c) => (c.noHistory ? "none" : c.score == null ? "unsure" : Object.entries(SCORE_BUCKETS).find(([, v]) => v === c.score)?.[0] || "unsure");
 
-function CreditStep({ d, set, headRef }) {
+function CreditStep({ d, set, mode, headRef }) {
   const c = d.credit;
   const setCredit = (patch) => set({ credit: { ...c, ...patch } });
   return (
     <>
       <Head headRef={headRef} eyebrow="Credit" title="Your credit" sub="Used only to show how likely an approval is and when to apply. Nothing here is a credit check." />
+      <AnswerChoice title="Are you a student?" value={d.isStudent} options={[[true, "Yes"], [false, "No"]]} onChange={isStudent => set({ isStudent })} />
+      <AnswerChoice title="Do you pay your statement balance in full?" value={d.paymentBehavior} options={[["always", "Always"], ["sometimes", "Sometimes carry a balance"], ["usually", "Usually carry a balance"]]} onChange={paymentBehavior => set({ paymentBehavior })} />
+      {["sometimes", "usually"].includes(d.paymentBehavior) && <fieldset className="survey-group">
+        <legend className="t-h3">What does interest cost you?</legend>
+        <label className="field">Average carried balance ($)<input type="number" min="0" value={d.averageBalance ?? ""} onChange={e => set({ averageBalance: e.target.value === "" ? null : Number(e.target.value) })} /></label>
+        <label className="field">APR (%)<input type="number" min="0" max="100" value={d.apr == null ? "" : Math.round(d.apr * 10000) / 100} onChange={e => set({ apr: e.target.value === "" ? null : Number(e.target.value) / 100 })} /></label>
+        <p className="t-caption">We'll pause rewards applications and focus on interest and cards with no yearly fee.</p>
+      </fieldset>}
+      <AnswerChoice title="Could you afford a refundable deposit for a secured card?" value={d.canAffordDeposit} options={[[true, "Yes"], [false, "No"]]} onChange={canAffordDeposit => set({ canAffordDeposit })} />
+      <AnswerChoice title="Have you been invited to apply for the Robinhood Gold Card?" value={d.invitedCards?.includes("robinhood-gold") || false} options={[[true, "Yes, I have an invitation"], [false, "No / still on the waitlist"]]} onChange={invited => set({ invitedCards: invited ? ["robinhood-gold"] : [] })} />
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-score">Credit score</legend>
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-score">
-          {SCORE_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={scoreKey(c) === o.key} onSelect={() => setCredit({ score: SCORE_BUCKETS[o.key], noHistory: o.key === "none" })}>{o.label}</Choice>)}
+          {(mode === "quick" ? [{key:"none",label:"No history"},{key:"580-669",label:"Building"},{key:"670-739",label:"Good"},{key:"740-799",label:"Excellent"}] : SCORE_OPTIONS).map((o) => <Choice key={o.key} radio pill selected={scoreKey(c) === o.key} onSelect={() => setCredit({ score: SCORE_BUCKETS[o.key], noHistory: o.key === "none" })}>{o.label}</Choice>)}
         </div>
       </fieldset>
+      {mode !== "quick" && <>
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-new">Cards opened in the last 24 months</legend>
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-new">
@@ -778,6 +793,7 @@ function CreditStep({ d, set, headRef }) {
         <legend className="t-h3">Chase cards you've ever had</legend>
         <ToggleChips options={PAST_CHASE} picked={c.pastChase} onChange={(pastChase) => setCredit({ pastChase })} label="Past Chase cards" />
       </fieldset>
+      </>}
     </>
   );
 }

@@ -14,7 +14,7 @@ afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
 const spend = (o) => ({ dining: 0, groceries: 0, warehouse: 0, gas: 0, ev: 0, transit: 0, flights: 0, hotels: 0, rentals: 0, streaming: 0, drugstores: 0, online: 0, rent: 0, phone: 0, other: 300, ...o });
-const P = { cardsHeld: ["amex-gold", "csp"], feeBudget: 500, spend: spend({ dining: 600, groceries: 600, gas: 150 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
+const P = { credit: { score: 790 }, cardsHeld: ["amex-gold", "csp"], feeBudget: 500, spend: spend({ dining: 600, groceries: 600, gas: 150 }), travel: { trips: 4, homeAirport: "ATL", lounges: "sometimes" }, brands: { airlines: ["delta", "united"] } };
 
 describe("lab engine", () => {
   it("alternatives: ranked by the setup's value, each with fee change and what it displaces (v7c: no fee budget)", () => {

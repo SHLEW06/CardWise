@@ -76,9 +76,9 @@ describe("5.5 Robinhood Gold's offset as its own line", () => {
   it("the card's math shows the membership and the interest offset", () => {
     const p = { feeBudget: 500, spend: { ...zero, other: 400 }, robinhoodCash: 20000 };
     const e = explainCard("robinhood-gold", [], p, walletValue);
-    expect(e.membership).toMatchObject({ name: "Robinhood Gold", annual: 60, offset: 0, counted: 60 });
+    expect(e.membership).toMatchObject({ name: "Robinhood Gold", annual: 50, offset: 0, counted: 50 });
     render(<WhyThisCard cardId="robinhood-gold" wallet={[]} profile={p} open />);
-    expect(screen.getByTestId("membership-line")).toHaveTextContent(/Robinhood Gold membership \$60 a year, less extra interest on \$20,000 kept there \(3\.6% vs 4\.2% at a typical high-yield savings account\): \$0/);
+    expect(screen.getByTestId("membership-line")).toHaveTextContent(/Robinhood Gold membership \$50 a year, less extra interest on \$20,000 kept there \(3\.6% vs 4\.2% at a typical high-yield savings account\): \$0/);
   });
 });
 

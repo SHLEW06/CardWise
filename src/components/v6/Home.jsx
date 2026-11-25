@@ -60,10 +60,10 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
       <div className="home-hero-v7">
         <Reveal className="home-copy">
           <p className="t-eyebrow">Your wallet</p>
-          <h1 className="t-hero">{s.current.net < 0
+          <h1 className="t-hero">{move?.kind === "pay-balance" ? move.title : s.current.net < 0
             ? <>Your cards cost you <CountUp value={-s.current.net} display /> a year.</>
             : <>Your cards pay you <CountUp value={s.current.net} display /> a year.</>}</h1>
-          <p className="t-lead">{s.current.net < 0
+          <p className="t-lead">{move?.kind === "pay-balance" ? move.sentence : s.current.net < 0
             ? `Right now your fees cost more than you get back — your next move below fixes that.`
             : `That's after their yearly fees, across ${cards.length} card${cards.length === 1 ? "" : "s"}, counting only the perks you told us you'd use.`}</p>
           <div className="home-actions">
@@ -86,7 +86,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
           <Reveal className="panel next-move" id="next-move">
             <p className="t-eyebrow">Your next move</p>
             <div className="next-move-row">
-              <button className="next-move-photo" onClick={() => onOpenCard?.(move.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[move.cardId])}`}><CardFace card={BY_ID[move.cardId]} /></button>
+              {move.cardId && <button className="next-move-photo" onClick={() => onOpenCard?.(move.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[move.cardId])}`}><CardFace card={BY_ID[move.cardId]} /></button>}
               <div className="next-move-copy">
                 <h2 className="t-h2">{move.title}</h2>
                 {move.impact > 0 && <p className="next-move-impact t-value">+{money(move.impact)} a year</p>}

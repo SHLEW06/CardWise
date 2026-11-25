@@ -18,7 +18,7 @@ import { loadV5Profile } from "../state/v5Profile.js";
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 
-const at = (credit) => normalizeProfile({ credit });
+const at = (credit) => normalizeProfile({ credit, isStudent: true, canAffordDeposit: true });
 
 describe("credit tiers", () => {
   it("fair (580–669): student cards yes, secured no", () => {
@@ -34,9 +34,10 @@ describe("credit tiers", () => {
     expect(scoreNeeded(BY_ID["discover-student"])).toBe(580);
   });
   it("no credit history: secured and student cards only", () => {
-    const p = at({ noHistory: true });
+    const p = normalizeProfile({ credit: { noHistory: true }, isStudent: false, canAffordDeposit: true });
     expect(eligibility(BY_ID["discover-it-secured"], p).ok).toBe(true);
-    expect(eligibility(BY_ID["discover-student"], p).ok).toBe(true);
+    expect(eligibility(BY_ID["discover-student"], p).why).toBe("student");
+    expect(eligibility(BY_ID["discover-student"], { ...p, isStudent: true }).ok).toBe(true);
     expect(approvalOk(BY_ID["freedom-flex"], p)).toBe(false);
     expect(approvalOk(BY_ID.csr, p)).toBe(false);
   });

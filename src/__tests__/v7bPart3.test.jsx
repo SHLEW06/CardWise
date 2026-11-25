@@ -31,7 +31,7 @@ const AIRPORTS = [
   { code: "NYC", trips: 2, destinations: [{ key: "taipei", trips: 1 }, { key: "tokyo", trips: 1 }] },
   { code: "BDL", trips: 1 },
 ];
-const G = {
+const G = { credit: { score: 790 },
   cardsHeld: ["amex-gold", "delta-gold", "freedom-unlimited", "robinhood-gold"], memberships: ["robinhood-gold"], feeBudget: 1500,
   travel: { airports: AIRPORTS, lounges: "bundle", hotelNights: 20 },
   brands: { hotels: ["hyatt", "marriott", "independent"] },
@@ -121,9 +121,9 @@ describe("3.10 Robinhood cash", () => {
   it("Gold is offset only by extra interest over a typical HYSA — $0 at 3.6% vs 4.2%", () => {
     expect([ROBINHOOD_GOLD_APY, TYPICAL_HYSA_APY]).toEqual([3.6, 4.2]);
     const m = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ robinhoodCash: 50000 }));
-    expect(m).toMatchObject({ annual: 60, offset: 0, counted: 60 });
+    expect(m).toMatchObject({ annual: 50, offset: 0, counted: 50 });
     const better = membershipCost(BY_ID["robinhood-gold"], normalizeProfile({ robinhoodCash: 50000, rates: { robinhoodGoldApy: 4.5, hysaApy: 4.2 } }));
-    expect(better).toMatchObject({ offset: 60, counted: 0 });   // 50,000 × 0.3% = $150, capped at the $60 fee
+    expect(better).toMatchObject({ offset: 50, counted: 0 });   // 50,000 × 0.3% = $150, capped at the $50 fee
   });
 });
 

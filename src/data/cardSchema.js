@@ -293,6 +293,7 @@ export function enrichCard(card, ART) {
     ...card,
 
     /* new v3.1 fields with defaults — existing card.X always wins */
+    availability: card.availability || ({ inviteOnly: "invite", closed: "closed", productChangeOnly: "closed", downgradeOnly: "closed" }[card.availabilityStatus] || "open"),
     availabilityStatus:
       card.availabilityStatus ||
       APP_ONLY_AVAILABILITY[id] ||

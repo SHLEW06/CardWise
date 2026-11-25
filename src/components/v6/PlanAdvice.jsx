@@ -8,5 +8,6 @@ export default function PlanAdvice({ plan, onEdit }) {
     {plan.heldAdvice.filter(x => x.action !== "keep").map(x => <p className="t-caption" key={x.cardId}>{x.action === "cancel" ? "Cancel" : x.action === "left out" ? "Left out:" : "Switch"} {cardDisplayName(BY_ID[x.cardId])}{x.to ? ` to ${cardDisplayName(BY_ID[x.to])}` : ""}{x.fee ? ` · $${x.fee} yearly fee` : ""}</p>)}
     {plan.assumptions.map(x => <button type="button" className="tray-chip" key={x.key} onClick={() => onEdit?.(x.step)}>{`We assumed ${x.label}`} · Edit</button>)}
     {plan.warnings.map(x => <p className="t-caption" key={x.key}>{x.message}</p>)}
+    {plan.waitlist?.map(x => <p className="t-caption" key={x.cardId}><a href={x.url} target="_blank" rel="noreferrer">{x.label}</a> · {cardDisplayName(BY_ID[x.cardId])} · Your recommended plan above is available without it.</p>)}
   </div>;
 }
