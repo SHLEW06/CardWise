@@ -26,8 +26,12 @@ import { getFirebase } from "../firebase/config.js";
 import { matchStore, rankPurchase } from "../engine/v5/checkout.js";
 import { createExtensionBridge } from "./extensionBridge.js";
 
-const env = (typeof import.meta !== "undefined" && import.meta.env) || {};
-export const CONNECTOR_URL = env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787";
+/* Each variable is read by name — never import.meta.env as a whole object,
+   which makes Vite inline every VITE_ value into the public bundle. The dev
+   token exists only on the dev server: in a production build DEV is false,
+   so the branch (and the token's text) is removed. */
+export const CONNECTOR_URL = import.meta.env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787";
+const DEV_TOKEN = import.meta.env.DEV ? import.meta.env.VITE_CONNECTOR_TOKEN : undefined;
 
 export const connector = createConnectorClient({
   baseUrl: CONNECTOR_URL,
@@ -36,7 +40,7 @@ export const connector = createConnectorClient({
     const u = fb?.auth?.currentUser;
     return u && !u.isAnonymous ? u.getIdToken() : null;
   },
-  devToken: env.VITE_CONNECTOR_TOKEN,
+  devToken: DEV_TOKEN,
   devUser: "me",
 });
 export { ConnectorError };
@@ -137,7 +141,7 @@ export async function authForExtension() {
   const fb = getFirebase();
   const u = fb?.auth?.currentUser;
   if (u && !u.isAnonymous) return { token: await u.getIdToken(), kind: "firebase", apiBase: CONNECTOR_URL };
-  if (env.VITE_CONNECTOR_TOKEN) return { token: env.VITE_CONNECTOR_TOKEN, kind: "dev", user: "me", apiBase: CONNECTOR_URL };
+  if (DEV_TOKEN) return { token: DEV_TOKEN, kind: "dev", user: "me", apiBase: CONNECTOR_URL };
   return null;
 }
 

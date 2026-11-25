@@ -21,7 +21,8 @@ export function defaultCardArtMode(env = {}) {
 }
 
 function buildDefault() {
-  try { return defaultCardArtMode(import.meta.env || {}); } catch { return "issuer"; }
+  /* By name only: passing import.meta.env whole would inline every VITE_ value. */
+  try { return defaultCardArtMode({ DEV: import.meta.env.DEV, VITE_CARD_ART: import.meta.env.VITE_CARD_ART }); } catch { return "issuer"; }
 }
 
 /** The saved Profile choice, or null when none. */
