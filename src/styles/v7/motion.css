@@ -1,0 +1,116 @@
+/* ============================================================================
+   v8 motion system. Tokens + utilities. transform / opacity only.
+   Everything is off (instant, no movement) under prefers-reduced-motion.
+   ========================================================================== */
+:root {
+  --mo-fast: 120ms; --mo-base: 200ms; --mo-slow: 320ms; --mo-hero: 480ms;
+  --mo-out: cubic-bezier(.2, .8, .2, 1);        /* entrances, hovers */
+  --mo-in-out: cubic-bezier(.65, 0, .35, 1);    /* moves, reflow */
+  --mo-spring: cubic-bezier(.34, 1.4, .5, 1);   /* chips and pops */
+}
+
+/* Rise: fade + 14px slide up, on mount or on scroll (.is-in). */
+.mo-rise { opacity: 0; transform: translate3d(0, 14px, 0); }
+.mo-rise.is-in { animation: mo-rise var(--mo-hero) var(--mo-out) both; animation-delay: calc(var(--i, 0) * 60ms); }
+@keyframes mo-rise { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
+
+/* Stagger: children rise one after another (set --i inline, or let nth-child do it). */
+.mo-stagger > * { animation: mo-rise var(--mo-hero) var(--mo-out) both; animation-delay: calc(min(var(--i, 0), 12) * 45ms); }
+.mo-stagger > *:nth-child(1) { --i: 0; } .mo-stagger > *:nth-child(2) { --i: 1; } .mo-stagger > *:nth-child(3) { --i: 2; }
+.mo-stagger > *:nth-child(4) { --i: 3; } .mo-stagger > *:nth-child(5) { --i: 4; } .mo-stagger > *:nth-child(6) { --i: 5; }
+.mo-stagger > *:nth-child(n+7) { --i: 6; }
+
+/* Cross-fade for a tab / route / filter change (key the element). */
+.mo-fade { animation: mo-fade var(--mo-slow) var(--mo-out) both; }
+@keyframes mo-fade { from { opacity: 0; transform: translate3d(0, 6px, 0); } to { opacity: 1; transform: none; } }
+
+/* Card hover lift + one-shot sheen sweep on card-face containers. */
+.mo-lift { position: relative; transition: transform var(--mo-base) var(--mo-out); will-change: transform; }
+.mo-lift::after { content: ""; position: absolute; inset: 0; border-radius: 6%/9%; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .16) 50%, transparent 62%); transform: translate3d(-60%, 0, 0); }
+@media (hover: hover) {
+  .mo-lift:hover, .mo-lift:focus-visible { transform: translate3d(0, -4px, 0); }
+  .mo-lift:hover::after, .mo-lift:focus-visible::after { animation: mo-sheen 700ms var(--mo-in-out) 1; }
+}
+.mo-lift:active { transform: scale(.98); transition-duration: var(--mo-fast); }
+@keyframes mo-sheen { 0% { opacity: 0; transform: translate3d(-60%, 0, 0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate3d(60%, 0, 0); } }
+
+/* Smooth expand / collapse: grid 0fr -> 1fr (no JS measuring). */
+.mo-collapse { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--mo-slow) var(--mo-out), opacity var(--mo-base) var(--mo-out); }
+.mo-collapse > * { overflow: hidden; min-height: 0; }
+.mo-collapse.is-open { grid-template-rows: 1fr; opacity: 1; }
+
+/* Card enters / leaves a wallet row. */
+.mo-face-in { animation: mo-face-in var(--mo-hero) var(--mo-spring) both; }
+@keyframes mo-face-in { from { opacity: 0; transform: translate3d(0, -18px, 0) scale(.9) rotate(-2deg); } to { opacity: 1; transform: none; } }
+.mo-face-out { animation: mo-face-out var(--mo-base) var(--mo-in-out) both; pointer-events: none; }
+@keyframes mo-face-out { to { opacity: 0; transform: translate3d(0, 10px, 0) scale(.92); } }
+
+/* Delta chip (+$ / −$). */
+.mo-delta { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; font-weight: 600; font-size: .8125rem;
+  background: rgba(143, 181, 155, .14); color: var(--good, #8FB59B); animation: mo-pop var(--mo-slow) var(--mo-spring) both; }
+.mo-delta.is-neg { background: rgba(213, 156, 134, .14); color: var(--bad, #D59C86); }
+.mo-delta.is-flat { background: rgba(236, 230, 218, .08); color: var(--ink-2, #C2BDB2); }
+@keyframes mo-pop { from { opacity: 0; transform: translate3d(0, 6px, 0) scale(.9); } to { opacity: 1; transform: none; } }
+
+/* Benefits strip. */
+.bstrip { display: grid; gap: 10px; padding: 14px 16px; border-radius: 12px; background: rgba(236, 230, 218, .04); box-shadow: inset 0 0 0 1px var(--hair, rgba(194, 189, 178, .12)); }
+.bstrip-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.bstrip-total { font-variant-numeric: tabular-nums; color: var(--gold, #B8955E); font-weight: 600; }
+.bstrip-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; }
+.bstrip-item { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: rgba(236, 230, 218, .05); min-width: 0; }
+.bstrip-name { font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.bstrip-val { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink, #ECE6DA); }
+.bstrip-val small { font-weight: 400; color: var(--ink-3, #9C988F); font-size: .8125rem; }
+.bstrip-card { color: var(--ink-3, #9C988F); font-size: .75rem; }
+.bstrip-bar { height: 3px; border-radius: 2px; background: rgba(236, 230, 218, .1); overflow: hidden; margin-top: 4px; }
+.bstrip-bar > i { display: block; height: 100%; width: 100%; background: var(--gold, #B8955E); transform-origin: left; transform: scaleX(var(--w, 1)); animation: mo-bar var(--mo-hero) var(--mo-out) both; }
+@keyframes mo-bar { from { transform: scaleX(0); } }
+
+/* Explore: hover preview of top benefits, laid over the lower part of the face. */
+.explore-grid > li { position: relative; }
+.tile-media { position: relative; }
+.tile-peek { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 3; display: grid; gap: 4px; padding: 10px 12px; border-radius: 10px; font-size: .8125rem;
+  background: rgba(11, 18, 34, .9); box-shadow: inset 0 0 0 1px var(--hair-strong, rgba(194,189,178,.22)); pointer-events: none; animation: mo-fade var(--mo-base) var(--mo-out) both; }
+.tile-peek ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.tile-peek li { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+.tile-peek li span:first-child { color: var(--ink-2, #C2BDB2); }
+.tile-peek-btn { display: inline-flex; align-items: center; gap: 4px; font-size: .8125rem; }
+.tile-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tile-sim { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Wallet Lab: simulate. */
+.sim-head { display: grid; gap: 6px; }
+.sim-row { list-style: none; margin: 14px 0 0; padding: 0; display: flex; gap: 14px; flex-wrap: wrap; align-items: stretch; }
+.sim-card { position: relative; width: 100%; display: grid; gap: 6px; align-content: start; }
+.sim-card .yc-photo { display: block; width: 100%; }
+.sim-x { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: var(--night-2, #101A30); color: var(--ink, #ECE6DA); box-shadow: 0 0 0 1px var(--hair-strong, rgba(194,189,178,.3)); z-index: 2; transition: transform var(--mo-fast) var(--mo-out); }
+.sim-x:hover { transform: scale(1.1); }
+.sim-add { width: 150px; min-height: 96px; display: grid; place-items: center; align-content: center; gap: 4px; border-radius: 10px; color: var(--ink-2, #C2BDB2); box-shadow: inset 0 0 0 1px var(--hair-strong, rgba(194,189,178,.3)); background: rgba(236,230,218,.03); transition: background var(--mo-base) var(--mo-out), transform var(--mo-base) var(--mo-out); }
+.sim-add:hover { background: rgba(236,230,218,.08); transform: translate3d(0, -2px, 0); }
+.sim-net { font-variant-numeric: tabular-nums; font-weight: 600; }
+.sim-net small { display: block; font-weight: 400; color: var(--ink-3, #9C988F); }
+.sim-picker { display: grid; gap: 10px; margin-top: 14px; }
+.sim-picker-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-height: 340px; overflow: auto; }
+.sim-picker-list button { display: grid; gap: 4px; text-align: left; width: 100%; }
+.sim-breakdown { display: grid; gap: 2px; font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.sim-breakdown div { display: flex; justify-content: space-between; gap: 8px; }
+.sim-breakdown dt { color: var(--ink-3, #9C988F); } .sim-breakdown dd { margin: 0; }
+.sim-breakdown { margin: 0; }
+.sim-delta-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* Home CTA */
+.home-sim { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+/* Smooth <details>: summary marker rotates, body fades in. */
+.fold[open] > .fold-body { animation: mo-fade var(--mo-slow) var(--mo-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-rise, .mo-rise.is-in, .mo-stagger > *, .mo-fade, .tile-peek, .mo-face-in, .mo-face-out, .mo-delta, .bstrip-bar > i, .fold[open] > .fold-body { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .mo-lift, .mo-lift:hover, .mo-lift:active { transition: none !important; transform: none !important; }
+  .mo-lift::after { display: none; }
+  .mo-collapse, .sim-x, .sim-add { transition: none !important; }
+  .sim-add:hover { transform: none; }
+}
+
+.strategy > .bstrip { grid-column: 1 / -1; }

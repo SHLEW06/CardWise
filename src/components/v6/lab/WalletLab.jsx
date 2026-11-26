@@ -12,8 +12,12 @@
    Replaces the v4 wallet board, slot drawer, score ring, keeper analyzer,
    timeline, warnings and saved strategies with their v6 versions.
    ========================================================================== */
-import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { X, SlidersHorizontal, ArrowRight, Check } from "lucide-react";
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { X, SlidersHorizontal, ArrowRight, Check, Plus, Search } from "lucide-react";
+import { exploreRows } from "../../../engine/v5/explore.js";
+import BenefitsStrip, { benefitRowsFromValue } from "../../v7/BenefitsStrip.jsx";
+import { DeltaChip, useDelta } from "../../v7/motion/motion.jsx";
+import { peekLabAdd, clearLabAdd } from "./labHandoff.js";
 import { BY_ID } from "../../../data/cards/index.js";
 import { cardDisplayName } from "../../../data/cardNames.js";
 import { SPEND_ROWS, SPEND_MAX, RENT_MAX } from "../../../data/surveyOptions.js";
@@ -62,6 +66,11 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
   const [drawer, setDrawer] = useState(false);
   const [toast, setToast] = useState(null);
   const [samplesOn, setSamplesOn] = useState(false);
+  const [queuedAdd] = useState(() => peekLabAdd());   // "Add to my wallet simulation" from Explore
+  const consumedAdd = useRef(false);
+  const [fresh, setFresh] = useState(null);           // card that just joined the row (entrance)
+  const [leaving, setLeaving] = useState(null);       // card on its way out (exit)
+  const [picker, setPicker] = useState(false);
   const openCard = (id, slotKey = null) => onOpenCard?.(id, setup, slotKey);   // v7 D1 / v7b 5.2: full card detail, judged against this setup
 
   const shared = useMemo(() => buildPlan(p, { wallet: custom, mode: saved?.cardsHeld?.length && mode === "scratch" ? "scratch" : "wallet" }), [p, custom, mode, saved]);
@@ -71,7 +80,8 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
   const mine = best;
   /* Changing the budget, spending or mode re-optimizes: a swap is kept only
      until then. */
-  useEffect(() => { setCustom(null); }, [p, mode]);
+  const pKey = JSON.stringify(p);
+  useEffect(() => { setCustom(null); }, [pKey, mode]);
   const setup = shared.preview.wallet;
   const value = shared.preview.value;
   const tiles = shared.preview.tiles;
@@ -81,6 +91,20 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
   /* "Your wallet now" — the same number Home shows (same function, same budget). */
   const nowValue = shared.current;
   const nowScore = shared.score;
+  /* Simulation: add / remove one card from the setup on screen. */
+  const addCard = (id) => { if (!BY_ID[id] || setup.includes(id)) return; setCustom([...setup, id]); setFresh(id); setPicker(false); };
+  const removeCard = (id) => { setLeaving(id); setTimeout(() => { setCustom(setup.filter((x) => x !== id)); setLeaving(null); }, 220); };
+  useEffect(() => {
+    clearLabAdd();
+    if (queuedAdd && !consumedAdd.current && BY_ID[queuedAdd]) {
+      consumedAdd.current = true;
+      if (!setup.includes(queuedAdd)) { setCustom([...setup, queuedAdd]); setFresh(queuedAdd); }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queuedAdd, pKey]);
+  const change = useDelta(value.net);
+  const benefitRows = useMemo(() => benefitRowsFromValue(value), [value]);
+  const vsNow = value.net - nowValue.net;
   const sameAsHeld = [...setup].sort().join() === [...p.cardsHeld].sort().join();
 
   useEffect(() => { if (!toast) return undefined; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t); }, [toast]);
@@ -100,8 +124,10 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
         <div className="lab-numbers">
           {/* v7c 5d-2.1: say which mode the page is in. */}
           {target && <p className="t-caption" data-testid="lab-target">Target: {target.label} · <button type="button" className="link" onClick={() => onSaveProfile?.({ ...normalizeProfile(saved), targetStrategy: null })}>Clear target</button></p>}
+          <h1 className="t-d2 lab-title">Simulate your wallet</h1>
           <p className="t-eyebrow" data-testid="lab-mode">Wallet Lab · {mode === "wallet" && p.cardsHeld.length ? `Built from your ${p.cardsHeld.length} card${p.cardsHeld.length === 1 ? "" : "s"}` : "Starting from zero"}</p>
           <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
+          <p className="sim-delta-line"><DeltaChip delta={change} suffix="a year" />{!sameAsHeld && Math.round(vsNow) !== 0 && <span className="t-caption" data-testid="lab-vs-now">{signed(vsNow)} a year vs your wallet now</span>}</p>
           <p className="t-caption lab-basis">{shared.scoreText}</p>
           <dl className="lab-refs">
             {!sameAsHeld && <div><dt>Your wallet now</dt><dd className="t-value" data-testid="lab-now-score">{nowScore} <span className="t-caption">· {money(nowValue.net)} a year</span></dd></div>}
@@ -133,22 +159,42 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
         )}
       </Reveal>
 
-      {/* v7c 5d-2.2: "Your cards" — one tile per card, its jobs as tags. */}
+      {/* Simulate: one tile per card; add / remove animates the face in and out. */}
       <Reveal i={2} as="section" className="panel your-cards" aria-labelledby="yc-h" data-testid="your-cards">
-        <h2 className="t-h2" id="yc-h">Your cards</h2>
-        <ul className="yc-tiles">
-          {tiles.map((t) => (
-            <li key={t.cardId} className="yc-tile" data-testid={`tile-${t.cardId}`}>
-              <button className="yc-photo" onClick={() => openCard(t.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[t.cardId])}`}><CardFace card={BY_ID[t.cardId]} /></button>
+        <div className="sim-head">
+          <h2 className="t-h2" id="yc-h">Your cards</h2>
+          <p className="t-caption">Add a card to see what it would do for your year, or take one out. Every number below changes with it.</p>
+        </div>
+        <ul className="yc-tiles sim-row-tiles">
+          {tiles.map((t) => {
+            const jobsWhere = where.filter((w) => w.cardId === t.cardId).slice(0, 3);
+            return (
+            <li key={t.cardId} className={`yc-tile${fresh === t.cardId ? " mo-face-in" : ""}${leaving === t.cardId ? " mo-face-out" : ""}`} data-testid={`tile-${t.cardId}`}>
+              <div className="sim-card">
+                <button className="yc-photo mo-lift" onClick={() => openCard(t.cardId)} aria-label={`Open ${cardDisplayName(BY_ID[t.cardId])}`}><CardFace card={BY_ID[t.cardId]} /></button>
+                <button type="button" className="sim-x" onClick={() => removeCard(t.cardId)} aria-label={`Remove ${cardDisplayName(BY_ID[t.cardId])} from the simulation`}><X size={14} aria-hidden="true" /></button>
+              </div>
               <div className="yc-copy">
                 <span className="slot-name">{cardDisplayName(BY_ID[t.cardId])}{t.held ? <span className="t-caption"> · yours</span> : <span className="t-caption"> · new</span>}</span>
                 <span className="num-ui yc-net" data-testid="tile-net">{signed(t.net)} a year <span className="t-caption">({money(t.earn + t.benefits)} counted − {money(t.fee)} fee)</span></span>
+                <dl className="sim-breakdown" data-testid="tile-breakdown">
+                  <div><dt>Earning</dt><dd>{money(t.earn)}</dd></div>
+                  {jobsWhere.map((w) => <div key={w.key}><dt>· {w.label}</dt><dd>{Math.round(w.pct * 10) / 10}%</dd></div>)}
+                  <div><dt>Credits and perks counted</dt><dd>{money(t.benefits)}</dd></div>
+                  <div><dt>Yearly fee</dt><dd>−{money(t.fee)}</dd></div>
+                </dl>
                 <span className="slot-also">{[...t.jobs, ...t.perkJobs].map((j) => <span key={j} className="tag">{j}</span>)}</span>
                 <span className="t-caption yc-why">{t.why}</span>
               </div>
             </li>
-          ))}
+            );
+          })}
+          <li className="sim-add-cell">
+            <button type="button" className="sim-add" data-testid="sim-add" aria-expanded={picker} onClick={() => setPicker(!picker)}><Plus size={22} aria-hidden="true" /><span>Add a card</span></button>
+            {custom && <button type="button" className="link" onClick={() => setCustom(null)}>Reset to the starting setup</button>}
+          </li>
         </ul>
+        {picker && <CardPicker profile={p} setup={setup} onPick={addCard} />}
         {dropped.length > 0 && (
           <div className="yc-drop" data-testid="consider-cancelling">
             <h3 className="t-h3">Consider cancelling / downgrading</h3>
@@ -163,6 +209,8 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
           </div>
         )}
       </Reveal>
+
+      <Reveal i={2}><BenefitsStrip rows={benefitRows} title="Benefits in this setup" limit={5} testId="lab-benefits" emptyText="No credits or perks counted in this setup." /></Reveal>
 
       {/* v7f Part 2: specialty cards, only when the profile fits */}
       <SpecialtyOptions profile={p} onOpenCard={(id) => openCard(id)} />
@@ -225,6 +273,29 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
       {drawer && <SpendDrawer draft={draft} setDraft={setDraft} onClose={() => setDrawer(false)} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </section>
+  );
+}
+
+/* Search the catalogue (ranked for this profile) and add a card to the setup. */
+function CardPicker({ profile, setup, onPick }) {
+  const [q, setQ] = useState("");
+  const dq = useDeferredValue(q);
+  const rows = useMemo(() => exploreRows(profile, { q: dq, chip: "foryou" }).filter((r) => !setup.includes(r.card.id)).slice(0, 18), [profile, dq, setup]);
+  return (
+    <div className="sim-picker mo-fade" data-testid="sim-picker">
+      <label className="field explore-search"><Search size={18} aria-hidden="true" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search cards to add" aria-label="Search cards to add" /></label>
+      <ul className="sim-picker-list">
+        {rows.map((r) => (
+          <li key={r.card.id}>
+            <button type="button" onClick={() => onPick(r.card.id)} aria-label={`Add ${cardDisplayName(r.card)}`}>
+              <span className="mo-lift"><CardFace card={r.card} /></span>
+              <span className="t-caption">{cardDisplayName(r.card)}</span>
+              <span className="t-caption">{r.adds != null && r.adds > 0 ? `adds ≈ ${money(r.adds)} a year` : r.card.annualFee ? `${money(r.card.annualFee)} a year` : "No yearly fee"}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

@@ -34,6 +34,7 @@ import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
 import { ticketComparison } from "../../engine/v5/tickets.js";
 import HotelCreditUses from "../v7/HotelCreditUses.jsx";
+import BenefitsStrip, { benefitRowsFromUsed } from "../v7/BenefitsStrip.jsx";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
@@ -164,6 +165,8 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
           <Reveal i={2} className="panel detail-block detail-why">
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
+
+          <Reveal i={2}><BenefitsStrip rows={benefitRowsFromUsed(d.used, c.id)} title="Top benefits at a glance" limit={4} showCard={false} testId="detail-benefits" emptyText="None of its benefits match your answers." /></Reveal>
 
           {/* v7f Part 2.4: Ritz-Carlton vs Sapphire Reserve, on both pages */}
           {(c.id === "ritz" || c.id === "csr") && (

@@ -7,8 +7,10 @@
    ========================================================================== */
 import { formatPctBack } from "../../../engine/v5/valuation.js";
 import CompareTable from "../../v7/CompareTable.jsx";
-import React, { useDeferredValue, useMemo, useState } from "react";
-import { Search, X, SlidersHorizontal } from "lucide-react";
+import React, { useDeferredValue, useMemo, useRef, useState } from "react";
+import { Search, X, SlidersHorizontal, FlaskConical, ChevronDown } from "lucide-react";
+import { useFlip, CrossFade } from "../../v7/motion/motion.jsx";
+import { queueLabAdd } from "../lab/labHandoff.js";
 import CardFace from "../../v5/CardFace.jsx";
 import Choice from "../../v5/Choice.jsx";
 import { Reveal } from "../motion.jsx";
@@ -22,7 +24,7 @@ import { BUCKET_LABEL } from "../CardDetail.jsx";
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 const pct = (p) => formatPctBack(p);   // v7 G: one formatter
 
-export default function Explore({ profile: raw, onOpenCard }) {
+export default function Explore({ profile: raw, onOpenCard, onGo }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);
   const [q, setQ] = useState("");
   const [chip, setChip] = useState("foryou");
@@ -38,6 +40,10 @@ export default function Explore({ profile: raw, onOpenCard }) {
   const dq = useDeferredValue(q);
   const feeMax = FEE_FILTERS.find((f) => f.key === feeKey).max;
   const rows = useMemo(() => exploreRows(profile, { q: dq, chip, feeMax, cardType, approval, availability, issuer, sort }), [profile, dq, chip, feeMax, cardType, approval, availability, issuer, sort]);
+  const gridRef = useRef(null);
+  const [peek, setPeek] = useState(null);      // card id whose top benefits are showing
+  useFlip(gridRef, [rows.map((r) => r.card.id).join()]);
+  const simulate = (id) => { queueLabAdd(id); onGo?.("lab"); };
   const togglePick = (id) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : p.length >= 3 ? p : [...p, id]));
 
   return (
@@ -94,13 +100,16 @@ export default function Explore({ profile: raw, onOpenCard }) {
 
       <p className="t-caption explore-count">{rows.length} card{rows.length === 1 ? "" : "s"}{chip === "foryou" ? " · ranked by what each adds to your wallet a year, after its fee" : ""}</p>
 
-      <ul className="explore-grid" aria-label="Cards">
+      <ul className="explore-grid" aria-label="Cards" ref={gridRef}>
         {rows.map((r, k) => (
-          <li key={r.card.id} style={{ "--i": Math.min(k, 12) }} className="reveal-now">
-            <article className="tile">
-              <button className="tile-open" onClick={() => onOpenCard?.(r.card.id)} aria-label={`Open ${cardDisplayName(r.card)}`}>
-                <CardFace card={r.card} tilt />
-              </button>
+          <li key={r.card.id} data-flip={r.card.id} style={{ "--i": Math.min(k, 12) }} className="reveal-now">
+            <article className={`tile${peek === r.card.id ? " is-peek" : ""}`} onPointerEnter={(e) => e.pointerType === "mouse" && setPeek(r.card.id)} onFocus={() => setPeek(r.card.id)}>
+              <div className="tile-media">
+                <button className="tile-open mo-lift" onClick={() => onOpenCard?.(r.card.id)} aria-label={`Open ${cardDisplayName(r.card)}`}>
+                  <CardFace card={r.card} tilt />
+                </button>
+                {peek === r.card.id && <TilePeek cardId={r.card.id} profile={profile} />}
+              </div>
               <div className="tile-body">
                 <div className="tile-top">
                   <h2 className="tile-name">{cardDisplayName(r.card)}</h2>
@@ -114,7 +123,11 @@ export default function Explore({ profile: raw, onOpenCard }) {
                   <span className={`tag ${r.approval.level === 0 ? "tag-good" : r.approval.level === 2 ? "tag-warn" : ""}`}>{r.approval.label}</span>
                   {r.availability.key !== "open" && <span className="tag">{r.availability.label}</span>}
                 </span>
-                <Choice pill selected={picked.includes(r.card.id)} onSelect={() => togglePick(r.card.id)} aria-label={`Compare ${cardDisplayName(r.card)}`}>Compare</Choice>
+                <span className="tile-actions">
+                  {!r.held && <button type="button" className="btn btn-signal btn-small tile-sim" data-testid={`simulate-${r.card.id}`} onClick={() => simulate(r.card.id)} aria-label={`Add ${cardDisplayName(r.card)} to my wallet simulation`}><FlaskConical size={14} aria-hidden="true" /> Add to my wallet simulation</button>}
+                  <Choice pill selected={picked.includes(r.card.id)} onSelect={() => togglePick(r.card.id)} aria-label={`Compare ${cardDisplayName(r.card)}`}>Compare</Choice>
+                  <button type="button" className="link tile-peek-btn" aria-expanded={peek === r.card.id} onClick={() => setPeek(peek === r.card.id ? null : r.card.id)}>Top benefits <ChevronDown size={14} aria-hidden="true" /></button>
+                </span>
               </div>
             </article>
           </li>
@@ -131,6 +144,20 @@ export default function Explore({ profile: raw, onOpenCard }) {
       )}
       {comparing && <Compare ids={picked} profile={profile} onClose={() => setComparing(false)} onOpenCard={onOpenCard} />}
     </section>
+  );
+}
+
+/* Hover / focus preview: this card's best earn rates and benefits for THIS
+   profile, straight from cardDetail (the same numbers as the detail screen). */
+function TilePeek({ cardId, profile }) {
+  const d = useMemo(() => cardDetail(cardId, profile), [cardId, profile]);
+  const earn = d.topEarning.slice(0, 2).map((e) => ({ k: e.bucket, label: BUCKET_LABEL[e.bucket], v: pct(e.pct) }));
+  const perks = [...d.used].filter((b) => b.value > 0).sort((a, b) => b.value - a.value).slice(0, earn.length >= 2 ? 1 : 3).map((b) => ({ k: b.id || b.label, label: b.label, v: `${money(b.value)} counted` }));
+  const rows = [...earn, ...perks].slice(0, 3);
+  return (
+    <div className="tile-peek" data-testid="tile-peek" aria-live="polite">
+      {rows.length ? <ul>{rows.map((r) => <li key={r.k}><span>{r.label}</span><span>{r.v}</span></li>)}</ul> : <span>Mostly a simple everyday card for how you spend.</span>}
+    </div>
   );
 }
 

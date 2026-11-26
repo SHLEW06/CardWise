@@ -7,7 +7,7 @@
    ========================================================================== */
 import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, FlaskConical } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
 import FocalImage from "../v7/FocalImage.jsx";
@@ -15,6 +15,8 @@ import WhyThisCard from "../v7/WhyThisCard.jsx";
 import { Reveal, CountUp } from "./motion.jsx";
 import { buildPlan } from "../../engine/v5/plan.js";
 import PlanAdvice from "./PlanAdvice.jsx";
+import BenefitsStrip, { benefitRowsFromValue } from "../v7/BenefitsStrip.jsx";
+import { Rise } from "../v7/motion/motion.jsx";
 
 import { describeOffer, isLive, offerValueFor } from "../../engine/offers/offerModel.js";
 import { matchStore, rankPurchase } from "../../engine/v5/checkout.js";
@@ -36,6 +38,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
     .map((o) => ({ o, v: offerValueFor(o, o.minSpend || 50).potential || o.reward || 0 })).sort((a, b) => b.v - a.v).slice(0, 3), [offers, profile]);
   const near = useNearYou(profile, offers);
   const fanCards = cards;
+  const bestBenefits = useMemo(() => benefitRowsFromValue(s.best?.value), [s]);
 
   if (!cards.length) {
     return (
@@ -68,6 +71,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             : `That's after their yearly fees, across ${cards.length} card${cards.length === 1 ? "" : "s"}, counting only the perks you told us you'd use.`}</p>
           <div className="home-actions">
             {move && <a className="btn btn-signal" href="#next-move">See your next move <ArrowRight size={18} aria-hidden="true" /></a>}
+            <button type="button" className="btn btn-quiet" data-testid="home-simulate" onClick={() => onGo?.("lab")}><FlaskConical size={18} aria-hidden="true" /> Simulate your own wallet</button>
           </div>
           <div className="home-score">
             <ScoreDial score={s.score} size={120} caption="Score" />
@@ -98,12 +102,16 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
           </Reveal>
         )}
 
+        <Rise scroll i={1}>
+          <BenefitsStrip rows={bestBenefits} title="Benefits in your recommended wallet" limit={4} testId="home-benefits" />
+        </Rise>
+
         <Reveal i={1} className="home-cards">
           <h2 className="t-eyebrow">Your cards</h2>
           <ul className="home-cards-row">
             {fanCards.map((c) => (
-              <li key={c.id}>
-                <button onClick={() => onOpenCard?.(c.id)} aria-label={`Open ${cardDisplayName(c)}`}>
+              <li key={c.id} className="mo-rise is-in" style={{ "--i": fanCards.indexOf(c) + 2 }}>
+                <button className="mo-lift" onClick={() => onOpenCard?.(c.id)} aria-label={`Open ${cardDisplayName(c)}`}>
                   <CardFace card={c} />
                   <span className="t-caption">{cardDisplayName(c)}</span>
                 </button>
@@ -143,12 +151,12 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
         )}
 
         <Reveal i={3} className="home-links">
-          <button className="home-link glass" onClick={() => onGo?.("lab")}>
-            <span className="t-h2">Wallet Lab</span>
-            <span className="t-caption">Play with your cards and spending; watch the best wallet change.</span>
+          <button className="home-link glass mo-lift" onClick={() => onGo?.("lab")}>
+            <span className="t-h2">Simulate your wallet</span>
+            <span className="t-caption">Wallet Lab: add or drop a card and watch your yearly value move.</span>
             <ArrowRight size={18} aria-hidden="true" />
           </button>
-          <button className="home-link glass" onClick={() => onGo?.("explore")}>
+          <button className="home-link glass mo-lift" onClick={() => onGo?.("explore")}>
             <span className="t-h2">Explore</span>
             <span className="t-caption">Every card, ranked by what it would add for you.</span>
             <ArrowRight size={18} aria-hidden="true" />
