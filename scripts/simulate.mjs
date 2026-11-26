@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { buildPlan } from "../src/engine/v5/plan.js";
 import { withSurveyAnswers } from "./persona-answers.mjs";
 import { BY_ID } from "../src/data/cards/index.js";
+import { normalizeProfile } from "../src/engine/profileDefaults.js";
+import { cardFee } from "../src/engine/v5/value.js";
 import { execFileSync } from "node:child_process";
 const personas = JSON.parse(readFileSync(new URL("../cardwise_personas_200.json", import.meta.url))).personas;
 const cautious = raw => ({ ...raw, travel: { ...raw.travel,
@@ -45,29 +47,31 @@ const metrics = rs => [
   count(rs,(r,p) => r.waitlistedApply && p.facts?.invited !== true && !(p.profile.cardsHeld || []).includes("robinhood-gold")),
   count(rs,r => r.defaultsChanged),
   count(rs,(r,p) => knownNonStudent(p) && r.studentCards.length > 0),
-  count(rs,(r,p) => carries(p) && r.annualFeeCards.length > 0),
+  count(rs,(r,p) => carries(p) && r.wallet.some(id => cardFee(BY_ID[id],normalizeProfile(p.profile)) > 0)),
   count(rs,(r,p) => firstCardWanted(p) && r.wallet.length === 0),
 ];
 const before = metrics(baseline), after = metrics(rows), captured = metrics(answered);
-const names = ["Personas whose first actions disagree across screens", "Uninvited waitlisted card presented as the first application", "Plans changed by zeroing skipped travel defaults", "New student-card recommendations to known non-students", "Annual-fee cards in plans for known balance carriers", "Empty plans for people seeking a first card (applications allowed)"];
+const names = ["Personas whose first actions disagree across screens", "Uninvited waitlisted card presented as the first application", "Plans changed by zeroing skipped travel defaults", "New student-card recommendations to known non-students", "Annual-fee / required-membership cards for known balance carriers", "Empty plans for people seeking a first card (applications allowed)"];
 const selected = ["P02","P03","P14","P29","P31","P47","P121","P153","P161","P199"];
 const show = r => {
-  const oldAction = r.actions?.home || r.actions?.survey;
+  if (r.actions && !r.actions.home) return `no Home action; proposed ${r.firstCard || "—"}; ${r.wallet.join(", ") || "empty"}; $${r.net}/yr`;
+  const oldAction = r.actions?.home;
   const action = r.action || oldAction?.split(":")[0] || "—";
   const card = r.actions ? oldAction?.split(":")[1] : r.firstCard;
   return `${action}: ${card || "—"}; ${r.wallet.join(", ") || "empty"}; $${r.net}/yr`;
 };
 const pending = rs => rs.filter((r,i)=>firstCardWanted(personas[i]) && !r.wallet.length).map(r=>r.id);
 const commit = execFileSync("git",["rev-parse","--short","HEAD"],{encoding:"utf8"}).trim();
+const runDate = new Date().toISOString().slice(0,10);
 writeFileSync(new URL("../docs/AUDIT_FIX_REPORT.md", import.meta.url), [
-  "# Trustworthy plan audit fix report", "", `Run: 2026-11-25. Engine commit: ${commit}. Input: all 200 personas. Frozen before engine: 07f63c4 (main plus the pre-existing security fix).`, "",
+  "# Trustworthy plan audit fix report", "", `Run (UTC): ${runDate}. Engine commit: ${commit}. Input: all 200 personas. Frozen before engine: 07f63c4 (main plus the pre-existing security fix).`, "",
   "## Results", "", "| Measure (personas) | Before | After, original profiles | After, new questions answered |", "| --- | ---: | ---: | ---: |",
   ...names.map((n,i)=>`| ${n} | ${before[i]} | ${after[i]} | ${captured[i]} |`), "",
   `**Deposit answers remain pending:** ${pending(rows).join(", ")} in the original-profile run; ${pending(answered).join(", ")} after known answers. These rebuilding users have no eligible unsecured option in the catalog and no deposit-affordability fact. Their first action now explicitly asks about the deposit, with no secured application until they answer. This is a disclosed eligibility hold, not a recommendation failure caused by the $75/$25 hurdles. P153 receives an available no-fee card. We have not assumed these people can afford a deposit to force the final count to zero.`, "",
   "The original-profile run feeds exactly `persona.profile` to the engine. The answered replay uses `scripts/persona-answers.mjs`: each mapped truth/fact is assigned only to a field the survey now asks. The exact field, source and answer are saved per persona in `simulation-answered-results.json`. Unknown facts remain unknown. No labels, groups or entire truth/facts objects enter the engine.", "",
-  "Screen agreement is verified by rendering the real survey result, Home and Wallet Lab for every original profile in `personas200.test.js`; it is not inferred merely from shared imports. The original baseline recorded each screen's independent first action, including Home's missing action for empty wallets. Waitlist counts cover the first application on any screen, excluding held cards and known invitations. Student counts cover new recommendations to known non-students; retaining an existing account is not a new application. Balance-carrier counts use the known facts even when the original profile did not reveal payment behavior. First-card counts exclude explicit application pauses and known balance carriers.", "",
+  "Screen agreement is verified by rendering the real survey result, Home and Wallet Lab for every original profile in `personas200.test.js`; it is not inferred merely from shared imports. The original baseline recorded each screen's independent first action, including Home's missing action for empty wallets. Waitlist counts cover the first application on any screen, excluding held cards and known invitations. Student counts cover new recommendations to known non-students; retaining an existing account is not a new application. Balance-carrier counts use the known facts even when the original profile did not reveal payment behavior, and include required paid memberships in annual card cost (Robinhood's card has no nominal annual fee but did impose a subscription). The before count is unchanged whether that historical Gold subscription is $60 or its corrected $50: both are positive costs. Nominal annual-fee-only carrier counts are 0 before and after. First-card counts exclude explicit application pauses and known balance carriers.", "",
   "The default-removal metric compares wallet membership after replacing only unanswered bags, hotel nights, hotel-program selection and lounges with zero/no. Explicit answers and trip-level hotel nights are preserved. This is a plan-change metric, not a claim that every estimate is exact. All 200 original profiles also snapshot first card, wallet and recurring net.", "",
-  "## Requested examples", "", "Each cell gives first action/card, complete wallet and recurring annual net after fees. The answered replay is separate so changes caused by newly disclosed facts remain reviewable.", "",
+  "## Requested examples", "", "Each cell gives first action/card, complete wallet and recurring annual net after fees. Before uses the engine's Home plan; when Home showed no action, its proposed addition is labeled separately. The answered replay is separate so changes caused by newly disclosed facts remain reviewable.", "",
   "| ID | Before | After, original profile | After, answered |", "| --- | --- | --- | --- |",
   ...selected.map(id=>`| ${id} | ${[baseline,rows,answered].map(rs=>cell(show(rs.find(r=>r.id===id)))).join(" | ")} |`), "",
   "## Implemented behavior", "",
@@ -87,7 +91,7 @@ writeFileSync(new URL("../docs/AUDIT_FIX_REPORT.md", import.meta.url), [
   "- Unasked facts such as corporate-card reimbursement, existing elite-status bag waivers and lumpy monthly spending are not silently injected into profiles. They remain limitations of these survey inputs.",
   "- Validation: `npm test`, `npm run build` (including strict distribution secret scan), and `node scripts/simulate.mjs`. No AI calls, push or deployment were performed. No UI polish was applied.", "",
   "## Security follow-up", "",
-  "Run `npm run keys` to rotate the exposed connector token in both local copies while preserving the vault encryption key. This command was tested on temporary fixtures; the real token was not rotated. Restart the connector/dev server, rebuild and redeploy the fixed production build. Deployment remains subject to owner approval. The public connector uses `/connector`; configure a production connector endpoint or reverse proxy before using bank sync there.", "",
+  "Run `npm run keys` to rotate the exposed connector token in both local copies while preserving the vault encryption key. This command was tested on temporary fixtures; the real token was not rotated. Restart the connector/dev server, rebuild and redeploy the fixed production build. Deployment remains subject to owner approval. Production bank sync keeps a local connector default (`localhost:8787`) with Firebase authentication. A hosted connector can be configured using `VITE_CONNECTOR_PUBLIC_URL` in `.env.production`; no dev token is included.", "",
 ].join("\n"));
 console.log(`Simulated ${rows.length} profiles → docs/simulations.md`);
 console.log(JSON.stringify({ before, afterOriginal: after, afterAnswered: captured }));
