@@ -13,6 +13,9 @@ import { destinationsOf, minimumNights } from "../../engine/v5/hotelCredits.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { matchHotel } from "../../../extension/lib/rate.js";
+import HotelMapView from "./HotelMapView.jsx";
+import { buildMarkers } from "../../engine/v5/hotelWorld.js";
+import { programLabel, programInfo, PROGRAM_MENU_LABEL, PROGRAM_MENU_NOTE } from "../../engine/v5/hotelPrograms.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const PROGRAMS = ["edit", "fhr", "thc", "selectHotels2026"];
@@ -38,25 +41,10 @@ export function HotelStyle({ travel, onChange }) {
   );
 }
 
-/* A plain world map (equirectangular): one dot per city, sized by hotels. */
-function HotelMap({ hotels, onCity }) {
-  const byCity = useMemo(() => {
-    const m = new Map();
-    for (const h of hotels) { const c = m.get(h.cityKey) || { key: h.cityKey, name: h.city, lat: h.lat, lng: h.lng, n: 0 }; c.n++; m.set(h.cityKey, c); }
-    return [...m.values()];
-  }, [hotels]);
-  return (
-    <svg className="hotel-map" viewBox="-180 -90 360 180" role="img" aria-label="Map of hotel cities" data-testid="hotel-map">
-      <rect x="-180" y="-90" width="360" height="180" fill="none" stroke="currentColor" strokeOpacity=".15" />
-      {[-60, -30, 0, 30, 60].map((y) => <line key={y} x1="-180" x2="180" y1={-y} y2={-y} stroke="currentColor" strokeOpacity=".06" />)}
-      {byCity.map((c) => (
-        <g key={c.key} transform={`translate(${c.lng} ${-c.lat})`} className="hotel-map-dot" onClick={() => onCity?.(c.name)} role="button" aria-label={`${c.name}: ${c.n} hotels`}>
-          <circle r={2 + Math.sqrt(c.n)} fill="currentColor" fillOpacity=".75" />
-          <text x="5" y="2" fontSize="6" fill="currentColor">{c.name} · {c.n}</text>
-        </g>
-      ))}
-    </svg>
-  );
+/* The map: one marker per city at the middle of its hotels' coordinates. */
+function HotelMap({ hotels, onCity, onHotel }) {
+  const { markers, unmapped } = useMemo(() => buildMarkers(hotels, (h) => [h.lat, h.lng]), [hotels]);
+  return <HotelMapView markers={markers} unmapped={unmapped.length} testId="hotel-map" ariaLabel="Map of hotel cities" onShowCity={(m) => onCity?.(m.name)} onPickHotel={(h) => onHotel?.(h)} priceOf={(h) => h.__price ?? null} />;
 }
 
 // The workbook and personal directory have not been cleared for publication.
@@ -128,7 +116,7 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
         <p className="t-eyebrow">Hotels · Your plan</p>
         {onBrowse && <button className="link" onClick={onBrowse}>Browse the full hotel collection →</button>}
         <h1 className="t-d2">Where your cards' hotel credits work.</h1>
-        <p className="t-caption">The Edit, Fine Hotels + Resorts, The Hotel Collection and Select Hotels — {HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices (the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
+        <p className="t-caption">Only hotels in The Edit by Chase Travel (Sapphire Reserve), The Hotel Collection (Amex) and Fine Hotels + Resorts (Amex), plus Chase Select Hotels, earn these credits — {HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices (the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
         <HotelStyle travel={profile.travel} onChange={setTravel} />
       </header>
 
@@ -140,8 +128,12 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
         <div className="segmented" role="radiogroup" aria-label="View">
           {[["list", "List"], ["map", "Map"]].map(([k, l]) => <button key={k} role="radio" aria-checked={view === k} aria-selected={view === k} className="segmented-item" onClick={() => setView(k)}>{l}</button>)}
         </div>
-        <div className="chip-wrap" role="group" aria-label="Program">
-          {PROGRAMS.map((p) => <Choice key={p} pill selected={progs.includes(p)} onSelect={() => toggle(progs, setProgs, p)}>{PROGRAM_NAME[p]}</Choice>)}
+        <div className="hotel-program-menu" data-testid="program-menu">
+          <p className="t-caption" id="hotel-program-label"><strong>{PROGRAM_MENU_LABEL}</strong></p>
+          <div className="chip-wrap" role="group" aria-labelledby="hotel-program-label">
+            {PROGRAMS.map((p) => <Choice key={p} pill selected={progs.includes(p)} onSelect={() => toggle(progs, setProgs, p)}>{PROGRAM_NAME[p]} <small>({programInfo(p).issuer})</small></Choice>)}
+          </div>
+          <p className="t-caption" data-testid="program-note">{PROGRAM_MENU_NOTE} {progs.length ? `Showing ${progs.map(programLabel).join(" + ")} only.` : "Showing every program."}</p>
         </div>
         <label className="t-caption hotels-price">{Number.isFinite(maxPrice) ? `Up to ${money(maxPrice)} a night` : "All nightly prices"}
           <input type="range" min="100" max="1000" step="25" value={Number.isFinite(maxPrice) ? maxPrice : 1000} aria-label="Realistic price per night, up to" onChange={(e) => setMaxPrice(Number(e.target.value))} />
@@ -157,7 +149,7 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
         <label className="t-caption">Your dates <input type="date" aria-label="Check-in" value={checkin} onChange={(e) => setCheckin(e.target.value)} /> – <input type="date" aria-label="Check-out" value={checkout} onChange={(e) => setCheckout(e.target.value)} /></label>
       </div>
 
-      {view === "map" ? <HotelMap hotels={rows.map((r) => r.h)} onCity={(c) => { setQ(c); setView("list"); }} /> : (
+      {view === "map" ? <HotelMap hotels={rows.map((r) => ({ ...r.h, __price: r.price }))} onCity={(c) => { setQ(c); setView("list"); }} onHotel={(h) => { setQ(h.name); setView("list"); }} /> : (
         <ul className="rows hotel-rows" aria-label="Hotels">
           {!rows.length && <li className="t-caption">No hotel matches these filters.</li>}
           {rows.slice(0, shown).map(({ h, per }) => (
@@ -166,11 +158,11 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
                 <p className="hotel-name"><strong>{h.name}</strong> <span className="t-caption">· {h.chain} · {TIER_NAME[h.luxuryTier]}</span></p>
                 <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {h.city}, {h.country}{myCities.has(h.cityKey) ? " · in your trips" : ""}
                   {" · "}<a className="link" href={googleHotelsUrl(h, checkin, checkout)} target="_blank" rel="noreferrer" data-testid={`check-${h.id}`}>Check prices</a>
-                  {Object.entries(h.links || {}).map(([p, url]) => <React.Fragment key={p}>{" · "}<a className="link" href={url} target="_blank" rel="noreferrer">{PROGRAM_NAME[p]} page</a></React.Fragment>)}
+                  {Object.entries(h.links || {}).map(([p, url]) => <React.Fragment key={p}>{" · "}<a className="link" href={url} target="_blank" rel="noreferrer">{programLabel(p)} page</a></React.Fragment>)}
                 </p>
                 {per.map((p) => (
                   <div key={p.program} className="hotel-program t-caption" data-testid={`hotel-${h.id}-${p.program}`}>
-                    <span className="tag">{PROGRAM_NAME[p.program]}</span>{" "}
+                    <span className="tag" data-testid={`badge-${h.id}-${p.program}`} title={`Earns the ${programLabel(p.program)} hotel credit`}>{programLabel(p.program)}</span>{" "}
                     ~{money(p.rate)}/night <span className="habit-tag">({p.rateLabel})</span> · {p.n} night{p.n === 1 ? "" : "s"} min ·
                     {" "}<strong data-testid={`value-${h.id}-${p.program}`}>Value to you: {money(p.value)}</strong> <span className="habit-tag">of a {money(p.C)} credit, at your {money(p.budget)} a night</span>
                     <p className="hotel-benefits">{(h.benefits[p.program] || []).join(" · ")}</p>

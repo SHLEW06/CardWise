@@ -1,0 +1,40 @@
+/* Hotel map (HotelMapView). Colours follow the page theme; the sea and land are
+   tinted from --ink so the same rules work in light and dark. */
+.v5 .hmap { --hmap-sea-1: color-mix(in srgb, var(--ink, #ECE6DA) 9%, transparent); --hmap-sea-2: color-mix(in srgb, var(--ink, #ECE6DA) 3%, transparent); --hmap-pin-edge: rgba(8, 17, 31, .75); position: relative; margin-top: 16px; }
+.v5 .hmap-stage { position: relative; height: clamp(320px, 52vw, 560px); border: 1px solid var(--hair, rgba(255,255,255,.12)); border-radius: 6px; overflow: hidden; touch-action: none; cursor: grab; background: var(--surface, rgba(255,255,255,.03)); }
+.v5 .hmap-stage:active { cursor: grabbing; }
+.v5 .hmap-stage:focus-visible { outline: 2px solid var(--bronze, #c9a566); outline-offset: 2px; }
+.v5 .hmap-svg { width: 100%; height: 100%; display: block; user-select: none; }
+.v5 .hmap-grid { stroke: var(--ink, #ECE6DA); stroke-opacity: .07; }
+.v5 .hmap-land { fill: color-mix(in srgb, var(--ink, #ECE6DA) 17%, transparent); stroke: color-mix(in srgb, var(--ink, #ECE6DA) 34%, transparent); stroke-linejoin: round; }
+.v5 .hmap-water { fill: var(--hmap-sea-2); stroke: color-mix(in srgb, var(--ink, #ECE6DA) 20%, transparent); stroke-linejoin: round; }
+.v5 .hmap-marker { cursor: pointer; outline: none; }
+.v5 .hmap-marker:hover circle:nth-last-of-type(1), .v5 .hmap-marker.is-on circle:nth-last-of-type(1) { fill-opacity: 1; }
+.v5 .hmap-marker:focus-visible { outline: none; }
+.v5 .hmap-marker:focus-visible circle:nth-last-of-type(1) { stroke: var(--ink, #fff); }
+.v5 .hmap-count { fill: #0b1424; font-weight: 600; pointer-events: none; font-family: inherit; }
+.v5 .hmap-label { fill: var(--ink, #ECE6DA); paint-order: stroke; stroke: var(--night, #0b1424); stroke-linejoin: round; pointer-events: none; font-family: inherit; }
+.v5 .hmap-zoom { position: absolute; top: 10px; right: 10px; display: grid; gap: 4px; }
+.v5 .hmap-zoom button { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 4px; border: 1px solid var(--hair, rgba(255,255,255,.2)); background: var(--surface, rgba(8,17,31,.85)); color: var(--ink, #ECE6DA); cursor: pointer; }
+.v5 .hmap-zoom button:hover { border-color: var(--bronze, #c9a566); }
+.v5 .hmap-empty { position: absolute; inset: auto 0 50% 0; text-align: center; color: var(--ink-3, #9aa); margin: 0; }
+.v5 .hmap-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0 0; padding: 0; font-size: 12px; color: var(--ink-2, #bbb); }
+.v5 .hmap-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.v5 .hmap-hint { margin-left: auto; color: var(--ink-3, #889); }
+.v5 .hmap-card { margin-top: 12px; padding: 14px 16px; border: 1px solid var(--bronze, #c9a566); border-radius: 6px; background: var(--surface, rgba(255,255,255,.04)); }
+.v5 .hmap-card-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.v5 .hmap-card-head small { display: block; color: var(--ink-3, #889); font-size: 12px; margin-top: 3px; }
+.v5 .hmap-x { background: none; border: 0; color: var(--ink-2, #bbb); cursor: pointer; padding: 4px; }
+.v5 .hmap-card ul { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 4px; }
+.v5 .hmap-hotel { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; text-align: left; padding: 8px 10px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--ink, #ECE6DA); cursor: pointer; font-size: 14px; }
+.v5 .hmap-hotel:hover, .v5 .hmap-hotel:focus-visible { border-color: var(--hair, rgba(255,255,255,.18)); background: color-mix(in srgb, var(--ink, #ECE6DA) 6%, transparent); }
+.v5 .hmap-hotel-name { flex: 1 1 200px; min-width: 0; }
+.v5 .hmap-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.v5 .hmap-badge { font-size: 9px; letter-spacing: .08em; padding: 3px 6px; border-radius: 2px; border: 1px solid var(--pc); color: var(--ink, #ECE6DA); white-space: nowrap; }
+.v5 .hmap-price { color: var(--ink-2, #bbb); font-variant-numeric: tabular-nums; }
+.v5 .hmap-all { background: none; border: 0; padding: 0; color: var(--ink, #ECE6DA); text-decoration: underline; cursor: pointer; font-size: 13px; }
+.v5 .hmap-note { margin-top: 8px; }
+@media (max-width: 650px) { .v5 .hmap-stage { height: 340px; } .v5 .hmap-hint { margin-left: 0; width: 100%; } }
+
+.v5 .hotel-program-menu { flex: 1 1 100%; display: grid; gap: 6px; }
+.v5 .hotel-program-menu p { margin: 0; }

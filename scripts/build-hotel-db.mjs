@@ -140,6 +140,11 @@ export const LIST_SOURCES = [
 ];
 const cacheFile = (url) => resolve(CACHE, createHash("sha1").update(url).digest("hex") + ".html");
 
+/* AwardHelper's perks field carries a literal template placeholder ("additionalBenefit") on 1,036 rows; drop it, and keep each perk as its own entry. */
+export const cleanPerks = (perks, program) => {
+  const list = String(perks || "").split(/;\s*/).map((x) => x.trim()).filter((x) => x && !/^additionalBenefit$/i.test(x));
+  return list.length ? [...list, ...PROGRAM_BENEFITS[program].slice(1).filter((b) => !list.includes(b))] : PROGRAM_BENEFITS[program];
+};
 export function parseAwardHelper(html) {
   const pushes = [...html.matchAll(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g)].map((m) => JSON.parse(m[1])).join("");
   const i = pushes.indexOf('"hotels":[');
@@ -178,6 +183,52 @@ export async function fetchLists() {
   for (const s of LIST_SOURCES) { const html = await politeFetch(s.url, { minGapMs: 2000 }); console.log(`  ${s.key}: ${html.length.toLocaleString()} bytes (cached)`); }
 }
 
+/* AwardHelper's export drops exponents on some coordinates ("-8.286e-2" arrives
+   as -8.286, which put six London hotels in the Atlantic off Ireland) and
+   flips a sign on others (Mallorca at -2.55 instead of 2.55). A coordinate far
+   from its own city's median is repaired only when a sign flip and/or dividing
+   by 10/100/1000 lands it within 0.7 degrees of that median (the closest fit
+   wins); anything out of range or 0/0 is dropped. Same-name cities (Portland,
+   ME / OR) stay untouched because no such fit exists. */
+export function repairCoordinates(properties) {
+  const med = (xs) => { const t = [...xs].sort((a, b) => a - b); const m = t.length >> 1; return t.length % 2 ? t[m] : (t[m - 1] + t[m]) / 2; };
+  const key = (h) => `${norm(h.city)}|${norm(h.country)}`;
+  const groups = new Map();
+  for (const h of properties) if (h.lat != null && h.lng != null) (groups.get(key(h)) || groups.set(key(h), []).get(key(h))).push(h);
+  const fixed = [], dropped = [];
+  for (const h of properties) {
+    if (h.lat == null && h.lng == null) continue;
+    if (!Number.isFinite(h.lat) || !Number.isFinite(h.lng) || Math.abs(h.lat) > 90 || Math.abs(h.lng) > 180 || (h.lat === 0 && h.lng === 0)) { dropped.push(h.id); Object.assign(h, { lat: null, lng: null, coords: null }); continue; }
+    const g = groups.get(key(h)) || [];
+    if (g.length < 3) continue;
+    const mLat = med(g.map((x) => x.lat)), mLng = med(g.map((x) => x.lng));
+    const off = (la, ln) => Math.hypot(la - mLat, (ln - mLng) * Math.cos((mLat * Math.PI) / 180));
+    if (off(h.lat, h.lng) <= 0.7) continue;
+    let best = null;
+    for (const sy of [1, -1]) for (const sx of [1, -1]) for (const dy of [1, 10, 100, 1000]) for (const dx of [1, 10, 100, 1000]) {
+      if (sy === 1 && sx === 1 && dy === 1 && dx === 1) continue;
+      const la = (h.lat * sy) / dy, ln = (h.lng * sx) / dx, o = off(la, ln);
+      if (o <= 0.7 && (!best || o < best.o)) best = { la, ln, o };
+    }
+    if (best) { fixed.push({ id: h.id, name: h.name, from: [h.lat, h.lng], to: [best.la, best.ln] }); Object.assign(h, { lat: best.la, lng: best.ln }); }
+  }
+  return { fixed, dropped };
+}
+
+export function fillCoordinatesFromWorkbook(properties, file = resolve(OUT, "workbook.generated.json")) {
+  if (!existsSync(file)) return 0;
+  const wb = JSON.parse(readFileSync(file, "utf8")).hotels || [];
+  const idx = new Map();
+  for (const h of wb) { if (!h.coords) continue; const k = `${norm(h.name)}|${norm(h.city)}`; idx.set(k, idx.has(k) ? null : h.coords); }
+  let n = 0;
+  for (const p of properties) {
+    if (p.lat != null) continue;
+    const c = idx.get(`${norm(p.name)}|${norm(p.city)}`);
+    if (c) { Object.assign(p, { lat: c[0], lng: c[1], coords: "property" }); n++; }
+  }
+  return n;
+}
+
 /** Merge the two lists with the research records (prices), deduped by name + city (+ coordinates). */
 export function buildLocal(base = build(), lists = null) {
   const ah = lists?.awardHelper ?? (existsSync(cacheFile(LIST_SOURCES[0].url)) ? parseAwardHelper(readFileSync(cacheFile(LIST_SOURCES[0].url), "utf8")) : []);
@@ -200,7 +251,7 @@ export function buildLocal(base = build(), lists = null) {
     put({
       id: `ah-${h.id}`, name: h.name, chain: h.brand && h.brand !== "Other" ? h.brand : "Independent", city: h.city, country: h.country, region: null, cityKey: destKeyFor(place, h.country),
       lat: Number(h.latitude) || null, lng: Number(h.longitude) || null, coords: "property", programs: [program], minNights: { [program]: program === "thc" ? 2 : 1 },
-      benefits: { [program]: h.perks ? [h.perks, ...PROGRAM_BENEFITS[program].slice(1)] : PROGRAM_BENEFITS[program] }, luxuryTier: tierFromBrand(h.name, h.brand),
+      benefits: { [program]: cleanPerks(h.perks, program) }, luxuryTier: tierFromBrand(h.name, h.brand),
       links: { [program]: h.url }, source: LIST_SOURCES[0].url, checked: h.added_date || null, list: "awardhelper",
     });
   }
@@ -220,9 +271,13 @@ export function buildLocal(base = build(), lists = null) {
     else byKey.set(k, { ...r, links: {} });
   }
   const properties = [...byKey.values()];
+  /* edithotelsearch has no coordinates: borrow them from the workbook (src/data/hotels/workbook.generated.json)
+     when name + city match exactly and uniquely, so Edit-only hotels reach the map. */
+  const filled = fillCoordinatesFromWorkbook(properties);
+  const repairs = repairCoordinates(properties);
   const counts = Object.fromEntries(["edit", "fhr", "thc", "selectHotels2026"].map((k) => [k, properties.filter((p) => p.programs.includes(k)).length]));
   const listed = { awardhelper: ah.length, awardhelperFhr: ah.filter((h) => h.program === "FHR").length, awardhelperThc: ah.filter((h) => h.program === "THC").length, edithotelsearch: ed.length };
-  return { properties, log: { built: new Date().toISOString().slice(0, 10), properties: properties.length, counts, listed, both: properties.filter((p) => p.programs.includes("edit") && (p.programs.includes("fhr") || p.programs.includes("thc"))).length, sources: LIST_SOURCES } };
+  return { properties, log: { built: new Date().toISOString().slice(0, 10), properties: properties.length, counts, listed, coordinateRepairs: { fixed: repairs.fixed.length, dropped: repairs.dropped.length, filledFromWorkbook: filled }, both: properties.filter((p) => p.programs.includes("edit") && (p.programs.includes("fhr") || p.programs.includes("thc"))).length, sources: LIST_SOURCES } };
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
