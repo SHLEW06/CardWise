@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 import React,{useState} from "react";
-import {it,expect,afterEach} from "vitest";
+import {it as vit,expect,afterEach} from "vitest";
 import {render,screen,fireEvent,cleanup} from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import HotelDiscovery from "../components/v7/HotelDiscovery.jsx";
+import { existsSync } from "node:fs";
+/* The owner's workbook is local-only (git-ignored, docs/THIRD_PARTY.md): a
+   fresh clone skips these dev-browser tests instead of failing. */
+const HAS_WORKBOOK = existsSync(`${process.cwd()}/src/data/hotels/workbook.generated.json`);
+const HotelDiscovery = HAS_WORKBOOK ? (await import("../components/v7/HotelDiscovery.jsx")).default : null;
+const it = HAS_WORKBOOK ? vit : vit.skip;
 import {normalizeProfile} from "../engine/profileDefaults.js";
 afterEach(cleanup);
 function Harness(){const[p,setP]=useState(normalizeProfile({cardsHeld:["amex-plat"],travel:{hotelBudget:200}}));return <HotelDiscovery profile={p} onSaveProfile={setP}/>;}

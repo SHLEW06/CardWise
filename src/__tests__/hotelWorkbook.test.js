@@ -1,5 +1,11 @@
-import {it,expect} from "vitest";
-import catalog from "../data/hotels/workbook.generated.json";
+import {it as vit,expect} from "vitest";
+import { existsSync } from "node:fs";
+/* The owner's workbook is local-only (git-ignored, docs/THIRD_PARTY.md): a
+   fresh clone skips these dev-browser tests instead of failing. */
+const HAS_WORKBOOK = existsSync(`${process.cwd()}/src/data/hotels/workbook.generated.json`);
+const WORKBOOK = "../data/hotels/workbook.generated.json";
+const catalog = HAS_WORKBOOK ? (await import(/* @vite-ignore */ WORKBOOK)).default : null;
+const it = HAS_WORKBOOK ? vit : vit.skip;
 import { filterStays, estimateStay, programAccess, creditHotel, discoveryMarksWith, discoveryMark } from "../engine/v5/hotelDiscovery.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
 it("imports every source row once, merging exact duplicate identities without making missing rates zero",()=>{
