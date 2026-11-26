@@ -67,6 +67,23 @@ for (const [k, m] of merged) {
     lat: precision ? round(lat) : null, lng: precision ? round(lng) : null, precision,
   });
 }
+/* Guard against same-name places (Jackson, WY vs Jackson, MS): a geocoded or
+   city-centre point more than 80 km from the median of that city's exact
+   property coordinates is replaced by that median, marked approximate. */
+const COUNTRY_ALIAS = { us: "united states", usa: "united states", "united states of america": "united states", uk: "united kingdom" };
+const placeKey = (h) => `${clean(h.city)}|${COUNTRY_ALIAS[clean(h.country)] ?? clean(h.country)}`;
+const median = (xs) => { const v = [...xs].sort((a, b) => a - b); return v[Math.floor(v.length / 2)]; };
+const exact = new Map();
+for (const h of hotels) if (h.precision === "property") (exact.get(placeKey(h)) || exact.set(placeKey(h), []).get(placeKey(h))).push(h);
+const km = (a, b) => { const t = (x) => (x * Math.PI) / 180, dl = t(b.lat - a.lat), dg = t(b.lng - a.lng); return 12742 * Math.asin(Math.sqrt(Math.sin(dl / 2) ** 2 + Math.cos(t(a.lat)) * Math.cos(t(b.lat)) * Math.sin(dg / 2) ** 2)); };
+let corrected = 0;
+for (const h of hotels) {
+  const ref = exact.get(placeKey(h));
+  if (!ref || h.precision === "property") continue;
+  const c = { lat: round(median(ref.map((x) => x.lat))), lng: round(median(ref.map((x) => x.lng))) };
+  if (!h.precision || km(h, c) > 80) { h.lat = c.lat; h.lng = c.lng; h.precision = "city"; corrected++; }
+}
+if (corrected) console.log(`build-program-hotels: ${corrected} points moved to their city's known location`);
 hotels.sort((a, b) => a.country.localeCompare(b.country) || a.city.localeCompare(b.city) || a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
 
 const count = (f) => hotels.filter(f).length;
