@@ -5,6 +5,7 @@ These are field-level checks; they do not claim every fee or benefit on the card
 | Card / field | Confirmed term | Issuer source |
 | --- | --- | --- |
 | Robinhood Gold | Waitlist before invitation; annual Gold subscription $50 required | https://robinhood.com/us/en/support/articles/robinhood-gold-card-waitlist/ |
+| Capital One SavorOne | 3% streaming and $39 annual fee; corrected its contradictory no-fee benefit text | https://www.capitalone.com/credit-cards/savorone/ |
 | Capital One Savor | 3% on popular streaming services; supermarket bonus excludes Walmart / Target | https://www.capitalone.com/credit-cards/savor/ |
 | United Explorer | $100 TravelBank credit after $10,000 purchases each calendar year | https://www.chase.com/personal/credit-cards/united/united-explorer-card |
 | Bonvoy Boundless | Two $50 credits, each after $250 in eligible direct airline purchases in its window; new applications June 4–December 31, 2026; second window January–June 2027; existing eligible holders require activation and have different windows | https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/boundless |

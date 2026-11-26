@@ -87,7 +87,7 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
   const steps = [];
   for (const t of (target ? applyTimeline(nowWallet, p) : nowPlan.timeline)) {
     const id = t.cardId;
-    const net = Math.round(gainIn(id, nowWallet, p) - (t.how === "upgrade" ? 0 : applicationHurdle(BY_ID[id], p, nowWallet).total));
+    const net = Math.round(gainIn(id, nowWallet, p) - (t.how === "apply" ? applicationHurdle(BY_ID[id], p, nowWallet).total : 0));
     /* 5e.4: a closed card is only ever an upgrade path. */
     const notes = t.how === "upgrade" && nowRes.upgrades?.[id] ? [`Upgrade path: product-change your ${cardDisplayName(BY_ID[nowRes.upgrades[id]])} — this card isn't open to new applicants.`] : [...t.notes];
     steps.push({ era: "now", cardId: id, how: t.how, month: t.month, why: whyFor(id, nowWallet, p, false), net, notes, drop: [] });
@@ -99,7 +99,8 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
     const nowAdds = nowWallet.filter((id) => !p.cardsHeld.includes(id) && eligibility(BY_ID[id], p).how === "apply");
     /* By then the now-wallet is theirs; its new cards count toward 5/24. */
     const f = normalizeProfile({ ...fp, cardsHeld: nowWallet, credit: { ...fp.credit, newCards24mo: p.credit.newCards24mo + nowAdds.length } });
-    const res = buildPlan(f).best;
+    const laterPlan = buildPlan(f);
+    const res = laterPlan.best;
     const lw = res.wallet;
     later = { wallet: lw, value: walletValue(lw, f, { normalized: true }), month: G };
     const adds = lw.filter((id) => !nowWallet.includes(id));
@@ -114,6 +115,7 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
     const when = (m) => monthName(m, today);
     /* A card that's upgraded (same account) isn't "dropped". */
     const upgradedFrom = new Set(adds.map((id) => eligibility(BY_ID[id], f)).filter((e) => e.how === "upgrade").map((e) => e.from));
+    for (const t of laterPlan.timeline) if (t.how === "downgrade" && t.from) upgradedFrom.add(t.from);
     const drops = nowWallet.filter((id) => !lw.includes(id) && !upgradedFrom.has(id)).map((id) => {
       const c = BY_ID[id];
       const fee = cardFee(c, f);
@@ -124,16 +126,18 @@ export function planRoadmap(rawProfile, { today = new Date() } = {}) {
     for (const id of adds) {
       const c = BY_ID[id];
       const el = eligibility(c, f);
-      const how = el.how === "upgrade" ? "upgrade" : "apply";
-      const m = how === "upgrade" ? Math.max(G, 0) : month;
+      const transition = laterPlan.timeline.find(t => t.cardId === id);
+      const how = transition?.how || (el.how === "upgrade" ? "upgrade" : "apply");
+      const m = how !== "apply" ? Math.max(G, 0) : month;
       const notes = [];
+      if (how === "downgrade") notes.push("Product-change your existing account; no new application.");
       if (how === "upgrade") notes.push(`Upgrade path: product-change your ${cardDisplayName(BY_ID[el.from])} — this card isn't open to new applicants.`);
       if (how === "apply" && isChase(c)) {
         notes.push(count524 >= 5 ? "Chase usually declines at 5 or more new cards in 24 months — wait until older ones age off." : `Apply while you're under 5/24 (you'd be at ${count524 + 1}/24 after this).`);
         if (/^cs[pr]$/.test(id)) notes.push("Chase pays a Sapphire bonus only if you haven't had one in the last 48 months.");
       }
       if (how === "apply" && c.issuer === "American Express") notes.push("Amex welcome bonuses are once per card, per lifetime.");
-      const net = Math.round(gainIn(id, lw, f) - (how === "upgrade" ? 0 : applicationHurdle(c, f, lw).total));
+      const net = Math.round(gainIn(id, lw, f) - (how === "apply" ? applicationHurdle(c, f, lw).total : 0));
       laterSteps.push({ era: "later", cardId: id, how, month: m, why: whyFor(id, lw, f, true, when(m)), net, notes, drop: [], saves524: how === "apply" && isChase(c) });
       if (how === "apply") { month += APPLY_SPACING_MONTHS; count524 += 1; }
     }

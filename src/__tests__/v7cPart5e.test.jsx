@@ -15,11 +15,22 @@ import { isChase } from "../engine/v5/methodology.js";
 import { STEP_DEFS } from "../state/surveyAnswers.js";
 import { saveV5Profile, loadV5Profile } from "../state/v5Profile.js";
 import Survey from "../components/v5/survey/Survey.jsx";
+import PlanTimeline from "../components/v7/PlanTimeline.jsx";
 
 afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 const TODAY = new Date(Date.UTC(2026, 10, 22));
 const cont = () => fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+it("a downgrade with zero application comfort is never labeled Apply", () => {
+  const profile = { cardsHeld: ["csp"], newCardComfort: 0, maxCards: 1 };
+  const r = planRoadmap(profile, { today: TODAY });
+  expect(r.steps.some(s => s.how === "downgrade")).toBe(true);
+  expect(r.steps.some(s => s.how === "apply")).toBe(false);
+  render(<PlanTimeline profile={profile} today={TODAY} />);
+  const timeline = screen.getByTestId("plan-timeline");
+  expect(within(timeline).getByText(/^Downgrade:/)).toBeInTheDocument();
+  expect(within(timeline).queryByText(/^Apply:/)).toBeNull();
+});
 const STUDENT = {
   cardsHeld: ["freedom-unlimited"], spend: { dining: 150, groceries: 200, other: 150, online: 50 }, travel: { trips: 1 }, credit: { score: 720 }, wants: "travel",
   partnerPicks: { chase: ["hyatt", "united"] }, brands: { airlines: ["united"], hotels: ["hyatt"] },

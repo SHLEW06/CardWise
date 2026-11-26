@@ -2,7 +2,7 @@ import { it, expect } from "vitest";
 import { BY_ID } from "../data/cards/index.js";
 import { normalizeProfile } from "../engine/profileDefaults.js";
 import { earnRate, benefitBreakdown } from "../engine/v5/value.js";
-import { walletValue } from "../engine/v5/methodology.js";
+import { walletValue, optimalWallet } from "../engine/v5/methodology.js";
 import { buildPlan } from "../engine/v5/plan.js";
 
 it("Savor earns 3% on streaming", () => expect(BY_ID.savor.earnRates.Streaming).toBe(3));
@@ -50,4 +50,10 @@ it("a person choosing their first single card gets a no-fee available option", (
   const p = buildPlan({ maxCards: 1, wants: "travel", credit: { score: 790 }, travel: { trips: 8, lounges: "yes" }, brands: { habits: { clear: { answer: "pay" } } } });
   expect(p.wallet).toHaveLength(1);
   expect(BY_ID[p.wallet[0]].annualFee).toBe(0);
+});
+it("the search evaluator counts a legacy spend condition using routed spend too", () => {
+  const p = { cardsHeld: ["active-cash"], maxCards: 2, credit: { score: 790 }, wants: "travel", travel: { tripRows: [{ from: "ATL", to: "LAX", trips: 4 }], bags: { perTrip: 0, share: 0 } }, spend: { flights: 1000 } };
+  const r = optimalWallet(p, { mode: "wallet", catalog: [BY_ID["delta-gold"], BY_ID["active-cash"]] });
+  expect(r.wallet).toContain("delta-gold");
+  expect(r.value.benefits.find(x => /Delta flight credit/.test(x.label))?.value).toBe(200);
 });

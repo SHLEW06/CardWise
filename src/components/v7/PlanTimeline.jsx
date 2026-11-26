@@ -9,7 +9,7 @@ import { planRoadmap } from "../../engine/v5/futurePlan.js";
 import CardFace from "../v5/CardFace.jsx";
 
 const signed = (n) => `${n >= 0 ? "+" : "−"}$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
-const HOW = { apply: "Apply", upgrade: "Upgrade path", change: "Change" };
+const HOW = { apply: "Apply", upgrade: "Upgrade path", downgrade: "Downgrade", cancel: "Cancel", change: "Change" };
 
 export default function PlanTimeline({ profile, today }) {
   const r = useMemo(() => planRoadmap(profile, today ? { today } : {}), [profile, today]);

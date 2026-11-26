@@ -24,6 +24,7 @@ import { applyNightBudget } from "./hotelCredits.js";
 import { cardPointValue, isUnlocked, CASH_LIKE } from "./pointValues.js";
 import { TRANSFER_RULES } from "../../data/programs.js";
 import { BANK_CURRENCIES, backPct } from "./valuation.js";
+import { spendThreshold } from "../../data/creditClass.js";
 import { applicationHurdle, minHurdle, worthVerdict, keeperHotelOptions, airlineKeeperValue } from "./apply.js";
 
 export const BASELINE_PCT = 2;           // "Rewards over a 2% card"
@@ -227,7 +228,7 @@ function makeEvaluator(profile, cards, { optimistic = false } = {}) {
   const fees = Object.fromEntries(cards.map((c) => [c.id, cardFee(c, profile)]));
   /* Benefits barely depend on the wallet: only spend-gated perks and
      anniversary points do. Cache the rest. */
-  const gated = (c) => (c.credits || []).some(cr => cr.requiresSpend || cr.spend) || (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
+  const gated = (c) => (c.credits || []).some(cr => spendThreshold(cr) > 0) || (c.freeNightCertificates || []).some((n) => n.spend) || (c.companionCertificates || []).some((n) => n.spend) || !!c.anniversaryPoints;
   const fixed = {};
   const allIds = cards.map((c) => c.id);
   for (const c of cards) if (optimistic || !gated(c)) fixed[c.id] = benefitBreakdown(c, profile, { ...(optimistic ? { wallet: allIds, cardSpend: totalAnnualSpend(profile), categorySpend: annualSpend(profile) } : {}), deferNightBudget: true }).items;
