@@ -1,0 +1,2054 @@
+{
+  "sensitivity": [
+    {
+      "key": "travel.bags",
+      "question": "checked bags",
+      "unanswered": 80,
+      "changesFirstCard": 14,
+      "changesPlan": 15,
+      "changesEither": 15,
+      "testedAnswers": "No checked bags; 1 bag per trip; 2 bags per trip; 3+ bags per trip"
+    },
+    {
+      "key": "travel.hotelNights",
+      "question": "paid hotel nights",
+      "unanswered": 82,
+      "changesFirstCard": 26,
+      "changesPlan": 57,
+      "changesEither": 58,
+      "testedAnswers": "None; 1–3; 4–9; 10–19; 20+"
+    },
+    {
+      "key": "rotatingActivation",
+      "question": "quarterly activation",
+      "unanswered": 200,
+      "changesFirstCard": 35,
+      "changesPlan": 82,
+      "changesEither": 82,
+      "testedAnswers": "yes; no; unsure"
+    },
+    {
+      "key": "credit.score",
+      "question": "credit history",
+      "unanswered": 51,
+      "changesFirstCard": 44,
+      "changesPlan": 47,
+      "changesEither": 47,
+      "testedAnswers": "No credit yet; Below 580; 580–669; 670–739; 740–799; 800+"
+    },
+    {
+      "key": "isStudent",
+      "question": "student eligibility",
+      "unanswered": 200,
+      "changesFirstCard": 0,
+      "changesPlan": 0,
+      "changesEither": 0,
+      "testedAnswers": "Yes; No"
+    },
+    {
+      "key": "paymentBehavior",
+      "question": "paying in full",
+      "unanswered": 200,
+      "changesFirstCard": 173,
+      "changesPlan": 171,
+      "changesEither": 174,
+      "testedAnswers": "Always; Sometimes carry a balance; Usually carry a balance"
+    },
+    {
+      "key": "canAffordDeposit",
+      "question": "deposit affordability",
+      "unanswered": 200,
+      "changesFirstCard": 11,
+      "changesPlan": 11,
+      "changesEither": 11,
+      "testedAnswers": "Yes; No"
+    }
+  ],
+  "distribution": [
+    {
+      "cardId": "robinhood-gold",
+      "before": 63,
+      "after": 0
+    },
+    {
+      "cardId": "marriott-boundless",
+      "before": 26,
+      "after": 1
+    },
+    {
+      "cardId": "freedom-flex",
+      "before": 16,
+      "after": 0
+    },
+    {
+      "cardId": "united-explorer",
+      "before": 11,
+      "after": 4
+    },
+    {
+      "cardId": "bilt-blue",
+      "before": 10,
+      "after": 12
+    },
+    {
+      "cardId": "discover-it-secured",
+      "before": 10,
+      "after": 0
+    },
+    {
+      "cardId": "No new application",
+      "before": 10,
+      "after": 34
+    },
+    {
+      "cardId": "citi-strata-no-fee",
+      "before": 6,
+      "after": 0
+    },
+    {
+      "cardId": "discover-student",
+      "before": 6,
+      "after": 0
+    },
+    {
+      "cardId": "sw-premier",
+      "before": 5,
+      "after": 0
+    },
+    {
+      "cardId": "active-cash",
+      "before": 3,
+      "after": 91
+    },
+    {
+      "cardId": "delta-gold",
+      "before": 3,
+      "after": 2
+    },
+    {
+      "cardId": "delta-plat",
+      "before": 3,
+      "after": 0
+    },
+    {
+      "cardId": "freedom-rise",
+      "before": 3,
+      "after": 16
+    },
+    {
+      "cardId": "usb-altitude-go",
+      "before": 3,
+      "after": 10
+    },
+    {
+      "cardId": "bcp",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "cardId": "citi-aa-globe",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "cardId": "citi-aa-platinum",
+      "before": 2,
+      "after": 5
+    },
+    {
+      "cardId": "citi-strata",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "cardId": "costco-citi",
+      "before": 2,
+      "after": 3
+    },
+    {
+      "cardId": "savor",
+      "before": 2,
+      "after": 0
+    },
+    {
+      "cardId": "wf-autograph",
+      "before": 2,
+      "after": 2
+    },
+    {
+      "cardId": "aa-executive",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "cardId": "bilt-palladium",
+      "before": 1,
+      "after": 1
+    },
+    {
+      "cardId": "c1-secured",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "cardId": "discover-it",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "cardId": "one-key",
+      "before": 1,
+      "after": 1
+    },
+    {
+      "cardId": "savor-one",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "cardId": "sw-plus",
+      "before": 1,
+      "after": 1
+    },
+    {
+      "cardId": "sw-priority",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "cardId": "aa-mileup",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "alaska-visa",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "amex-bce",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "bilt-obsidian",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "citi-double-cash",
+      "before": 0,
+      "after": 6
+    },
+    {
+      "cardId": "freedom-unlimited",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "cardId": "hyatt",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "marriott-brilliant",
+      "before": 0,
+      "after": 1
+    },
+    {
+      "cardId": "usb-altitude-connect",
+      "before": 0,
+      "after": 2
+    },
+    {
+      "cardId": "venture",
+      "before": 0,
+      "after": 1
+    }
+  ],
+  "formerGold": [
+    {
+      "id": "P02",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 182,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 181
+      },
+      "delta": 1,
+      "planNet": 182,
+      "wallet": [
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P05",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 272,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 272
+      },
+      "delta": 0,
+      "planNet": 272,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P08",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "aa-mileup",
+      "disposition": "apply",
+      "soloNet": 0,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 0
+      },
+      "delta": 0,
+      "planNet": 0,
+      "wallet": [
+        "aa-mileup"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P09",
+      "wasHeld": false,
+      "oldFirst": "bilt-blue",
+      "chosen": "bilt-blue",
+      "disposition": "apply",
+      "soloNet": 478,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 475
+      },
+      "delta": 3,
+      "planNet": 688,
+      "wallet": [
+        "bilt-blue",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P11",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P12",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 466,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 466
+      },
+      "delta": 0,
+      "planNet": 466,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P13",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P14",
+      "wasHeld": false,
+      "oldFirst": "marriott-boundless",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1092,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1092
+      },
+      "delta": 0,
+      "planNet": 1267,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P15",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "citi-double-cash",
+      "disposition": "apply",
+      "soloNet": 876,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 912
+      },
+      "delta": -36,
+      "planNet": 1341,
+      "wallet": [
+        "citi-double-cash",
+        "citi-strata"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P16",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "citi-double-cash",
+      "disposition": "apply",
+      "soloNet": 900,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 936
+      },
+      "delta": -36,
+      "planNet": 1556,
+      "wallet": [
+        "citi-aa-platinum",
+        "citi-double-cash",
+        "citi-strata"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P17",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 554,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 554
+      },
+      "delta": 0,
+      "planNet": 554,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P18",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 566,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 566
+      },
+      "delta": 0,
+      "planNet": 566,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P19",
+      "wasHeld": false,
+      "oldFirst": "delta-plat",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 912,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 912
+      },
+      "delta": 0,
+      "planNet": 1217,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go",
+        "usb-altitude-connect"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P20",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 912,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 912
+      },
+      "delta": 0,
+      "planNet": 1087,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P25",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "citi-double-cash",
+      "disposition": "apply",
+      "soloNet": 876,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 912
+      },
+      "delta": -36,
+      "planNet": 1443,
+      "wallet": [
+        "citi-double-cash",
+        "citi-strata",
+        "usb-altitude-connect"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P26",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "marriott-brilliant",
+      "disposition": "apply",
+      "soloNet": 1125,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1032
+      },
+      "delta": 93,
+      "planNet": 1461,
+      "wallet": [
+        "marriott-brilliant",
+        "bilt-palladium",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P28",
+      "wasHeld": false,
+      "oldFirst": "delta-plat",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 503,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 503
+      },
+      "delta": 0,
+      "planNet": 503,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P29",
+      "wasHeld": false,
+      "oldFirst": "bcp",
+      "chosen": "freedom-flex",
+      "disposition": "downgrade",
+      "soloNet": 320,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": -138,
+      "planNet": 412,
+      "wallet": [
+        "freedom-unlimited",
+        "freedom-flex"
+      ],
+      "action": "downgrade"
+    },
+    {
+      "id": "P32",
+      "wasHeld": false,
+      "oldFirst": "freedom-flex",
+      "chosen": "citi-double-cash",
+      "disposition": "kept",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "citi-double-cash"
+      ],
+      "action": null
+    },
+    {
+      "id": "P35",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "active-cash",
+        "apple-card"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P36",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 389,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": -69,
+      "planNet": 473,
+      "wallet": [
+        "usb-altitude-go",
+        "quicksilver",
+        "discover-it"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P37",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 480,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 480
+      },
+      "delta": 0,
+      "planNet": 480,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P39",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 542,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 542
+      },
+      "delta": 0,
+      "planNet": 542,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P42",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "venture",
+      "disposition": "apply",
+      "soloNet": 2411,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1728
+      },
+      "delta": 683,
+      "planNet": 2748,
+      "wallet": [
+        "venture",
+        "wf-autograph"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P43",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 492,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 492
+      },
+      "delta": 0,
+      "planNet": 492,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P44",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 550,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 550
+      },
+      "delta": 0,
+      "planNet": 664,
+      "wallet": [
+        "active-cash",
+        "costco-citi"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P45",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P48",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 458,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": 0,
+      "planNet": 458,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P50",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 354,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 354
+      },
+      "delta": 0,
+      "planNet": 354,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P51",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "bilt-blue",
+      "disposition": "apply",
+      "soloNet": 523,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 492
+      },
+      "delta": 31,
+      "planNet": 665,
+      "wallet": [
+        "bilt-blue",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P52",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1310,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1310
+      },
+      "delta": 0,
+      "planNet": 1590,
+      "wallet": [
+        "active-cash",
+        "wf-autograph"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P53",
+      "wasHeld": false,
+      "oldFirst": "citi-aa-globe",
+      "chosen": "citi-aa-platinum",
+      "disposition": "apply",
+      "soloNet": 811,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2231
+      },
+      "delta": -1420,
+      "planNet": 3483,
+      "wallet": [
+        "active-cash",
+        "wf-autograph",
+        "citi-aa-platinum"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P54",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 302,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 302
+      },
+      "delta": 0,
+      "planNet": 302,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P56",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1044,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1044
+      },
+      "delta": 0,
+      "planNet": 1219,
+      "wallet": [
+        "active-cash",
+        "wf-autograph"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P57",
+      "wasHeld": false,
+      "oldFirst": "costco-citi",
+      "chosen": "costco-citi",
+      "disposition": "apply",
+      "soloNet": 521,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 413
+      },
+      "delta": 108,
+      "planNet": 527,
+      "wallet": [
+        "costco-citi",
+        "amazon-prime",
+        "delta-blue",
+        "united-gateway"
+      ],
+      "action": "downgrade"
+    },
+    {
+      "id": "P59",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 467,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 466
+      },
+      "delta": 1,
+      "planNet": 615,
+      "wallet": [
+        "usb-altitude-go",
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P64",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 523,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 523
+      },
+      "delta": 0,
+      "planNet": 523,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P65",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 2016,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2016
+      },
+      "delta": 0,
+      "planNet": 2346,
+      "wallet": [
+        "active-cash",
+        "wf-autograph"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P66",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1042,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1042
+      },
+      "delta": 0,
+      "planNet": 1217,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P67",
+      "wasHeld": false,
+      "oldFirst": "sw-premier",
+      "chosen": "sw-plus",
+      "disposition": "apply",
+      "soloNet": 461,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1166
+      },
+      "delta": -705,
+      "planNet": 1802,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go",
+        "sw-plus"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P70",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 449,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 449
+      },
+      "delta": 0,
+      "planNet": 449,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P71",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "united-explorer",
+      "disposition": "apply",
+      "soloNet": 2543,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2365
+      },
+      "delta": 178,
+      "planNet": 3672,
+      "wallet": [
+        "united-explorer",
+        "active-cash",
+        "csp",
+        "freedom-flex",
+        "delta-blue"
+      ],
+      "action": "downgrade"
+    },
+    {
+      "id": "P72",
+      "wasHeld": false,
+      "oldFirst": "sw-premier",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 2119,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2119
+      },
+      "delta": 0,
+      "planNet": 2511,
+      "wallet": [
+        "active-cash",
+        "wf-autograph",
+        "costco-citi",
+        "amazon-prime"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P73",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 548,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 548
+      },
+      "delta": 0,
+      "planNet": 654,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P74",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 247,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 247
+      },
+      "delta": 0,
+      "planNet": 247,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P76",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1166,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1166
+      },
+      "delta": 0,
+      "planNet": 1284,
+      "wallet": [
+        "active-cash",
+        "freedom-flex",
+        "apple-card"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P77",
+      "wasHeld": false,
+      "oldFirst": "sw-plus",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1118,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1118
+      },
+      "delta": 0,
+      "planNet": 1447,
+      "wallet": [
+        "active-cash",
+        "costco-citi",
+        "freedom-flex"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P80",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 499,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 499
+      },
+      "delta": 0,
+      "planNet": 608,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P83",
+      "wasHeld": false,
+      "oldFirst": "citi-strata",
+      "chosen": "wf-autograph",
+      "disposition": "apply",
+      "soloNet": 1000,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1298
+      },
+      "delta": -298,
+      "planNet": 1079,
+      "wallet": [
+        "wf-autograph",
+        "venture-x",
+        "boa-customized"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P85",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1037,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1037
+      },
+      "delta": 0,
+      "planNet": 1212,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P87",
+      "wasHeld": false,
+      "oldFirst": "marriott-boundless",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1181,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1181
+      },
+      "delta": 0,
+      "planNet": 1281,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go",
+        "hyatt"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P88",
+      "wasHeld": false,
+      "oldFirst": "marriott-boundless",
+      "chosen": "costco-citi",
+      "disposition": "apply",
+      "soloNet": 664,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 533
+      },
+      "delta": 131,
+      "planNet": 828,
+      "wallet": [
+        "costco-citi",
+        "bilt-palladium",
+        "savor"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P94",
+      "wasHeld": false,
+      "oldFirst": "sw-priority",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 2378,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2378
+      },
+      "delta": 0,
+      "planNet": 2778,
+      "wallet": [
+        "active-cash",
+        "costco-citi"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P98",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "alaska-visa",
+      "disposition": "apply",
+      "soloNet": 2563,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2186
+      },
+      "delta": 377,
+      "planNet": 3784,
+      "wallet": [
+        "bilt-palladium",
+        "alaska-visa",
+        "bilt-obsidian"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P99",
+      "wasHeld": false,
+      "oldFirst": "aa-executive",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 2078,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2078
+      },
+      "delta": 0,
+      "planNet": 2357,
+      "wallet": [
+        "active-cash",
+        "wf-autograph"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P101",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "citi-double-cash",
+      "disposition": "apply",
+      "soloNet": 1150,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1228
+      },
+      "delta": -78,
+      "planNet": 1684,
+      "wallet": [
+        "citi-double-cash",
+        "citi-strata",
+        "united-explorer",
+        "discover-it"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P105",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 521,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 521
+      },
+      "delta": 0,
+      "planNet": 634,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P107",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "united-explorer",
+      "disposition": "apply",
+      "soloNet": 792,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2432
+      },
+      "delta": -1640,
+      "planNet": 3742,
+      "wallet": [
+        "active-cash",
+        "wf-autograph",
+        "united-explorer"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P109",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1104,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1104
+      },
+      "delta": 0,
+      "planNet": 1279,
+      "wallet": [
+        "active-cash",
+        "usb-altitude-go"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P110",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 374,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 374
+      },
+      "delta": 0,
+      "planNet": 374,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P112",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 2225,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2225
+      },
+      "delta": 0,
+      "planNet": 2526,
+      "wallet": [
+        "active-cash",
+        "wf-autograph",
+        "discover-it"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P113",
+      "wasHeld": false,
+      "oldFirst": "united-explorer",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1253,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1253
+      },
+      "delta": 0,
+      "planNet": 1556,
+      "wallet": [
+        "active-cash",
+        "wf-autograph",
+        "amex-bce"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P116",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "bilt-obsidian",
+      "disposition": "apply",
+      "soloNet": 1401,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1036
+      },
+      "delta": 365,
+      "planNet": 1679,
+      "wallet": [
+        "bilt-obsidian",
+        "usb-altitude-connect"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P118",
+      "wasHeld": false,
+      "oldFirst": "delta-gold",
+      "chosen": "costco-citi",
+      "disposition": "apply",
+      "soloNet": 1836,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 2354
+      },
+      "delta": -518,
+      "planNet": 2731,
+      "wallet": [
+        "active-cash",
+        "costco-citi"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P120",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 487,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 487
+      },
+      "delta": 0,
+      "planNet": 487,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P123",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 428,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 428
+      },
+      "delta": 0,
+      "planNet": 428,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P129",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 519,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 514
+      },
+      "delta": 5,
+      "planNet": 689,
+      "wallet": [
+        "usb-altitude-go",
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P132",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 576,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 576
+      },
+      "delta": 0,
+      "planNet": 576,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P135",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 362,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 362
+      },
+      "delta": 0,
+      "planNet": 362,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P138",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 355,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 355
+      },
+      "delta": 0,
+      "planNet": 355,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P141",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 432,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 432
+      },
+      "delta": 0,
+      "planNet": 432,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P144",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1154,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1154
+      },
+      "delta": 0,
+      "planNet": 1154,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P145",
+      "wasHeld": false,
+      "oldFirst": "freedom-flex",
+      "chosen": "quicksilver",
+      "disposition": "kept",
+      "soloNet": 189,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 252
+      },
+      "delta": -63,
+      "planNet": 189,
+      "wallet": [
+        "quicksilver"
+      ],
+      "action": null
+    },
+    {
+      "id": "P146",
+      "wasHeld": false,
+      "oldFirst": "freedom-flex",
+      "chosen": "quicksilver",
+      "disposition": "kept",
+      "soloNet": 189,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 252
+      },
+      "delta": -63,
+      "planNet": 189,
+      "wallet": [
+        "quicksilver"
+      ],
+      "action": null
+    },
+    {
+      "id": "P147",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 381,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 428
+      },
+      "delta": -47,
+      "planNet": 454,
+      "wallet": [
+        "usb-altitude-go",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P148",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "usb-altitude-go",
+      "disposition": "apply",
+      "soloNet": 381,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 428
+      },
+      "delta": -47,
+      "planNet": 454,
+      "wallet": [
+        "usb-altitude-go",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P149",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 576,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 576
+      },
+      "delta": 0,
+      "planNet": 576,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P150",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 576,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 576
+      },
+      "delta": 0,
+      "planNet": 576,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P151",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1154,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1154
+      },
+      "delta": 0,
+      "planNet": 1154,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P152",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 1154,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1154
+      },
+      "delta": 0,
+      "planNet": 1154,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P157",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 360,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 360
+      },
+      "delta": 0,
+      "planNet": 360,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P158",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 360,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 360
+      },
+      "delta": 0,
+      "planNet": 360,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P159",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 360,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 360
+      },
+      "delta": 0,
+      "planNet": 360,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P160",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 360,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 360
+      },
+      "delta": 0,
+      "planNet": 360,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P181",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 456,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 456
+      },
+      "delta": 0,
+      "planNet": 456,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P182",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 456,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 456
+      },
+      "delta": 0,
+      "planNet": 456,
+      "wallet": [
+        "active-cash"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P197",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 576,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 576
+      },
+      "delta": 0,
+      "planNet": 576,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P198",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 576,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 576
+      },
+      "delta": 0,
+      "planNet": 576,
+      "wallet": [
+        "active-cash",
+        "quicksilver"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P199",
+      "wasHeld": true,
+      "oldFirst": "discover-it",
+      "chosen": "robinhood-gold",
+      "disposition": "kept",
+      "soloNet": 720,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 480
+      },
+      "delta": 240,
+      "planNet": 720,
+      "wallet": [
+        "robinhood-gold"
+      ],
+      "action": null
+    },
+    {
+      "id": "P200",
+      "wasHeld": false,
+      "oldFirst": "robinhood-gold",
+      "chosen": "active-cash",
+      "disposition": "apply",
+      "soloNet": 480,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 480
+      },
+      "delta": 0,
+      "planNet": 480,
+      "wallet": [
+        "active-cash",
+        "discover-it"
+      ],
+      "action": "apply"
+    }
+  ],
+  "balanceCheck": {
+    "originalKnown": 4,
+    "supplemental": 12,
+    "total": 16,
+    "feeViolations": 0,
+    "applicationViolations": 0,
+    "interestFirstViolations": 0
+  },
+  "belowFloor": [
+    {
+      "id": "P29",
+      "wasHeld": false,
+      "oldFirst": "bcp",
+      "chosen": "freedom-flex",
+      "disposition": "downgrade",
+      "soloNet": 320,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 458
+      },
+      "delta": -138,
+      "planNet": 412,
+      "wallet": [
+        "freedom-unlimited",
+        "freedom-flex"
+      ],
+      "action": "downgrade"
+    },
+    {
+      "id": "P83",
+      "wasHeld": false,
+      "oldFirst": "citi-strata",
+      "chosen": "wf-autograph",
+      "disposition": "apply",
+      "soloNet": 1000,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1298
+      },
+      "delta": -298,
+      "planNet": 1079,
+      "wallet": [
+        "wf-autograph",
+        "venture-x",
+        "boa-customized"
+      ],
+      "action": "apply"
+    },
+    {
+      "id": "P145",
+      "wasHeld": false,
+      "oldFirst": "freedom-flex",
+      "chosen": "quicksilver",
+      "disposition": "kept",
+      "soloNet": 189,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 252
+      },
+      "delta": -63,
+      "planNet": 189,
+      "wallet": [
+        "quicksilver"
+      ],
+      "action": null
+    },
+    {
+      "id": "P146",
+      "wasHeld": false,
+      "oldFirst": "freedom-flex",
+      "chosen": "quicksilver",
+      "disposition": "kept",
+      "soloNet": 189,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 252
+      },
+      "delta": -63,
+      "planNet": 189,
+      "wallet": [
+        "quicksilver"
+      ],
+      "action": null
+    }
+  ]
+}

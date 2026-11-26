@@ -1,0 +1,1389 @@
+[
+  {
+    "id": "B01",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [],
+    "net": 0,
+    "score": null,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $217 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 217,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": null,
+      "disposition": "none",
+      "soloNet": null,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 0
+    }
+  },
+  {
+    "id": "B02",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "discover-it-secured"
+    ],
+    "net": 216,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $496 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 496,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "discover-it-secured",
+        "action": "keep",
+        "adds": 216,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "discover-it-secured",
+      "disposition": "kept",
+      "soloNet": 216,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 216
+    }
+  },
+  {
+    "id": "B03",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "c1-platinum"
+    ],
+    "net": 0,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $672 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 672,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "c1-platinum",
+        "action": "keep",
+        "adds": 0,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "c1-platinum",
+      "disposition": "kept",
+      "soloNet": 0,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 0
+    }
+  },
+  {
+    "id": "B04",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "quicksilver"
+    ],
+    "net": 414,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $1,134 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 1134,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "quicksilver",
+        "action": "keep",
+        "adds": 414,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "quicksilver",
+      "disposition": "kept",
+      "soloNet": 414,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 414
+    }
+  },
+  {
+    "id": "B05",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [],
+    "net": 0,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $2,125 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 2125,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "csr",
+        "action": "cancel",
+        "adds": 582,
+        "fee": 795
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": null,
+      "disposition": "none",
+      "soloNet": null,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 0
+    }
+  },
+  {
+    "id": "B06",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "active-cash"
+    ],
+    "net": 1584,
+    "score": 87,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $3,600 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 3600,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "amex-gold",
+        "action": "cancel",
+        "to": "amex-green",
+        "adds": -205,
+        "fee": 325,
+        "gain": 55
+      },
+      {
+        "cardId": "active-cash",
+        "action": "keep",
+        "adds": 689,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "active-cash",
+      "disposition": "kept",
+      "soloNet": 1584,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 1584
+      },
+      "delta": 0,
+      "planNet": 1584
+    }
+  },
+  {
+    "id": "B07",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [],
+    "net": 0,
+    "score": null,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $270 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 270,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": null,
+      "disposition": "none",
+      "soloNet": null,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 0
+    }
+  },
+  {
+    "id": "B08",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "discover-student"
+    ],
+    "net": 329,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $504 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 504,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "discover-student",
+        "action": "keep",
+        "adds": 329,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "discover-student",
+      "disposition": "kept",
+      "soloNet": 329,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 329
+    }
+  },
+  {
+    "id": "B09",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [],
+    "net": 0,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $1,056 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 1056,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "quicksilver-one",
+        "action": "cancel",
+        "adds": 353,
+        "fee": 39
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": null,
+      "disposition": "none",
+      "soloNet": null,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 0
+    }
+  },
+  {
+    "id": "B10",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "freedom-unlimited"
+    ],
+    "net": 1953,
+    "score": 65,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $5,720 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 5720,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "csr",
+        "action": "downgrade",
+        "to": "freedom-unlimited",
+        "adds": -471,
+        "fee": 795,
+        "gain": 822
+      },
+      {
+        "cardId": "amex-gold",
+        "action": "cancel",
+        "adds": 143,
+        "fee": 325
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "freedom-unlimited",
+      "disposition": "downgrade",
+      "soloNet": 1953,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 1953
+    }
+  },
+  {
+    "id": "B11",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "robinhood-gold"
+    ],
+    "net": 1134,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $1,100 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 1100,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "robinhood-gold",
+        "action": "keep",
+        "adds": 1134,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "robinhood-gold",
+      "disposition": "kept",
+      "soloNet": 1134,
+      "benchmark": null,
+      "delta": null,
+      "planNet": 1134
+    }
+  },
+  {
+    "id": "B12",
+    "firstCard": null,
+    "firstApplication": null,
+    "action": "pay-balance",
+    "wallet": [
+      "active-cash",
+      "discover-it"
+    ],
+    "net": 1122,
+    "score": 100,
+    "assumptions": [
+      {
+        "key": "phonePlanShare",
+        "step": "spend",
+        "label": "bills are unconfirmed; no phone-plan bonus"
+      },
+      {
+        "key": "biltCashAnnualUse",
+        "step": "spend",
+        "label": "Bilt Cash only has value for unlocking housing points"
+      },
+      {
+        "key": "travel.lounges",
+        "step": "travel",
+        "label": "you do not want lounge access"
+      },
+      {
+        "key": "travel.hotelChoice",
+        "step": "travel",
+        "label": "no hotel program unless you choose one"
+      },
+      {
+        "key": "travel.booking",
+        "step": "travel",
+        "label": "you book directly"
+      },
+      {
+        "key": "travel.companions",
+        "step": "travel",
+        "label": "no lounge guests"
+      },
+      {
+        "key": "travel.hotelBudget",
+        "step": "travel",
+        "label": "hotel prices use an estimated budget until you enter yours"
+      },
+      {
+        "key": "travel.hotelMarkup",
+        "step": "travel",
+        "label": "estimated hotel prices include 8% portal markup"
+      },
+      {
+        "key": "travel.hotelTaxes",
+        "step": "travel",
+        "label": "estimated hotel prices include 15% taxes and fees"
+      },
+      {
+        "key": "travel.breakfast",
+        "step": "travel",
+        "label": "breakfast has no extra value"
+      },
+      {
+        "key": "travel.onProperty",
+        "step": "travel",
+        "label": "no on-property spending"
+      },
+      {
+        "key": "travel.stayStyle",
+        "step": "travel",
+        "label": "hotel stay style is unconfirmed"
+      },
+      {
+        "key": "travel.airlinePerks",
+        "step": "travel",
+        "label": "no unselected airline perks"
+      },
+      {
+        "key": "spend",
+        "step": "spend",
+        "label": "unanswered spending categories are $0"
+      }
+    ],
+    "warnings": [
+      {
+        "key": "interest",
+        "message": "Your balance costs about $1,898 a year in interest (average balance × APR). Pause rewards applications and pay down the balance."
+      }
+    ],
+    "followUps": [],
+    "unanswered": [],
+    "deposit": null,
+    "interestCost": 1898,
+    "sources": [],
+    "timeline": [],
+    "heldAdvice": [
+      {
+        "cardId": "active-cash",
+        "action": "keep",
+        "adds": 411,
+        "fee": 0
+      },
+      {
+        "cardId": "discover-it",
+        "action": "keep",
+        "adds": 180,
+        "fee": 0
+      }
+    ],
+    "waitlistedApply": false,
+    "studentCards": [],
+    "annualFeeCards": [],
+    "feeCards": [],
+    "comparison": {
+      "chosen": "active-cash",
+      "disposition": "kept",
+      "soloNet": 942,
+      "benchmark": {
+        "cardId": "active-cash",
+        "net": 942
+      },
+      "delta": 0,
+      "planNet": 1122
+    }
+  }
+]
