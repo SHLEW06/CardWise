@@ -3,12 +3,19 @@ import { normalizeProfile } from "../profileDefaults.js";
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { optimizeWallet } from "./optimizer.js";
-import { walletValue, scoreFrom, heldCardVerdicts, optimalWallet } from "./methodology.js";
+import { walletValue, scoreFrom, heldCardVerdicts, optimalWallet, eligibility } from "./methodology.js";
 import { applyTimeline, timelineLabel, walletCards, useWhereRows, heldNotKept } from "./lab.js";
 import { cardFee } from "./value.js";
 import { assumptionsFor } from "./assumptions.js";
+import { counterfactualFollowUps } from "./followUps.js";
 
-export function buildPlan(raw = {}, options = {}) {
+export function bestNoDepositOption(profile, catalog = CARDS) {
+  return catalog.filter(c=>c.cardType!=="secured" && !c.specialty && cardFee(c,profile)===0 && eligibility(c,profile).ok)
+    .map(c=>({ cardId:c.id, name:cardDisplayName(c), net:walletValue([c.id],profile).net }))
+    .sort((a,b)=>b.net-a.net || a.cardId.localeCompare(b.cardId))[0] || null;
+}
+
+function buildPlanCore(raw = {}, options = {}) {
   const profile = normalizeProfile(raw);
   const carries = ["sometimes", "usually"].includes(profile.paymentBehavior);
   const recommendation = optimizeWallet(profile);
@@ -45,7 +52,11 @@ export function buildPlan(raw = {}, options = {}) {
   const assumptions = assumptionsFor(profile), warnings = [];
   const interestCost = carries && profile.averageBalance != null && profile.apr != null ? Math.round(profile.averageBalance * profile.apr) : null;
   const needsDepositAnswer = !wallet.length && profile.newCardComfort > 0 && !carries && (profile.credit.noHistory || profile.credit.score != null && profile.credit.score < 580) && profile.canAffordDeposit !== true;
+  let deposit = null;
   if (needsDepositAnswer) {
+    const bestNoDeposit = bestNoDepositOption(profile);
+    deposit = { question:"Can you afford a refundable security deposit?", step:"credit", bestNoDeposit,
+      reason:bestNoDeposit ? "An eligible no-deposit option is available at your stated credit level." : "There is no eligible no-deposit card in our catalog at the credit level you provided. A deposit answer is needed before considering a secured card." };
     const declined = profile.canAffordDeposit === false;
     warnings.push({ key: "deposit", message: declined ? "No eligible unsecured starter is on file at this credit level, and you said a deposit is unaffordable. No new card is recommended until an affordable option is confirmed." : "Before choosing a secured card, tell us whether you can afford its refundable deposit. We won't assume you can." });
     nextMove = { kind: declined ? "review-eligibility" : "confirm-deposit", cardId: null, title: declined ? "Review affordable ways to build credit" : "Can you afford a refundable security deposit?", impact: 0, sentence: warnings.at(-1).message, editStep: "credit" };
@@ -59,9 +70,24 @@ export function buildPlan(raw = {}, options = {}) {
     .map(c => ({ cardId: c.id, action: "waitlist", label: "Join waitlist", url: c.availabilitySource || c.verifiedSource }));
   const score = profile.cardsHeld.length ? scoreFrom(current.net, value.net) : null;
   const scoreText = score == null ? "Add your first card to see a wallet score." : `You're getting ${score}% of your best annual net value: $${current.net.toLocaleString("en-US")} now ÷ $${value.net.toLocaleString("en-US")} with the recommended wallet, after fees.`;
+  const result = { profile, current, best, wallet, nextMove, timeline, score, scoreText, assumptions, warnings, heldAdvice, interestCost, waitlist, deposit };
+  if (options.summaryOnly) return result;
   const previewWallet = options.wallet || (options.mode === "scratch" ? optimalWallet(profile, { maxCards: Math.min(profile.maxCards, profile.cardsHeld.length + profile.newCardComfort) }).wallet : wallet);
   const previewValue = previewWallet === wallet ? value : walletValue(previewWallet, profile);
   const previewDrops = previewWallet === wallet ? heldAdvice.filter(x => x.action !== "keep").map(x => ({ ...x, effect: Math.max(0, x.gain || -x.adds), reason: x.action === "left out" ? "This no-fee card is not needed for earning; keeping the account open costs nothing." : `The recommended wallet leaves out this account${x.fee ? ` with its $${x.fee} yearly fee` : ""}.` })) : heldNotKept(previewWallet, profile);
-  return { profile, current, best, wallet, nextMove, timeline, score, scoreText, assumptions, warnings, heldAdvice, interestCost, waitlist,
+  return { ...result,
     preview: { wallet: previewWallet, value: previewValue, tiles: walletCards(previewWallet, profile, previewValue), where: useWhereRows(previewValue, profile), dropped: previewDrops } };
+}
+
+const followUpCache = new Map();
+export function buildPlan(raw = {}, options = {}) {
+  const p = buildPlanCore(raw,options);
+  if (options.followUps===false) return { ...p, followUps:[] };
+  const key = JSON.stringify(p.profile);
+  if (!followUpCache.has(key)) {
+    const result = counterfactualFollowUps(p.profile,p,answered=>buildPlanCore(answered,{ summaryOnly:true }));
+    if (followUpCache.size>=256) followUpCache.delete(followUpCache.keys().next().value);
+    followUpCache.set(key,result);
+  }
+  return { ...p, followUps:followUpCache.get(key) };
 }
