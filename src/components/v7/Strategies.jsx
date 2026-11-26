@@ -5,6 +5,7 @@
    Wallet Lab and the plan. Replaces the Lab's sample wallets. */
 import React, { useMemo, useState } from "react";
 import { BY_ID } from "../../data/cards/index.js";
+import CardFace from "../v5/CardFace.jsx";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { rankStrategies } from "../../engine/v5/strategies.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
@@ -33,6 +34,11 @@ export default function Strategies({ profile: raw, onSaveProfile, onGo, onOpenCa
               <span className="num-ui strategy-net">{signed(s.net)} a year</span>
             </div>
             <p className="t-caption">{s.recipe}</p>
+            <div className="strategy-faces" data-testid={`strategy-faces-${s.key}`} style={{ gridColumn: "1 / -1", display: "flex", flexWrap: "wrap", gap: 10, margin: "4px 0 8px" }}>
+              {[...new Set([...s.keeps, ...s.adds])].filter((id) => BY_ID[id]).map((id) => (
+                <div key={id} style={{ width: 104 }}><CardFace card={BY_ID[id]} label={cardDisplayName(BY_ID[id])} /></div>
+              ))}
+            </div>
             {s.note && <p className="t-caption">{s.note}</p>}
             {s.business && <p className="t-caption">Needs a business card.</p>}
             {s.needsText && <p className="t-caption" data-testid="needs-spending">{s.needsText}.</p>}
