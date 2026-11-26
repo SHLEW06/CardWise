@@ -41,3 +41,7 @@ connector/calibration/*.suggested.json
 
 # v7f: hotel lists imported for personal use (awardhelper, edithotelsearch) — not public until the site owners agree
 src/data/hotels/properties.local.generated.js
+# owner workbook and its derived prices: local only (redistribution not cleared;
+# the public site ships facts only via programHotels.public.json)
+src/data/hotels/workbook.generated.json
+docs/data/hotel-workbook/

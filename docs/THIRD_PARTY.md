@@ -138,3 +138,32 @@ attribution; image failures use an explicit placeholder. The optional photo
 script uses the Wikipedia/Commons API and rejects entries without an accepted
 free-license URL; a supplied title/category/coordinate match is not a manual
 inspection of every photograph. Claude's visual review should check identities.
+
+## Public hotel directory: facts only (owner decision, 2026-11-26)
+
+The live Hotels tab ("Edit/THC hotels") lists every hotel in The Edit (Chase
+Sapphire Reserve), Fine Hotels + Resorts and The Hotel Collection (Amex) so
+cardholders can see where those hotel credits apply. The owner chose to
+publish **facts only**: `src/data/hotels/programHotels.public.json` holds each
+property's name, city, country, region, program memberships and coordinates
+(with their precision). It is built offline by `npm run hotels:public`
+(`scripts/build-program-hotels.mjs`) from the two local lists above and the
+owner's workbook.
+
+- Not published: prices, price observations, perks/benefit text, issuer
+  property URLs, or the workbook itself. `workbook.generated.json` and
+  `docs/data/hotel-workbook/` are git-ignored and were removed from the
+  unpushed branch history before the first push; the price browser
+  (`HotelDiscovery.jsx`) remains development-only.
+- `src/__tests__/hotelPublicBoundary.test.js` fails the build's tests if the
+  public file gains any other field or the production import graph reaches a
+  local list.
+- Attribution shown in the Hotels tab footer: "List via AwardHelper
+  (awardhelper.com)", "Edit list via edithotelsearch.com" and "Geocoding ©
+  OpenStreetMap contributors (Nominatim, ODbL)".
+- Missing coordinates were looked up once with OpenStreetMap Nominatim
+  (`scripts/geocode-hotels.mjs`; at most 1 request per second, a generic
+  client name, results cached in `.cache/hotel-geocode.json`). A hotel that
+  Nominatim could not find uses its city centre and is drawn as approximate.
+- Still outstanding: written permission from AwardHelper and edithotelsearch.
+  On a takedown request, remove the affected entries and rebuild.

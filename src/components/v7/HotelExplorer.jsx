@@ -5,7 +5,7 @@
    formula at their budget) and "I'd stay here / Too expensive / Not my
    style". The hotel-style question sits at the top. Prices are dated, never
    live; the person can add "I saw $___ a night". */
-import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import React, { lazy, Suspense, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
 import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, hotelMarksWith, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
@@ -15,13 +15,166 @@ import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { matchHotel } from "../../../extension/lib/rate.js";
 import HotelMapView from "./HotelMapView.jsx";
 import { buildMarkers } from "../../engine/v5/hotelWorld.js";
-import { programLabel, programInfo, PROGRAM_MENU_LABEL, PROGRAM_MENU_NOTE } from "../../engine/v5/hotelPrograms.js";
+import { programLabel, programInfo, programBadge, PROGRAM_INFO, PROGRAM_MENU_LABEL, PROGRAM_MENU_NOTE } from "../../engine/v5/hotelPrograms.js";
+import { walletValue, benefitsForCard } from "../../engine/v5/methodology.js";
+import "../../styles/v7/hotelDirectory.css";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
+const HOTEL_ATTRIBUTION = ["List via AwardHelper (awardhelper.com)", "Edit list via edithotelsearch.com", "Geocoding © OpenStreetMap contributors (Nominatim, ODbL)"];
 const PROGRAMS = ["edit", "fhr", "thc", "selectHotels2026"];
 const MARKS = [["stay", "I'd stay here"], ["expensive", "Too expensive"], ["style", "Not my style"]];
 const CREDIT_RULES = Object.fromEntries([BY_ID.csr, BY_ID["amex-plat"]].flatMap((c) => c.credits.filter((cr) => cr.hotelProgram?.programs).flatMap((cr) => cr.hotelProgram.programs.map((p) => [p, cr]))));
 const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : null; };
+
+/* ---- The two credits, read from the card data (never hard-coded here) ---- */
+const hotelCreditOf = (card, program) => card?.credits.find((cr) => cr.hotelProgram?.programs?.includes(program));
+const CARD_NAME = { csr: "Chase Sapphire Reserve", "amex-plat": "Amex Platinum", "amex-gold": "Amex Gold" };
+const edit = () => hotelCreditOf(BY_ID.csr, "edit"), select = () => hotelCreditOf(BY_ID.csr, "selectHotels2026"), lodging = () => hotelCreditOf(BY_ID["amex-plat"], "fhr"), goldThc = () => hotelCreditOf(BY_ID["amex-gold"], "thc");
+const nightsText = (n) => `${n}+ night${n === 1 ? "" : "s"}`;
+const upTo = (n, unit) => (n > 1 ? `up to ${n} a ${unit}` : `once a ${unit}`);
+
+/** Which card's credit applies at a hotel in a program, from the card data. */
+function creditLines(program) {
+  if (program === "edit") {
+    const c = edit(); if (!c) return [];
+    const hp = c.hotelProgram;
+    return [{ card: "csr", text: `${money(hp.chunk)} ${hp.label || "Edit"} credit per prepaid stay of ${nightsText(minimumNights(hp, "edit"))} via Chase Travel (${upTo(hp.chunks, "year")})` }];
+  }
+  const c = lodging(); const out = [];
+  if (c && (program === "fhr" || program === "thc")) {
+    const hp = c.hotelProgram;
+    out.push({ card: "amex-plat", text: `${money(hp.chunk)} Lodging Credit per half-year, prepaid via Amex Travel, stay of ${nightsText(minimumNights(hp, program))}` });
+  }
+  const g = program === "thc" ? goldThc() : null;
+  if (g) out.push({ card: "amex-gold", text: `${money(g.hotelProgram.chunk)} on-property credit on stays of ${nightsText(g.hotelProgram.minNights)}` });
+  return out;
+}
+
+function CreditCards({ profile }) {
+  const held = profile.cardsHeld || [];
+  const worth = useMemo(() => {
+    const out = {};
+    if (!held.some((id) => id === "csr" || id === "amex-plat")) return out;
+    try {
+      const wv = walletValue(held, profile, { normalized: true });
+      for (const id of ["csr", "amex-plat"]) if (held.includes(id)) out[id] = Math.round(benefitsForCard(wv, id).items.filter((b) => b.hotelUse).reduce((t, b) => t + (b.value || 0), 0));
+    } catch { /* leave the figure out rather than show a wrong one */ }
+    return out;
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+  const e = edit(), sel = select(), l = lodging(), g = goldThc();
+  const hpE = e?.hotelProgram, hpL = l?.hotelProgram;
+  const status = (id) => (held.includes(id)
+    ? <p className="hcred-status is-held" data-testid={`credit-held-${id}`}>You hold this card{id in worth ? <> · your plan counts <strong>{money(worth[id])}</strong> a year from its hotel credits</> : null}</p>
+    : <p className="hcred-status" data-testid={`credit-held-${id}`}>You don't hold this card in your wallet.</p>);
+  return (
+    <div className="hcred" data-testid="hotel-credit-cards">
+      {e && (
+        <article className="hcred-card" data-testid="credit-card-csr">
+          <p className="t-eyebrow">{CARD_NAME.csr}</p>
+          <h2 className="t-h3">{money(e.annual)} The Edit credit</h2>
+          <p className="t-caption">{money(hpE.chunk)} per prepaid stay of {nightsText(minimumNights(hpE, "edit"))} booked through Chase Travel, up to {hpE.chunks} a year. Only The Edit hotels qualify.</p>
+          {sel && <p className="t-caption">Plus a {money(sel.annual)} Select Hotels credit in 2026 only{sel.endsOn ? ` (through ${new Date(sel.endsOn + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })})` : ""}: prepaid stays of {nightsText(sel.hotelProgram.minNights)} at Chase Select Hotels, which are not listed in the directory below.</p>}
+          {status("csr")}
+        </article>
+      )}
+      {l && (
+        <article className="hcred-card" data-testid="credit-card-amex-plat">
+          <p className="t-eyebrow">{CARD_NAME["amex-plat"]}</p>
+          <h2 className="t-h3">{money(l.annual)} Lodging Credit</h2>
+          <p className="t-caption">{money(hpL.chunk)} Jan–Jun plus {money(hpL.chunk)} Jul–Dec, on prepaid Fine Hotels + Resorts or The Hotel Collection stays booked through Amex Travel. The Hotel Collection needs {nightsText(minimumNights(hpL, "thc"))}; Fine Hotels + Resorts allows {nightsText(minimumNights(hpL, "fhr")).replace("+", "")}{hpL.minimumChange ? ` (${nightsText(hpL.minimumChange.byProgram?.fhr || 2)} from ${new Date(hpL.minimumChange.from + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })})` : ""}.</p>
+          {g && <p className="t-caption">The Hotel Collection also earns Amex Gold's {money(g.annual)} on-property credit (stays of {nightsText(g.hotelProgram.minNights)}).</p>}
+          {status("amex-plat")}
+        </article>
+      )}
+    </div>
+  );
+}
+
+const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const DIR_PROGRAMS = [["all", "All programs"], ["edit", null], ["fhr", null], ["thc", null], ["multi", "In more than one"]];
+const CONTINENTS = ["North America", "Caribbean & Latin America", "Europe", "Middle East & Africa", "Asia Pacific"];
+const hasPos = (h) => h.lat != null && h.lng != null;
+
+/** Every hotel in the three card programs: facts only (name, place, program, position). */
+function ProgramDirectory() {
+  const [data, setData] = useState(null), [failed, setFailed] = useState(false);
+  const [q, setQ] = useState(""), [prog, setProg] = useState("all"), [country, setCountry] = useState(""), [region, setRegion] = useState("");
+  const [shown, setShown] = useState(60);
+  const listTop = useRef(null);
+  useEffect(() => {
+    let on = true;
+    import("../../data/hotels/programHotels.public.json").then((m) => on && setData(m.default || m)).catch(() => on && setFailed(true));
+    return () => { on = false; };
+  }, []);
+  const hotels = data?.hotels;
+  const dq = useDeferredValue(q);
+  const countries = useMemo(() => {
+    const m = new Map();
+    for (const h of hotels || []) m.set(h.country, (m.get(h.country) || 0) + 1);
+    return [...m].sort((a, b) => (!a[0] - !b[0]) || a[0].localeCompare(b[0]));
+  }, [hotels]);
+  const rows = useMemo(() => {
+    const t = norm(dq).trim();
+    return (hotels || []).filter((h) => (prog === "all" || (prog === "multi" ? h.programs.length > 1 : h.programs.includes(prog)))
+      && (!country || h.country === (country === "_" ? "" : country)) && (!region || h.region === region)
+      && (!t || norm(`${h.name} ${h.city} ${h.country}`).includes(t)));
+  }, [hotels, dq, prog, country, region]);
+  const { markers, unmapped } = useMemo(() => buildMarkers(rows, (h) => (hasPos(h) ? [h.lat, h.lng] : null)), [rows]);
+  const noPos = useMemo(() => rows.filter((h) => !hasPos(h)).length, [rows]);
+  useEffect(() => setShown(60), [dq, prog, country, region]);
+  const counts = data?.metadata.counts;
+  const per = (p) => rows.filter((h) => h.programs.includes(p)).length;
+  const toList = (text) => { setQ(text); setProg("all"); setCountry(""); setRegion(""); listTop.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); };
+
+  if (failed) return <p className="t-caption" role="alert">The hotel directory could not be loaded. Reload the page to try again.</p>;
+  if (!hotels) return <p className="t-caption" data-testid="dir-loading">Loading the hotel directory…</p>;
+  return (
+    <div className="hdir" data-testid="hotel-directory">
+      <div className="panel hdir-filters">
+        <input className="hotels-search" type="search" aria-label="Search the directory" placeholder="Hotel, city or country" value={q} onChange={(e) => setQ(e.target.value)} data-testid="dir-search" />
+        <div className="chip-wrap" role="radiogroup" aria-label="Program">
+          {DIR_PROGRAMS.map(([k, label]) => <Choice key={k} radio pill selected={prog === k} onSelect={() => setProg(k)}>
+            {label || programLabel(k)} <small>({(k === "all" ? data.metadata.total : k === "multi" ? counts.multiple : counts[k]).toLocaleString("en-US")})</small>
+          </Choice>)}
+        </div>
+        <div className="hdir-selects">
+          <select aria-label="Country" value={country} onChange={(e) => setCountry(e.target.value)}>
+            <option value="">All countries</option>
+            {countries.map(([c, n]) => <option key={c || "_"} value={c || "_"}>{c || "Country not listed"} ({n})</option>)}
+          </select>
+          <select aria-label="Region" value={region} onChange={(e) => setRegion(e.target.value)}>
+            <option value="">All regions</option>
+            {CONTINENTS.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
+      </div>
+      <p className="t-caption hdir-counts" data-testid="dir-counts" aria-live="polite">
+        <strong>{rows.length.toLocaleString("en-US")}</strong> of {data.metadata.total.toLocaleString("en-US")} hotels · The Edit {per("edit").toLocaleString("en-US")} · Fine Hotels + Resorts {per("fhr").toLocaleString("en-US")} · The Hotel Collection {per("thc").toLocaleString("en-US")} · {noPos.toLocaleString("en-US")} not on the map
+      </p>
+      <HotelMapView markers={markers} unmapped={noPos} unmappedText={`${noPos.toLocaleString("en-US")} hotel${noPos === 1 ? "" : "s"} not on the map (no position found yet); ${noPos === 1 ? "it is" : "they are"} still in the list below.`}
+        testId="directory-map" ariaLabel="Map of every hotel in The Edit, Fine Hotels + Resorts and The Hotel Collection"
+        onShowCity={(m) => toList(m.name)} onPickHotel={(h) => toList(h.name)} />
+      <ul className="rows hdir-rows" aria-label="Directory hotels" ref={listTop}>
+        {!rows.length && <li className="t-caption">No hotel matches these filters.</li>}
+        {rows.slice(0, shown).map((h) => (
+          <li key={h.id} className="hdir-row" data-testid={`dir-${h.id}`}>
+            <p className="hotel-name"><strong>{h.name}</strong></p>
+            <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {[h.city, h.country].filter(Boolean).join(", ")}{h.precision === "city" ? " · position approximate" : !h.precision ? " · not on the map" : ""}</p>
+            <div className="hdir-progs">
+              {h.programs.map((p) => (
+                <div key={p} className="t-caption hdir-prog">
+                  <span className="tag hdir-badge" style={{ "--pc": PROGRAM_INFO[p].color }} title={`Part of ${programLabel(p)}`}>{programBadge(p)}</span>
+                  <span>{creditLines(p).map((c) => c.text).join(" · ")}</span>
+                </div>
+              ))}
+            </div>
+          </li>
+        ))}
+        {rows.length > shown && <li><button type="button" className="link" onClick={() => setShown(shown + 60)}>Show more ({(rows.length - shown).toLocaleString("en-US")} left)</button></li>}
+      </ul>
+    </div>
+  );
+}
 
 export function HotelStyle({ travel, onChange }) {
   return (
@@ -67,6 +220,8 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
   const [mine, setMine] = useState(false);
   const [seen, setSeen] = useState({});
   const [shown, setShown] = useState(60);
+  const researchRef = useRef(null);
+  useEffect(() => { if (filter) researchRef.current?.scrollIntoView?.({ block: "start" }); }, [filter]);
   const inDays = (d) => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10);
   const [checkin, setCheckin] = useState(inDays(30));
   const [checkout, setCheckout] = useState(inDays(32));
@@ -115,10 +270,19 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
       <header className="hotels-head">
         <p className="t-eyebrow">Hotels · Your plan</p>
         {onBrowse && <button className="link" onClick={onBrowse}>Browse the full hotel collection →</button>}
-        <h1 className="t-d2">Where your cards' hotel credits work.</h1>
-        <p className="t-caption">Only hotels in The Edit by Chase Travel (Sapphire Reserve), The Hotel Collection (Amex) and Fine Hotels + Resorts (Amex), plus Chase Select Hotels, earn these credits — {HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices (the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
-        <HotelStyle travel={profile.travel} onChange={setTravel} />
+        <h1 className="t-d2">Hotels where your Sapphire Reserve and Platinum hotel credits work</h1>
+        <p className="t-caption">Each card's hotel credit only works at hotels in its own program: The Edit for the Sapphire Reserve, and Fine Hotels + Resorts or The Hotel Collection for the Platinum. This is every hotel in those three programs.</p>
       </header>
+      <CreditCards profile={profile} />
+      <section className="hdir-section" aria-labelledby="hdir-title">
+        <h2 className="t-h2" id="hdir-title">Every hotel in the three programs</h2>
+        <ProgramDirectory />
+      </section>
+      <section ref={researchRef} className="hotels-research" aria-labelledby="hres-title">
+        <h2 className="t-h2" id="hres-title">Research hotels with dated prices</h2>
+        <p className="t-caption">A smaller research set ({HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices; the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
+        <HotelStyle travel={profile.travel} onChange={setTravel} />
+      </section>
 
       {fromExt.length > 0 && (
         <p className="panel t-caption" data-testid="ext-rates">{fromExt.length} rate{fromExt.length === 1 ? "" : "s"} saved while browsing ({fromExt.map((r) => `${r.hotelName} $${r.nightlyUsd}`).join(", ")}). <button type="button" className="link" onClick={takeExt}>Add the ones that match a hotel here</button></p>
@@ -183,8 +347,12 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
       )}
       <p className="t-caption hotels-sources" data-testid="hotel-sources">
         {HOTEL_SOURCE.kind === "lists" ? <>{HOTEL_SOURCE.notes.join(" · ")} — for personal use. </> : null}
-        Prices are dated snapshots (research file; your saved rates), never live. Not used: {(HOTEL_DB_LOG.sources || []).filter((s) => !s.enabled).map((s) => `${s.key} (${s.why})`).join("; ")}.
+        Prices in the research set are dated snapshots (research file; your saved rates), never live. Not used: {(HOTEL_DB_LOG.sources || []).filter((s) => !s.enabled).map((s) => `${s.key} (${s.why})`).join("; ")}.
       </p>
+      <footer className="t-caption hotels-attribution" data-testid="hotel-attribution">
+        <p>The directory lists facts only: hotel names, places, program membership and map positions. It carries no prices, perks or program links.</p>
+        <ul>{HOTEL_ATTRIBUTION.map((a) => <li key={a}>{a}</li>)}</ul>
+      </footer>
     </section>
   );
 }
