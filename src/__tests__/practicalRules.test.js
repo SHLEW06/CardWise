@@ -32,8 +32,20 @@ describe("practical rules: catch-all and foundation cards", () => {
     expect(firstApply(p)).toBe("active-cash");
   });
 
-  it("no spending information: a catch-all, not an arbitrary $0 co-brand (P08)", () => {
-    expect(plan(persona("P08")).wallet).toEqual(["active-cash"]);
+  it("no spending information and a skipped goal: a Chase catch-all, not an arbitrary $0 co-brand (P08)", () => {
+    const p = plan(persona("P08"));
+    expect(p.wallet).toHaveLength(1);
+    expect(isCatchAll(BY_ID[p.wallet[0]], p.profile)).toBe(true);
+    expect(BY_ID[p.wallet[0]].pointCurrency).toBe("chase");
+  });
+
+  it("a skipped goal never trades away real value for the Chase ecosystem (P30: Active Cash beats Freedom Unlimited by $44)", () => {
+    expect(plan(persona("P30")).wallet).toContain("active-cash");
+  });
+
+  it("the rewards goal is a follow-up when answering it changes the plan (P30)", () => {
+    const p = buildPlan(persona("P30"));
+    expect(p.followUps.some((f) => f.key === "wants")).toBe(true);
   });
 
   it("keeps a category card that wins by more than the margin (rent-only P165 → Bilt)", () => {
@@ -98,5 +110,17 @@ describe("Blue Cash credits (verified 2026-11-26)", () => {
     const both = walletValue(["amex-bce", "bcp"], { spend, brands: { habits: { disney: { answer: "pay" } } } });
     const disney = both.benefits.filter((b) => /disney/i.test(b.label)).reduce((t, b) => t + b.value, 0);
     expect(disney).toBeLessThanOrEqual(132);
+  });
+});
+
+describe("Welcome: popular strategy examples", () => {
+  it("shows each set's own yearly value (E + U − F), equal to the shared wallet valuation", async () => {
+    const { EXAMPLE_PROFILE, POPULAR } = await import("../components/v7/Welcome.jsx");
+    const { STRATEGY_BY_KEY, evaluateStrategy } = await import("../engine/v5/strategies.js");
+    const p = normalizeProfile(EXAMPLE_PROFILE);
+    const value = (k) => { const r = evaluateStrategy(STRATEGY_BY_KEY[k], p); return r.E + r.U - r.F; };
+    for (const { key } of POPULAR) expect(value(key)).toBe(walletValue(STRATEGY_BY_KEY[key].cards, p).net);
+    expect(value("simple-2pct-dining")).toBeGreaterThan(0);          // a $0-fee set can never show a loss
+    expect(value("chase-trifecta-csp")).toBeGreaterThan(value("simple-2pct-dining"));   // transfers beat 2% here
   });
 });

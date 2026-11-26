@@ -6,6 +6,7 @@ import { walletValue } from "./methodology.js";
 export const FOLLOW_UP_QUESTIONS = [
   { key: "travel.bags", label: "checked bags", step: "travel", question: "Do you check bags?", answers: [0,1,2,3].map(n=>({ value:n, label:n ? `${n}${n===3?"+":""} bag${n===1?"":"s"} per trip` : "No checked bags" })) },
   { key: "travel.hotelNights", label: "paid hotel nights", step: "travel", question: "How many hotel nights do you pay for each year?", answers: NIGHT_OPTIONS.map(o=>({ value:o.key, label:o.label })) },
+  { key: "wants", label: "rewards goal", step: "spend", question: "What would you like to earn?", answers: [{value:"cash",label:"Cash back"},{value:"travel",label:"Travel points"},{value:"both",label:"Both"}] },
   { key: "rotatingActivation", label: "quarterly activation", step: "spend", question: "Will you activate quarterly bonus categories?", answers: ["yes","no","unsure"].map(value=>({ value,label:value })) },
   { key: "credit.score", label: "credit history", step: "credit", question: "What is your credit history or score band?", answers: SCORE_OPTIONS.filter(o=>o.key!=="unsure").map(o=>({ value:o.key,label:o.label })) },
   { key: "isStudent", label: "student eligibility", step: "credit", question: "Are you a student?", answers: [{value:true,label:"Yes"},{value:false,label:"No"}] },

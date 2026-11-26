@@ -19,6 +19,12 @@
       depends on spending estimates and on remembering which card to use. A
       plan with no catch-all is swapped for the best plan that has one, with
       no more cards, when the modeled loss is within PRACTICAL_MARGIN.
+   4. A skipped rewards goal keeps the best ecosystem open. A skipped goal is
+      valued as cash (never assuming transfer redemptions), but within the
+      same margin we prefer a no-fee Chase Ultimate Rewards card: its points
+      cash out at 1 cent, so nothing is lost today, and they become worth
+      more if the person later adds a Sapphire. The goal question is also a
+      follow-up, so its real dollar effect is shown.
    Pure. Dollar values themselves are never changed here.
    ========================================================================== */
 
@@ -92,6 +98,21 @@ export function catchAllCandidates(profile, catalog) {
 
 /** Rule 3: whether to take `alt` (has a catch-all) over `plan` (has none). */
 export function preferCatchAllPlan(plan, alt) {
+  if (!alt?.wallet?.length || alt.wallet.length > plan.wallet.length) return false;
+  return plan.value.net - alt.value.net <= PRACTICAL_MARGIN;
+}
+
+/* Rule 4: Chase Ultimate Rewards — the ecosystem kept open when the goal is skipped. */
+export const ECOSYSTEM_CURRENCY = "chase";
+export const goalSkipped = (profile) => (profile.assumedFields || []).includes("wants");
+
+/** Eligible no-fee personal cards in the preferred ecosystem. */
+export function ecosystemCandidates(profile, catalog) {
+  return catalog.filter((c) => c.pointCurrency === ECOSYSTEM_CURRENCY && plain(c) && c.cardType !== "student" && cardFee(c, profile) === 0 && eligibility(c, profile).ok).map((c) => c.id);
+}
+
+/** Rule 4: whether to take `alt` (has an ecosystem card) over `plan`. */
+export function preferEcosystemPlan(plan, alt) {
   if (!alt?.wallet?.length || alt.wallet.length > plan.wallet.length) return false;
   return plan.value.net - alt.value.net <= PRACTICAL_MARGIN;
 }

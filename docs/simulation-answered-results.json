@@ -994,6 +994,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -1983,6 +1984,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -9456,6 +9458,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -9712,6 +9715,67 @@
         "changesPlan": true
       },
       {
+        "key": "wants",
+        "label": "rewards goal",
+        "step": "spend",
+        "question": "What would you like to earn?",
+        "impact": 194,
+        "scenarios": [
+          {
+            "answer": "cash",
+            "label": "Cash back",
+            "firstCard": "amex-green",
+            "action": "downgrade",
+            "wallet": [
+              "active-cash",
+              "amex-green"
+            ],
+            "net": 308,
+            "changesFirstCard": false,
+            "changesPlan": false,
+            "netChange": 0,
+            "originalWalletNetUnderAnswer": 308,
+            "decisionRegret": 0
+          },
+          {
+            "answer": "travel",
+            "label": "Travel points",
+            "firstCard": "amex-green",
+            "action": "downgrade",
+            "wallet": [
+              "citi-double-cash",
+              "citi-strata",
+              "amex-green"
+            ],
+            "net": 502,
+            "changesFirstCard": false,
+            "changesPlan": true,
+            "netChange": 194,
+            "originalWalletNetUnderAnswer": 358,
+            "decisionRegret": 144
+          },
+          {
+            "answer": "both",
+            "label": "Both",
+            "firstCard": "amex-green",
+            "action": "downgrade",
+            "wallet": [
+              "citi-double-cash",
+              "citi-strata",
+              "amex-green"
+            ],
+            "net": 502,
+            "changesFirstCard": false,
+            "changesPlan": true,
+            "netChange": 194,
+            "originalWalletNetUnderAnswer": 358,
+            "decisionRegret": 144
+          }
+        ],
+        "changesFirstCard": false,
+        "changesPlan": true
+      },
+      {
         "key": "travel.hotelNights",
         "label": "paid hotel nights",
         "step": "travel",
@@ -9867,6 +9931,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -10281,6 +10346,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -11845,6 +11911,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"
@@ -14948,6 +15015,7 @@
     "unanswered": [
       "travel.bags",
       "travel.hotelNights",
+      "wants",
       "rotatingActivation",
       "paymentBehavior",
       "canAffordDeposit"

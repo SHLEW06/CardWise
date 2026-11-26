@@ -74,10 +74,10 @@ exports[`P07: Student, fair credit 640 after a late payment 1`] = `
 
 exports[`P08: Student, skipped everything (Quick, defaults) 1`] = `
 {
-  "first": "active-cash",
+  "first": "freedom-rise",
   "net": 0,
   "wallet": [
-    "active-cash",
+    "freedom-rise",
   ],
 }
 `;

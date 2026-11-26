@@ -1,6 +1,6 @@
 # Trustworthy plan audit fix report
 
-Run (UTC): 2026-11-26. Latest engine/data commit: 38a10d6; review commits on this branch contain the associated follow-up code and report on fix/trustworthy-plan. Frozen before: 07f63c4. Original cohort: 200; supplemental balance-carrier cohort: 12.
+Run (UTC): 2026-11-26. Latest engine/data commit: 53abdfd; review commits on this branch contain the associated follow-up code and report on fix/trustworthy-plan. Frozen before: 07f63c4. Original cohort: 200; supplemental balance-carrier cohort: 12.
 
 ## Results
 
@@ -22,6 +22,7 @@ The former zeroing-skipped-defaults measure is removed. It only confirmed the ne
 | --- | --- | --- | --- | --- | --- |
 | checked bags | 80 | 9 | 15 | 15 | No checked bags; 1 bag per trip; 2 bags per trip; 3+ bags per trip |
 | paid hotel nights | 82 | 19 | 51 | 51 | None; 1–3; 4–9; 10–19; 20+ |
+| rewards goal | 7 | 1 | 2 | 2 | Cash back; Travel points; Both |
 | quarterly activation | 200 | 26 | 74 | 74 | yes; no; unsure |
 | credit history | 51 | 44 | 47 | 47 | No credit yet; Below 580; 580–669; 670–739; 740–799; 800+ |
 | student eligibility | 200 | 0 | 0 | 0 | Yes; No |
@@ -111,10 +112,10 @@ For an apples-to-apples application comparison, Before is the old Home engine's 
 | citi-strata-no-fee | 6 | 0 |
 | discover-student | 6 | 0 |
 | sw-premier | 5 | 0 |
-| active-cash | 3 | 102 |
+| active-cash | 3 | 101 |
 | delta-gold | 3 | 2 |
 | delta-plat | 3 | 0 |
-| freedom-rise | 3 | 16 |
+| freedom-rise | 3 | 17 |
 | usb-altitude-go | 3 | 9 |
 | bcp | 2 | 0 |
 | citi-aa-globe | 2 | 0 |
@@ -148,7 +149,7 @@ The benchmark is the best currently eligible consumer card with no annual fee, n
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | P02 | No | robinhood-gold | active-cash / apply | $181 | active-cash: $181 | $0 | active-cash | $181 |
 | P05 | No | robinhood-gold | active-cash / apply | $272 | active-cash: $272 | $0 | active-cash | $272 |
-| P08 | No | robinhood-gold | active-cash / apply | $0 | active-cash: $0 | $0 | active-cash | $0 |
+| P08 | No | robinhood-gold | freedom-rise / apply | $0 | active-cash: $0 | $0 | freedom-rise | $0 |
 | P09 | No | bilt-blue | usb-altitude-go / apply | $473 | active-cash: $475 | $-2 | bilt-blue, usb-altitude-go | $688 |
 | P11 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash | $458 |
 | P12 | No | robinhood-gold | active-cash / apply | $466 | active-cash: $466 | $0 | active-cash | $466 |

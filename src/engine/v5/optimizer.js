@@ -24,7 +24,7 @@ import {
   optimalWallet, walletValue, heldCardVerdicts, scoreNeeded, approvalOk, isChase,
   eligibility,
 } from "./methodology.js";
-import { practicalOrder, holdsCatchAll, isCatchAll, catchAllCandidates, preferCatchAllPlan } from "./practical.js";
+import { practicalOrder, holdsCatchAll, isCatchAll, catchAllCandidates, preferCatchAllPlan, goalSkipped, ecosystemCandidates, preferEcosystemPlan, ECOSYSTEM_CURRENCY } from "./practical.js";
 
 export { scoreNeeded, approvalOk };
 export const HUB_THRESHOLD = 0.2;            // airports.js hubAirlines share that counts as hub/focus
@@ -167,6 +167,18 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
     if (catchAlls.length) {
       const alt = optimalWallet(base, { mode: "wallet", catalog, maxCards: Math.min(maxCards, plan.wallet.length), mustOneOf: catchAlls });
       if (preferCatchAllPlan(plan, alt)) plan = alt;
+    }
+  }
+  /* Practical rule 4: a skipped goal keeps the Chase ecosystem open when
+     that costs at most the same margin (no extra cards). */
+  if (plan.wallet.length && goalSkipped(profile) && !plan.wallet.some((id) => BY_ID[id]?.pointCurrency === ECOSYSTEM_CURRENCY)) {
+    // A plan that relies on a catch-all may only trade it for a Chase catch-all.
+    const needsCatchAll = plan.wallet.some((id) => isCatchAll(BY_ID[id], profile));
+    const eco = ecosystemCandidates(profile, catalog).filter((id) => !needsCatchAll || isCatchAll(BY_ID[id], profile));
+    if (eco.length) {
+      const alt = optimalWallet(base, { mode: "wallet", catalog, maxCards: Math.min(maxCards, plan.wallet.length), mustOneOf: eco });
+      const keepsCatchAll = !needsCatchAll || alt.wallet.some((id) => isCatchAll(BY_ID[id], profile));
+      if (keepsCatchAll && preferEcosystemPlan(plan, alt)) plan = alt;
     }
   }
   const value = plan.value;

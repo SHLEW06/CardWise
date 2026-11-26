@@ -66,3 +66,15 @@ Plans are now less sensitive to unanswered questions. Each figure counts persona
 | deposit affordability | 11 | 11 |
 
 The total modeled net across all 200 plans changed by +$199. The largest single practical concession is $20/yr (P162).
+
+## Follow-up (same day): skipped goals, hotel credits, math audit
+
+**Rule 4: a skipped rewards goal keeps the Chase ecosystem open.** A skipped goal is still valued as cash; transfer redemptions are never assumed. Within the same $25/yr margin, and with no extra cards, the plan prefers a no-fee Chase Ultimate Rewards card. Those points cash out at 1¢ today and become more valuable if the person later adds a Sapphire. A plan that relies on a catch-all may only trade it for a Chase catch-all (Freedom Unlimited or Rise). The rewards goal is now also a follow-up question, so its real dollar effect is shown. P30, for example, sees "Your plan depends on rewards goal … up to $194 a year."
+
+Rerun: 1 of 200 plans changed (P08, no spending entered: Active Cash → Freedom Rise, both $0). Known-answer replays: 0 of 200 changed. Balance carriers: 0 of 12 changed. Only 7 of 200 personas skipped the goal, and for the other three with a catch-all (P30, P35, P43), Freedom Unlimited would cost $44–$55/yr, so Active Cash stays.
+
+**Amex equivalent of the Chase Edit credit (verified):** the Platinum $600 Lodging Credit gives $300 for January–June and $300 for July–December, on prepaid Fine Hotels + Resorts or The Hotel Collection bookings (THC needs 2+ nights). Chase's equivalent is the $500 Edit credit ($250 per prepaid 2+ night stay) plus a 2026-only $250 Select Hotels credit. Both are in the card data and valued by the same hotel-credit engine.
+
+**Math audit (`npm run audit:math`):** 412 plans were recomputed from their parts: the 200 original profiles, the 200 known-answer replays and the 12 balance carriers. That covers 2,857 earning rows (value = dollars × rate × cpp) and 780 strategy valuations. It checks E = Σ rows, U = Σ counted benefits, F = Σ fees and net = E + U − F; that the plan net equals the shared wallet valuation; that no credit is counted above face value; that no spending category is routed twice; and that the strategy figures match the wallet valuation. **0 mismatches.**
+
+**First-visit examples:** the Welcome screen values popular strategies for one stated example spender. It assumes $1,910/month, 4 trips a year and points moved to Flying Blue, which every bank here can transfer to. The figure shown is the set's own value (earning + credits used − fees). At these assumptions: Citi Strata Premier + Double Cash $691, Chase Trifecta (Preferred) $640, simple 2% + dining $523, Capital One Venture X + Savor $393, Chase Trifecta (Reserve) $184, and Amex Gold + Platinum negative unless the person uses its credits. That ordering is reasonable for a moderate spender who does not use lifestyle credits.
