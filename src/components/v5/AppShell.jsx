@@ -12,7 +12,7 @@ export const DESTINATIONS = [
   { id: "offers", label: "Offers", icon: Tag, backdrop: "offers" },
   { id: "lab", label: "Wallet Lab", icon: FlaskConical, backdrop: "lab" },
   { id: "explore", label: "Explore", icon: Compass, backdrop: "explore" },
-  { id: "hotels", label: "Hotels", icon: BedDouble, backdrop: "explore" },     // v7f Part 1c
+  { id: "hotels", label: "Edit/THC hotels", short: "Edit/THC", title: "The Edit (Chase Sapphire Reserve), The Hotel Collection and Fine Hotels + Resorts (Amex Platinum) hotel list", icon: BedDouble, backdrop: "explore" },     // v7f Part 1c
   { id: "strategies", label: "Strategies", icon: Layers, backdrop: "lab" },   // v7f Part 3
 ];
 
@@ -51,10 +51,10 @@ export default function AppShell({ current, onNavigate, onLogo, user, backdrop, 
       <Backdrop slot={bd.slot} card={bd.card} cards={bd.cards} />
       <header className="shell-top">
         <div className="shell-bar">
-          <button className="shell-wordmark" onClick={onLogo} aria-label="CardWise — start over">CardWise</button>
+          <button className="shell-wordmark" onClick={onLogo} aria-label="CardWise home">CardWise</button>
           <nav className="shell-nav" aria-label="Main">
             {DESTINATIONS.map((d) => (
-              <button key={d.id} className="shell-link" aria-current={current === d.id ? "page" : undefined} onClick={() => go(d.id)}>
+              <button key={d.id} className="shell-link" title={d.title} aria-current={current === d.id ? "page" : undefined} onClick={() => go(d.id)}>
                 {d.label}
               </button>
             ))}
@@ -78,9 +78,9 @@ export default function AppShell({ current, onNavigate, onLogo, user, backdrop, 
         {DESTINATIONS.map((d) => {
           const Icon = d.icon;
           return (
-            <button key={d.id} className="shell-tab" aria-current={current === d.id ? "page" : undefined} onClick={() => go(d.id)}>
+            <button key={d.id} className="shell-tab" title={d.title} aria-label={d.short ? d.label : undefined} aria-current={current === d.id ? "page" : undefined} onClick={() => go(d.id)}>
               <Icon size={21} strokeWidth={current === d.id ? 2 : 1.5} aria-hidden="true" />
-              <span>{d.label}</span>
+              <span>{d.short || d.label}</span>
             </button>
           );
         })}

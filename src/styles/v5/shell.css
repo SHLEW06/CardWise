@@ -50,7 +50,7 @@
   .v5 .shell-main { min-height: calc(100vh - 56px); }
   .v5 .shell-foot { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
   .v5 .shell-tabs {
-    display: grid; grid-template-columns: repeat(5, 1fr);
+    display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);   /* one row, however many tabs */
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
     padding: 6px 2px calc(6px + env(safe-area-inset-bottom));
     background: rgba(11, 10, 8, .72);
@@ -58,6 +58,8 @@
     border-top: 1px solid var(--hair);
   }
   .v5 .shell-tab { display: grid; justify-items: center; gap: 3px; padding: 6px 0; font-size: 10.5px; font-weight: 500; color: var(--ink-3); }
+  .v5 .shell-tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-inline: 1px; }
+  @media (max-width: 400px) { .v5 .shell-tab { font-size: 9.5px; } }
   .v5 .shell-tab[aria-current="page"] { color: var(--ink); }
   .v5 .shell-tab[aria-current="page"] svg { color: var(--gold); }
 }

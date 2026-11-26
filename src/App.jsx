@@ -3,7 +3,6 @@ import CardDetail from "./components/v6/CardDetail.jsx";
 import Explore from "./components/v6/explore/Explore.jsx";
 import Checkout from "./components/v6/checkout/Checkout.jsx";
 import AppShell from "./components/v5/AppShell.jsx";
-import Landing from "./components/v5/Landing.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
@@ -25,6 +24,7 @@ import { saveProfile, loadProfile, saveWallet, loadWallet, loadValOverrides } fr
 import { loadOffers, saveOffers } from "./firebase/offers.js";
 import HotelExplorer from "./components/v7/HotelExplorer.jsx";
 import Strategies from "./components/v7/Strategies.jsx";
+import Welcome from "./components/v7/Welcome.jsx";
 import { setOfferStatus } from "./engine/offers/offerModel.js";
 
 /* ── URL state ───────────────────────────────────────────────────────────── */
@@ -125,7 +125,10 @@ function withAnchors(profile) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("hero"); // hero (landing) | survey | app
+  /* The top bar and every tab are open from the first visit; Home shows the
+     Welcome (popular strategies) until the survey gives a plan. */
+  const [screen, setScreen] = useState("app"); // survey | app
+  const [hasPlan, setHasPlan] = useState(false);
   const [surveyStep, setSurveyStep] = useState(null);   // step id when editing one answer from Profile
   const [tab, setTab] = useState("home");   // home | checkout | offers | lab | explore | profile (§17)
   const [hotelFilter, setHotelFilter] = useState(null);
@@ -155,10 +158,8 @@ export default function App() {
       const sourceProfile = hashProfile || (rec.completedAt ? toLegacyProfile(rec.profile) : null) || p;
 
       if (vo && Object.keys(vo).length) setValOverrides(vo);
-      if (sourceProfile) {
-        setProfile(withAnchors({ ...sourceProfile, valOverrides: vo || {} }));
-        setScreen("app");
-      }
+      if (sourceProfile) setProfile(withAnchors({ ...sourceProfile, valOverrides: vo || {} }));
+      setHasPlan(!!(hashProfile || rec.completedAt || p));
       /* The v5 profile's cards ARE the wallet once the survey is done. */
       if (rec.completedAt) setWallet(rec.profile.cardsHeld);
       else if (w && w.length) setWallet(w);
@@ -199,7 +200,7 @@ export default function App() {
   }, []);
 
   const restart = () => {
-    setScreen("hero");
+    setScreen("app");
     setTab("home");
     window.history.replaceState(null, "", window.location.pathname);
   };
@@ -216,10 +217,6 @@ export default function App() {
     return <div className="v5 boot" aria-busy="true"><span className="shell-wordmark">CardWise</span></div>;
   }
 
-  if (screen === "hero") {
-    return <Landing onStart={() => { setSurveyStep(null); setScreen("survey"); }} />;
-  }
-
   if (screen === "survey") {
     return (
       <div className="v5">
@@ -227,9 +224,10 @@ export default function App() {
           initialProfile={v5}
           initialStepId={surveyStep}
           editOnly={!!surveyStep}
-          onExit={() => { setScreen(profile ? "app" : "hero"); if (surveyStep) setTab("profile"); setSurveyStep(null); }}
+          onExit={() => { setScreen("app"); if (surveyStep) setTab("profile"); setSurveyStep(null); }}
           onDone={(v5Profile, meta = {}) => {
             applyV5(v5Profile);
+            setHasPlan(true);
             setScreen("app");
             setTab(surveyStep ? "profile" : meta.open === "lab" ? "lab" : "home");
             setSurveyStep(null);
@@ -247,12 +245,13 @@ export default function App() {
 
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
-      {tab === "home" && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={(step) => { setSurveyStep(typeof step === "string" ? step : null); setScreen("survey"); }} />}
+      {tab === "home" && !hasPlan && <Welcome onStart={() => { setSurveyStep(null); setScreen("survey"); }} onGo={setTab} onOpenCard={openCard} />}
+      {tab === "home" && hasPlan && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={(step) => { setSurveyStep(typeof step === "string" ? step : null); setScreen("survey"); }} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
       {tab === "lab" && <WalletLab onEditAnswers={(step) => { setSurveyStep(step); setScreen("survey"); }} profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onOpenCard={openCard} onGo={setTab} />}
       {tab === "strategies" && <Strategies profile={v5} onSaveProfile={(d) => applyV5(saveV5Profile(d))} onGo={setTab} onOpenCard={openCard} />}
-      {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} />}
+      {tab === "explore" && <Explore profile={v5} onOpenCard={openCard} onGo={setTab} />}
       {tab === "hotels" && <HotelExplorer profile={v5} filter={hotelFilter} onSaveProfile={(d) => applyV5(saveV5Profile(d))} />}
       {tab === "profile" && (
         <Profile

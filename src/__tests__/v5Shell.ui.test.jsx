@@ -17,7 +17,7 @@ afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 describe("shell — five tabs + Profile avatar (v6 §17)", () => {
-  const TABS = ["Home", "Checkout", "Offers", "Wallet Lab", "Explore", "Hotels", "Strategies"];   // v7f adds Hotels
+  const TABS = ["Home", "Checkout", "Offers", "Wallet Lab", "Explore", "Edit/THC hotels", "Strategies"];   // v7f adds Hotels
   function Harness() {
     const [tab, setTab] = useState("home");
     return <AppShell current={tab} onNavigate={setTab} onLogo={() => {}}><p>page {tab}</p></AppShell>;
@@ -27,7 +27,10 @@ describe("shell — five tabs + Profile avatar (v6 §17)", () => {
     render(<Harness />);
     const navs = screen.getAllByRole("navigation", { name: "Main" });
     expect(navs).toHaveLength(2);   // top bar + phone bottom bar
-    for (const nav of navs) expect(within(nav).getAllByRole("button").map((b) => b.textContent)).toEqual(TABS);
+    expect(within(navs[0]).getAllByRole("button").map((b) => b.textContent)).toEqual(TABS);
+    // the phone bar shows short labels; its accessible names stay the full labels
+    expect(within(navs[1]).getAllByRole("button").map((b) => b.textContent)).toEqual(DESTINATIONS.map((d) => d.short || d.label));
+    expect(within(navs[1]).getAllByRole("button").map((b) => b.getAttribute("aria-label") || b.textContent)).toEqual(TABS);
   });
   it("marks the current page and navigates", () => {
     render(<Harness />);

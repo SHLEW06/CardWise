@@ -13,9 +13,17 @@ afterEach(cleanup);
 beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; window.history.replaceState(null, "", "/"); });
 
 describe("App", () => {
-  it("first visit: landing, then the survey", async () => {
+  it("first visit: the top bar and popular strategies, then the survey", async () => {
     render(<App />);
-    const start = await screen.findByRole("button", { name: /Get started/ });
+    await waitFor(() => expect(screen.getAllByRole("navigation", { name: "Main" }).length).toBe(2));
+    expect(await screen.findByTestId("welcome")).toBeInTheDocument();
+    expect(screen.getByTestId("popular-chase-trifecta-csp")).toBeInTheDocument();
+    expect(screen.getByTestId("popular-amex-duo")).toBeInTheDocument();
+    expect(screen.getByTestId("popular-capital-one")).toBeInTheDocument();
+    fireEvent.click(screen.getAllByRole("button", { name: "Explore" })[0]);
+    expect(screen.queryByTestId("welcome")).toBeNull();
+    fireEvent.click(screen.getAllByRole("button", { name: "Home" })[0]);
+    const start = await screen.findByTestId("welcome-start");
     fireEvent.click(start);
     expect(await screen.findByRole("button", { name: /^Quick · 2 min/ })).toBeInTheDocument();
   });

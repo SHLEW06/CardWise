@@ -39,7 +39,7 @@ describe("A4 · no AI-template tropes", () => {
 
 describe("B1 / B2 · navigation and old features", () => {
   it("the tabs (v7f adds Hotels); Profile behind the avatar", () => {
-    expect(TABS.map((d) => d.label)).toEqual(["Home", "Checkout", "Offers", "Wallet Lab", "Explore", "Hotels", "Strategies"]);
+    expect(TABS.map((d) => d.label)).toEqual(["Home", "Checkout", "Offers", "Wallet Lab", "Explore", "Edit/THC hotels", "Strategies"]);
   });
   it("Profile holds airport fit and price-a-redemption (restored)", () => {
     saveV5Profile({ cardsHeld: ["amex-gold"], travel: { airports: [{ code: "ATL", trips: 4 }] } });
