@@ -36,8 +36,8 @@ export const CARDS = [
     annualFee: 95, currency: "Cash back", pointCurrency: "cash",
     earnRates: { Groceries: 6, Streaming: 6, Gas: 3, Transit: 3, General: 1 }, portalMultipliers: {},
     earnCaps: [{ keys: ["Groceries"], annual: 6000, after: 1 }],
-    credits: [cred("$7/mo Disney Bundle credit", 84, "MEDIUM")],
-    benefits: ["6% U.S. supermarkets (to $6k/yr)", "6% select streaming", "3% gas & transit"],
+    credits: [cred("$10/mo Disney Bundle credit (Disney+, Hulu, ESPN; enrollment)", 120, "MEDIUM", "merchant", "monthly", { checked: "2026-11-26", source: "americanexpress.com — Blue Cash Preferred benefits; NerdWallet/TPG coverage of the $84 → $120 increase" })],
+    benefits: ["6% U.S. supermarkets (to $6k/yr)", "6% select streaming", "3% gas & transit", "$10/mo Disney Bundle credit (enrollment)"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0.027,
@@ -58,8 +58,14 @@ export const CARDS = [
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
     earnRates: { Groceries: 3, Online: 3, Gas: 3, General: 1 }, portalMultipliers: {},
     earnCaps: [{ keys: ["Groceries"], annual: 6000, after: 1 }, { keys: ["Online"], annual: 6000, after: 1 }, { keys: ["Gas"], annual: 6000, after: 1 }],
-    credits: [],
-    benefits: ["3% U.S. supermarkets (to $6k/yr)", "3% U.S. online retail purchases", "2% U.S. gas stations & transit", "No annual fee"],
+    /* Both credits require enrollment and a purchase with the card, so they
+       count only when the person says they already pay for the service
+       (habit answers "disney" / "homechef"); "would start if free" = $0. */
+    credits: [
+      cred("$7/mo Disney Bundle credit (Disney+, Hulu, ESPN; $9.99+ monthly; enrollment)", 84, "MEDIUM", "merchant", "monthly", { checked: "2026-11-26", source: "americanexpress.com — credit-intel/amex-blue-cash-everyday-benefits (updated 2026-02-12)" }),
+      cred("$15/mo Home Chef credit (enrollment)", 180, "MEDIUM", "merchant", "monthly", { checked: "2026-11-26", source: "americanexpress.com — Blue Cash Everyday terms (Home Chef, up to $15 a month)" }),
+    ],
+    benefits: ["3% U.S. supermarkets (to $6k/yr)", "3% U.S. online retail purchases", "3% U.S. gas stations (each 3% category to $6k/yr)", "$7/mo Disney Bundle credit", "$15/mo Home Chef credit", "No annual fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,
     checkedBagBenefits: null, companionCertificates: [], freeNightCertificates: [],
     directBookingBenefits: [], travelProtections: [], foreignTransactionFee: 0.027,

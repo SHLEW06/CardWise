@@ -86,6 +86,9 @@ export const HABITS = [
   { key: "resy", unit: "visits", label: "Restaurants you book on Resy", group: "food", type: "freq", size: 100, brands: ["resy"] },
   { key: "opentable", unit: "visits", label: "Sapphire Reserve Exclusive Tables restaurants (OpenTable)", group: "food", type: "freq", size: 120, brands: ["opentable"] },
   { key: "inkind", unit: "visits", label: "inKind restaurants", group: "food", type: "freq", size: 60, brands: ["inkind"] },
+  /* Blue Cash Everyday's $15/mo credit. $600 a year (about one $50 box a
+     month) is an estimate of an active subscriber's spending. */
+  { key: "homechef", label: "Home Chef meal kits", group: "food", type: "sub", price: 600, brands: ["home chef"] },
   { key: "rideshare", label: "Rideshare", group: "rides", type: "freq", size: 25,
     apps: [{ key: "uber", label: "Uber" }, { key: "lyft", label: "Lyft" }] },
   { key: "uberone", label: "Uber One (Uber membership)", group: "rides", type: "sub", price: 96, brands: ["uber one"] },
@@ -466,7 +469,7 @@ const OLD_CHIP = {
   "five guys": [["fastcasual"]], "cheesecake factory": [["fastcasual"]], dunkin: [["dunkin"]], resy: [["resy"]],
   opentable: [["opentable"]], inkind: [["inkind"]], lululemon: [["lululemon"]], oura: [["oura"]], peloton: [["peloton"]],
   "walmart+": [["walmartplus"]], "best buy": [["bestbuy"]], stubhub: [["tickets", "stubhub"]], "live nation": [["tickets", "ticketmaster"]],
-  "1stdibs": [["1stdibs"]], future: [["future"]], "disney+": [["disney"]], peacock: [["peacock"]], "paramount+": [["paramount"]],
+  "1stdibs": [["1stdibs"]], future: [["future"]], "disney+": [["disney"]], "home chef": [["homechef"]], peacock: [["peacock"]], "paramount+": [["paramount"]],
   youtube: [["youtube"]], nyt: [["nyt"]], wsj: [["wsj"]], clear: [["clear"]], globalentry: [["globalentry"]],
   loungebuddy: [["loungebuddy"]], avis: [["avis"]], turo: [["turo"]], jsx: [["jsx"]],
 };

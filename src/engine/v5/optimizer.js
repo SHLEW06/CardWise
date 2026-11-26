@@ -24,6 +24,7 @@ import {
   optimalWallet, walletValue, heldCardVerdicts, scoreNeeded, approvalOk, isChase,
   eligibility,
 } from "./methodology.js";
+import { practicalOrder, holdsCatchAll, isCatchAll, catchAllCandidates, preferCatchAllPlan } from "./practical.js";
 
 export { scoreNeeded, approvalOk };
 export const HUB_THRESHOLD = 0.2;            // airports.js hubAirlines share that counts as hub/focus
@@ -159,15 +160,23 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
     const firstCards = catalog.filter(c => cardFee(c, profile) === 0 && eligibility(c, profile).ok && !c.specialty).map(c => c.id);
     if (firstCards.length) plan = optimalWallet(base, { catalog, maxCards: 1, mustOneOf: firstCards });
   }
+  /* Practical rule 3 (practical.js): no catch-all held or planned → take the
+     best plan with one (no extra cards) when it costs little modeled value. */
+  if (plan.wallet.length && !holdsCatchAll(profile) && !plan.wallet.some((id) => isCatchAll(BY_ID[id], profile))) {
+    const catchAlls = catchAllCandidates(profile, catalog);
+    if (catchAlls.length) {
+      const alt = optimalWallet(base, { mode: "wallet", catalog, maxCards: Math.min(maxCards, plan.wallet.length), mustOneOf: catchAlls });
+      if (preferCatchAllPlan(plan, alt)) plan = alt;
+    }
+  }
   const value = plan.value;
   const adds = plan.adds.map((id) => BY_ID[id]);
-  /* Upgrades first, then Chase first while under 5/24, then by value. */
+  /* Order: practicalOrder — upgrades, Chase while 5/24 can bind, foundation card, value. */
   const gainOf = (id) => walletValue(plan.wallet, base, { normalized: true }).N - walletValue(plan.wallet.filter((x) => x !== id), base, { normalized: true }).N;
   const gains = Object.fromEntries(adds.map((c) => [c.id, gainOf(c.id)]));
-  const ordered = [...adds].sort((a, b) =>
-    (plan.how[b.id] === "upgrade" ? 1 : 0) - (plan.how[a.id] === "upgrade" ? 1 : 0)
-    || (!atFiveTwentyFour ? (isChase(b) ? 1 : 0) - (isChase(a) ? 1 : 0) : 0)
-    || gains[b.id] - gains[a.id]);
+  const ordered = practicalOrder(adds.map((c) => c.id), base, {
+    how: plan.how, gain: gains, isChase: (c) => !atFiveTwentyFour && isChase(c),
+  }).map((id) => BY_ID[id]);
   const describe = (c) => {
     const v = cardValue(c, profile, value.cards);
     const upgradeFrom = plan.upgrades[c.id];

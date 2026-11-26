@@ -184,62 +184,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 15,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 113,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 15,
-            "originalWalletNetUnderAnswer": 98,
-            "decisionRegret": 15
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 98,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 98,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 98,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 98,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -470,62 +414,6 @@
             "changesFirstCard": true,
             "changesPlan": true,
             "netChange": -136,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 19,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 155,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 19,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 19
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 136,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 136,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
             "originalWalletNetUnderAnswer": 136,
             "decisionRegret": 0
           }
@@ -1621,62 +1509,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 13,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 167,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 13,
-            "originalWalletNetUnderAnswer": 154,
-            "decisionRegret": 13
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 154,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 154,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 154,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 154,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -1913,62 +1745,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 19,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 155,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 19,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 19
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 136,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 136,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 136,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -2014,11 +1790,11 @@
   },
   {
     "id": "P08",
-    "firstCard": "amazon-store",
-    "firstApplication": "amazon-store",
+    "firstCard": "freedom-rise",
+    "firstApplication": "freedom-rise",
     "action": "apply",
     "wallet": [
-      "amazon-store"
+      "freedom-rise"
     ],
     "net": 0,
     "score": null,
@@ -2152,92 +1928,6 @@
     "warnings": [],
     "followUps": [
       {
-        "key": "travel.hotelNights",
-        "label": "paid hotel nights",
-        "step": "travel",
-        "question": "How many hotel nights do you pay for each year?",
-        "impact": 56,
-        "scenarios": [
-          {
-            "answer": 0,
-            "label": "None",
-            "firstCard": "amazon-store",
-            "action": "apply",
-            "wallet": [
-              "amazon-store"
-            ],
-            "net": 0,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 0,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 2,
-            "label": "1–3",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 5,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 5,
-            "originalWalletNetUnderAnswer": 0,
-            "decisionRegret": 5
-          },
-          {
-            "answer": 6,
-            "label": "4–9",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 14,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 14,
-            "originalWalletNetUnderAnswer": 0,
-            "decisionRegret": 14
-          },
-          {
-            "answer": 14,
-            "label": "10–19",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 32,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 32,
-            "originalWalletNetUnderAnswer": 0,
-            "decisionRegret": 32
-          },
-          {
-            "answer": 25,
-            "label": "20+",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 56,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 56,
-            "originalWalletNetUnderAnswer": 0,
-            "decisionRegret": 56
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
-      },
-      {
         "key": "paymentBehavior",
         "label": "paying in full",
         "step": "credit",
@@ -2247,10 +1937,10 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "amazon-store",
+            "firstCard": "freedom-rise",
             "action": "apply",
             "wallet": [
-              "amazon-store"
+              "freedom-rise"
             ],
             "net": 0,
             "changesFirstCard": false,
@@ -2313,10 +2003,12 @@
     ],
     "timeline": [
       {
-        "cardId": "amazon-store",
+        "cardId": "freedom-rise",
         "how": "apply",
         "month": 0,
-        "notes": [],
+        "notes": [
+          "Apply while you're under 5/24 (you'd be at 1/24 after this)."
+        ],
         "afterLoan": false
       }
     ],
@@ -2326,7 +2018,7 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "amazon-store",
+      "chosen": "freedom-rise",
       "disposition": "apply",
       "soloNet": 0,
       "benchmark": null,
@@ -2336,8 +2028,8 @@
   },
   {
     "id": "P09",
-    "firstCard": "bilt-blue",
-    "firstApplication": "bilt-blue",
+    "firstCard": "usb-altitude-go",
+    "firstApplication": "usb-altitude-go",
     "action": "apply",
     "wallet": [
       "bilt-blue",
@@ -2474,7 +2166,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "bilt-blue",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-blue",
@@ -2522,12 +2214,12 @@
         "label": "checked bags",
         "step": "travel",
         "question": "Do you check bags?",
-        "impact": 122,
+        "impact": 116,
         "scenarios": [
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "bilt-blue",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-blue",
@@ -2543,7 +2235,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "bilt-blue",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-blue",
@@ -2559,34 +2251,34 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-go"
+              "active-cash"
             ],
-            "net": 810,
+            "net": 804,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 122,
+            "netChange": 116,
             "originalWalletNetUnderAnswer": 688,
-            "decisionRegret": 122
+            "decisionRegret": 116
           },
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-go"
+              "active-cash"
             ],
-            "net": 810,
+            "net": 804,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 122,
+            "netChange": 116,
             "originalWalletNetUnderAnswer": 688,
-            "decisionRegret": 122
+            "decisionRegret": 116
           }
         ],
         "changesFirstCard": true,
@@ -2602,7 +2294,7 @@
           {
             "answer": 0,
             "label": "None",
-            "firstCard": "bilt-blue",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-blue",
@@ -2698,14 +2390,14 @@
     ],
     "timeline": [
       {
-        "cardId": "bilt-blue",
+        "cardId": "usb-altitude-go",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "bilt-blue",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -2718,14 +2410,14 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "bilt-blue",
+      "chosen": "usb-altitude-go",
       "disposition": "apply",
-      "soloNet": 478,
+      "soloNet": 473,
       "benchmark": {
         "cardId": "active-cash",
         "net": 475
       },
-      "delta": 3,
+      "delta": -2,
       "planNet": 688
     }
   },
@@ -3021,7 +2713,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -3037,7 +2729,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -3053,7 +2745,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -4429,97 +4121,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "travel.hotelNights",
-        "label": "paid hotel nights",
-        "step": "travel",
-        "question": "How many hotel nights do you pay for each year?",
-        "impact": 163,
-        "scenarios": [
-          {
-            "answer": 0,
-            "label": "None",
-            "firstCard": "citi-double-cash",
-            "action": "apply",
-            "wallet": [
-              "citi-double-cash",
-              "citi-strata"
-            ],
-            "net": 1341,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 1341,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 2,
-            "label": "1–3",
-            "firstCard": "citi-strata",
-            "action": "apply",
-            "wallet": [
-              "citi-strata",
-              "citi-double-cash"
-            ],
-            "net": 1354,
-            "changesFirstCard": true,
-            "changesPlan": false,
-            "netChange": 13,
-            "originalWalletNetUnderAnswer": 1354,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 6,
-            "label": "4–9",
-            "firstCard": "citi-strata",
-            "action": "apply",
-            "wallet": [
-              "citi-strata",
-              "citi-double-cash"
-            ],
-            "net": 1380,
-            "changesFirstCard": true,
-            "changesPlan": false,
-            "netChange": 39,
-            "originalWalletNetUnderAnswer": 1380,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 14,
-            "label": "10–19",
-            "firstCard": "citi-strata",
-            "action": "apply",
-            "wallet": [
-              "citi-strata",
-              "citi-double-cash"
-            ],
-            "net": 1432,
-            "changesFirstCard": true,
-            "changesPlan": false,
-            "netChange": 91,
-            "originalWalletNetUnderAnswer": 1432,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 25,
-            "label": "20+",
-            "firstCard": "citi-strata",
-            "action": "apply",
-            "wallet": [
-              "citi-strata",
-              "citi-double-cash"
-            ],
-            "net": 1504,
-            "changesFirstCard": true,
-            "changesPlan": false,
-            "netChange": 163,
-            "originalWalletNetUnderAnswer": 1504,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": false
       }
     ],
     "unanswered": [
@@ -5720,7 +5321,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
@@ -5728,7 +5329,7 @@
               "usb-altitude-connect"
             ],
             "net": 1801,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 584,
             "originalWalletNetUnderAnswer": 1217,
@@ -5737,7 +5338,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
@@ -5745,7 +5346,7 @@
               "usb-altitude-connect"
             ],
             "net": 2501,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 1284,
             "originalWalletNetUnderAnswer": 1217,
@@ -5754,7 +5355,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
@@ -5762,14 +5363,14 @@
               "boa-premium-elite"
             ],
             "net": 2506,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 1289,
             "originalWalletNetUnderAnswer": 1217,
             "decisionRegret": 1289
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -5853,7 +5454,7 @@
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -5869,7 +5470,7 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -5885,7 +5486,7 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -5902,7 +5503,7 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -6243,14 +5844,14 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "united-explorer",
               "active-cash"
             ],
             "net": 1505,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 418,
             "originalWalletNetUnderAnswer": 1087,
@@ -6259,14 +5860,14 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "united-quest",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "united-quest",
               "active-cash"
             ],
             "net": 2005,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 918,
             "originalWalletNetUnderAnswer": 1087,
@@ -6275,21 +5876,21 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "united-quest",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "united-quest",
               "active-cash"
             ],
             "net": 2005,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 918,
             "originalWalletNetUnderAnswer": 1087,
             "decisionRegret": 918
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -6318,7 +5919,7 @@
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -6334,7 +5935,7 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -6350,7 +5951,7 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -6366,7 +5967,7 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -6497,8 +6098,8 @@
   },
   {
     "id": "P21",
-    "firstCard": "citi-aa-platinum",
-    "firstApplication": "citi-aa-platinum",
+    "firstCard": "citi-double-cash",
+    "firstApplication": "citi-double-cash",
     "action": "apply",
     "wallet": [
       "citi-aa-platinum",
@@ -6636,7 +6237,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-aa-platinum",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-aa-platinum",
@@ -6698,14 +6299,14 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-aa-platinum",
+        "cardId": "citi-double-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "citi-double-cash",
+        "cardId": "citi-aa-platinum",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -6733,14 +6334,14 @@
       "citi-strata"
     ],
     "comparison": {
-      "chosen": "citi-aa-platinum",
+      "chosen": "citi-double-cash",
       "disposition": "apply",
-      "soloNet": 707,
+      "soloNet": 458,
       "benchmark": {
         "cardId": "active-cash",
         "net": 458
       },
-      "delta": 249,
+      "delta": 0,
       "planNet": 944
     }
   },
@@ -6903,7 +6504,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "sw-plus",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "sw-plus",
@@ -6919,7 +6520,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "sw-plus",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "sw-plus",
@@ -6935,7 +6536,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "sw-plus",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "sw-plus",
@@ -7488,7 +7089,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -7504,7 +7105,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -7520,7 +7121,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "alaska-visa",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "alaska-visa",
@@ -7796,14 +7397,14 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 763,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 305,
             "originalWalletNetUnderAnswer": 458,
@@ -7812,14 +7413,14 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 1183,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 725,
             "originalWalletNetUnderAnswer": 458,
@@ -7828,21 +7429,21 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 1183,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 725,
             "originalWalletNetUnderAnswer": 458,
             "decisionRegret": 725
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -8318,7 +7919,7 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -8326,7 +7927,7 @@
               "citi-double-cash"
             ],
             "net": 1738,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 295,
             "originalWalletNetUnderAnswer": 1530,
@@ -8335,7 +7936,7 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -8343,7 +7944,7 @@
               "citi-double-cash"
             ],
             "net": 1790,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 347,
             "originalWalletNetUnderAnswer": 1582,
@@ -8352,7 +7953,7 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -8360,14 +7961,14 @@
               "citi-double-cash"
             ],
             "net": 1862,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 419,
             "originalWalletNetUnderAnswer": 1654,
             "decisionRegret": 208
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -8397,7 +7998,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-double-cash",
@@ -8405,7 +8006,7 @@
               "boa-premium-elite"
             ],
             "net": 1459,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 16,
             "originalWalletNetUnderAnswer": 1443,
@@ -8414,7 +8015,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "boa-premium-elite",
@@ -8422,7 +8023,7 @@
               "citi-strata"
             ],
             "net": 1549,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 106,
             "originalWalletNetUnderAnswer": 1443,
@@ -8431,7 +8032,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "boa-premium-elite",
@@ -8439,14 +8040,14 @@
               "citi-strata"
             ],
             "net": 1549,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 106,
             "originalWalletNetUnderAnswer": 1443,
             "decisionRegret": 106
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       }
     ],
@@ -8514,15 +8115,15 @@
   },
   {
     "id": "P26",
-    "firstCard": "marriott-brilliant",
-    "firstApplication": "marriott-brilliant",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "marriott-brilliant",
-      "bilt-palladium",
+      "active-cash",
       "usb-altitude-go"
     ],
-    "net": 1461,
+    "net": 1446,
     "score": null,
     "assumptions": [
       {
@@ -8643,23 +8244,23 @@
         "label": "paying in full",
         "step": "credit",
         "question": "Do you always pay your statement balance in full?",
-        "impact": 1461,
+        "impact": 1446,
         "scenarios": [
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "marriott-brilliant",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "marriott-brilliant",
-              "bilt-palladium",
+              "active-cash",
               "usb-altitude-go"
             ],
-            "net": 1461,
+            "net": 1446,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 1461,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           },
           {
@@ -8671,8 +8272,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -1461,
-            "originalWalletNetUnderAnswer": 1461,
+            "netChange": -1446,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           },
           {
@@ -8684,8 +8285,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -1461,
-            "originalWalletNetUnderAnswer": 1461,
+            "netChange": -1446,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           }
         ],
@@ -8697,46 +8298,46 @@
         "label": "checked bags",
         "step": "travel",
         "question": "Do you check bags?",
-        "impact": 937,
+        "impact": 952,
         "scenarios": [
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "marriott-brilliant",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "marriott-brilliant",
-              "bilt-palladium",
+              "active-cash",
               "usb-altitude-go"
             ],
-            "net": 1461,
+            "net": 1446,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 1461,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           },
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "united-explorer",
               "marriott-boundless",
-              "bilt-palladium"
+              "active-cash"
             ],
-            "net": 1915,
-            "changesFirstCard": true,
+            "net": 1890,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 454,
-            "originalWalletNetUnderAnswer": 1461,
-            "decisionRegret": 454
+            "netChange": 444,
+            "originalWalletNetUnderAnswer": 1446,
+            "decisionRegret": 444
           },
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "united-quest",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "united-quest",
@@ -8746,14 +8347,14 @@
             "net": 2398,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 937,
-            "originalWalletNetUnderAnswer": 1461,
-            "decisionRegret": 937
+            "netChange": 952,
+            "originalWalletNetUnderAnswer": 1446,
+            "decisionRegret": 952
           },
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "united-quest",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "united-quest",
@@ -8763,9 +8364,9 @@
             "net": 2398,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 937,
-            "originalWalletNetUnderAnswer": 1461,
-            "decisionRegret": 937
+            "netChange": 952,
+            "originalWalletNetUnderAnswer": 1446,
+            "decisionRegret": 952
           }
         ],
         "changesFirstCard": true,
@@ -8776,12 +8377,12 @@
         "label": "quarterly activation",
         "step": "spend",
         "question": "Will you activate quarterly bonus categories?",
-        "impact": 50,
+        "impact": 65,
         "scenarios": [
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "marriott-boundless",
+            "firstCard": "freedom-flex",
             "action": "apply",
             "wallet": [
               "marriott-boundless",
@@ -8790,31 +8391,31 @@
             "net": 1422,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -39,
-            "originalWalletNetUnderAnswer": 1461,
+            "netChange": -24,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           },
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "marriott-brilliant",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "marriott-brilliant",
-              "bilt-palladium",
+              "active-cash",
               "usb-altitude-go"
             ],
-            "net": 1461,
+            "net": 1446,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 1461,
+            "originalWalletNetUnderAnswer": 1446,
             "decisionRegret": 0
           },
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "marriott-boundless",
+            "firstCard": "freedom-flex",
             "action": "apply",
             "wallet": [
               "marriott-boundless",
@@ -8824,9 +8425,9 @@
             "net": 1511,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 50,
-            "originalWalletNetUnderAnswer": 1461,
-            "decisionRegret": 50
+            "netChange": 65,
+            "originalWalletNetUnderAnswer": 1446,
+            "decisionRegret": 65
           }
         ],
         "changesFirstCard": true,
@@ -8850,21 +8451,21 @@
     ],
     "timeline": [
       {
-        "cardId": "marriott-brilliant",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "marriott-brilliant",
         "how": "apply",
         "month": 6,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "bilt-palladium",
+        "cardId": "usb-altitude-go",
         "how": "apply",
         "month": 12,
         "notes": [],
@@ -8875,23 +8476,21 @@
     "waitlistedApply": false,
     "studentCards": [],
     "annualFeeCards": [
-      "marriott-brilliant",
-      "bilt-palladium"
+      "marriott-brilliant"
     ],
     "feeCards": [
-      "marriott-brilliant",
-      "bilt-palladium"
+      "marriott-brilliant"
     ],
     "comparison": {
-      "chosen": "marriott-brilliant",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 1125,
+      "soloNet": 1032,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1032
       },
-      "delta": 93,
-      "planNet": 1461
+      "delta": 0,
+      "planNet": 1446
     }
   },
   {
@@ -9356,14 +8955,14 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 732,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 229,
             "originalWalletNetUnderAnswer": 503,
@@ -9372,14 +8971,14 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 1012,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 509,
             "originalWalletNetUnderAnswer": 503,
@@ -9388,21 +8987,21 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
               "active-cash"
             ],
             "net": 1012,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 509,
             "originalWalletNetUnderAnswer": 503,
             "decisionRegret": 509
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -13253,7 +12852,7 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -13269,7 +12868,7 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -13285,7 +12884,7 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "bilt-palladium",
+            "firstCard": "usb-altitude-go",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
@@ -13313,7 +12912,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "usb-altitude-go",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -13321,7 +12920,7 @@
               "discover-it"
             ],
             "net": 927,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 162,
             "originalWalletNetUnderAnswer": 765,
@@ -13360,7 +12959,7 @@
             "decisionRegret": 0
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -13368,7 +12967,7 @@
         "label": "checked bags",
         "step": "travel",
         "question": "Do you check bags?",
-        "impact": 55,
+        "impact": 44,
         "scenarios": [
           {
             "answer": 0,
@@ -13405,37 +13004,37 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-go"
+              "active-cash"
             ],
-            "net": 820,
-            "changesFirstCard": true,
+            "net": 809,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 55,
+            "netChange": 44,
             "originalWalletNetUnderAnswer": 765,
-            "decisionRegret": 55
+            "decisionRegret": 44
           },
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-go"
+              "active-cash"
             ],
-            "net": 820,
-            "changesFirstCard": true,
+            "net": 809,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 55,
+            "netChange": 44,
             "originalWalletNetUnderAnswer": 765,
-            "decisionRegret": 55
+            "decisionRegret": 44
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       }
     ],
@@ -14178,7 +13777,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
@@ -14194,7 +13793,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "delta-gold",
@@ -14221,14 +13820,14 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "bilt-blue",
+            "firstCard": "discover-it",
             "action": "apply",
             "wallet": [
               "bilt-blue",
               "discover-it"
             ],
             "net": 635,
-            "changesFirstCard": false,
+            "changesFirstCard": true,
             "changesPlan": true,
             "netChange": 106,
             "originalWalletNetUnderAnswer": 529,
@@ -14265,7 +13864,7 @@
             "decisionRegret": 0
           }
         ],
-        "changesFirstCard": false,
+        "changesFirstCard": true,
         "changesPlan": true
       }
     ],
@@ -14496,92 +14095,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "travel.hotelNights",
-        "label": "paid hotel nights",
-        "step": "travel",
-        "question": "How many hotel nights do you pay for each year?",
-        "impact": 87,
-        "scenarios": [
-          {
-            "answer": 0,
-            "label": "None",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash"
-            ],
-            "net": 200,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 200,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 2,
-            "label": "1–3",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash"
-            ],
-            "net": 206,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 6,
-            "originalWalletNetUnderAnswer": 206,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 6,
-            "label": "4–9",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash"
-            ],
-            "net": 218,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 18,
-            "originalWalletNetUnderAnswer": 218,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 14,
-            "label": "10–19",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash"
-            ],
-            "net": 242,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 42,
-            "originalWalletNetUnderAnswer": 242,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 25,
-            "label": "20+",
-            "firstCard": "usb-altitude-connect",
-            "action": "apply",
-            "wallet": [
-              "usb-altitude-connect"
-            ],
-            "net": 287,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 87,
-            "originalWalletNetUnderAnswer": 275,
-            "decisionRegret": 12
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -14628,8 +14141,8 @@
   },
   {
     "id": "P42",
-    "firstCard": "venture",
-    "firstApplication": "venture",
+    "firstCard": "wf-autograph",
+    "firstApplication": "wf-autograph",
     "action": "apply",
     "wallet": [
       "venture",
@@ -14766,7 +14279,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14819,7 +14332,7 @@
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14835,7 +14348,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "united-explorer",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14843,7 +14356,7 @@
               "united-explorer"
             ],
             "net": 3228,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 480,
             "originalWalletNetUnderAnswer": 2748,
@@ -14852,7 +14365,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "united-club",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14860,7 +14373,7 @@
               "wf-autograph"
             ],
             "net": 3642,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 894,
             "originalWalletNetUnderAnswer": 2748,
@@ -14869,7 +14382,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "united-club",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14877,14 +14390,14 @@
               "wf-autograph"
             ],
             "net": 3642,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 894,
             "originalWalletNetUnderAnswer": 2748,
             "decisionRegret": 894
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -14897,7 +14410,7 @@
           {
             "answer": 0,
             "label": "None",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -14913,14 +14426,14 @@
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "bilt-palladium",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
               "wf-autograph"
             ],
             "net": 2827,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 79,
             "originalWalletNetUnderAnswer": 2761,
@@ -14929,14 +14442,14 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "bilt-palladium",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
               "wf-autograph"
             ],
             "net": 3017,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 269,
             "originalWalletNetUnderAnswer": 2787,
@@ -14945,14 +14458,14 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "bilt-palladium",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
               "wf-autograph"
             ],
             "net": 3069,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 321,
             "originalWalletNetUnderAnswer": 2840,
@@ -14961,21 +14474,21 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "bilt-palladium",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
               "wf-autograph"
             ],
             "net": 3141,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 393,
             "originalWalletNetUnderAnswer": 2911,
             "decisionRegret": 230
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -14988,7 +14501,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -15005,7 +14518,7 @@
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -15021,7 +14534,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "venture",
+            "firstCard": "wf-autograph",
             "action": "apply",
             "wallet": [
               "venture",
@@ -15058,19 +14571,19 @@
     ],
     "timeline": [
       {
-        "cardId": "venture",
+        "cardId": "wf-autograph",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Capital One usually approves about one new card every 6 months."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "wf-autograph",
+        "cardId": "venture",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Capital One usually approves about one new card every 6 months."
+        ],
         "afterLoan": false
       }
     ],
@@ -15084,14 +14597,14 @@
       "venture"
     ],
     "comparison": {
-      "chosen": "venture",
+      "chosen": "wf-autograph",
       "disposition": "apply",
-      "soloNet": 2411,
+      "soloNet": 1928,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1728
       },
-      "delta": 683,
+      "delta": 200,
       "planNet": 2748
     }
   },
@@ -17872,8 +17385,8 @@
   },
   {
     "id": "P52",
-    "firstCard": "citi-strata",
-    "firstApplication": "citi-strata",
+    "firstCard": "citi-double-cash",
+    "firstApplication": "citi-double-cash",
     "action": "apply",
     "wallet": [
       "citi-strata",
@@ -18006,7 +17519,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -18060,7 +17573,7 @@
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -18077,7 +17590,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -18094,7 +17607,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -18111,7 +17624,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -18153,19 +17666,19 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-strata",
+        "cardId": "citi-double-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "citi-double-cash",
+        "cardId": "citi-strata",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
+        ],
         "afterLoan": false
       },
       {
@@ -18186,21 +17699,21 @@
       "citi-strata"
     ],
     "comparison": {
-      "chosen": "citi-strata",
+      "chosen": "citi-double-cash",
       "disposition": "apply",
-      "soloNet": 1398,
+      "soloNet": 1195,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1310
       },
-      "delta": 88,
+      "delta": -115,
       "planNet": 2119
     }
   },
   {
     "id": "P53",
-    "firstCard": "citi-aa-platinum",
-    "firstApplication": "citi-aa-platinum",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "active-cash",
@@ -18318,7 +17831,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-aa-platinum",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -18379,14 +17892,14 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-aa-platinum",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "citi-aa-platinum",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -18410,14 +17923,14 @@
       "citi-aa-platinum"
     ],
     "comparison": {
-      "chosen": "citi-aa-platinum",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 811,
+      "soloNet": 2231,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2231
       },
-      "delta": -1420,
+      "delta": 0,
       "planNet": 3483
     }
   },
@@ -18876,9 +18389,10 @@
     "action": "apply",
     "wallet": [
       "active-cash",
-      "wf-autograph"
+      "wf-autograph",
+      "amex-bce"
     ],
-    "net": 1219,
+    "net": 1363,
     "score": null,
     "assumptions": [
       {
@@ -18999,7 +18513,7 @@
         "label": "paying in full",
         "step": "credit",
         "question": "Do you always pay your statement balance in full?",
-        "impact": 1219,
+        "impact": 1363,
         "scenarios": [
           {
             "answer": "always",
@@ -19008,13 +18522,14 @@
             "action": "apply",
             "wallet": [
               "active-cash",
-              "wf-autograph"
+              "wf-autograph",
+              "amex-bce"
             ],
-            "net": 1219,
+            "net": 1363,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 1219,
+            "originalWalletNetUnderAnswer": 1363,
             "decisionRegret": 0
           },
           {
@@ -19026,8 +18541,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -1219,
-            "originalWalletNetUnderAnswer": 1219,
+            "netChange": -1363,
+            "originalWalletNetUnderAnswer": 1363,
             "decisionRegret": 0
           },
           {
@@ -19039,8 +18554,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -1219,
-            "originalWalletNetUnderAnswer": 1219,
+            "netChange": -1363,
+            "originalWalletNetUnderAnswer": 1363,
             "decisionRegret": 0
           }
         ],
@@ -19048,103 +18563,11 @@
         "changesPlan": true
       },
       {
-        "key": "travel.hotelNights",
-        "label": "paid hotel nights",
-        "step": "travel",
-        "question": "How many hotel nights do you pay for each year?",
-        "impact": 222,
-        "scenarios": [
-          {
-            "answer": 0,
-            "label": "None",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash",
-              "wf-autograph"
-            ],
-            "net": 1219,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 1219,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 2,
-            "label": "1–3",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash",
-              "wf-autograph"
-            ],
-            "net": 1228,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 9,
-            "originalWalletNetUnderAnswer": 1228,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 6,
-            "label": "4–9",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash",
-              "wf-autograph"
-            ],
-            "net": 1246,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 27,
-            "originalWalletNetUnderAnswer": 1246,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 14,
-            "label": "10–19",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash",
-              "wf-autograph"
-            ],
-            "net": 1282,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 63,
-            "originalWalletNetUnderAnswer": 1282,
-            "decisionRegret": 0
-          },
-          {
-            "answer": 25,
-            "label": "20+",
-            "firstCard": "active-cash",
-            "action": "apply",
-            "wallet": [
-              "active-cash",
-              "usb-altitude-connect",
-              "usb-altitude-go"
-            ],
-            "net": 1441,
-            "changesFirstCard": false,
-            "changesPlan": true,
-            "netChange": 222,
-            "originalWalletNetUnderAnswer": 1332,
-            "decisionRegret": 109
-          }
-        ],
-        "changesFirstCard": false,
-        "changesPlan": true
-      },
-      {
         "key": "rotatingActivation",
         "label": "quarterly activation",
         "step": "spend",
         "question": "Will you activate quarterly bonus categories?",
-        "impact": 180,
+        "impact": 36,
         "scenarios": [
           {
             "answer": "yes",
@@ -19159,9 +18582,9 @@
             "net": 1399,
             "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 180,
-            "originalWalletNetUnderAnswer": 1219,
-            "decisionRegret": 180
+            "netChange": 36,
+            "originalWalletNetUnderAnswer": 1363,
+            "decisionRegret": 36
           },
           {
             "answer": "no",
@@ -19170,13 +18593,14 @@
             "action": "apply",
             "wallet": [
               "active-cash",
-              "wf-autograph"
+              "wf-autograph",
+              "amex-bce"
             ],
-            "net": 1219,
+            "net": 1363,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 1219,
+            "originalWalletNetUnderAnswer": 1363,
             "decisionRegret": 0
           },
           {
@@ -19186,15 +18610,15 @@
             "action": "apply",
             "wallet": [
               "active-cash",
-              "usb-altitude-go",
-              "discover-it"
+              "wf-autograph",
+              "amex-bce"
             ],
-            "net": 1340,
+            "net": 1363,
             "changesFirstCard": false,
-            "changesPlan": true,
-            "netChange": 121,
-            "originalWalletNetUnderAnswer": 1219,
-            "decisionRegret": 121
+            "changesPlan": false,
+            "netChange": 0,
+            "originalWalletNetUnderAnswer": 1363,
+            "decisionRegret": 0
           }
         ],
         "changesFirstCard": false,
@@ -19235,6 +18659,13 @@
         "month": 6,
         "notes": [],
         "afterLoan": false
+      },
+      {
+        "cardId": "amex-bce",
+        "how": "apply",
+        "month": 12,
+        "notes": [],
+        "afterLoan": false
       }
     ],
     "heldAdvice": [],
@@ -19251,7 +18682,7 @@
         "net": 1044
       },
       "delta": 0,
-      "planNet": 1219
+      "planNet": 1363
     }
   },
   {
@@ -20416,62 +19847,6 @@
             "changesFirstCard": true,
             "changesPlan": true,
             "netChange": -146,
-            "originalWalletNetUnderAnswer": 146,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 15,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 161,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 15,
-            "originalWalletNetUnderAnswer": 146,
-            "decisionRegret": 15
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 146,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 146,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 146,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
             "originalWalletNetUnderAnswer": 146,
             "decisionRegret": 0
           }
@@ -22072,8 +21447,8 @@
   },
   {
     "id": "P67",
-    "firstCard": "sw-plus",
-    "firstApplication": "sw-plus",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "active-cash",
@@ -22196,7 +21571,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -22250,7 +21625,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -22267,7 +21642,7 @@
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -22284,7 +21659,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -22319,19 +21694,19 @@
     ],
     "timeline": [
       {
-        "cardId": "sw-plus",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Apply while you're under 5/24 (you'd be at 1/24 after this)."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "sw-plus",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Apply while you're under 5/24 (you'd be at 2/24 after this)."
+        ],
         "afterLoan": false
       },
       {
@@ -22352,14 +21727,14 @@
       "sw-plus"
     ],
     "comparison": {
-      "chosen": "sw-plus",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 461,
+      "soloNet": 1166,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1166
       },
-      "delta": -705,
+      "delta": 0,
       "planNet": 1802
     }
   },
@@ -23076,7 +22451,7 @@
   {
     "id": "P71",
     "firstCard": "delta-blue",
-    "firstApplication": "united-explorer",
+    "firstApplication": "active-cash",
     "action": "downgrade",
     "wallet": [
       "united-explorer",
@@ -23265,16 +22640,14 @@
     ],
     "timeline": [
       {
-        "cardId": "united-explorer",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Apply while you're under 5/24 (you'd be at 2/24 after this)."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "csp",
+        "cardId": "united-explorer",
         "how": "apply",
         "month": 6,
         "notes": [
@@ -23283,10 +22656,12 @@
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "csp",
         "how": "apply",
         "month": 12,
-        "notes": [],
+        "notes": [
+          "Apply while you're under 5/24 (you'd be at 4/24 after this)."
+        ],
         "afterLoan": false
       },
       {
@@ -23327,21 +22702,21 @@
       "csp"
     ],
     "comparison": {
-      "chosen": "united-explorer",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 2543,
+      "soloNet": 2365,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2365
       },
-      "delta": 178,
+      "delta": 0,
       "planNet": 3672
     }
   },
   {
     "id": "P72",
-    "firstCard": "csp",
-    "firstApplication": "csp",
+    "firstCard": "freedom-unlimited",
+    "firstApplication": "freedom-unlimited",
     "action": "apply",
     "wallet": [
       "csp",
@@ -23475,7 +22850,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -23530,7 +22905,7 @@
           {
             "answer": 0,
             "label": "None",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -23557,7 +22932,7 @@
               "amazon-prime"
             ],
             "net": 2986,
-            "changesFirstCard": false,
+            "changesFirstCard": true,
             "changesPlan": true,
             "netChange": 209,
             "originalWalletNetUnderAnswer": 2848,
@@ -23575,7 +22950,7 @@
               "amazon-prime"
             ],
             "net": 3229,
-            "changesFirstCard": false,
+            "changesFirstCard": true,
             "changesPlan": true,
             "netChange": 452,
             "originalWalletNetUnderAnswer": 2863,
@@ -23593,7 +22968,7 @@
               "amazon-prime"
             ],
             "net": 3259,
-            "changesFirstCard": false,
+            "changesFirstCard": true,
             "changesPlan": true,
             "netChange": 482,
             "originalWalletNetUnderAnswer": 2893,
@@ -23611,14 +22986,14 @@
               "amazon-prime"
             ],
             "net": 3300,
-            "changesFirstCard": false,
+            "changesFirstCard": true,
             "changesPlan": true,
             "netChange": 523,
             "originalWalletNetUnderAnswer": 2935,
             "decisionRegret": 365
           }
         ],
-        "changesFirstCard": false,
+        "changesFirstCard": true,
         "changesPlan": true
       }
     ],
@@ -23644,7 +23019,7 @@
     ],
     "timeline": [
       {
-        "cardId": "csp",
+        "cardId": "freedom-unlimited",
         "how": "apply",
         "month": 0,
         "notes": [
@@ -23653,7 +23028,7 @@
         "afterLoan": false
       },
       {
-        "cardId": "freedom-unlimited",
+        "cardId": "csp",
         "how": "apply",
         "month": 6,
         "notes": [
@@ -23691,14 +23066,14 @@
       "amazon-prime"
     ],
     "comparison": {
-      "chosen": "csp",
+      "chosen": "freedom-unlimited",
       "disposition": "apply",
-      "soloNet": 2173,
+      "soloNet": 1917,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2119
       },
-      "delta": 54,
+      "delta": -202,
       "planNet": 2777
     }
   },
@@ -24846,7 +24221,7 @@
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -24864,7 +24239,7 @@
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -24882,7 +24257,7 @@
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -24911,7 +24286,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -24945,7 +24320,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -24990,7 +24365,7 @@
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -25007,7 +24382,7 @@
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -25024,7 +24399,7 @@
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -25041,7 +24416,7 @@
           {
             "answer": 25,
             "label": "20+",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -26465,62 +25840,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 20,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 197,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 20,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 20
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 177,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 177,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -26572,8 +25891,8 @@
   },
   {
     "id": "P83",
-    "firstCard": "citi-strata",
-    "firstApplication": "citi-strata",
+    "firstCard": "citi-double-cash",
+    "firstApplication": "citi-double-cash",
     "action": "apply",
     "wallet": [
       "citi-double-cash",
@@ -26707,7 +26026,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-double-cash",
@@ -26779,19 +26098,19 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-strata",
+        "cardId": "citi-double-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "citi-double-cash",
+        "cardId": "citi-strata",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
+        ],
         "afterLoan": false
       }
     ],
@@ -26820,14 +26139,14 @@
       "venture-x"
     ],
     "comparison": {
-      "chosen": "citi-strata",
+      "chosen": "citi-double-cash",
       "disposition": "apply",
-      "soloNet": 1100,
+      "soloNet": 1198,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1298
       },
-      "delta": -198,
+      "delta": -100,
       "planNet": 1511
     }
   },
@@ -27465,13 +26784,6 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-aa-platinum",
-        "how": "apply",
-        "month": 0,
-        "notes": [],
-        "afterLoan": false
-      },
-      {
         "cardId": "citi-double-cash",
         "how": "downgrade",
         "month": 0,
@@ -27480,6 +26792,13 @@
         ],
         "afterLoan": false,
         "from": "citi-strata"
+      },
+      {
+        "cardId": "citi-aa-platinum",
+        "how": "apply",
+        "month": 6,
+        "notes": [],
+        "afterLoan": false
       },
       {
         "cardId": "quicksilver",
@@ -28628,62 +27947,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 11,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 188,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 11,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 11
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 177,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 177,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 177,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -29393,8 +28656,8 @@
   },
   {
     "id": "P94",
-    "firstCard": "sw-plus",
-    "firstApplication": "sw-plus",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "active-cash",
@@ -29527,7 +28790,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -29581,7 +28844,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -29598,7 +28861,7 @@
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -29615,7 +28878,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "sw-plus",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -29656,19 +28919,19 @@
     ],
     "timeline": [
       {
-        "cardId": "sw-plus",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Apply while you're under 5/24 (you'd be at 1/24 after this)."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "sw-plus",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Apply while you're under 5/24 (you'd be at 2/24 after this)."
+        ],
         "afterLoan": false
       },
       {
@@ -29689,14 +28952,14 @@
       "sw-plus"
     ],
     "comparison": {
-      "chosen": "sw-plus",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 881,
+      "soloNet": 2378,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2378
       },
-      "delta": -1497,
+      "delta": 0,
       "planNet": 3659
     }
   },
@@ -30712,8 +29975,8 @@
   },
   {
     "id": "P99",
-    "firstCard": "citi-strata",
-    "firstApplication": "citi-strata",
+    "firstCard": "citi-double-cash",
+    "firstApplication": "citi-double-cash",
     "action": "apply",
     "wallet": [
       "citi-strata",
@@ -30845,7 +30108,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -30898,7 +30161,7 @@
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "citi-strata",
+            "firstCard": "citi-double-cash",
             "action": "apply",
             "wallet": [
               "citi-strata",
@@ -30922,7 +30185,7 @@
               "citi-double-cash"
             ],
             "net": 4036,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 881,
             "originalWalletNetUnderAnswer": 3155,
@@ -30939,7 +30202,7 @@
               "citi-double-cash"
             ],
             "net": 4036,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 881,
             "originalWalletNetUnderAnswer": 3155,
@@ -30956,14 +30219,14 @@
               "citi-double-cash"
             ],
             "net": 4036,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 881,
             "originalWalletNetUnderAnswer": 3155,
             "decisionRegret": 881
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       }
     ],
@@ -30989,19 +30252,19 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-strata",
+        "cardId": "citi-double-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "citi-double-cash",
+        "cardId": "citi-strata",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Citi gives a Strata bonus only if you haven't had one on this card in 48 months."
+        ],
         "afterLoan": false
       }
     ],
@@ -31015,21 +30278,21 @@
       "citi-strata"
     ],
     "comparison": {
-      "chosen": "citi-strata",
+      "chosen": "citi-double-cash",
       "disposition": "apply",
-      "soloNet": 2031,
+      "soloNet": 2011,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2078
       },
-      "delta": -47,
+      "delta": -67,
       "planNet": 3155
     }
   },
   {
     "id": "P100",
-    "firstCard": "citi-aa-platinum",
-    "firstApplication": "citi-aa-platinum",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "citi-aa-platinum",
@@ -31146,7 +30409,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "citi-aa-platinum",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "citi-aa-platinum",
@@ -31206,14 +30469,14 @@
     ],
     "timeline": [
       {
-        "cardId": "citi-aa-platinum",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "citi-aa-platinum",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -31230,14 +30493,14 @@
       "citi-aa-platinum"
     ],
     "comparison": {
-      "chosen": "citi-aa-platinum",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 321,
+      "soloNet": 217,
       "benchmark": {
         "cardId": "active-cash",
         "net": 217
       },
-      "delta": 104,
+      "delta": 0,
       "planNet": 538
     }
   },
@@ -32723,8 +31986,8 @@
   },
   {
     "id": "P107",
-    "firstCard": "united-explorer",
-    "firstApplication": "united-explorer",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "active-cash",
@@ -32847,7 +32110,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -32901,7 +32164,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -32918,7 +32181,7 @@
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -32935,7 +32198,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "united-explorer",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -32970,19 +32233,19 @@
     ],
     "timeline": [
       {
-        "cardId": "united-explorer",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Apply while you're under 5/24 (you'd be at 2/24 after this)."
-        ],
+        "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "active-cash",
+        "cardId": "united-explorer",
         "how": "apply",
         "month": 6,
-        "notes": [],
+        "notes": [
+          "Apply while you're under 5/24 (you'd be at 3/24 after this)."
+        ],
         "afterLoan": false
       },
       {
@@ -33003,14 +32266,14 @@
       "united-explorer"
     ],
     "comparison": {
-      "chosen": "united-explorer",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 792,
+      "soloNet": 2432,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2432
       },
-      "delta": -1640,
+      "delta": 0,
       "planNet": 3742
     }
   },
@@ -34068,62 +33331,6 @@
         ],
         "changesFirstCard": true,
         "changesPlan": true
-      },
-      {
-        "key": "rotatingActivation",
-        "label": "quarterly activation",
-        "step": "spend",
-        "question": "Will you activate quarterly bonus categories?",
-        "impact": 22,
-        "scenarios": [
-          {
-            "answer": "yes",
-            "label": "yes",
-            "firstCard": "discover-student",
-            "action": "apply",
-            "wallet": [
-              "discover-student"
-            ],
-            "net": 166,
-            "changesFirstCard": true,
-            "changesPlan": true,
-            "netChange": 22,
-            "originalWalletNetUnderAnswer": 144,
-            "decisionRegret": 22
-          },
-          {
-            "answer": "no",
-            "label": "no",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 144,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 144,
-            "decisionRegret": 0
-          },
-          {
-            "answer": "unsure",
-            "label": "unsure",
-            "firstCard": "freedom-rise",
-            "action": "apply",
-            "wallet": [
-              "freedom-rise"
-            ],
-            "net": 144,
-            "changesFirstCard": false,
-            "changesPlan": false,
-            "netChange": 0,
-            "originalWalletNetUnderAnswer": 144,
-            "decisionRegret": 0
-          }
-        ],
-        "changesFirstCard": true,
-        "changesPlan": true
       }
     ],
     "unanswered": [
@@ -34646,7 +33853,7 @@
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "csp",
+            "firstCard": "freedom-unlimited",
             "action": "apply",
             "wallet": [
               "csp",
@@ -34725,7 +33932,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "freedom-flex",
+            "firstCard": "active-cash",
             "action": "apply",
             "wallet": [
               "active-cash",
@@ -34734,7 +33941,7 @@
               "amex-bce"
             ],
             "net": 1833,
-            "changesFirstCard": true,
+            "changesFirstCard": false,
             "changesPlan": true,
             "netChange": 277,
             "originalWalletNetUnderAnswer": 1556,
@@ -34925,13 +34132,14 @@
   },
   {
     "id": "P114",
-    "firstCard": "one-key",
-    "firstApplication": "one-key",
+    "firstCard": "amex-bce",
+    "firstApplication": "amex-bce",
     "action": "apply",
     "wallet": [
-      "one-key"
+      "amex-bce",
+      "active-cash"
     ],
-    "net": 353,
+    "net": 464,
     "score": null,
     "assumptions": [
       {
@@ -35057,73 +34265,74 @@
         "label": "checked bags",
         "step": "travel",
         "question": "Do you check bags?",
-        "impact": 1206,
+        "impact": 1160,
         "scenarios": [
           {
             "answer": 0,
             "label": "No checked bags",
-            "firstCard": "one-key",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
-              "one-key"
+              "amex-bce",
+              "active-cash"
             ],
-            "net": 353,
+            "net": 464,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 353,
+            "originalWalletNetUnderAnswer": 464,
             "decisionRegret": 0
           },
           {
             "answer": 1,
             "label": "1 bag per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-connect"
+              "amex-bce"
             ],
-            "net": 999,
-            "changesFirstCard": true,
+            "net": 1064,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 646,
-            "originalWalletNetUnderAnswer": 353,
-            "decisionRegret": 646
+            "netChange": 600,
+            "originalWalletNetUnderAnswer": 464,
+            "decisionRegret": 600
           },
           {
             "answer": 2,
             "label": "2 bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-connect"
+              "amex-bce"
             ],
-            "net": 1559,
-            "changesFirstCard": true,
+            "net": 1624,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 1206,
-            "originalWalletNetUnderAnswer": 353,
-            "decisionRegret": 1206
+            "netChange": 1160,
+            "originalWalletNetUnderAnswer": 464,
+            "decisionRegret": 1160
           },
           {
             "answer": 3,
             "label": "3+ bags per trip",
-            "firstCard": "delta-gold",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
               "delta-gold",
-              "usb-altitude-connect"
+              "amex-bce"
             ],
-            "net": 1559,
-            "changesFirstCard": true,
+            "net": 1624,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 1206,
-            "originalWalletNetUnderAnswer": 353,
-            "decisionRegret": 1206
+            "netChange": 1160,
+            "originalWalletNetUnderAnswer": 464,
+            "decisionRegret": 1160
           }
         ],
-        "changesFirstCard": true,
+        "changesFirstCard": false,
         "changesPlan": true
       },
       {
@@ -35131,21 +34340,22 @@
         "label": "paying in full",
         "step": "credit",
         "question": "Do you always pay your statement balance in full?",
-        "impact": 353,
+        "impact": 464,
         "scenarios": [
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "one-key",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
-              "one-key"
+              "amex-bce",
+              "active-cash"
             ],
-            "net": 353,
+            "net": 464,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 353,
+            "originalWalletNetUnderAnswer": 464,
             "decisionRegret": 0
           },
           {
@@ -35157,8 +34367,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -353,
-            "originalWalletNetUnderAnswer": 353,
+            "netChange": -464,
+            "originalWalletNetUnderAnswer": 464,
             "decisionRegret": 0
           },
           {
@@ -35170,8 +34380,8 @@
             "net": 0,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": -353,
-            "originalWalletNetUnderAnswer": 353,
+            "netChange": -464,
+            "originalWalletNetUnderAnswer": 464,
             "decisionRegret": 0
           }
         ],
@@ -35183,68 +34393,71 @@
         "label": "paid hotel nights",
         "step": "travel",
         "question": "How many hotel nights do you pay for each year?",
-        "impact": 236,
+        "impact": 125,
         "scenarios": [
           {
             "answer": 0,
             "label": "None",
-            "firstCard": "one-key",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
-              "one-key"
+              "amex-bce",
+              "active-cash"
             ],
-            "net": 353,
+            "net": 464,
             "changesFirstCard": false,
             "changesPlan": false,
             "netChange": 0,
-            "originalWalletNetUnderAnswer": 353,
+            "originalWalletNetUnderAnswer": 464,
             "decisionRegret": 0
           },
           {
             "answer": 2,
             "label": "1–3",
-            "firstCard": "one-key",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
-              "one-key"
+              "amex-bce",
+              "active-cash"
             ],
-            "net": 357,
+            "net": 470,
             "changesFirstCard": false,
             "changesPlan": false,
-            "netChange": 4,
-            "originalWalletNetUnderAnswer": 357,
+            "netChange": 6,
+            "originalWalletNetUnderAnswer": 470,
             "decisionRegret": 0
           },
           {
             "answer": 6,
             "label": "4–9",
-            "firstCard": "bilt-palladium",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
-              "bilt-palladium"
+              "bilt-palladium",
+              "amex-bce"
             ],
-            "net": 377,
-            "changesFirstCard": true,
+            "net": 515,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 24,
-            "originalWalletNetUnderAnswer": 366,
-            "decisionRegret": 11
+            "netChange": 51,
+            "originalWalletNetUnderAnswer": 482,
+            "decisionRegret": 33
           },
           {
             "answer": 14,
             "label": "10–19",
-            "firstCard": "bilt-palladium",
+            "firstCard": "amex-bce",
             "action": "apply",
             "wallet": [
               "bilt-palladium",
-              "usb-altitude-connect"
+              "amex-bce"
             ],
-            "net": 523,
-            "changesFirstCard": true,
+            "net": 539,
+            "changesFirstCard": false,
             "changesPlan": true,
-            "netChange": 170,
-            "originalWalletNetUnderAnswer": 384,
-            "decisionRegret": 139
+            "netChange": 75,
+            "originalWalletNetUnderAnswer": 506,
+            "decisionRegret": 33
           },
           {
             "answer": 25,
@@ -35258,9 +34471,9 @@
             "net": 589,
             "changesFirstCard": true,
             "changesPlan": true,
-            "netChange": 236,
-            "originalWalletNetUnderAnswer": 409,
-            "decisionRegret": 180
+            "netChange": 125,
+            "originalWalletNetUnderAnswer": 539,
+            "decisionRegret": 50
           }
         ],
         "changesFirstCard": true,
@@ -35290,9 +34503,16 @@
     ],
     "timeline": [
       {
-        "cardId": "one-key",
+        "cardId": "amex-bce",
         "how": "apply",
         "month": 0,
+        "notes": [],
+        "afterLoan": false
+      },
+      {
+        "cardId": "active-cash",
+        "how": "apply",
+        "month": 6,
         "notes": [],
         "afterLoan": false
       }
@@ -35303,15 +34523,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "one-key",
+      "chosen": "amex-bce",
       "disposition": "apply",
-      "soloNet": 353,
+      "soloNet": 355,
       "benchmark": {
         "cardId": "active-cash",
         "net": 326
       },
-      "delta": 27,
-      "planNet": 353
+      "delta": 29,
+      "planNet": 464
     }
   },
   {
@@ -35538,8 +34758,8 @@
   },
   {
     "id": "P116",
-    "firstCard": "bilt-obsidian",
-    "firstApplication": "bilt-obsidian",
+    "firstCard": "usb-altitude-connect",
+    "firstApplication": "usb-altitude-connect",
     "action": "apply",
     "wallet": [
       "bilt-obsidian",
@@ -35651,7 +34871,7 @@
           {
             "answer": "always",
             "label": "Always",
-            "firstCard": "bilt-obsidian",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-obsidian",
@@ -35704,7 +34924,7 @@
           {
             "answer": "yes",
             "label": "yes",
-            "firstCard": "bilt-obsidian",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-obsidian",
@@ -35721,7 +34941,7 @@
           {
             "answer": "no",
             "label": "no",
-            "firstCard": "bilt-obsidian",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-obsidian",
@@ -35737,7 +34957,7 @@
           {
             "answer": "unsure",
             "label": "unsure",
-            "firstCard": "bilt-obsidian",
+            "firstCard": "usb-altitude-connect",
             "action": "apply",
             "wallet": [
               "bilt-obsidian",
@@ -35772,14 +34992,14 @@
     ],
     "timeline": [
       {
-        "cardId": "bilt-obsidian",
+        "cardId": "usb-altitude-connect",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "usb-altitude-connect",
+        "cardId": "bilt-obsidian",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -35796,14 +35016,14 @@
       "bilt-obsidian"
     ],
     "comparison": {
-      "chosen": "bilt-obsidian",
+      "chosen": "usb-altitude-connect",
       "disposition": "apply",
-      "soloNet": 1401,
+      "soloNet": 904,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1036
       },
-      "delta": 365,
+      "delta": -132,
       "planNet": 1679
     }
   },
@@ -36812,13 +36032,13 @@
   },
   {
     "id": "P121",
-    "firstCard": "usb-altitude-go",
-    "firstApplication": "usb-altitude-go",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "usb-altitude-go"
+      "active-cash"
     ],
-    "net": 446,
+    "net": 428,
     "score": null,
     "assumptions": [
       {
@@ -36933,7 +36153,7 @@
     ],
     "timeline": [
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
@@ -36946,15 +36166,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "usb-altitude-go",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 446,
+      "soloNet": 428,
       "benchmark": {
         "cardId": "active-cash",
         "net": 428
       },
-      "delta": 18,
-      "planNet": 446
+      "delta": 0,
+      "planNet": 428
     }
   },
   {
@@ -37116,14 +36336,14 @@
   },
   {
     "id": "P123",
-    "firstCard": "bcp",
-    "firstApplication": "bcp",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "bcp",
-      "usb-altitude-go"
+      "active-cash"
     ],
-    "net": 628,
+    "net": 610,
     "score": null,
     "assumptions": [
       {
@@ -37238,14 +36458,14 @@
     ],
     "timeline": [
       {
-        "cardId": "bcp",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "bcp",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -37262,26 +36482,26 @@
       "bcp"
     ],
     "comparison": {
-      "chosen": "bcp",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 484,
+      "soloNet": 428,
       "benchmark": {
         "cardId": "active-cash",
         "net": 428
       },
-      "delta": 56,
-      "planNet": 628
+      "delta": 0,
+      "planNet": 610
     }
   },
   {
     "id": "P124",
-    "firstCard": "savor",
-    "firstApplication": "savor",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "savor"
+      "active-cash"
     ],
-    "net": 137,
+    "net": 133,
     "score": null,
     "assumptions": [
       {
@@ -37396,12 +36616,10 @@
     ],
     "timeline": [
       {
-        "cardId": "savor",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Capital One usually approves about one new card every 6 months."
-        ],
+        "notes": [],
         "afterLoan": false
       }
     ],
@@ -37411,15 +36629,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "savor",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 137,
+      "soloNet": 133,
       "benchmark": {
         "cardId": "active-cash",
         "net": 133
       },
-      "delta": 4,
-      "planNet": 137
+      "delta": 0,
+      "planNet": 133
     }
   },
   {
@@ -37570,13 +36788,13 @@
   },
   {
     "id": "P126",
-    "firstCard": "savor",
-    "firstApplication": "savor",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "savor"
+      "active-cash"
     ],
-    "net": 137,
+    "net": 133,
     "score": null,
     "assumptions": [
       {
@@ -37691,12 +36909,10 @@
     ],
     "timeline": [
       {
-        "cardId": "savor",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
-        "notes": [
-          "Capital One usually approves about one new card every 6 months."
-        ],
+        "notes": [],
         "afterLoan": false
       }
     ],
@@ -37706,15 +36922,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "savor",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 137,
+      "soloNet": 133,
       "benchmark": {
         "cardId": "active-cash",
         "net": 133
       },
-      "delta": 4,
-      "planNet": 137
+      "delta": 0,
+      "planNet": 133
     }
   },
   {
@@ -38649,13 +37865,13 @@
   },
   {
     "id": "P133",
-    "firstCard": "usb-altitude-connect",
-    "firstApplication": "usb-altitude-connect",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "usb-altitude-connect"
+      "active-cash"
     ],
-    "net": 367,
+    "net": 362,
     "score": null,
     "assumptions": [
       {
@@ -38770,7 +37986,7 @@
     ],
     "timeline": [
       {
-        "cardId": "usb-altitude-connect",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
@@ -38783,15 +37999,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "usb-altitude-connect",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 367,
+      "soloNet": 362,
       "benchmark": {
         "cardId": "active-cash",
         "net": 362
       },
-      "delta": 5,
-      "planNet": 367
+      "delta": 0,
+      "planNet": 362
     }
   },
   {
@@ -39386,14 +38602,14 @@
   },
   {
     "id": "P138",
-    "firstCard": "bcp",
-    "firstApplication": "bcp",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
       "bcp",
-      "usb-altitude-go"
+      "active-cash"
     ],
-    "net": 491,
+    "net": 471,
     "score": null,
     "assumptions": [
       {
@@ -39508,14 +38724,14 @@
     ],
     "timeline": [
       {
-        "cardId": "bcp",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
         "afterLoan": false
       },
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "bcp",
         "how": "apply",
         "month": 6,
         "notes": [],
@@ -39532,15 +38748,15 @@
       "bcp"
     ],
     "comparison": {
-      "chosen": "bcp",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 368,
+      "soloNet": 355,
       "benchmark": {
         "cardId": "active-cash",
         "net": 355
       },
-      "delta": 13,
-      "planNet": 491
+      "delta": 0,
+      "planNet": 471
     }
   },
   {
@@ -43070,13 +42286,13 @@
   },
   {
     "id": "P162",
-    "firstCard": "bilt-blue",
-    "firstApplication": "bilt-blue",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "bilt-blue"
+      "active-cash"
     ],
-    "net": 140,
+    "net": 120,
     "score": null,
     "assumptions": [
       {
@@ -43191,7 +42407,7 @@
     ],
     "timeline": [
       {
-        "cardId": "bilt-blue",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
@@ -43204,15 +42420,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "bilt-blue",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 140,
+      "soloNet": 120,
       "benchmark": {
         "cardId": "active-cash",
         "net": 120
       },
-      "delta": 20,
-      "planNet": 140
+      "delta": 0,
+      "planNet": 120
     }
   },
   {
@@ -46385,13 +45601,13 @@
   },
   {
     "id": "P184",
-    "firstCard": "usb-altitude-go",
-    "firstApplication": "usb-altitude-go",
+    "firstCard": "active-cash",
+    "firstApplication": "active-cash",
     "action": "apply",
     "wallet": [
-      "usb-altitude-go"
+      "active-cash"
     ],
-    "net": 312,
+    "net": 300,
     "score": null,
     "assumptions": [
       {
@@ -46506,7 +45722,7 @@
     ],
     "timeline": [
       {
-        "cardId": "usb-altitude-go",
+        "cardId": "active-cash",
         "how": "apply",
         "month": 0,
         "notes": [],
@@ -46519,15 +45735,15 @@
     "annualFeeCards": [],
     "feeCards": [],
     "comparison": {
-      "chosen": "usb-altitude-go",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 312,
+      "soloNet": 300,
       "benchmark": {
         "cardId": "active-cash",
         "net": 300
       },
-      "delta": 12,
-      "planNet": 312
+      "delta": 0,
+      "planNet": 300
     }
   },
   {

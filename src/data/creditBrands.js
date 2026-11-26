@@ -35,6 +35,7 @@ export const PERK_BRANDS = [
   { key: "resy", label: "Resy", group: "food", pattern: /\bresy\b/i },
   { key: "opentable", label: "OpenTable (Exclusive Tables)", group: "food", pattern: /exclusive tables|opentable/i },
   { key: "inkind", label: "inKind", group: "food", pattern: /inkind/i },
+  { key: "home chef", label: "Home Chef meal kits", group: "food", pattern: /home chef/i },
   { key: "lululemon", label: "lululemon", group: "shopping", pattern: /lululemon/i },
   { key: "oura", label: "Oura Ring", group: "shopping", pattern: /\boura\b/i },
   { key: "peloton", label: "Peloton", group: "shopping", pattern: /peloton/i },

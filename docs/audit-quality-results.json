@@ -4,7 +4,7 @@
       "key": "travel.bags",
       "question": "checked bags",
       "unanswered": 80,
-      "changesFirstCard": 14,
+      "changesFirstCard": 9,
       "changesPlan": 15,
       "changesEither": 15,
       "testedAnswers": "No checked bags; 1 bag per trip; 2 bags per trip; 3+ bags per trip"
@@ -13,18 +13,18 @@
       "key": "travel.hotelNights",
       "question": "paid hotel nights",
       "unanswered": 82,
-      "changesFirstCard": 26,
-      "changesPlan": 57,
-      "changesEither": 58,
+      "changesFirstCard": 19,
+      "changesPlan": 51,
+      "changesEither": 51,
       "testedAnswers": "None; 1–3; 4–9; 10–19; 20+"
     },
     {
       "key": "rotatingActivation",
       "question": "quarterly activation",
       "unanswered": 200,
-      "changesFirstCard": 35,
-      "changesPlan": 82,
-      "changesEither": 82,
+      "changesFirstCard": 26,
+      "changesPlan": 74,
+      "changesEither": 74,
       "testedAnswers": "yes; no; unsure"
     },
     {
@@ -83,12 +83,12 @@
     {
       "cardId": "united-explorer",
       "before": 11,
-      "after": 4
+      "after": 2
     },
     {
       "cardId": "bilt-blue",
       "before": 10,
-      "after": 12
+      "after": 9
     },
     {
       "cardId": "discover-it-secured",
@@ -118,7 +118,7 @@
     {
       "cardId": "active-cash",
       "before": 3,
-      "after": 91
+      "after": 102
     },
     {
       "cardId": "delta-gold",
@@ -138,7 +138,7 @@
     {
       "cardId": "usb-altitude-go",
       "before": 3,
-      "after": 10
+      "after": 9
     },
     {
       "cardId": "bcp",
@@ -153,7 +153,7 @@
     {
       "cardId": "citi-aa-platinum",
       "before": 2,
-      "after": 5
+      "after": 2
     },
     {
       "cardId": "citi-strata",
@@ -173,7 +173,7 @@
     {
       "cardId": "wf-autograph",
       "before": 2,
-      "after": 2
+      "after": 3
     },
     {
       "cardId": "aa-executive",
@@ -198,7 +198,7 @@
     {
       "cardId": "one-key",
       "before": 1,
-      "after": 1
+      "after": 0
     },
     {
       "cardId": "savor-one",
@@ -208,17 +208,12 @@
     {
       "cardId": "sw-plus",
       "before": 1,
-      "after": 1
+      "after": 0
     },
     {
       "cardId": "sw-priority",
       "before": 1,
       "after": 0
-    },
-    {
-      "cardId": "aa-mileup",
-      "before": 0,
-      "after": 1
     },
     {
       "cardId": "alaska-visa",
@@ -228,17 +223,12 @@
     {
       "cardId": "amex-bce",
       "before": 0,
-      "after": 1
-    },
-    {
-      "cardId": "bilt-obsidian",
-      "before": 0,
-      "after": 1
+      "after": 2
     },
     {
       "cardId": "citi-double-cash",
       "before": 0,
-      "after": 6
+      "after": 7
     },
     {
       "cardId": "freedom-unlimited",
@@ -251,19 +241,9 @@
       "after": 1
     },
     {
-      "cardId": "marriott-brilliant",
-      "before": 0,
-      "after": 1
-    },
-    {
       "cardId": "usb-altitude-connect",
       "before": 0,
-      "after": 2
-    },
-    {
-      "cardId": "venture",
-      "before": 0,
-      "after": 1
+      "after": 3
     }
   ],
   "formerGold": [
@@ -271,17 +251,17 @@
       "id": "P02",
       "wasHeld": false,
       "oldFirst": "robinhood-gold",
-      "chosen": "usb-altitude-go",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 182,
+      "soloNet": 181,
       "benchmark": {
         "cardId": "active-cash",
         "net": 181
       },
-      "delta": 1,
-      "planNet": 182,
+      "delta": 0,
+      "planNet": 181,
       "wallet": [
-        "usb-altitude-go"
+        "active-cash"
       ],
       "action": "apply"
     },
@@ -307,7 +287,7 @@
       "id": "P08",
       "wasHeld": false,
       "oldFirst": "robinhood-gold",
-      "chosen": "aa-mileup",
+      "chosen": "active-cash",
       "disposition": "apply",
       "soloNet": 0,
       "benchmark": {
@@ -317,7 +297,7 @@
       "delta": 0,
       "planNet": 0,
       "wallet": [
-        "aa-mileup"
+        "active-cash"
       ],
       "action": "apply"
     },
@@ -325,14 +305,14 @@
       "id": "P09",
       "wasHeld": false,
       "oldFirst": "bilt-blue",
-      "chosen": "bilt-blue",
+      "chosen": "usb-altitude-go",
       "disposition": "apply",
-      "soloNet": 478,
+      "soloNet": 473,
       "benchmark": {
         "cardId": "active-cash",
         "net": 475
       },
-      "delta": 3,
+      "delta": -2,
       "planNet": 688,
       "wallet": [
         "bilt-blue",
@@ -551,18 +531,18 @@
       "id": "P26",
       "wasHeld": false,
       "oldFirst": "united-explorer",
-      "chosen": "marriott-brilliant",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 1125,
+      "soloNet": 1032,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1032
       },
-      "delta": 93,
-      "planNet": 1461,
+      "delta": 0,
+      "planNet": 1446,
       "wallet": [
         "marriott-brilliant",
-        "bilt-palladium",
+        "active-cash",
         "usb-altitude-go"
       ],
       "action": "apply"
@@ -701,14 +681,14 @@
       "id": "P42",
       "wasHeld": false,
       "oldFirst": "united-explorer",
-      "chosen": "venture",
+      "chosen": "wf-autograph",
       "disposition": "apply",
-      "soloNet": 2411,
+      "soloNet": 1928,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1728
       },
-      "delta": 683,
+      "delta": 200,
       "planNet": 2748,
       "wallet": [
         "venture",
@@ -811,14 +791,14 @@
       "id": "P51",
       "wasHeld": false,
       "oldFirst": "robinhood-gold",
-      "chosen": "bilt-blue",
+      "chosen": "usb-altitude-go",
       "disposition": "apply",
-      "soloNet": 523,
+      "soloNet": 425,
       "benchmark": {
         "cardId": "active-cash",
         "net": 492
       },
-      "delta": 31,
+      "delta": -67,
       "planNet": 665,
       "wallet": [
         "bilt-blue",
@@ -849,14 +829,14 @@
       "id": "P53",
       "wasHeld": false,
       "oldFirst": "citi-aa-globe",
-      "chosen": "citi-aa-platinum",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 811,
+      "soloNet": 2231,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2231
       },
-      "delta": -1420,
+      "delta": 0,
       "planNet": 3483,
       "wallet": [
         "active-cash",
@@ -895,10 +875,11 @@
         "net": 1044
       },
       "delta": 0,
-      "planNet": 1219,
+      "planNet": 1363,
       "wallet": [
         "active-cash",
-        "wf-autograph"
+        "wf-autograph",
+        "amex-bce"
       ],
       "action": "apply"
     },
@@ -1002,14 +983,14 @@
       "id": "P67",
       "wasHeld": false,
       "oldFirst": "sw-premier",
-      "chosen": "sw-plus",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 461,
+      "soloNet": 1166,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1166
       },
-      "delta": -705,
+      "delta": 0,
       "planNet": 1802,
       "wallet": [
         "active-cash",
@@ -1040,14 +1021,14 @@
       "id": "P71",
       "wasHeld": false,
       "oldFirst": "united-explorer",
-      "chosen": "united-explorer",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 2543,
+      "soloNet": 2365,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2365
       },
-      "delta": 178,
+      "delta": 0,
       "planNet": 3672,
       "wallet": [
         "united-explorer",
@@ -1356,14 +1337,14 @@
       "id": "P107",
       "wasHeld": false,
       "oldFirst": "united-explorer",
-      "chosen": "united-explorer",
+      "chosen": "active-cash",
       "disposition": "apply",
-      "soloNet": 792,
+      "soloNet": 2432,
       "benchmark": {
         "cardId": "active-cash",
         "net": 2432
       },
-      "delta": -1640,
+      "delta": 0,
       "planNet": 3742,
       "wallet": [
         "active-cash",
@@ -1453,14 +1434,14 @@
       "id": "P116",
       "wasHeld": false,
       "oldFirst": "robinhood-gold",
-      "chosen": "bilt-obsidian",
+      "chosen": "usb-altitude-connect",
       "disposition": "apply",
-      "soloNet": 1401,
+      "soloNet": 904,
       "benchmark": {
         "cardId": "active-cash",
         "net": 1036
       },
-      "delta": 365,
+      "delta": -132,
       "planNet": 1679,
       "wallet": [
         "bilt-obsidian",

@@ -16,6 +16,7 @@ import { pctBack } from "./valuation.js";
 import { applicationHurdle, airlineKeeperValue } from "./apply.js";
 import { cardPointValue } from "./pointValues.js";
 import { cardDisplayName } from "../../data/cardNames.js";
+import { practicalOrder } from "./practical.js";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 
@@ -369,11 +370,7 @@ export function applyTimeline(setup, rawProfile) {
   const gain = Object.fromEntries(adds.map((id) => [id, value.N - walletValue(setup.filter((x) => x !== id), profile, { normalized: true }).N]));
   const how = Object.fromEntries(adds.map((id) => [id, eligibility(BY_ID[id], profile).how || "apply"]));
   const amexRank = (id) => { const i = AMEX_FAMILY_ORDER.indexOf(id); return i < 0 ? 99 : i; };
-  const ordered = [...adds].sort((a, b) =>
-    (how[b] === "upgrade" ? 1 : 0) - (how[a] === "upgrade" ? 1 : 0)
-    || (isChase(BY_ID[b]) ? 1 : 0) - (isChase(BY_ID[a]) ? 1 : 0)
-    || (amexRank(a) !== 99 && amexRank(b) !== 99 ? amexRank(a) - amexRank(b) : 0)
-    || gain[b] - gain[a]);
+  const ordered = practicalOrder(adds, profile, { how, gain, isChase, amexRank });
   let count = profile.credit.newCards24mo;
   const afterLoan = profile.credit.loan === "12";
   let month = afterLoan ? LOAN_WAIT_MONTHS : 0;
