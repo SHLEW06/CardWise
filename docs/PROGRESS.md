@@ -2389,3 +2389,15 @@ then Ritz) +$496, fourth.
    credit's value" as in your brief, though the survey otherwise avoids the
    word "credit". OK?
 
+
+## Claude handoff checkpoint (2026-11-26)
+
+Finished the pending workbook hotel browser on feat/premium-hotel-explorer,
+bridged exact unique property marks and saved quotes into the canonical
+valuation database, repaired modal focus and kept workbook content dev-only.
+No new deployment or push. Details and continuation instructions are in
+`docs/CLAUDE_TESTING_HANDOFF.md`. Full suite: 2,045 tests in 127 files;
+extension: 19; connector: 18 passed / 4 skipped. Build and secret check passed.
+Chrome credit-detail and workbook-browser smoke checks passed at 1440/390px,
+with no page errors or horizontal overflow. QTG remains unpopulated; workbook
+coverage and the five attributed property photos are disclosed in the UI.

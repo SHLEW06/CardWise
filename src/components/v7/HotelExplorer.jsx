@@ -5,7 +5,7 @@
    formula at their budget) and "I'd stay here / Too expensive / Not my
    style". The hotel-style question sits at the top. Prices are dated, never
    live; the person can add "I saw $___ a night". */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
 import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, hotelMarksWith, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
@@ -59,7 +59,16 @@ function HotelMap({ hotels, onCity }) {
   );
 }
 
-export default function HotelExplorer({ profile: raw, onSaveProfile, filter = null }) {
+// The workbook and personal directory have not been cleared for publication.
+const Discovery = import.meta.env.DEV ? lazy(() => import("./HotelDiscovery.jsx")) : null;
+
+export default function HotelExplorer(props) {
+  const [creditView, setCreditView] = useState(!Discovery || Boolean(props.filter));
+  useEffect(() => setCreditView(!Discovery || Boolean(props.filter)), [props.filter]);
+  return creditView ? <LegacyHotelExplorer {...props} onBrowse={Discovery ? () => setCreditView(false) : undefined} /> : <Suspense fallback={<section className="page"><p className="t-caption">Opening your hotel collection…</p></section>}><Discovery {...props} initialSearch={props.filter?.city || ""} onCreditView={() => setCreditView(true)} /></Suspense>;
+}
+
+function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBrowse }) {
   const profile = useMemo(() => normalizeProfile(raw), [raw]);
   const [q, setQ] = useState(filter?.city || "");
   const [view, setView] = useState(filter?.view || "list");
@@ -116,7 +125,8 @@ export default function HotelExplorer({ profile: raw, onSaveProfile, filter = nu
   return (
     <section className="page hotels" data-testid="hotel-explorer">
       <header className="hotels-head">
-        <p className="t-eyebrow">Hotels</p>
+        <p className="t-eyebrow">Hotels · Your plan</p>
+        {onBrowse && <button className="link" onClick={onBrowse}>Browse the full hotel collection →</button>}
         <h1 className="t-d2">Where your cards' hotel credits work.</h1>
         <p className="t-caption">The Edit, Fine Hotels + Resorts, The Hotel Collection and Select Hotels — {HOTEL_PROPERTIES.length.toLocaleString("en-US")} properties, {pricedCount.toLocaleString("en-US")} with dated prices (the rest show an estimate until you save a price). "Value to you" is what a credit saves compared with the {money(profile.travel.hotelBudget || 0) === "$0" ? "hotel you'd book anyway" : `${money(profile.travel.hotelBudget)} a night you'd pay anyway`}.</p>
         <HotelStyle travel={profile.travel} onChange={setTravel} />

@@ -81,7 +81,7 @@ describe("1c · valuing credits from the hotels you'd stay at", () => {
 
 function Harness() {
   const [p, setP] = useState(() => HK());
-  return <HotelExplorer profile={p} onSaveProfile={(n) => setP(normalizeProfile(n))} />;
+  return <HotelExplorer profile={p} filter={{ view: "list" }} onSaveProfile={(n) => setP(normalizeProfile(n))} />;
 }
 
 describe("1c · the Hotels tab", () => {

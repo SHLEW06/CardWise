@@ -121,3 +121,20 @@ to identify each card. The site shows them by default; Profile switches to
 CardWise's own designed faces. On a takedown request, delete that issuer's
 files — those cards fall back to designed faces automatically.
 
+
+## Owner workbook hotel discovery (2026-11-26)
+
+The supplied hotel workbook and coordinate export are retained on the local
+`feat/premium-hotel-explorer` checkpoint for reproducibility, with derived
+records in `src/data/hotels/workbook.generated.json`. This checkpoint has not
+been pushed or deployed. The production import graph excludes the workbook
+browser. Do not publish the source or derived lists until their redistribution
+status is resolved. Public-site average prices are dated planning observations,
+not issuer portal quotes. The original personal directory remains gitignored.
+
+`photos.generated.json` records the Commons file page, full author credit,
+license and license URL for each of five property photographs. The modal shows
+attribution; image failures use an explicit placeholder. The optional photo
+script uses the Wikipedia/Commons API and rejects entries without an accepted
+free-license URL; a supplied title/category/coordinate match is not a manual
+inspection of every photograph. Claude's visual review should check identities.
