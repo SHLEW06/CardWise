@@ -21,11 +21,13 @@ beforeEach(() => { localStorage.clear(); window.scrollTo = () => {}; });
 const at = (credit) => normalizeProfile({ credit, isStudent: true, canAffordDeposit: true });
 
 describe("credit tiers", () => {
-  it("fair (580–669): student cards yes, secured no", () => {
-    for (const s of [580, 640, 669]) {
+  it("fair (580–669): student cards yes; secured only until unsecured starters open at 600 (no 580–599 gap)", () => {
+    for (const s of [580, 595, 600, 640, 669]) {
       expect(eligibility(BY_ID["discover-student"], at({ score: s })).ok, `${s}`).toBe(true);
       expect(eligibility(BY_ID["freedom-rise"], at({ score: s })).ok, `${s}`).toBe(s >= 600);
-      expect(eligibility(BY_ID["discover-it-secured"], at({ score: s })).why, `${s}`).toBe("builder");
+      // below 600 a secured card is the bridge; from 600 the unsecured starters take over
+      if (s < 600) expect(eligibility(BY_ID["discover-it-secured"], at({ score: s })).ok, `${s}`).toBe(true);
+      else expect(eligibility(BY_ID["discover-it-secured"], at({ score: s })).why, `${s}`).toBe("builder");
     }
   });
   it("poor (< 580): secured yes, student no", () => {

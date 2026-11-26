@@ -3,7 +3,7 @@ import { normalizeProfile } from "../profileDefaults.js";
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { optimizeWallet } from "./optimizer.js";
-import { walletValue, scoreFrom, heldCardVerdicts, optimalWallet, eligibility } from "./methodology.js";
+import { walletValue, scoreFrom, heldCardVerdicts, optimalWallet, eligibility, SECURED_BELOW } from "./methodology.js";
 import { applyTimeline, timelineLabel, walletCards, useWhereRows, heldNotKept } from "./lab.js";
 import { cardFee } from "./value.js";
 import { assumptionsFor } from "./assumptions.js";
@@ -18,7 +18,7 @@ export function bestNoDepositOption(profile, catalog = CARDS) {
 function buildPlanCore(raw = {}, options = {}) {
   const profile = normalizeProfile(raw);
   const carries = ["sometimes", "usually"].includes(profile.paymentBehavior);
-  const recommendation = optimizeWallet(profile);
+  const recommendation = optimizeWallet(profile, CARDS, { practical: options.practical });
   const wallet = recommendation.wallet;
   const current = walletValue(profile.cardsHeld, profile);
   const value = walletValue(wallet, profile);
@@ -51,7 +51,7 @@ function buildPlanCore(raw = {}, options = {}) {
   }
   const assumptions = assumptionsFor(profile), warnings = [];
   const interestCost = carries && profile.averageBalance != null && profile.apr != null ? Math.round(profile.averageBalance * profile.apr) : null;
-  const needsDepositAnswer = !wallet.length && profile.newCardComfort > 0 && !carries && (profile.credit.noHistory || profile.credit.score != null && profile.credit.score < 580) && profile.canAffordDeposit !== true;
+  const needsDepositAnswer = !wallet.length && profile.newCardComfort > 0 && !carries && (profile.credit.noHistory || profile.credit.score != null && profile.credit.score < SECURED_BELOW) && profile.canAffordDeposit !== true;
   let deposit = null;
   if (needsDepositAnswer) {
     const bestNoDeposit = bestNoDepositOption(profile);

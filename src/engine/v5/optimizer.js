@@ -18,7 +18,7 @@
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { AIRPORTS } from "../../data/airports.js";
 import { normalizeProfile, annualSpend } from "../profileDefaults.js";
-import { cardValue, rolesFor, primaryRole, cardBrand, benefitBreakdown, earnRate, cardFee, cardCpp } from "./value.js";
+import { cardValue, rolesFor, primaryRole, cardBrand, benefitBreakdown, earnRate, cardFee, cardCpp, membershipCost } from "./value.js";
 import { pctBack, formatPctBack } from "./valuation.js";
 import {
   optimalWallet, walletValue, heldCardVerdicts, scoreNeeded, approvalOk, isChase,
@@ -104,7 +104,9 @@ function sentenceFor(card, profile, value, extra = {}) {
   return v.annualFee ? `Worth about ${money(v.netValue)} a year to you after its ${money(v.annualFee)} fee.` : "No yearly fee, and it fills a gap in your wallet.";
 }
 
-export function optimizeWallet(rawProfile, catalog = CARDS) {
+/** options.practical = false turns off the practical wallet rules (simulation baseline only). */
+export function optimizeWallet(rawProfile, catalog = CARDS, options = {}) {
+  const practical = options.practical !== false;
   const profile = normalizeProfile(rawProfile);
   if (!profile.cardsHeld.length && profile.maxCards === 1) catalog = catalog.filter(c => (c.annualFee || 0) === 0);
   const atFiveTwentyFour = profile.credit.newCards24mo >= 5;
@@ -151,7 +153,9 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
   let plan = optimalWallet(base, { mode: "wallet", catalog, maxCards });
   // Compare whole plans. The fee is already deducted, so this is an extra
   // $50 margin for taking on a paid membership, not a substitute for its cost.
-  for (const name of new Set(plan.adds.map(id => BY_ID[id]?.requiresSubscription?.name).filter(Boolean))) {
+  // Only for a membership they'd newly take on: an existing Costco member
+  // isn't asked to clear an extra margin for the Costco card.
+  for (const name of new Set(plan.adds.filter(id => BY_ID[id]?.requiresSubscription && !membershipCost(BY_ID[id], profile)?.paid).map(id => BY_ID[id].requiresSubscription.name))) {
     const without = catalog.filter(c => c.requiresSubscription?.name !== name || heldIds.includes(c.id));
     const alternative = optimalWallet(base, { mode: "wallet", catalog: without, maxCards });
     if (plan.value.net - alternative.value.net < MEMBERSHIP_MIN_ADVANTAGE) plan = alternative;
@@ -162,7 +166,7 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
   }
   /* Practical rule 3 (practical.js): no catch-all held or planned → take the
      best plan with one (no extra cards) when it costs little modeled value. */
-  if (plan.wallet.length && !holdsCatchAll(profile) && !plan.wallet.some((id) => isCatchAll(BY_ID[id], profile))) {
+  if (practical && plan.wallet.length && !holdsCatchAll(profile) && !plan.wallet.some((id) => isCatchAll(BY_ID[id], profile))) {
     const catchAlls = catchAllCandidates(profile, catalog);
     if (catchAlls.length) {
       const alt = optimalWallet(base, { mode: "wallet", catalog, maxCards: Math.min(maxCards, plan.wallet.length), mustOneOf: catchAlls });
@@ -171,7 +175,7 @@ export function optimizeWallet(rawProfile, catalog = CARDS) {
   }
   /* Practical rule 4: a skipped goal keeps the Chase ecosystem open when
      that costs at most the same margin (no extra cards). */
-  if (plan.wallet.length && goalSkipped(profile) && !plan.wallet.some((id) => BY_ID[id]?.pointCurrency === ECOSYSTEM_CURRENCY)) {
+  if (practical && plan.wallet.length && goalSkipped(profile) && !plan.wallet.some((id) => BY_ID[id]?.pointCurrency === ECOSYSTEM_CURRENCY)) {
     // A plan that relies on a catch-all may only trade it for a Chase catch-all.
     const needsCatchAll = plan.wallet.some((id) => isCatchAll(BY_ID[id], profile));
     const eco = ecosystemCandidates(profile, catalog).filter((id) => !needsCatchAll || isCatchAll(BY_ID[id], profile));

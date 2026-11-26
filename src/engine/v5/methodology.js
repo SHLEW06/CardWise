@@ -42,7 +42,7 @@ const EPS = 1e-6;
 /* ── eligibility (issuer rules + credit profile) ─────────────────────────── */
 
 /* Approval tiers (FICO bands):
-     secured      — no score needed; only suggested below SECURED_BELOW (580,
+     secured      — no score needed; only suggested below SECURED_BELOW (600,
                     "poor") or with no credit history
      student      — FAIR_MIN (580, "fair") and up, or no credit history (they
                     are made for a first card); only suggested below 670
@@ -50,7 +50,11 @@ const EPS = 1e-6;
      difficulty 7+ — 740 ("very good")
    The catalog's minScore for builder cards (600 on secured and student alike)
    is a placeholder, so the builder tiers above replace it. */
-export const SECURED_BELOW = 580;
+/* Secured cards are suggested below the score the catalog's unsecured starter
+   cards need (Freedom Rise, Capital One Platinum, QuicksilverOne: 600). At
+   580 the two thresholds left a 580–599 gap where nobody qualified for
+   anything (found by the held-out population simulation, 2026-11-26). */
+export const SECURED_BELOW = 600;
 export const FAIR_MIN = 580;
 export const GOOD_MIN = 670;
 export function scoreNeeded(card) {
@@ -67,7 +71,7 @@ export const approvalOk = (card, profile) => {
   return (profile.credit.score ?? 670) >= scoreNeeded(card);
 };
 /* Builder cards are for building credit, only suggested to someone who
-   needs one: secured below 580 or no history; student below 670 or no
+   needs one: secured below SECURED_BELOW (600) or no history; student below 670 or no
    history. */
 export function builderFits(card, profile) {
   const { score: s, noHistory } = profile.credit;

@@ -6,7 +6,10 @@
    Fargo):
        value = mean over the partners they'd use of
                (partner value × transfer ratio),  floored at the cash value.
-       Nothing selected → the cash / portal baseline (1¢).
+       Nothing selected → the cash / portal baseline (1¢), except: someone who
+       chose travel (or both) and flies 4+ times a year is assumed to use
+       Air France-KLM Flying Blue — the one partner every bank here reaches —
+       at its CONSERVATIVE value (assumedPartner; shown as an assumption).
        Partners: their own picks (profile.partnerPicks[cur]) or, by default,
        the airlines and hotels they picked in the survey.
        Unlocks: the wallet decides whether points can move at all
@@ -108,9 +111,24 @@ export function currencyValue(cur, profile, wallet = []) {
   const usable = partnerOptions(cur, have, profile).filter((p) => picks.includes(p.key) && p.effectiveCpp != null);
   const boosts = Object.entries(rule.boost || {}).filter(([id]) => have.includes(id)).map(([, b]) => b.upTo);
   const upTo = boosts.length ? Math.max(...boosts) : null;
-  if (!usable.length) return { cpp: floor, basis: "cash", unlocked, partners: [], upTo, note: rule.note || null };
+  if (!usable.length) {
+    const assumed = unlocked && assumesBroadPartner(cur, profile) ? partnerOptions(cur, have, profile).find((p) => p.key === BROAD_PARTNER) : null;
+    const conservative = assumed ? (VAL_META[BROAD_PARTNER]?.conservativeCpp ?? 0) * assumed.ratio : 0;
+    if (conservative > floor) return { cpp: conservative, basis: "assumed-partner", unlocked, partners: [{ ...assumed, partnerCpp: VAL_META[BROAD_PARTNER].conservativeCpp, effectiveCpp: conservative }], upTo, note: `Assumed: you'd move points to ${LOYALTY[BROAD_PARTNER]?.name || "Flying Blue"} at a conservative ${conservative.toFixed(2)}¢. Pick your own partners to change this.` };
+    return { cpp: floor, basis: "cash", unlocked, partners: [], upTo, note: rule.note || null };
+  }
   const mean = usable.reduce((t, p) => t + p.effectiveCpp, 0) / usable.length;
   return { cpp: Math.max(floor, mean), basis: mean > floor ? "partners" : "cash", unlocked, partners: usable, upTo, note: rule.note || null };
+}
+
+/* The broad-partner assumption (see the header): a stated travel goal, 4+
+   trips a year, and no partner the person picked for this currency. */
+export const BROAD_PARTNER = "flyingblue";
+export const BROAD_PARTNER_MIN_TRIPS = 4;
+export function assumesBroadPartner(cur, profile) {
+  if (!profile || !["travel", "both"].includes(profile.wants) || (profile.assumedFields || []).includes("wants")) return false;
+  if ((profile.travel?.trips || 0) < BROAD_PARTNER_MIN_TRIPS) return false;
+  return !Array.isArray(profile.partnerPicks?.[cur]);
 }
 
 export const cppOf = (cur, profile, wallet = []) => currencyValue(cur, profile, wallet).cpp;

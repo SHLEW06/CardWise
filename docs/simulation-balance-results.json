@@ -528,6 +528,11 @@
         "key": "spend",
         "step": "spend",
         "label": "unanswered spending categories are $0"
+      },
+      {
+        "key": "partnerPicks",
+        "step": "points",
+        "label": "you'd move bank points to Flying Blue (reachable from every bank) at a conservative 1.1¢ — pick your own partners to change this"
       }
     ],
     "warnings": [
@@ -546,7 +551,7 @@
       {
         "cardId": "csr",
         "action": "cancel",
-        "adds": 582,
+        "adds": 690,
         "fee": 795
       }
     ],
@@ -1032,7 +1037,7 @@
       "freedom-unlimited"
     ],
     "net": 1953,
-    "score": 65,
+    "score": 76,
     "assumptions": [
       {
         "key": "phonePlanShare",
@@ -1103,6 +1108,11 @@
         "key": "spend",
         "step": "spend",
         "label": "unanswered spending categories are $0"
+      },
+      {
+        "key": "partnerPicks",
+        "step": "points",
+        "label": "you'd move bank points to Flying Blue (reachable from every bank) at a conservative 1.1¢ — pick your own partners to change this"
       }
     ],
     "warnings": [
@@ -1122,14 +1132,14 @@
         "cardId": "csr",
         "action": "downgrade",
         "to": "freedom-unlimited",
-        "adds": -471,
+        "adds": -469,
         "fee": 795,
-        "gain": 822
+        "gain": 750
       },
       {
         "cardId": "amex-gold",
         "action": "cancel",
-        "adds": 143,
+        "adds": 189,
         "fee": 325
       }
     ],

@@ -29,4 +29,9 @@ export const ASSUMPTIONS = {
   memberships: ["fee", "no paid memberships"],
   biltCashAnnualUse: ["spend", "Bilt Cash only has value for unlocking housing points"],
 };
-export const assumptionsFor = profile => (profile.assumedFields || []).filter(key => ASSUMPTIONS[key]).map(key => ({ key, step: ASSUMPTIONS[key][0], label: ASSUMPTIONS[key][1] }));
+const broadPartner = profile => ["travel", "both"].includes(profile.wants) && !(profile.assumedFields || []).includes("wants") && (profile.travel?.trips || 0) >= 4
+  && !Object.values(profile.partnerPicks || {}).some(Array.isArray);
+export const assumptionsFor = profile => [
+  ...(profile.assumedFields || []).filter(key => ASSUMPTIONS[key]).map(key => ({ key, step: ASSUMPTIONS[key][0], label: ASSUMPTIONS[key][1] })),
+  ...(broadPartner(profile) ? [{ key: "partnerPicks", step: "points", label: "you'd move bank points to Flying Blue (reachable from every bank) at a conservative 1.1¢ — pick your own partners to change this" }] : []),
+];
