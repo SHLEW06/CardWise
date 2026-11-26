@@ -32,7 +32,7 @@ import { createExtensionBridge } from "./extensionBridge.js";
    so the branch (and the token's text) is removed. */
 export const CONNECTOR_URL = import.meta.env.DEV
   ? import.meta.env.VITE_CONNECTOR_URL || "http://127.0.0.1:8787"
-  : "/connector";
+  : import.meta.env.VITE_CONNECTOR_PUBLIC_URL || "http://localhost:8787";
 const DEV_TOKEN = import.meta.env.DEV ? import.meta.env.VITE_CONNECTOR_TOKEN : undefined;
 
 export const connector = createConnectorClient({

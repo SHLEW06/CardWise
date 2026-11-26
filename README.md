@@ -69,7 +69,7 @@ npm run keys       # rotate the connector token locally; preserves its vault key
 
 The public build uses a 37-hotel research database. On `npm run dev`, the app also loads larger personal hotel lists if you've generated them locally (`npm run hotel-db`). Those are gitignored and never included in the public build.
 
-Survey results, Home and Wallet Lab share `src/engine/v5/plan.js`. Skipped spending/travel answers count cautiously and appear as editable assumptions. Reproduce the audit with `node scripts/simulate.mjs`; see [the fix report](docs/AUDIT_FIX_REPORT.md). The build fails if `dist/` contains the connector token name or any nonempty `.env.local` value. Production bank sync expects a connector reverse proxy at `/connector`; development uses the local connector URL and dev-only token.
+Survey results, Home and Wallet Lab share `src/engine/v5/plan.js`. Skipped spending/travel answers count cautiously and appear as editable assumptions. Reproduce the audit with `node scripts/simulate.mjs`; see [the fix report](docs/AUDIT_FIX_REPORT.md). The build fails if `dist/` contains the connector token name or any nonempty `.env.local` value. Production bank sync uses Firebase authentication and the local connector at `localhost:8787` by default. A hosted connector can use `VITE_CONNECTOR_PUBLIC_URL` in `.env.production`; development uses the local dev URL and dev-only token.
 
 **Built with:** React 18, Vite 5, Vitest, Firebase Hosting.
 
