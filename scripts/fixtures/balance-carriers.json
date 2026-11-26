@@ -1,0 +1,498 @@
+{
+  "note": "Supplemental, directly answered survey profiles. Kept separate from the original 200-person cohort.",
+  "personas": [
+    {
+      "id": "B01",
+      "label": "Low spend, no history, no held cards",
+      "profile": {
+        "cardsHeld": [],
+        "spend": {
+          "dining": 120,
+          "groceries": 90,
+          "gas": 100,
+          "other": 187.5,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": null,
+          "noHistory": true,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 750,
+        "apr": 0.29,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B02",
+      "label": "Poor credit with secured account",
+      "profile": {
+        "cardsHeld": [
+          "discover-it-secured"
+        ],
+        "spend": {
+          "dining": 250,
+          "groceries": 150,
+          "gas": 100,
+          "other": 400.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 550,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 1600,
+        "apr": 0.31,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B03",
+      "label": "Fair credit, Platinum holder",
+      "profile": {
+        "cardsHeld": [
+          "c1-platinum"
+        ],
+        "spend": {
+          "dining": 450,
+          "groceries": 250,
+          "gas": 100,
+          "other": 600.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 640,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 2400,
+        "apr": 0.28,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B04",
+      "label": "Good credit with Quicksilver",
+      "profile": {
+        "cardsHeld": [
+          "quicksilver"
+        ],
+        "spend": {
+          "dining": 650,
+          "groceries": 500,
+          "gas": 100,
+          "other": 1050.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 705,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 4200,
+        "apr": 0.27,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B05",
+      "label": "Excellent credit, premium annual fee account",
+      "profile": {
+        "cardsHeld": [
+          "csr"
+        ],
+        "spend": {
+          "dining": 1600,
+          "groceries": 900,
+          "gas": 350,
+          "other": 2125.0,
+          "rent": 1200,
+          "flights": 200
+        },
+        "credit": {
+          "score": 770,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 8500,
+        "apr": 0.25,
+        "wants": "travel",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 6,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B06",
+      "label": "Very high credit, Gold and cash card",
+      "profile": {
+        "cardsHeld": [
+          "amex-gold",
+          "active-cash"
+        ],
+        "spend": {
+          "dining": 1300,
+          "groceries": 1200,
+          "gas": 350,
+          "other": 3750.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 820,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 15000,
+        "apr": 0.24,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B07",
+      "label": "Student with no history",
+      "profile": {
+        "cardsHeld": [],
+        "spend": {
+          "dining": 200,
+          "groceries": 180,
+          "gas": 350,
+          "other": 225.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": null,
+          "noHistory": true,
+          "newCards24mo": 0
+        },
+        "isStudent": true,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 900,
+        "apr": 0.3,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B08",
+      "label": "Student, fair credit, existing student card",
+      "profile": {
+        "cardsHeld": [
+          "discover-student"
+        ],
+        "spend": {
+          "dining": 350,
+          "groceries": 220,
+          "gas": 350,
+          "other": 450.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 640,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": true,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 1800,
+        "apr": 0.28,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B09",
+      "label": "Fair credit, fee-charging builder",
+      "profile": {
+        "cardsHeld": [
+          "quicksilver-one"
+        ],
+        "spend": {
+          "dining": 300,
+          "groceries": 700,
+          "gas": 350,
+          "other": 825.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 640,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 3300,
+        "apr": 0.32,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B10",
+      "label": "Frequent traveler with two fee cards",
+      "profile": {
+        "cardsHeld": [
+          "csr",
+          "amex-gold"
+        ],
+        "spend": {
+          "dining": 2100,
+          "groceries": 600,
+          "gas": 350,
+          "other": 5500.0,
+          "rent": 1200,
+          "flights": 200
+        },
+        "credit": {
+          "score": 770,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 22000,
+        "apr": 0.26,
+        "wants": "travel",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 6,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    },
+    {
+      "id": "B11",
+      "label": "Strong credit, existing paid Gold membership",
+      "profile": {
+        "cardsHeld": [
+          "robinhood-gold"
+        ],
+        "spend": {
+          "dining": 900,
+          "groceries": 650,
+          "gas": 350,
+          "other": 1250.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 770,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "sometimes",
+        "averageBalance": 5000,
+        "apr": 0.22,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": [
+          "robinhood-gold"
+        ]
+      }
+    },
+    {
+      "id": "B12",
+      "label": "Good credit, multiple no-fee accounts",
+      "profile": {
+        "cardsHeld": [
+          "active-cash",
+          "discover-it"
+        ],
+        "spend": {
+          "dining": 750,
+          "groceries": 1100,
+          "gas": 350,
+          "other": 1725.0,
+          "rent": 1200,
+          "flights": 0
+        },
+        "credit": {
+          "score": 705,
+          "noHistory": false,
+          "newCards24mo": 0
+        },
+        "isStudent": false,
+        "canAffordDeposit": true,
+        "paymentBehavior": "usually",
+        "averageBalance": 6900,
+        "apr": 0.275,
+        "wants": "cash",
+        "maxCards": 3,
+        "newCardComfort": 2,
+        "rotatingActivation": "yes",
+        "groceryStore": "supermarket",
+        "travel": {
+          "trips": 0,
+          "bags": {
+            "perTrip": 0,
+            "share": 0
+          },
+          "hotelNights": 0
+        },
+        "memberships": []
+      }
+    }
+  ]
+}
