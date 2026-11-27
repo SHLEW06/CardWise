@@ -96,6 +96,7 @@ describe("1c · the Hotels tab", () => {
     expect(row).toHaveTextContent("seen Oct 2026");
     fireEvent.click(within(row).getByRole("button", { name: "Too expensive" }));
     expect(within(screen.getByTestId(`hotel-${CORDIS}`)).getByRole("button", { name: "Too expensive" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`seen-${CORDIS}-thc`));
     fireEvent.change(within(screen.getByTestId(`hotel-${CORDIS}`)).getByLabelText(/I saw a nightly price: Cordis Hong Kong/), { target: { value: "300" } });
     fireEvent.click(within(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`hotel-${CORDIS}-thc`)).getByRole("button", { name: "Save" }));
     expect(within(screen.getByTestId(`hotel-${CORDIS}`)).getByTestId(`value-${CORDIS}-thc`)).toHaveTextContent("Value to you: $100");   // saved 300

@@ -11,7 +11,7 @@
 import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, ChevronDown, Utensils, Plane, BedDouble, Armchair, Luggage, Car, ShieldCheck, Star, Gift, Ticket, Tv, ShoppingBag, Sparkles } from "lucide-react";
+import { X, ChevronDown, Utensils, Plane, BedDouble, Armchair, Luggage, Car, ShieldCheck, Star, Gift, Ticket, Tv, ShoppingBag, Sparkles, ExternalLink } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import Choice from "../v5/Choice.jsx";
 import Backdrop from "./Backdrop.jsx";
@@ -166,7 +166,9 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
             <WhyThisCard cardId={c.id} wallet={context || wallet} profile={profile} label={d.inWallet.has ? "What it adds to your wallet" : "Why this card?"} />
           </Reveal>
 
-          <Reveal i={2}><BenefitsStrip rows={benefitRowsFromUsed(d.used, c.id)} title="Top benefits at a glance" limit={4} showCard={false} testId="detail-benefits" emptyText="None of its benefits match your answers." /></Reveal>
+          <Reveal i={2}><BenefitsStrip rows={benefitRowsFromUsed(d.used, c.id)} title="Top benefits at a glance" limit={4} showCard={false} testId="detail-benefits" emptyText="None of its benefits match your answers." />
+            {/^https?:\/\//.test(c.verifiedSource || "") && <p className="issuer-terms"><a className="link issuer-link" href={c.verifiedSource} target="_blank" rel="noopener noreferrer" data-testid="detail-issuer-terms">Issuer terms and rates <ExternalLink size={14} aria-hidden="true" /></a></p>}
+          </Reveal>
 
           {/* v7f Part 2.4: Ritz-Carlton vs Sapphire Reserve, on both pages */}
           {(c.id === "ritz" || c.id === "csr") && (

@@ -21,7 +21,7 @@ describe("Home", () => {
     expect(screen.getByRole("meter", { name: "Wallet Score" })).toBeInTheDocument();
     expect(screen.getByTestId("home-best")).toHaveTextContent(/^Best possible wallet for you: \$[\d,]+ a year$/);   // v7c 5f.6
     expect(screen.queryByText(/fee budget/i)).toBeNull();
-    expect(container.querySelector(".home-hero-v7 .focal")).toBeTruthy();       // v7: the one texture
+    expect(container.querySelector(".home-hero-v7 [data-testid='home-fan'] .v5-face")).toBeTruthy();       // the person's own card faces
     expect(container.querySelectorAll(".home-cards-row li")).toHaveLength(2);
   });
   it("one next move with its $ impact (a non-traveler with a Platinum: switch or cancel it)", () => {

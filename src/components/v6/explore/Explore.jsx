@@ -8,7 +8,7 @@
 import { formatPctBack } from "../../../engine/v5/valuation.js";
 import CompareTable from "../../v7/CompareTable.jsx";
 import React, { useDeferredValue, useMemo, useRef, useState } from "react";
-import { Search, X, SlidersHorizontal, FlaskConical, ChevronDown } from "lucide-react";
+import { Search, X, SlidersHorizontal, FlaskConical, ChevronDown, ExternalLink } from "lucide-react";
 import { useFlip, CrossFade } from "../../v7/motion/motion.jsx";
 import { queueLabAdd } from "../lab/labHandoff.js";
 import CardFace from "../../v5/CardFace.jsx";
@@ -157,6 +157,7 @@ function TilePeek({ cardId, profile }) {
   return (
     <div className="tile-peek" data-testid="tile-peek" aria-live="polite">
       {rows.length ? <ul>{rows.map((r) => <li key={r.k}><span>{r.label}</span><span>{r.v}</span></li>)}</ul> : <span>Mostly a simple everyday card for how you spend.</span>}
+      {/^https?:\/\//.test(d.card.verifiedSource || "") && <a className="link issuer-link" href={d.card.verifiedSource} target="_blank" rel="noopener noreferrer" data-testid="tile-issuer-terms">Issuer terms <ExternalLink size={12} aria-hidden="true" /></a>}
     </div>
   );
 }

@@ -8,6 +8,7 @@
 import React, { lazy, memo, startTransition, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Building2, MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
+import CardFace from "../v5/CardFace.jsx";
 import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, hotelMarksWith, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
 import { destinationsOf, minimumNights } from "../../engine/v5/hotelCredits.js";
 import { BY_ID } from "../../data/cards/index.js";
@@ -25,6 +26,22 @@ const PROGRAMS = ["edit", "fhr", "thc", "selectHotels2026"];
 const MARKS = [["stay", "I'd stay here"], ["expensive", "Too expensive"], ["style", "Not my style"]];
 const CREDIT_RULES = Object.fromEntries([BY_ID.csr, BY_ID["amex-plat"]].flatMap((c) => c.credits.filter((cr) => cr.hotelProgram?.programs).flatMap((cr) => cr.hotelProgram.programs.map((p) => [p, cr]))));
 const num = (raw) => { const n = parseInt(String(raw).replace(/\D/g, ""), 10); return Number.isFinite(n) ? n : null; };
+
+/** "Add a price you saw": a quiet text link that opens a refined inline field. */
+function SeenPrice({ testId, label, value, onChange, onSave }) {
+  const [open, setOpen] = useState(false);
+  if (!open) return <button type="button" className="link seen-link" data-testid={testId} onClick={() => setOpen(true)}>Add a price you saw</button>;
+  return (
+    <span className="seen-field" data-testid={testId}>
+      <span className="seen-prefix" aria-hidden="true">$</span>
+      <input inputMode="numeric" autoFocus aria-label={label} placeholder="Nightly" value={value ?? ""} onChange={(e) => onChange(num(e.target.value))}
+        onKeyDown={(e) => { if (e.key === "Enter") { onSave(); setOpen(false); } if (e.key === "Escape") setOpen(false); }} />
+      <span className="seen-unit" aria-hidden="true">a night</span>
+      <button type="button" className="link" onClick={() => { onSave(); setOpen(false); }}>Save</button>
+      <button type="button" className="link seen-cancel" onClick={() => setOpen(false)}>Cancel</button>
+    </span>
+  );
+}
 
 /* ---- The two credits, read from the card data (never hard-coded here) ---- */
 const hotelCreditOf = (card, program) => card?.credits.find((cr) => cr.hotelProgram?.programs?.includes(program));
@@ -50,7 +67,29 @@ function creditLines(program) {
   return out;
 }
 
+/* Real hotels from the public directory for the worked examples (lazy; the
+   examples simply stay out until it loads). Names are matched, never invented. */
+const EXAMPLE_HOTELS = { edit: ["Hôtel Plaza Athénée - Dorchester Collection", "Paris"], fhr: ["Aman New York", "New York"], thc: ["Andaz 5th Avenue", "New York"] };
+function useExampleHotels() {
+  const [ex, setEx] = useState({});
+  useEffect(() => {
+    let on = true;
+    import("../../data/hotels/programHotels.public.json").then((m) => {
+      const hotels = (m.default || m).hotels || [];
+      const out = {};
+      for (const [prog, [name, city]] of Object.entries(EXAMPLE_HOTELS)) {
+        const h = hotels.find((x) => x.name === name && x.programs.includes(prog));
+        if (h) out[prog] = { name: h.name.replace(/ [-–] .*$/, ""), city: city };
+      }
+      if (on) setEx(out);
+    }).catch(() => {});
+    return () => { on = false; };
+  }, []);
+  return ex;
+}
+
 function CreditCards({ profile }) {
+  const examples = useExampleHotels();
   const held = profile.cardsHeld || [];
   const worth = useMemo(() => {
     const out = {};
@@ -70,19 +109,24 @@ function CreditCards({ profile }) {
     <div className="hcred" data-testid="hotel-credit-cards">
       {e && (
         <article className="hcred-card" data-testid="credit-card-csr">
+          <div className="hcred-face"><CardFace card={BY_ID.csr} /></div>
           <p className="t-eyebrow">{CARD_NAME.csr}</p>
-          <h2 className="t-h3">{money(e.annual)} The Edit credit</h2>
+          <h2 className="t-h3 hcred-figure">{money(e.annual)} <span>The Edit credit</span></h2>
           <p className="t-caption">{money(hpE.chunk)} per prepaid stay of {nightsText(minimumNights(hpE, "edit"))} booked through Chase Travel, up to {hpE.chunks} a year. Only The Edit hotels qualify.</p>
           {sel && <p className="t-caption">Plus a {money(sel.annual)} Select Hotels credit in 2026 only{sel.endsOn ? ` (through ${new Date(sel.endsOn + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })})` : ""}: prepaid stays of {nightsText(sel.hotelProgram.minNights)} at Chase Select Hotels, which are not listed in the directory below.</p>}
+          {examples.edit && <p className="hcred-example" data-testid="credit-example-edit"><span>Example</span> {nightsText(minimumNights(hpE, "edit")).replace("+", "")} prepaid at {examples.edit.name}, {examples.edit.city}, through Chase Travel (The Edit) <b>→ {money(hpE.chunk)} back</b></p>}
           {status("csr")}
         </article>
       )}
       {l && (
         <article className="hcred-card" data-testid="credit-card-amex-plat">
+          <div className="hcred-face"><CardFace card={BY_ID["amex-plat"]} /></div>
           <p className="t-eyebrow">{CARD_NAME["amex-plat"]}</p>
-          <h2 className="t-h3">{money(l.annual)} Lodging Credit</h2>
+          <h2 className="t-h3 hcred-figure">{money(l.annual)} <span>Lodging Credit</span></h2>
           <p className="t-caption">{money(hpL.chunk)} Jan–Jun plus {money(hpL.chunk)} Jul–Dec, on prepaid Fine Hotels + Resorts or The Hotel Collection stays booked through Amex Travel. The Hotel Collection needs {nightsText(minimumNights(hpL, "thc"))}; Fine Hotels + Resorts allows {nightsText(minimumNights(hpL, "fhr")).replace("+", "")}{hpL.minimumChange ? ` (${nightsText(hpL.minimumChange.byProgram?.fhr || 2)} from ${new Date(hpL.minimumChange.from + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })})` : ""}.</p>
           {g && <p className="t-caption">The Hotel Collection also earns Amex Gold's {money(g.annual)} on-property credit (stays of {nightsText(g.hotelProgram.minNights)}).</p>}
+          {examples.fhr && <p className="hcred-example" data-testid="credit-example-fhr"><span>Example</span> {nightsText(minimumNights(hpL, "fhr")).replace("+", "")} prepaid at {examples.fhr.name}, {examples.fhr.city}, through Amex Fine Hotels + Resorts <b>→ {money(hpL.chunk)} back</b></p>}
+          {examples.thc && <p className="hcred-example" data-testid="credit-example-thc"><span>Example</span> {nightsText(minimumNights(hpL, "thc")).replace("+", "")} prepaid at {examples.thc.name}, {examples.thc.city}, through The Hotel Collection <b>→ {money(hpL.chunk)} back</b></p>}
           {status("amex-plat")}
         </article>
       )}
@@ -395,10 +439,7 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
                     ~{money(p.rate)}/night <span className="habit-tag">({p.rateLabel})</span> · {p.n} night{p.n === 1 ? "" : "s"} min ·
                     {" "}<strong data-testid={`value-${h.id}-${p.program}`}>Value to you: {money(p.value)}</strong> <span className="habit-tag">of a {money(p.C)} credit, at your {money(p.budget)} a night</span>
                     <p className="hotel-benefits">{(h.benefits[p.program] || []).join(" · ")}</p>
-                    <label className="habit-adjust">I saw $
-                      <input inputMode="numeric" aria-label={`I saw a nightly price: ${h.name} (${PROGRAM_NAME[p.program]})`} value={seen[`${h.id}:${p.program}`] ?? ""} onChange={(e) => setSeen({ ...seen, [`${h.id}:${p.program}`]: num(e.target.value) })} />
-                      a night <button type="button" className="link" onClick={() => addRate(h, p.program)}>Save</button>
-                    </label>
+                    <SeenPrice id={`${h.id}:${p.program}`} testId={`seen-${h.id}-${p.program}`} label={`I saw a nightly price: ${h.name} (${PROGRAM_NAME[p.program]})`} value={seen[`${h.id}:${p.program}`]} onChange={(v) => setSeen({ ...seen, [`${h.id}:${p.program}`]: v })} onSave={() => addRate(h, p.program)} />
                   </div>
                 ))}
               </div>

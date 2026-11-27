@@ -6,16 +6,32 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 export const prefersReduced = () =>
   typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+/** Never hide content: a block starts "revealed" when it is already in view
+    on mount (or motion is reduced / unsupported), is revealed by an
+    IntersectionObserver as it scrolls in, and in every case is revealed by a
+    600ms fallback so a fast scroll or a screenshot never meets an empty gap. */
+export function useRevealed(ref, enabled = true) {
+  const instant = () => !enabled || typeof IntersectionObserver === "undefined" || prefersReduced();
+  const [on, setOn] = useState(instant);
+  useLayoutEffect(() => {
+    if (on || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    if (r.top < (window.innerHeight || 800) * 1.1) setOn(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (on || !ref.current) return undefined;
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { setOn(true); io.disconnect(); } }, { rootMargin: "0px 0px 10% 0px" });
+    io.observe(ref.current);
+    const t = setTimeout(() => setOn(true), 600);
+    return () => { io.disconnect(); clearTimeout(t); };
+  }, [on, ref]);
+  return on;
+}
+
 /** Rise in on mount (immediate) or when scrolled into view (`scroll`). */
 export function Rise({ as: Tag = "div", i = 0, scroll = false, className = "", style, children, ...rest }) {
   const ref = useRef(null);
-  const [on, setOn] = useState(() => !scroll || typeof IntersectionObserver === "undefined" || prefersReduced());
-  useEffect(() => {
-    if (on || !ref.current) return undefined;
-    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { setOn(true); io.disconnect(); } }, { rootMargin: "0px 0px -6% 0px" });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, [on]);
+  const on = useRevealed(ref, scroll);
   return <Tag ref={ref} className={["mo-rise", on && "is-in", className].filter(Boolean).join(" ")} style={{ ...style, "--i": i }} {...rest}>{children}</Tag>;
 }
 

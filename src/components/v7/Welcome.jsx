@@ -3,12 +3,13 @@
    visitor) with the same engine every other screen uses; the survey then
    replaces the example with the person's own numbers. */
 import React, { useMemo } from "react";
-import { ArrowRight, Compass, FlaskConical, BedDouble } from "lucide-react";
+import { ArrowRight, Compass, BedDouble } from "lucide-react";
 import { BY_ID } from "../../data/cards/index.js";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { STRATEGY_BY_KEY, evaluateStrategy } from "../../engine/v5/strategies.js";
 import { normalizeProfile, SPEND_PRESETS } from "../../engine/profileDefaults.js";
 import CardFace from "../v5/CardFace.jsx";
+import SimulateCta from "./SimulateCta.jsx";
 
 export const POPULAR = [
   { key: "chase-trifecta-csp", blurb: "The classic starter ecosystem: Freedom cards earn, Sapphire Preferred unlocks transfers to Hyatt, United and more." },
@@ -52,7 +53,7 @@ export default function Welcome({ onStart, onGo, onOpenCard }) {
         <div className="welcome-actions">
           <button className="btn btn-signal" onClick={onStart} data-testid="welcome-start">Get my plan <ArrowRight size={18} aria-hidden="true" /></button>
           <button className="btn btn-quiet" onClick={() => onGo("explore")}><Compass size={16} aria-hidden="true" /> Browse cards</button>
-          <button className="btn btn-quiet" onClick={() => onGo("lab")}><FlaskConical size={16} aria-hidden="true" /> Simulate a wallet</button>
+          <SimulateCta testId="welcome-simulate" onClick={() => onGo("lab")} />
           <button className="btn btn-quiet" onClick={() => onGo("hotels")}><BedDouble size={16} aria-hidden="true" /> Edit / THC / FHR hotels</button>
         </div>
       </section>

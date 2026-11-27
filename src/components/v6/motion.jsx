@@ -10,21 +10,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCountUp } from "../wallet/useCountUp.js";
 import Num from "../v7/Num.jsx";
+import { useRevealed } from "../v7/motion/motion.jsx";
 
 export const reducedMotion = () =>
   typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export function Reveal({ as: Tag = "div", i = 0, className = "", style, children, ...rest }) {
   const ref = useRef(null);
-  const [inView, setInView] = useState(() => typeof IntersectionObserver === "undefined" || reducedMotion());
-  useEffect(() => {
-    if (inView || !ref.current) return undefined;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) { setInView(true); io.disconnect(); }
-    }, { rootMargin: "0px 0px -8% 0px" });
-    io.observe(ref.current);
-    return () => io.disconnect();
-  }, [inView]);
+  const inView = useRevealed(ref, true);
   return (
     <Tag ref={ref} className={["reveal", inView && "is-in", className].filter(Boolean).join(" ")} style={{ ...style, "--i": i }} {...rest}>
       {children}

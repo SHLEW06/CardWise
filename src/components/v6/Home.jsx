@@ -7,10 +7,13 @@
    ========================================================================== */
 import { formatPctBack } from "../../engine/v5/valuation.js";
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowRight, MapPin, FlaskConical } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import CardFace from "../v5/CardFace.jsx";
 import ScoreDial from "./ScoreDial.jsx";
 import FocalImage from "../v7/FocalImage.jsx";
+import CardFan from "../v7/CardFan.jsx";
+import SimulateCta from "../v7/SimulateCta.jsx";
+import { walletCards } from "../../engine/v5/lab.js";
 import WhyThisCard from "../v7/WhyThisCard.jsx";
 import { Reveal, CountUp } from "./motion.jsx";
 import { buildPlan } from "../../engine/v5/plan.js";
@@ -38,6 +41,12 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
     .map((o) => ({ o, v: offerValueFor(o, o.minSpend || 50).potential || o.reward || 0 })).sort((a, b) => b.v - a.v).slice(0, 3), [offers, profile]);
   const near = useNearYou(profile, offers);
   const fanCards = cards;
+  /* the hero shows the person's own cards; with none held, the recommended wallet's */
+  const bestCards = useMemo(() => (s.best?.wallet || []).map((id) => BY_ID[id]).filter(Boolean), [s]);
+  const heroCards = cards.length ? cards : bestCards;
+  const perCard = useMemo(() => {
+    try { return Object.fromEntries(walletCards(profile.cardsHeld, profile, s.current).map((r) => [r.cardId, r.net])); } catch { return {}; }
+  }, [profile, s]);
   const bestBenefits = useMemo(() => benefitRowsFromValue(s.best?.value), [s]);
 
   if (!cards.length) {
@@ -52,7 +61,9 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             <p className="t-caption">Recommended setup: {money(s.best.value.net)} a year after fees.</p>
             <button className="btn btn-signal" onClick={onSetup}>Start setup <ArrowRight size={18} aria-hidden="true" /></button>
           </Reveal>
-          <FocalImage slot="home" className="home-hero-focal" />
+          {bestCards.length
+            ? <CardFan cards={bestCards} onOpen={onOpenCard} caption="The wallet we'd recommend for you" />
+            : <FocalImage slot="home" className="home-hero-focal" />}
         </div>
       </section>
     );
@@ -71,7 +82,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             : `That's after their yearly fees, across ${cards.length} card${cards.length === 1 ? "" : "s"}, counting only the perks you told us you'd use.`}</p>
           <div className="home-actions">
             {move && <a className="btn btn-signal" href="#next-move">See your next move <ArrowRight size={18} aria-hidden="true" /></a>}
-            <button type="button" className="btn btn-quiet" data-testid="home-simulate" onClick={() => onGo?.("lab")}><FlaskConical size={18} aria-hidden="true" /> Simulate your own wallet</button>
+            <SimulateCta testId="home-simulate" onClick={() => onGo?.("lab")} now={s.current.net} best={s.best.value.net} />
           </div>
           <div className="home-score">
             <ScoreDial score={s.score} size={120} caption="Score" />
@@ -81,11 +92,12 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             </div>
           </div>
         </Reveal>
-        <FocalImage slot="home" className="home-hero-focal" />
+        {heroCards.length
+          ? <CardFan cards={heroCards} onOpen={onOpenCard} caption={cards.length ? `Your ${cards.length === 1 ? "card" : `${cards.length} cards`}` : "The wallet we'd recommend for you"} />
+          : <FocalImage slot="home" className="home-hero-focal" />}
       </div>
 
       <div className="page home-below">
-        <PlanAdvice plan={s} onEdit={onSetup} />
         {move && (
           <Reveal className="panel next-move" id="next-move">
             <p className="t-eyebrow">Your next move</p>
@@ -101,6 +113,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
             {move.kind === "apply" && <WhyThisCard cardId={move.cardId} wallet={move.context || profile.cardsHeld} profile={profile} />}
           </Reveal>
         )}
+        <PlanAdvice plan={s} onEdit={onSetup} hideFirstAction />
 
         <Rise scroll i={1}>
           <BenefitsStrip rows={bestBenefits} title="Benefits in your recommended wallet" limit={4} testId="home-benefits" />
@@ -114,6 +127,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
                 <button className="mo-lift" onClick={() => onOpenCard?.(c.id)} aria-label={`Open ${cardDisplayName(c)}`}>
                   <CardFace card={c} />
                   <span className="t-caption">{cardDisplayName(c)}</span>
+                  {perCard[c.id] != null && <span className="home-card-value"><b>{perCard[c.id] < 0 ? "−" : ""}{money(perCard[c.id])}</b> a year to you</span>}
                 </button>
               </li>
             ))}
@@ -151,11 +165,7 @@ export default function Home({ profile: raw, offers = [], onOpenCard, onGo, onSe
         )}
 
         <Reveal i={3} className="home-links">
-          <button className="home-link glass mo-lift" onClick={() => onGo?.("lab")}>
-            <span className="t-h2">Simulate your wallet</span>
-            <span className="t-caption">Wallet Lab: add or drop a card and watch your yearly value move.</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </button>
+          <SimulateCta className="sim-cta-tile" testId="home-simulate-tile" onClick={() => onGo?.("lab")} sub="Wallet Lab: add or drop a card and watch your yearly value move" now={s.current.net} best={s.best.value.net} />
           <button className="home-link glass mo-lift" onClick={() => onGo?.("explore")}>
             <span className="t-h2">Explore</span>
             <span className="t-caption">Every card, ranked by what it would add for you.</span>
