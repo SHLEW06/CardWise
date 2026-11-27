@@ -282,7 +282,7 @@ export default function PerksStep({ d, set, headRef }) {
   return (
     <>
       <Head headRef={headRef} eyebrow="Card perks" title="Which of these do you use, and how often?"
-        sub="Some cards pay for these. Tell us your habits, and we work out what that's worth. Skip anything you never use." />
+        sub="Some cards pay for these. Tell us your habits, and we work out what that's worth. Skip anything you never use." why="A card that refunds a service you already pay for is real savings." />
       {HABIT_ROWS.map((g) => (
         <fieldset key={g.key} className="survey-group habit-group">
           <legend className="t-h3">{g.label}</legend>

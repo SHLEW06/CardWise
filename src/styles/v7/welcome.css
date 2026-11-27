@@ -1,7 +1,7 @@
 @import "./design.css";
 /* First-visit Welcome (src/components/v7/Welcome.jsx). */
 .welcome { display: grid; gap: clamp(32px, 6vw, 64px); padding-block: clamp(24px, 5vw, 56px); }
-.welcome-hero { max-width: 760px; display: grid; gap: 16px; }
+.welcome-hero { max-width: none; display: grid; gap: 16px; }
 .welcome-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
 .welcome-actions .btn { display: inline-flex; align-items: center; gap: 8px; }
 .welcome-head { display: grid; gap: 6px; margin-bottom: 18px; }

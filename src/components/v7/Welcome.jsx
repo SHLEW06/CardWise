@@ -10,6 +10,7 @@ import { STRATEGY_BY_KEY, evaluateStrategy } from "../../engine/v5/strategies.js
 import { normalizeProfile, SPEND_PRESETS } from "../../engine/profileDefaults.js";
 import CardFace from "../v5/CardFace.jsx";
 import SimulateCta from "./SimulateCta.jsx";
+import QuickSurvey from "./quick/QuickSurvey.jsx";
 
 export const POPULAR = [
   { key: "chase-trifecta-csp", blurb: "The classic starter ecosystem: Freedom cards earn, Sapphire Preferred unlocks transfers to Hyatt, United and more." },
@@ -31,7 +32,7 @@ export const EXAMPLE_MONTHLY = Object.values(SPEND_PRESETS.typical).reduce((t, v
 const monthly = EXAMPLE_MONTHLY;
 const money = (n) => `${n < 0 ? "−" : ""}$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 
-export default function Welcome({ onStart, onGo, onOpenCard }) {
+export default function Welcome({ onStart, onGo, onOpenCard, onQuickDone, onRefine }) {
   const rows = useMemo(() => {
     const p = normalizeProfile(EXAMPLE_PROFILE);
     return POPULAR.map(({ key, blurb }) => {
@@ -49,9 +50,10 @@ export default function Welcome({ onStart, onGo, onOpenCard }) {
       <section className="welcome-hero reveal">
         <p className="t-eyebrow">CardWise</p>
         <h1 className="t-hero">Get paid more for what you already buy.</h1>
-        <p className="t-lead">Look around first: browse every card, try a wallet, or see where the Sapphire Reserve and Platinum hotel credits work. Answer a few questions when you're ready and every screen switches to your own numbers.</p>
+        <p className="t-lead">Seven short questions, about a minute. Skip anything you're not sure about. Your best wallet builds as you answer, and every screen then uses your own numbers.</p>
+        <QuickSurvey onFinish={onQuickDone} onRefine={onRefine} onFullSurvey={onStart} />
         <div className="welcome-actions">
-          <button className="btn btn-signal" onClick={onStart} data-testid="welcome-start">Get my plan <ArrowRight size={18} aria-hidden="true" /></button>
+          <button className="btn btn-quiet" onClick={onStart} data-testid="welcome-start">Take the full survey <ArrowRight size={16} aria-hidden="true" /></button>
           <button className="btn btn-quiet" onClick={() => onGo("explore")}><Compass size={16} aria-hidden="true" /> Browse cards</button>
           <SimulateCta testId="welcome-simulate" onClick={() => onGo("lab")} />
           <button className="btn btn-quiet" onClick={() => onGo("hotels")}><BedDouble size={16} aria-hidden="true" /> Edit / THC / FHR hotels</button>

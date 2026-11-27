@@ -1,0 +1,91 @@
+{
+ "n": 800,
+ "seed": 20261126,
+ "generatedAt": "2026-11-27",
+ "questions": [
+  {
+   "question": "Pay in full?",
+   "avgRegret": 2.39,
+   "p90Regret": 0,
+   "planChanged": 36.6,
+   "unsafeForCarriers": 293
+  },
+  {
+   "question": "Cards you already have",
+   "avgRegret": 205.67,
+   "p90Regret": 635,
+   "planChanged": 72.6,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Monthly spending by category",
+   "avgRegret": 63.65,
+   "p90Regret": 247,
+   "planChanged": 34.5,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "How often you fly",
+   "avgRegret": 15.51,
+   "p90Regret": 0,
+   "planChanged": 9.5,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Costco / Amazon Prime",
+   "avgRegret": 14.07,
+   "p90Regret": 0,
+   "planChanged": 11.5,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Credit score",
+   "avgRegret": 13.79,
+   "p90Regret": 0,
+   "planChanged": 18.6,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Subscriptions & apps (Disney+, Uber…)",
+   "avgRegret": 12.84,
+   "p90Regret": 0,
+   "planChanged": 10.9,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Checked bags",
+   "avgRegret": 11.67,
+   "p90Regret": 0,
+   "planChanged": 2.8,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Rewards goal (cash / travel)",
+   "avgRegret": 3.97,
+   "p90Regret": 0,
+   "planChanged": 7.6,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Paid hotel nights",
+   "avgRegret": 3.31,
+   "p90Regret": 0,
+   "planChanged": 6.4,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Airline / hotel you prefer",
+   "avgRegret": 1.03,
+   "p90Regret": 0,
+   "planChanged": 0.5,
+   "unsafeForCarriers": 0
+  },
+  {
+   "question": "Annual-fee limit",
+   "avgRegret": 0,
+   "p90Regret": 0,
+   "planChanged": 3,
+   "unsafeForCarriers": 0
+  }
+ ]
+}

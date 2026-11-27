@@ -19,6 +19,7 @@ import PerksStep from "./PerksStep.jsx";
 import GrowthStep from "./GrowthStep.jsx";
 import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import Head from "./SurveyHead.jsx";
+import { TermRow } from "../../v7/quick/Glossary.jsx";
 import HotelBudget from "../../v7/HotelBudget.jsx";
 import { TravelCompany } from "../../v7/Specialty.jsx";
 import { FeeLimitChoice, FeeLimitCost } from "../../v7/FeeLimit.jsx";
@@ -146,7 +147,7 @@ function Step({ id, d, set, mode, headRef, onEdit }) {
           {/* v7c 5d-2.5: the optimizer has no fee cap by default; v7d Part 4
               adds an optional limit (asked below). */}
           <Head headRef={headRef} eyebrow="Memberships" title="Memberships you already pay for"
-            sub="Some cards only work with a paid membership. If you already have it, its cost isn't counted against the card." />
+            sub="Some cards only work with a paid membership. If you already have it, its cost isn't counted against the card." why="A card that needs Costco or Prime only makes sense if you already shop there." />
           <fieldset className="survey-group">
             <legend className="t-h3">Memberships you already pay for <span className="t-caption">(optional)</span></legend>
             <ToggleChips options={MEMBERSHIPS} picked={d.memberships} onChange={(memberships) => set({ memberships })} label="Memberships you already pay for" />
@@ -169,7 +170,9 @@ function Step({ id, d, set, mode, headRef, onEdit }) {
       return (
         <>
           <Head headRef={headRef} title="Where would your points go?"
-            sub="Pick the airlines and hotels you'd actually use. We've started with the ones you picked. Points you wouldn't move count as cash." />
+            sub="Pick the airlines and hotels you'd actually use. We've started with the ones you picked. Points you wouldn't move count as cash. Airlines and hotels you can move points to are called transfer partners."
+            why="Points are worth more when they go to a partner you'd really use." />
+          <TermRow keys={["transfer"]} />
           <PartnerPicker profile={d} currencies={currenciesFor(d, BY_ID)} onChange={(partnerPicks) => set({ partnerPicks })} />
         </>
       );
@@ -202,7 +205,7 @@ function CardsStep({ d, set, headRef }) {
   const toggle = (cid) => set({ cardsHeld: held.includes(cid) ? held.filter((x) => x !== cid) : [...held, cid] });
   return (
     <>
-      <Head headRef={headRef} eyebrow="Cards" title="Which cards do you have?" sub="Pick every card you carry — older ones too." />
+      <Head headRef={headRef} eyebrow="Cards" title="Which cards do you have?" sub="Pick every card you have, including older ones." why="Your cards change the advice for about 3 in 4 people. We tell you which to keep, upgrade or drop." />
       <div className="survey-search">
         <Search size={18} aria-hidden="true" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Search ${CARDS.length} cards by name or bank`} aria-label="Search cards" />
@@ -258,7 +261,7 @@ function SpendStep({ d, set, mode, headRef }) {
   const monthly = yearly / 12;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Spending" title="What do you spend?" sub="Rough numbers are fine. Each row can be monthly or yearly — use Yearly to type a total for the year if your costs vary." />
+      <Head headRef={headRef} eyebrow="Spending" title="What do you spend?" sub="Rough numbers are fine. Each row can be monthly or yearly. Pick Yearly if your costs change a lot through the year." why="Rewards come from where your money goes, so this changes the advice for about 1 in 3 people." />
       <AnswerChoice title="What would you like to earn?" value={d.wants} options={[["cash", "Cash back"], ["travel", "Travel points"], ["both", "Both"]]} onChange={wants => set({ wants }, ["wants"])} />
       <AnswerChoice title="Will you activate quarterly bonus categories?" value={d.rotatingActivation} options={[["yes", "Yes"], ["no", "No"], ["unsure", "Not sure"]]} onChange={rotatingActivation => set({ rotatingActivation }, ["rotatingActivation"])} />
       <AnswerChoice title="Where do you buy most groceries?" value={d.groceryStore} options={[["supermarket", "Supermarket"], ["superstore", "Walmart or Target"], ["warehouse", "Warehouse club"]]} onChange={groceryStore => set({ groceryStore }, ["groceryStore"])} />
@@ -502,7 +505,7 @@ function TravelStep({ d, set, mode, headRef }) {
   const bagCount = t.bags ? t.bags.perTrip : null;
   return (
     <>
-      <Head headRef={headRef} eyebrow="Travel" title="Add the trips you take" sub="Where you fly from and to, and how often. We work out the rest: your home airports, domestic or international, and the airlines you'd likely fly." />
+      <Head headRef={headRef} eyebrow="Travel" title="Add the trips you take" sub="Where you fly from and to, and how often. We work out the rest: your home airports, domestic or international, and the airlines you'd likely fly." why="How often you fly decides whether a travel card is worth its yearly fee." />
       <fieldset className="survey-group" data-testid="trips">
         <legend className="t-h3">Your trips</legend>
         {rows.length > 0 && (
@@ -768,10 +771,12 @@ function CreditStep({ d, set, mode, headRef }) {
   const setCredit = (patch) => set({ credit: { ...c, ...patch } }, Object.keys(patch).map(k => `credit.${k}`));
   return (
     <>
-      <Head headRef={headRef} eyebrow="Credit" title="Your credit" sub="Used only to show how likely an approval is and when to apply. Nothing here is a credit check." />
+      <Head headRef={headRef} eyebrow="Credit" title="Your credit" sub="This shows how likely a card is to approve you, and when to apply. It is never a credit check." why="Some cards only approve good credit, and paying interest can cancel out any reward." />
       <label className="field">Most cards you want to carry<input type="number" min="1" max="10" value={d.maxCards} onChange={e => set({ maxCards: Math.max(1, Math.min(10, Number(e.target.value))) }, ["maxCards"])} /></label>
       <label className="field">New cards you're comfortable opening<input type="number" min="0" max="10" value={d.newCardComfort} onChange={e => set({ newCardComfort: Math.max(0, Math.min(10, Number(e.target.value))) }, ["newCardComfort"])} /></label>
       <AnswerChoice title="Are you a student?" value={d.isStudent} options={[[true, "Yes"], [false, "No"]]} onChange={isStudent => set({ isStudent }, ["isStudent"])} />
+      <p className="t-caption">Your statement balance is the total on your monthly bill. Interest (APR) is charged on whatever you don't pay.</p>
+      <TermRow keys={["statement", "apr", "score"]} />
       <AnswerChoice title="Do you pay your statement balance in full?" value={d.paymentBehavior} options={[["always", "Always"], ["sometimes", "Sometimes carry a balance"], ["usually", "Usually carry a balance"]]} onChange={paymentBehavior => set({ paymentBehavior }, ["paymentBehavior"])} />
       {["sometimes", "usually"].includes(d.paymentBehavior) && <fieldset className="survey-group">
         <legend className="t-h3">What does interest cost you?</legend>
@@ -793,7 +798,8 @@ function CreditStep({ d, set, mode, headRef }) {
         <div className="chip-wrap" role="radiogroup" aria-labelledby="q-new">
           {NEW_CARD_OPTIONS.map((o) => <Choice key={o.key} radio pill selected={Math.min(5, c.newCards24mo) === o.key} onSelect={() => setCredit({ newCards24mo: o.key })}>{o.label}</Choice>)}
         </div>
-        <p className="t-caption">Chase usually declines anyone with 5 or more new cards in 24 months.</p>
+        <p className="t-caption">Chase usually declines anyone with 5 or more new cards in 24 months (the 5/24 rule).</p>
+        <TermRow keys={["rule524"]} />
       </fieldset>
       <fieldset className="survey-group">
         <legend className="t-h3" id="q-loan">Planning a mortgage, car loan or other big loan in the next 24 months?</legend>

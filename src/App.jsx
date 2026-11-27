@@ -130,6 +130,7 @@ export default function App() {
   const [screen, setScreen] = useState("app"); // survey | app
   const [hasPlan, setHasPlan] = useState(false);
   const [surveyStep, setSurveyStep] = useState(null);   // step id when editing one answer from Profile
+  const [refineStep, setRefineStep] = useState(null);   // "Refine" from the quick survey: full survey opens here
   const [tab, setTab] = useState("home");   // home | checkout | offers | lab | explore | profile (§17)
   const [hotelFilter, setHotelFilter] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -222,15 +223,16 @@ export default function App() {
       <div className="v5">
         <Survey
           initialProfile={v5}
-          initialStepId={surveyStep}
+          initialStepId={surveyStep || refineStep}
           editOnly={!!surveyStep}
-          onExit={() => { setScreen("app"); if (surveyStep) setTab("profile"); setSurveyStep(null); }}
+          onExit={() => { setScreen("app"); if (surveyStep) setTab("profile"); setSurveyStep(null); setRefineStep(null); }}
           onDone={(v5Profile, meta = {}) => {
             applyV5(v5Profile);
             setHasPlan(true);
             setScreen("app");
             setTab(surveyStep ? "profile" : meta.open === "lab" ? "lab" : "home");
             setSurveyStep(null);
+            setRefineStep(null);
             saveProfile(toLegacyProfile(v5Profile));
           }}
         />
@@ -245,7 +247,9 @@ export default function App() {
 
   return (
     <AppShell current={tab} onNavigate={setTab} onLogo={restart} user={user} backdrop={backdrop}>
-      {tab === "home" && !hasPlan && <Welcome onStart={() => { setSurveyStep(null); setScreen("survey"); }} onGo={setTab} onOpenCard={openCard} />}
+      {tab === "home" && !hasPlan && <Welcome onStart={() => { setSurveyStep(null); setScreen("survey"); }} onGo={setTab} onOpenCard={openCard}
+        onQuickDone={(p) => { window.scrollTo?.({ top: 0 }); applyV5(p); setHasPlan(true); setTab("home"); saveProfile(toLegacyProfile(p)); }}
+        onRefine={(p) => { applyV5(p); setHasPlan(true); saveProfile(toLegacyProfile(p)); setRefineStep("travel"); setScreen("survey"); }} />}
       {tab === "home" && hasPlan && <Home profile={v5} offers={offers} onOpenCard={openCard} onGo={setTab} onSetup={(step) => { setSurveyStep(typeof step === "string" ? step : null); setScreen("survey"); }} />}
       {tab === "checkout" && <Checkout profile={v5} offers={offers} onOpenCard={openCard} onMarkAdded={markOfferAdded} />}
       {tab === "offers" && <Offers offers={offers} setOffers={(next) => { setOffers(next); saveOffers(next).catch(() => {}); }} profile={v5} />}
