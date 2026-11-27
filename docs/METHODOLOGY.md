@@ -1,6 +1,20 @@
 # CardWise value methodology (v6)
 
-## Current rules — 2026-11-25 trust audit
+## Current rules — 2026-11-27 external review
+
+These supersede the matching lines in the 2026-11-25 rules below. The full list is in [REVIEW_FIXES_2026-11-27.md](REVIEW_FIXES_2026-11-27.md).
+
+- **Exact spend routing.** `allocateSpend` solves routing as a linear program (`exactAllocate.js`: every dollar once, every cap and shared pool respected), trying every one-category pick. It no longer sorts lanes by % and fills them greedily. The independent HiGHS oracle in `scripts/oracle/` agrees to the cent on 3,284 wallets.
+- **Pick-your-category cards** (`card.choices`): BoA Customized Cash pays 3% on one chosen category (gas & EV, online incl. streaming and phone, dining, travel, drugstores) and 2% at grocery stores and wholesale clubs, sharing $2,500 a quarter. US Bank Cash+ pays 5% on two *different* picks (phone, TV/internet/streaming, home utilities, ground transportation) sharing $2,000 a quarter, plus 2% on one everyday pick (gas & EV, groceries, dining).
+- **Cash-goal and skipped-goal point values are never $0 when a real redemption exists.** Capital One miles are worth 1¢ for the share the person's own flights, hotels and rentals can absorb ("cover travel purchases") and 0.5¢ beyond that. Citi ThankYou points are 0.75¢, or 1¢ beside a Double Cash or Custom Cash. The quick survey now asks the goal (step 8).
+- **Checkout = the plan.** `purchaseRate` reads the same lanes as the plan. Custom Cash's top category and BoA / Cash+ picks come from the plan's routing of this wallet. A rate that depends on something unknown at the register (this quarter's rotating category, an unpicked category, a co-brand's own brand) is shown as a second outcome. Costco.com takes Visa and Mastercard; Costco warehouses and gas take Visa only.
+- **Fee limits are strict.** A set limit replaces the no-fee first-card rule. Held cards whose own yearly fee goes over the limit switch to a product within it (or are left out), with a warning that states what the limit costs.
+- **Held fee cards are re-judged beside the final plan.** A product change needs to be worth $25 a year more; a cancellation $50, because closing shortens credit history. A store membership is not a card fee for this check.
+- **Built-in preferences are shown with their cost** (`plan.tilts`): the catch-all rule, the Chase rule for a skipped goal, the new-membership margin and the no-fee first card. The next card also shows the runner-up and the yearly difference.
+- **Share links carry the v5 profile** (`#p=`, v3), so the person opening one sees the sender's wallet.
+- **Caps are annual.** Profiles hold average monthly spending, so a monthly or quarterly cap is 12× or 4× its period amount. Routing month by month would only differ with month-by-month spending, which the survey doesn't collect.
+
+## Rules — 2026-11-25 trust audit
 
 This section supersedes older defaults and score descriptions below. `buildPlan(profile)` is the recommendation contract for Survey, Home and Wallet Lab. It combines the constrained wallet, current and recommended annual net, first action, timeline, held-account advice, assumptions and warnings. Lab swaps are explicit what-if previews.
 

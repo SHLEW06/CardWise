@@ -1,6 +1,6 @@
 # Held-out population simulation
 
-Run 2026-11-26, seed 20261126: 5,000 synthetic people, 69s. Reproduce with `node scripts/simulate-population.mjs` and `node scripts/population/report.mjs`.
+Run 2026-11-27, seed 20261126: 5,000 synthetic people, 206s. Reproduce with `node scripts/simulate-population.mjs` and `node scripts/population/report.mjs`.
 
 ## Why
 
@@ -23,7 +23,7 @@ The practical rules and the fixes before them were tuned while looking at the 20
 | Plans whose totals don't add up | 0 |
 | First-card seekers left with no card and no next step | 0 |
 
-Every case without a new card has a next step. 90 people with credit below 600 (or no history) and no eligible unsecured card are asked whether they can afford a refundable deposit.
+Every case without a new card has a next step. 93 people with credit below 600 (or no history) and no eligible unsecured card are asked whether they can afford a refundable deposit.
 
 ## Do the practical rules help? (Monte Carlo against an oracle)
 
@@ -31,14 +31,14 @@ People misjudge their own spending, so each person is re-run 10 times. In every 
 
 | Measure | Held-out population | 200 training personas |
 | --- | --- | --- |
-| Plans the practical rules change | 46 (0.9%) | 9 (4.5%) |
-| Realized net / year, rules on | $472 | $666 |
-| Realized net / year, rules off (pure modeled optimum) | $472 | $667 |
-| Rules on − off, per person per year | −$0.12 | −$0.41 |
-| Average regret vs oracle, rules on | $3.8 | $11.41 |
-| Average regret vs oracle, rules off | $3.71 | $11.08 |
+| Plans the practical rules change | 52 (1%) | 11 (5.5%) |
+| Realized net / year, rules on | $490 | $695 |
+| Realized net / year, rules off (pure modeled optimum) | $491 | $695 |
+| Rules on − off, per person per year | −$0.13 | −$0.37 |
+| Average regret vs oracle, rules on | $5.77 | $14.25 |
+| Average regret vs oracle, rules off | $5.71 | $13.96 |
 | Promised − realized (optimizer's curse) | $2 | $3 |
-| Plan changes after a ±5% re-estimate of spending | 1.4% | 7.5% |
+| Plan changes after a ±5% re-estimate of spending | 2.4% | 9% |
 
 **Reading it:**
 - **Spending error does not justify the practical rules on its own, and they barely cost anything.** They change about 1 plan in 100 held-out people, and the cost under spending error is cents per person per year. Each swap is capped at $25/yr by design. Their case rests on things this model does not price: one simple card is easier to use correctly than several category cards, approval is easier, and Chase points keep the Sapphire upgrade path open. They stay for those reasons, not because the simulation shows a dollar gain.
@@ -55,17 +55,17 @@ People misjudge their own spending, so each person is re-run 10 times. In every 
 
 | First application | Share |
 | --- | --- |
-| no new application | 66.3% |
-| active-cash | 13.3% |
-| amex-bce | 7.1% |
+| no new application | 65.7% |
+| active-cash | 12.5% |
+| amex-bce | 6.8% |
 | freedom-rise | 5.3% |
 | usb-altitude-go | 1.6% |
-| costco-citi | 1.5% |
-| citi-double-cash | 0.9% |
-| wf-autograph | 0.7% |
-| bilt-palladium | 0.7% |
+| usb-cash-plus | 1.6% |
+| costco-citi | 1.6% |
+| citi-double-cash | 0.8% |
+| bilt-palladium | 0.6% |
+| wf-autograph | 0.6% |
 | delta-gold | 0.4% |
-| united-explorer | 0.4% |
 | usb-altitude-connect | 0.4% |
 
 "No new application" covers balance carriers (45% of the population, told to pay down first), the deposit question, and people whose current cards already beat every addition after its application cost.
@@ -74,23 +74,23 @@ People misjudge their own spending, so each person is re-run 10 times. In every 
 
 | Segment | People | Average net / year | Pay balance first | Most common first applications |
 | --- | --- | --- | --- | --- |
-| retiree | 801 | $402 | 44.8% | no new application 72.2%; active-cash 11.6%; amex-bce 8.4%; usb-altitude-go 1.9% |
-| mid-career | 994 | $562 | 44.9% | no new application 67%; active-cash 15.3%; amex-bce 8.1%; usb-altitude-go 1.8% |
-| young-professional | 922 | $434 | 44.4% | no new application 64.5%; active-cash 13.2%; amex-bce 8%; freedom-rise 5.3% |
-| family | 1084 | $553 | 46.5% | no new application 68.6%; active-cash 14.2%; amex-bce 6.5%; costco-citi 3.1% |
-| frequent-traveler | 394 | $835 | 41.4% | no new application 60.4%; active-cash 15%; amex-bce 6.6%; wf-autograph 3.3% |
-| student | 399 | $178 | 44.4% | no new application 54.6%; freedom-rise 29.1%; active-cash 9.5%; amex-bce 5% |
-| rebuilding | 406 | $217 | 46.8% | no new application 68.5%; freedom-rise 14%; active-cash 11.6%; amex-bce 3.7% |
+| retiree | 801 | $419 | 44.8% | no new application 71.2%; active-cash 11.5%; amex-bce 8.1%; usb-altitude-go 1.6% |
+| mid-career | 994 | $583 | 44.9% | no new application 66.1%; active-cash 13.8%; amex-bce 8.4%; usb-cash-plus 2.2% |
+| young-professional | 922 | $451 | 44.4% | no new application 64%; active-cash 12.8%; amex-bce 7.4%; freedom-rise 5.2% |
+| family | 1084 | $578 | 46.5% | no new application 68.2%; active-cash 13.5%; amex-bce 5.9%; costco-citi 3% |
+| frequent-traveler | 394 | $875 | 41.4% | no new application 59.9%; active-cash 12.4%; amex-bce 6.9%; wf-autograph 3.6% |
+| student | 399 | $179 | 44.4% | no new application 54.4%; freedom-rise 29.1%; active-cash 9.5%; amex-bce 4.8% |
+| rebuilding | 406 | $219 | 46.8% | no new application 68.5%; freedom-rise 14%; active-cash 11.6%; amex-bce 3.7% |
 
 ## Annual fees by income quintile
 
 | Quintile | People | Plans with an annual fee | Average fees / year |
 | --- | --- | --- | --- |
-| Q1 | 928 | 8.8% | $13 |
-| Q2 | 1024 | 14.4% | $21 |
-| Q3 | 1097 | 17% | $28 |
-| Q4 | 1103 | 19.4% | $31 |
-| Q5 | 848 | 23% | $45 |
+| Q1 | 928 | 7% | $12 |
+| Q2 | 1024 | 10.5% | $17 |
+| Q3 | 1097 | 12% | $22 |
+| Q4 | 1103 | 14% | $23 |
+| Q5 | 848 | 16.3% | $31 |
 
 Fees rise with income, as they should: premium cards are recommended where spending and travel pay for them.
 

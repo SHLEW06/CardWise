@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26",
+ "generatedAt": "2026-11-27",
  "seed": 20261126,
  "n": 5000,
  "sources": {
@@ -7,7 +7,7 @@
   "balances": "Federal Reserve, Economic Well-Being of U.S. Households in 2025 (SHED)",
   "spending": "BLS Consumer Expenditure Survey 2024, Table: quintiles of income before taxes"
  },
- "seconds": 69,
+ "seconds": 206,
  "test": {
   "label": "held-out population",
   "n": 5000,
@@ -49,48 +49,53 @@
    "firstApplication": [
     {
      "cardId": "no new application",
-     "count": 3317,
-     "pct": 66.3
+     "count": 3287,
+     "pct": 65.7
     },
     {
      "cardId": "active-cash",
-     "count": 665,
-     "pct": 13.3
+     "count": 627,
+     "pct": 12.5
     },
     {
      "cardId": "amex-bce",
-     "count": 353,
-     "pct": 7.1
+     "count": 341,
+     "pct": 6.8
     },
     {
      "cardId": "freedom-rise",
-     "count": 265,
+     "count": 264,
      "pct": 5.3
     },
     {
      "cardId": "usb-altitude-go",
+     "count": 82,
+     "pct": 1.6
+    },
+    {
+     "cardId": "usb-cash-plus",
      "count": 81,
      "pct": 1.6
     },
     {
      "cardId": "costco-citi",
-     "count": 76,
-     "pct": 1.5
+     "count": 78,
+     "pct": 1.6
     },
     {
      "cardId": "citi-double-cash",
-     "count": 43,
-     "pct": 0.9
-    },
-    {
-     "cardId": "wf-autograph",
-     "count": 37,
-     "pct": 0.7
+     "count": 38,
+     "pct": 0.8
     },
     {
      "cardId": "bilt-palladium",
-     "count": 35,
-     "pct": 0.7
+     "count": 31,
+     "pct": 0.6
+    },
+    {
+     "cardId": "wf-autograph",
+     "count": 31,
+     "pct": 0.6
     },
     {
      "cardId": "delta-gold",
@@ -98,32 +103,37 @@
      "pct": 0.4
     },
     {
-     "cardId": "united-explorer",
-     "count": 20,
+     "cardId": "usb-altitude-connect",
+     "count": 22,
      "pct": 0.4
     },
     {
-     "cardId": "usb-altitude-connect",
-     "count": 19,
+     "cardId": "united-explorer",
+     "count": 18,
      "pct": 0.4
     },
     {
      "cardId": "freedom-unlimited",
-     "count": 13,
-     "pct": 0.3
+     "count": 12,
+     "pct": 0.2
     },
     {
      "cardId": "sw-plus",
-     "count": 10,
+     "count": 11,
      "pct": 0.2
     },
     {
      "cardId": "citi-strata",
-     "count": 10,
+     "count": 11,
      "pct": 0.2
     },
     {
      "cardId": "citi-aa-platinum",
+     "count": 9,
+     "pct": 0.2
+    },
+    {
+     "cardId": "boa-customized",
      "count": 8,
      "pct": 0.2
     },
@@ -158,6 +168,11 @@
      "pct": 0
     },
     {
+     "cardId": "venture",
+     "count": 1,
+     "pct": 0
+    },
+    {
      "cardId": "bilt-obsidian",
      "count": 1,
      "pct": 0
@@ -174,72 +189,72 @@
     }
    ],
    "walletSize": {
-    "0": 800,
-    "1": 1464,
-    "2": 1233,
-    "3": 962,
-    "4": 419,
-    "5": 104,
-    "6": 18
+    "0": 786,
+    "1": 1462,
+    "2": 1190,
+    "3": 879,
+    "4": 474,
+    "5": 164,
+    "6": 45
    },
-   "withCatchAll": 66.5,
+   "withCatchAll": 68.2,
    "firstCardSeekers": 617,
    "emptyForFirstCardSeekers": 89,
-   "depositQuestion": 90,
+   "depositQuestion": 93,
    "feeByQuintile": {
     "Q1": {
      "n": 928,
-     "withFees": 8.8,
-     "avgFees": 13
+     "withFees": 7,
+     "avgFees": 12
     },
     "Q2": {
      "n": 1024,
-     "withFees": 14.4,
-     "avgFees": 21
+     "withFees": 10.5,
+     "avgFees": 17
     },
     "Q3": {
      "n": 1097,
-     "withFees": 17,
-     "avgFees": 28
+     "withFees": 12,
+     "avgFees": 22
     },
     "Q4": {
      "n": 1103,
-     "withFees": 19.4,
-     "avgFees": 31
+     "withFees": 14,
+     "avgFees": 23
     },
     "Q5": {
      "n": 848,
-     "withFees": 23,
-     "avgFees": 45
+     "withFees": 16.3,
+     "avgFees": 31
     }
    }
   },
   "practical": {
-   "plansChanged": 46,
-   "pct": 0.9
+   "plansChanged": 52,
+   "pct": 1
   },
   "monteCarlo": {
    "draws": 50000,
    "sigma": 0.35,
-   "realizedOn": 472,
-   "realizedOff": 472,
-   "realizedDiffPerPerson": -0.12,
-   "onBeatsOff": 0.2,
-   "ties": 99.1,
-   "promisedOn": 474,
-   "promisedOff": 474,
+   "realizedOn": 490,
+   "realizedOff": 491,
+   "realizedDiffPerPerson": -0.13,
+   "onBeatsOff": 0.3,
+   "ties": 99,
+   "promisedOn": 492,
+   "promisedOff": 492,
    "overstatementOn": 2,
    "overstatementOff": 2
   },
   "oracle": {
    "draws": 3000,
-   "regretOn": 3.8,
-   "regretOff": 3.71
+   "regretOn": 5.77,
+   "regretOff": 5.71
   },
   "stability": {
    "n": 1000,
-   "walletFlips": 1.4,
-   "firstAppFlips": 0.7
+   "walletFlips": 2.4,
+   "firstAppFlips": 1.4
   }
  },
  "train": {
@@ -283,13 +298,13 @@
    "firstApplication": [
     {
      "cardId": "active-cash",
-     "count": 94,
-     "pct": 47
+     "count": 92,
+     "pct": 46
     },
     {
      "cardId": "no new application",
-     "count": 34,
-     "pct": 17
+     "count": 31,
+     "pct": 15.5
     },
     {
      "cardId": "freedom-rise",
@@ -298,13 +313,13 @@
     },
     {
      "cardId": "citi-double-cash",
-     "count": 10,
-     "pct": 5
+     "count": 11,
+     "pct": 5.5
     },
     {
      "cardId": "usb-altitude-go",
-     "count": 9,
-     "pct": 4.5
+     "count": 10,
+     "pct": 5
     },
     {
      "cardId": "bilt-blue",
@@ -312,12 +327,17 @@
      "pct": 4.5
     },
     {
-     "cardId": "costco-citi",
+     "cardId": "usb-cash-plus",
      "count": 5,
      "pct": 2.5
     },
     {
      "cardId": "wf-autograph",
+     "count": 4,
+     "pct": 2
+    },
+    {
+     "cardId": "costco-citi",
      "count": 4,
      "pct": 2
     },
@@ -333,11 +353,6 @@
     },
     {
      "cardId": "citi-aa-platinum",
-     "count": 2,
-     "pct": 1
-    },
-    {
-     "cardId": "amex-bce",
      "count": 2,
      "pct": 1
     },
@@ -362,6 +377,11 @@
      "pct": 0.5
     },
     {
+     "cardId": "amex-bce",
+     "count": 1,
+     "pct": 0.5
+    },
+    {
      "cardId": "bilt-palladium",
      "count": 1,
      "pct": 0.5
@@ -374,122 +394,122 @@
    ],
    "walletSize": {
     "0": 5,
-    "1": 110,
-    "2": 56,
-    "3": 22,
-    "4": 6,
-    "5": 1
+    "1": 105,
+    "2": 48,
+    "3": 29,
+    "4": 9,
+    "5": 4
    },
-   "withCatchAll": 80.5,
+   "withCatchAll": 81,
    "firstCardSeekers": 130,
    "emptyForFirstCardSeekers": 5,
    "depositQuestion": 5,
    "feeByQuintile": {
     "Q?": {
      "n": 200,
-     "withFees": 19,
-     "avgFees": 42
+     "withFees": 17,
+     "avgFees": 36
     }
    }
   },
   "practical": {
-   "plansChanged": 9,
-   "pct": 4.5
+   "plansChanged": 11,
+   "pct": 5.5
   },
   "monteCarlo": {
    "draws": 2000,
    "sigma": 0.35,
-   "realizedOn": 666,
-   "realizedOff": 667,
-   "realizedDiffPerPerson": -0.41,
-   "onBeatsOff": 1.2,
-   "ties": 96.1,
-   "promisedOn": 669,
-   "promisedOff": 669,
+   "realizedOn": 695,
+   "realizedOff": 695,
+   "realizedDiffPerPerson": -0.37,
+   "onBeatsOff": 1.7,
+   "ties": 95.1,
+   "promisedOn": 698,
+   "promisedOff": 698,
    "overstatementOn": 3,
    "overstatementOff": 3
   },
   "oracle": {
    "draws": 1000,
-   "regretOn": 11.41,
-   "regretOff": 11.08
+   "regretOn": 14.25,
+   "regretOff": 13.96
   },
   "stability": {
    "n": 200,
-   "walletFlips": 7.5,
-   "firstAppFlips": 2.5
+   "walletFlips": 9,
+   "firstAppFlips": 3
   }
  },
  "bySegment": {
   "retiree": {
    "n": 801,
-   "avgNet": 402,
+   "avgNet": 419,
    "payBalanceFirst": 44.8,
    "topFirst": [
-    "no new application 72.2%",
-    "active-cash 11.6%",
-    "amex-bce 8.4%",
-    "usb-altitude-go 1.9%"
+    "no new application 71.2%",
+    "active-cash 11.5%",
+    "amex-bce 8.1%",
+    "usb-altitude-go 1.6%"
    ]
   },
   "mid-career": {
    "n": 994,
-   "avgNet": 562,
+   "avgNet": 583,
    "payBalanceFirst": 44.9,
    "topFirst": [
-    "no new application 67%",
-    "active-cash 15.3%",
-    "amex-bce 8.1%",
-    "usb-altitude-go 1.8%"
+    "no new application 66.1%",
+    "active-cash 13.8%",
+    "amex-bce 8.4%",
+    "usb-cash-plus 2.2%"
    ]
   },
   "young-professional": {
    "n": 922,
-   "avgNet": 434,
+   "avgNet": 451,
    "payBalanceFirst": 44.4,
    "topFirst": [
-    "no new application 64.5%",
-    "active-cash 13.2%",
-    "amex-bce 8%",
-    "freedom-rise 5.3%"
+    "no new application 64%",
+    "active-cash 12.8%",
+    "amex-bce 7.4%",
+    "freedom-rise 5.2%"
    ]
   },
   "family": {
    "n": 1084,
-   "avgNet": 553,
+   "avgNet": 578,
    "payBalanceFirst": 46.5,
    "topFirst": [
-    "no new application 68.6%",
-    "active-cash 14.2%",
-    "amex-bce 6.5%",
-    "costco-citi 3.1%"
+    "no new application 68.2%",
+    "active-cash 13.5%",
+    "amex-bce 5.9%",
+    "costco-citi 3%"
    ]
   },
   "frequent-traveler": {
    "n": 394,
-   "avgNet": 835,
+   "avgNet": 875,
    "payBalanceFirst": 41.4,
    "topFirst": [
-    "no new application 60.4%",
-    "active-cash 15%",
-    "amex-bce 6.6%",
-    "wf-autograph 3.3%"
+    "no new application 59.9%",
+    "active-cash 12.4%",
+    "amex-bce 6.9%",
+    "wf-autograph 3.6%"
    ]
   },
   "student": {
    "n": 399,
-   "avgNet": 178,
+   "avgNet": 179,
    "payBalanceFirst": 44.4,
    "topFirst": [
-    "no new application 54.6%",
+    "no new application 54.4%",
     "freedom-rise 29.1%",
     "active-cash 9.5%",
-    "amex-bce 5%"
+    "amex-bce 4.8%"
    ]
   },
   "rebuilding": {
    "n": 406,
-   "avgNet": 217,
+   "avgNet": 219,
    "payBalanceFirst": 46.8,
    "topFirst": [
     "no new application 68.5%",

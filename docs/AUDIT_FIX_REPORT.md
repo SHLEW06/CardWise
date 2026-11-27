@@ -1,6 +1,6 @@
 # Trustworthy plan audit fix report
 
-Run (UTC): 2026-11-26. Latest engine/data commit: 3e57e8c; review commits on this branch contain the associated follow-up code and report on fix/trustworthy-plan. Frozen before: 07f63c4. Original cohort: 200; supplemental balance-carrier cohort: 12.
+Run (UTC): 2026-11-27. Latest engine/data commit: 73bce72; review commits on this branch contain the associated follow-up code and report on fix/trustworthy-plan. Frozen before: 07f63c4. Original cohort: 200; supplemental balance-carrier cohort: 12.
 
 ## Results
 
@@ -20,13 +20,13 @@ The former zeroing-skipped-defaults measure is removed. It only confirmed the ne
 
 | Question | Unanswered / 200 | Changes first card | Changes plan | Either | Tested answers |
 | --- | --- | --- | --- | --- | --- |
-| checked bags | 80 | 9 | 15 | 15 | No checked bags; 1 bag per trip; 2 bags per trip; 3+ bags per trip |
-| paid hotel nights | 82 | 21 | 48 | 49 | None; 1–3; 4–9; 10–19; 20+ |
+| checked bags | 80 | 8 | 15 | 15 | No checked bags; 1 bag per trip; 2 bags per trip; 3+ bags per trip |
+| paid hotel nights | 82 | 21 | 44 | 45 | None; 1–3; 4–9; 10–19; 20+ |
 | rewards goal | 7 | 1 | 2 | 2 | Cash back; Travel points; Both |
-| quarterly activation | 200 | 24 | 70 | 70 | yes; no; unsure |
+| quarterly activation | 200 | 26 | 65 | 66 | yes; no; unsure |
 | credit history | 51 | 44 | 47 | 47 | No credit yet; Below 580; 580–669; 670–739; 740–799; 800+ |
 | student eligibility | 200 | 0 | 0 | 0 | Yes; No |
-| paying in full | 200 | 173 | 171 | 174 | Always; Sometimes carry a balance; Usually carry a balance |
+| paying in full | 200 | 175 | 172 | 175 | Always; Sometimes carry a balance; Usually carry a balance |
 | deposit affordability | 200 | 11 | 11 | 11 | Yes; No |
 
 buildPlan.followUps contains only demonstrated decision sensitivities, with every tested answer and resulting card, wallet, net and decision regret. It orders questions by the largest of absolute recurring-net change and the loss from using today's wallet after that answer. Dollar impact is a range across tested answers, not a probability or a promise of extra rewards. Zero-dollar eligibility changes are retained. The shared advice component asks 'Your plan depends on …' and opens the appropriate existing survey step. Answers use the same score-band representatives and hotel-night buckets as the survey; bags test 0/1/2/3+. These finite, one-question probes do not cover every numeric answer or joint interaction. A question may change interest advice without changing the first card or wallet; that alone is not counted by this requested measure.
@@ -108,20 +108,20 @@ For an apples-to-apples application comparison, Before is the old Home engine's 
 | united-explorer | 11 | 3 |
 | bilt-blue | 10 | 9 |
 | discover-it-secured | 10 | 0 |
-| No new application | 10 | 34 |
+| No new application | 10 | 31 |
 | citi-strata-no-fee | 6 | 0 |
 | discover-student | 6 | 0 |
 | sw-premier | 5 | 0 |
-| active-cash | 3 | 94 |
+| active-cash | 3 | 92 |
 | delta-gold | 3 | 2 |
 | delta-plat | 3 | 0 |
 | freedom-rise | 3 | 17 |
-| usb-altitude-go | 3 | 9 |
+| usb-altitude-go | 3 | 10 |
 | bcp | 2 | 0 |
 | citi-aa-globe | 2 | 0 |
 | citi-aa-platinum | 2 | 2 |
 | citi-strata | 2 | 0 |
-| costco-citi | 2 | 5 |
+| costco-citi | 2 | 4 |
 | savor | 2 | 0 |
 | wf-autograph | 2 | 4 |
 | aa-executive | 1 | 0 |
@@ -133,11 +133,12 @@ For an apples-to-apples application comparison, Before is the old Home engine's 
 | sw-plus | 1 | 0 |
 | sw-priority | 1 | 0 |
 | alaska-visa | 0 | 1 |
-| amex-bce | 0 | 2 |
-| citi-double-cash | 0 | 10 |
+| amex-bce | 0 | 1 |
+| citi-double-cash | 0 | 11 |
 | freedom-unlimited | 0 | 2 |
 | hyatt | 0 | 1 |
 | usb-altitude-connect | 0 | 3 |
+| usb-cash-plus | 0 | 5 |
 
 ## Every former Robinhood Gold plan
 
@@ -150,68 +151,68 @@ The benchmark is the best currently eligible consumer card with no annual fee, n
 | P02 | No | robinhood-gold | active-cash / apply | $181 | active-cash: $181 | $0 | active-cash | $181 |
 | P05 | No | robinhood-gold | active-cash / apply | $272 | active-cash: $272 | $0 | active-cash | $272 |
 | P08 | No | robinhood-gold | freedom-rise / apply | $0 | active-cash: $0 | $0 | freedom-rise | $0 |
-| P09 | No | bilt-blue | usb-altitude-go / apply | $473 | active-cash: $475 | $-2 | bilt-blue, usb-altitude-go | $688 |
+| P09 | No | bilt-blue | usb-altitude-go / apply | $473 | active-cash: $475 | $-2 | bilt-blue, usb-altitude-go, usb-cash-plus | $802 |
 | P11 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash | $458 |
 | P12 | No | robinhood-gold | active-cash / apply | $466 | active-cash: $466 | $0 | active-cash | $466 |
 | P13 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash | $458 |
-| P14 | No | marriott-boundless | active-cash / apply | $1,092 | active-cash: $1,092 | $0 | active-cash, costco-citi | $1,281 |
-| P15 | No | robinhood-gold | citi-double-cash / apply | $876 | active-cash: $912 | $-36 | citi-double-cash, citi-strata | $1,341 |
+| P14 | No | marriott-boundless | active-cash / apply | $1,092 | active-cash: $1,092 | $0 | active-cash, costco-citi, usb-cash-plus | $1,414 |
+| P15 | No | robinhood-gold | citi-double-cash / apply | $876 | active-cash: $912 | $-36 | citi-double-cash, citi-strata, usb-cash-plus | $1,452 |
 | P16 | No | robinhood-gold | citi-double-cash / apply | $900 | active-cash: $936 | $-36 | citi-aa-platinum, citi-double-cash, citi-strata | $1,556 |
 | P17 | No | robinhood-gold | active-cash / apply | $554 | active-cash: $554 | $0 | active-cash | $554 |
 | P18 | No | robinhood-gold | active-cash / apply | $566 | active-cash: $566 | $0 | active-cash | $566 |
-| P19 | No | delta-plat | active-cash / apply | $912 | active-cash: $912 | $0 | active-cash, usb-altitude-go, usb-altitude-connect | $1,217 |
-| P20 | No | united-explorer | active-cash / apply | $912 | active-cash: $912 | $0 | active-cash, wf-autograph | $1,090 |
-| P25 | No | robinhood-gold | citi-double-cash / apply | $876 | active-cash: $912 | $-36 | citi-double-cash, citi-strata, usb-altitude-connect | $1,443 |
+| P19 | No | delta-plat | active-cash / apply | $912 | active-cash: $912 | $0 | active-cash, usb-altitude-go, usb-cash-plus | $1,220 |
+| P20 | No | united-explorer | active-cash / apply | $912 | active-cash: $912 | $0 | active-cash, usb-altitude-go, usb-cash-plus | $1,220 |
+| P25 | No | robinhood-gold | citi-double-cash / apply | $876 | active-cash: $912 | $-36 | citi-double-cash, citi-strata, usb-cash-plus | $1,452 |
 | P26 | No | united-explorer | active-cash / apply | $1,032 | active-cash: $1,032 | $0 | marriott-brilliant, active-cash, wf-autograph | $1,447 |
 | P28 | No | delta-plat | active-cash / apply | $503 | active-cash: $503 | $0 | active-cash, wf-autograph | $622 |
 | P29 | No | bcp | freedom-flex / downgrade | $320 | active-cash: $458 | $-138 | freedom-unlimited, freedom-flex | $412 |
 | P32 | No | freedom-flex | citi-double-cash / kept | $458 | active-cash: $458 | $0 | citi-double-cash | $458 |
 | P35 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash, apple-card | $458 |
 | P36 | No | robinhood-gold | usb-altitude-go / apply | $389 | active-cash: $458 | $-69 | usb-altitude-go, quicksilver, discover-it | $473 |
-| P37 | No | robinhood-gold | active-cash / apply | $480 | active-cash: $480 | $0 | active-cash | $480 |
+| P37 | No | robinhood-gold | active-cash / apply | $480 | active-cash: $480 | $0 | active-cash, usb-cash-plus | $592 |
 | P39 | No | robinhood-gold | active-cash / apply | $542 | active-cash: $542 | $0 | active-cash | $542 |
 | P42 | No | united-explorer | wf-autograph / apply | $1,928 | active-cash: $1,728 | $200 | venture, wf-autograph | $2,748 |
-| P43 | No | robinhood-gold | active-cash / apply | $492 | active-cash: $492 | $0 | active-cash | $492 |
+| P43 | No | robinhood-gold | active-cash / apply | $492 | active-cash: $492 | $0 | active-cash, usb-cash-plus | $622 |
 | P44 | No | robinhood-gold | active-cash / apply | $550 | active-cash: $550 | $0 | active-cash, costco-citi | $664 |
 | P45 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash | $458 |
 | P48 | No | robinhood-gold | active-cash / apply | $458 | active-cash: $458 | $0 | active-cash | $458 |
 | P50 | No | robinhood-gold | active-cash / apply | $354 | active-cash: $354 | $0 | active-cash | $354 |
 | P51 | No | robinhood-gold | usb-altitude-go / apply | $425 | active-cash: $492 | $-67 | bilt-blue, usb-altitude-go | $665 |
-| P52 | No | robinhood-gold | wf-autograph / apply | $1,336 | active-cash: $1,310 | $26 | wf-autograph, active-cash | $1,674 |
+| P52 | No | robinhood-gold | wf-autograph / apply | $1,336 | active-cash: $1,310 | $26 | wf-autograph, active-cash, usb-cash-plus | $1,817 |
 | P53 | No | citi-aa-globe | active-cash / apply | $2,231 | active-cash: $2,231 | $0 | active-cash, wf-autograph, citi-aa-platinum | $3,483 |
 | P54 | No | robinhood-gold | active-cash / apply | $302 | active-cash: $302 | $0 | active-cash | $302 |
-| P56 | No | robinhood-gold | active-cash / apply | $1,044 | active-cash: $1,044 | $0 | active-cash, costco-citi, amex-bce | $1,408 |
+| P56 | No | robinhood-gold | active-cash / apply | $1,044 | active-cash: $1,044 | $0 | active-cash, costco-citi, usb-cash-plus | $1,422 |
 | P57 | No | costco-citi | costco-citi / apply | $521 | active-cash: $413 | $108 | costco-citi, amazon-prime, delta-blue, united-gateway | $527 |
 | P59 | No | robinhood-gold | usb-altitude-go / apply | $467 | active-cash: $466 | $1 | usb-altitude-go, citi-double-cash | $615 |
 | P64 | No | robinhood-gold | active-cash / apply | $523 | active-cash: $523 | $0 | active-cash | $523 |
-| P65 | No | robinhood-gold | active-cash / apply | $2,016 | active-cash: $2,016 | $0 | active-cash, costco-citi | $2,354 |
-| P66 | No | robinhood-gold | active-cash / apply | $1,042 | active-cash: $1,042 | $0 | active-cash, costco-citi | $1,230 |
+| P65 | No | robinhood-gold | active-cash / apply | $2,016 | active-cash: $2,016 | $0 | active-cash, costco-citi, usb-cash-plus | $2,594 |
+| P66 | No | robinhood-gold | active-cash / apply | $1,042 | active-cash: $1,042 | $0 | active-cash, costco-citi, usb-cash-plus | $1,381 |
 | P67 | No | sw-premier | active-cash / apply | $1,166 | active-cash: $1,166 | $0 | active-cash, costco-citi, sw-plus | $1,830 |
 | P70 | No | robinhood-gold | costco-citi / apply | $476 | active-cash: $449 | $27 | costco-citi | $476 |
 | P71 | No | united-explorer | united-explorer / apply | $2,543 | active-cash: $2,365 | $178 | united-explorer, venture, csp, freedom-flex, delta-blue | $3,746 |
-| P72 | No | sw-premier | active-cash / apply | $2,119 | active-cash: $2,119 | $0 | active-cash, wf-autograph, costco-citi, amazon-prime | $2,608 |
+| P72 | No | sw-premier | active-cash / apply | $2,119 | active-cash: $2,119 | $0 | active-cash, wf-autograph, usb-cash-plus, amazon-prime | $2,723 |
 | P73 | No | united-explorer | costco-citi / apply | $495 | active-cash: $548 | $-53 | costco-citi, bilt-palladium | $690 |
 | P74 | No | robinhood-gold | active-cash / apply | $247 | active-cash: $247 | $0 | active-cash | $247 |
-| P76 | No | robinhood-gold | active-cash / apply | $1,166 | active-cash: $1,166 | $0 | active-cash, freedom-flex, apple-card | $1,284 |
-| P77 | No | sw-plus | active-cash / apply | $1,118 | active-cash: $1,118 | $0 | active-cash, costco-citi, freedom-flex | $1,447 |
+| P76 | No | robinhood-gold | active-cash / apply | $1,166 | active-cash: $1,166 | $0 | active-cash, usb-cash-plus, freedom-flex, apple-card | $1,424 |
+| P77 | No | sw-plus | active-cash / apply | $1,118 | active-cash: $1,118 | $0 | active-cash, costco-citi, usb-cash-plus, freedom-flex | $1,591 |
 | P80 | No | robinhood-gold | active-cash / apply | $499 | active-cash: $499 | $0 | active-cash, usb-altitude-go | $608 |
-| P83 | No | citi-strata | costco-citi / apply | $1,022 | active-cash: $1,298 | $-276 | costco-citi, venture-x, boa-customized | $1,113 |
-| P85 | No | robinhood-gold | active-cash / apply | $1,037 | active-cash: $1,037 | $0 | active-cash, usb-altitude-go | $1,212 |
-| P87 | No | marriott-boundless | active-cash / apply | $1,181 | active-cash: $1,181 | $0 | active-cash, costco-citi, hyatt | $1,282 |
+| P83 | No | citi-strata | usb-cash-plus / apply | $1,012 | active-cash: $1,298 | $-286 | active-cash, costco-citi, usb-cash-plus, boa-customized, venture-one | $1,764 |
+| P85 | No | robinhood-gold | active-cash / apply | $1,037 | active-cash: $1,037 | $0 | active-cash, usb-cash-plus, usb-altitude-go | $1,388 |
+| P87 | No | marriott-boundless | active-cash / apply | $1,181 | active-cash: $1,181 | $0 | active-cash, usb-cash-plus, costco-citi | $1,560 |
 | P88 | No | marriott-boundless | costco-citi / apply | $664 | active-cash: $533 | $131 | costco-citi, bilt-palladium, savor | $828 |
-| P94 | No | sw-priority | active-cash / apply | $2,378 | active-cash: $2,378 | $0 | active-cash, costco-citi | $2,778 |
+| P94 | No | sw-priority | active-cash / apply | $2,378 | active-cash: $2,378 | $0 | active-cash, costco-citi, usb-cash-plus | $3,018 |
 | P98 | No | robinhood-gold | alaska-visa / apply | $2,563 | active-cash: $2,186 | $377 | bilt-palladium, alaska-visa, bilt-obsidian | $3,784 |
-| P99 | No | aa-executive | active-cash / apply | $2,078 | active-cash: $2,078 | $0 | active-cash, wf-autograph | $2,440 |
-| P101 | No | robinhood-gold | citi-double-cash / apply | $1,150 | active-cash: $1,228 | $-78 | citi-double-cash, citi-strata, united-explorer, discover-it | $1,684 |
+| P99 | No | aa-executive | active-cash / apply | $2,078 | active-cash: $2,078 | $0 | active-cash, wf-autograph, usb-cash-plus | $2,645 |
+| P101 | No | robinhood-gold | citi-double-cash / apply | $1,150 | active-cash: $1,228 | $-78 | citi-double-cash, citi-strata, usb-cash-plus, united-gateway, discover-it | $1,986 |
 | P105 | No | robinhood-gold | active-cash / apply | $521 | active-cash: $521 | $0 | active-cash, usb-altitude-go | $634 |
 | P107 | No | united-explorer | active-cash / apply | $2,432 | active-cash: $2,432 | $0 | active-cash, costco-citi, united-explorer | $3,776 |
-| P109 | No | robinhood-gold | active-cash / apply | $1,104 | active-cash: $1,104 | $0 | active-cash, costco-citi | $1,298 |
+| P109 | No | robinhood-gold | active-cash / apply | $1,104 | active-cash: $1,104 | $0 | active-cash, costco-citi, usb-cash-plus | $1,439 |
 | P110 | No | robinhood-gold | active-cash / apply | $374 | active-cash: $374 | $0 | active-cash | $374 |
-| P112 | No | robinhood-gold | active-cash / apply | $2,225 | active-cash: $2,225 | $0 | active-cash, wf-autograph, discover-it | $2,616 |
-| P113 | No | united-explorer | active-cash / apply | $1,253 | active-cash: $1,253 | $0 | active-cash, wf-autograph, amex-bce | $1,629 |
-| P116 | No | robinhood-gold | usb-altitude-connect / apply | $904 | active-cash: $1,036 | $-132 | bilt-obsidian, usb-altitude-connect | $1,679 |
+| P112 | No | robinhood-gold | active-cash / apply | $2,225 | active-cash: $2,225 | $0 | active-cash, wf-autograph, usb-cash-plus, discover-it | $2,830 |
+| P113 | No | united-explorer | active-cash / apply | $1,253 | active-cash: $1,253 | $0 | active-cash, wf-autograph, usb-cash-plus, amex-bce | $1,785 |
+| P116 | No | robinhood-gold | usb-altitude-connect / apply | $904 | active-cash: $1,036 | $-132 | bilt-obsidian, usb-altitude-connect, usb-cash-plus | $1,864 |
 | P118 | No | delta-gold | wf-autograph / apply | $1,939 | active-cash: $2,354 | $-415 | active-cash, wf-autograph | $2,735 |
-| P120 | No | robinhood-gold | active-cash / apply | $487 | active-cash: $487 | $0 | active-cash | $487 |
+| P120 | No | robinhood-gold | active-cash / apply | $487 | active-cash: $487 | $0 | active-cash, usb-cash-plus | $588 |
 | P123 | No | robinhood-gold | active-cash / apply | $428 | active-cash: $428 | $0 | active-cash | $428 |
 | P129 | No | robinhood-gold | usb-altitude-go / apply | $519 | active-cash: $514 | $5 | usb-altitude-go, active-cash | $689 |
 | P132 | No | robinhood-gold | active-cash / apply | $576 | active-cash: $576 | $0 | active-cash | $576 |
@@ -243,7 +244,6 @@ The benchmark is the best currently eligible consumer card with no annual fee, n
 | ID | Recommended plan net | 2% floor net | Shortfall | Constraint / explanation |
 | --- | --- | --- | --- | --- |
 | P29 | $412 | $458 | $-46 | The no-application downgrade plan is $46 below the floor; adding a card does not clear the existing $75 application hurdle. |
-| P83 | $1,113 | $1,298 | $-185 | Held-card anchoring keeps Venture X; the available 2% standalone card is better by $219. Existing keep/add policy is preserved; this remains a quality gap. |
 | P145 | $189 | $252 | $-63 | Keeping the existing Quicksilver is $63 below the floor, less than the existing $75 application hurdle. P146 additionally has unknown repayment behavior in its original input; answering it pauses applications. |
 | P146 | $189 | $252 | $-63 | Keeping the existing Quicksilver is $63 below the floor, less than the existing $75 application hurdle. P146 additionally has unknown repayment behavior in its original input; answering it pauses applications. |
 
@@ -260,7 +260,7 @@ After uses the unchanged original profile, not the hidden-facts replay. Before f
 | P03 | Before | marriott-boundless (first proposed application) | marriott-boundless, delta-plat, discover-student | $702 | maxCards: 6; newCardComfort: 3; isStudent: no student eligibility gate or question; canAffordDeposit: no deposit affordability gate or question; paymentBehavior: no interest gate or question; rotatingActivation: activation counted; no survey question; groceryStore: no merchant-exclusion question; grocery category receives supermarket rates; phonePlanShare: no phone-plan share question; phone/utilities category receives phone rates; memberships: []; biltCashAnnualUse: not modeled; old flat housing points instead; travel.bags: one checked bag per trip when bag perks apply; travel.lounges: no; travel.hotelNights: 6 paid nights (trips × 2 when unanswered); travel.hotelChoice: auto (marriott); travel.booking: direct; travel.companions: 0; travel.hotelBudget: unanswered; estimator fallback; travel.hotelMarkup: 0.08; travel.hotelTaxes: 0.15; travel.breakfast: 0; travel.onProperty: false; travel.stayStyle: unanswered; estimator fallback; travel.airlinePerks: not specified; bag perks counted by default; credit.score: unknown, no score restriction; credit.newCards24mo: 0; spend: {"flights":0,"hotels":0,"rentals":0} | Not implemented |
 | P03 | After | active-cash / apply | active-cash, discover-student | $205 | maxCards: a limit of six cards; newCardComfort: at most three new cards; isStudent: student eligibility is unconfirmed; student cards are excluded; canAffordDeposit: deposit affordability is unconfirmed; secured cards are excluded; paymentBehavior: payment habits are unconfirmed; rewards shown before any interest; rotatingActivation: you will not activate quarterly categories; groceryStore: grocery merchants are unconfirmed; no supermarket bonus; phonePlanShare: bills are unconfirmed; no phone-plan bonus; memberships: no paid memberships; biltCashAnnualUse: Bilt Cash only has value for unlocking housing points; travel.bags: you check no bags; travel.lounges: you do not want lounge access; travel.hotelNights: you have no paid hotel nights; travel.hotelChoice: no hotel program unless you choose one; travel.booking: you book directly; travel.companions: no lounge guests; travel.hotelBudget: hotel prices use an estimated budget until you enter yours; travel.hotelMarkup: estimated hotel prices include 8% portal markup; travel.hotelTaxes: estimated hotel prices include 15% taxes and fees; travel.breakfast: breakfast has no extra value; travel.onProperty: no on-property spending; travel.stayStyle: hotel stay style is unconfirmed; travel.airlinePerks: no unselected airline perks; credit.score: credit is unknown; only cards needing 670 or less are considered; credit.newCards24mo: recent applications are unknown; confirm Chase 5/24 eligibility before applying; spend: unanswered spending categories are $0 | credit.score (impact $102/yr); paymentBehavior (impact $102/yr); rotatingActivation (impact $70/yr) |
 | P14 | Before | marriott-boundless (proposed; Home had no action) | robinhood-gold, marriott-boundless, freedom-flex | $1,851 | maxCards: 6; newCardComfort: 3; isStudent: no student eligibility gate or question; canAffordDeposit: no deposit affordability gate or question; paymentBehavior: no interest gate or question; rotatingActivation: activation counted; no survey question; groceryStore: no merchant-exclusion question; grocery category receives supermarket rates; phonePlanShare: no phone-plan share question; phone/utilities category receives phone rates; biltCashAnnualUse: not modeled; old flat housing points instead; travel.bags: one checked bag per trip when bag perks apply; travel.lounges: no; travel.hotelNights: 2 paid nights (trips × 2 when unanswered); travel.hotelChoice: auto (marriott); travel.booking: direct; travel.companions: 0; travel.hotelBudget: unanswered; estimator fallback; travel.hotelMarkup: 0.08; travel.hotelTaxes: 0.15; travel.breakfast: 0; travel.onProperty: false; travel.stayStyle: unanswered; estimator fallback; travel.airlinePerks: not specified; bag perks counted by default; spend: {"flights":0,"hotels":0,"rentals":0} | Not implemented |
-| P14 | After | active-cash / apply | active-cash, costco-citi | $1,281 | maxCards: a limit of six cards; newCardComfort: at most three new cards; isStudent: student eligibility is unconfirmed; student cards are excluded; canAffordDeposit: deposit affordability is unconfirmed; secured cards are excluded; paymentBehavior: payment habits are unconfirmed; rewards shown before any interest; rotatingActivation: you will not activate quarterly categories; groceryStore: grocery merchants are unconfirmed; no supermarket bonus; phonePlanShare: bills are unconfirmed; no phone-plan bonus; biltCashAnnualUse: Bilt Cash only has value for unlocking housing points; travel.bags: you check no bags; travel.lounges: you do not want lounge access; travel.hotelNights: you have no paid hotel nights; travel.hotelChoice: no hotel program unless you choose one; travel.booking: you book directly; travel.companions: no lounge guests; travel.hotelBudget: hotel prices use an estimated budget until you enter yours; travel.hotelMarkup: estimated hotel prices include 8% portal markup; travel.hotelTaxes: estimated hotel prices include 15% taxes and fees; travel.breakfast: breakfast has no extra value; travel.onProperty: no on-property spending; travel.stayStyle: hotel stay style is unconfirmed; travel.airlinePerks: no unselected airline perks; spend: unanswered spending categories are $0 | paymentBehavior (impact $1,281/yr); travel.hotelNights (impact $216/yr); rotatingActivation (impact $159/yr) |
+| P14 | After | active-cash / apply | active-cash, costco-citi, usb-cash-plus | $1,414 | maxCards: a limit of six cards; newCardComfort: at most three new cards; isStudent: student eligibility is unconfirmed; student cards are excluded; canAffordDeposit: deposit affordability is unconfirmed; secured cards are excluded; paymentBehavior: payment habits are unconfirmed; rewards shown before any interest; rotatingActivation: you will not activate quarterly categories; groceryStore: grocery merchants are unconfirmed; no supermarket bonus; phonePlanShare: bills are unconfirmed; no phone-plan bonus; biltCashAnnualUse: Bilt Cash only has value for unlocking housing points; travel.bags: you check no bags; travel.lounges: you do not want lounge access; travel.hotelNights: you have no paid hotel nights; travel.hotelChoice: no hotel program unless you choose one; travel.booking: you book directly; travel.companions: no lounge guests; travel.hotelBudget: hotel prices use an estimated budget until you enter yours; travel.hotelMarkup: estimated hotel prices include 8% portal markup; travel.hotelTaxes: estimated hotel prices include 15% taxes and fees; travel.breakfast: breakfast has no extra value; travel.onProperty: no on-property spending; travel.stayStyle: hotel stay style is unconfirmed; travel.airlinePerks: no unselected airline perks; spend: unanswered spending categories are $0 | paymentBehavior (impact $1,414/yr); rotatingActivation (impact $36/yr) |
 | P29 | Before | bcp (first proposed application) | freedom-flex, bcp, freedom-unlimited | $743 | wants: both; maxCards: 6; newCardComfort: 3; isStudent: no student eligibility gate or question; canAffordDeposit: no deposit affordability gate or question; paymentBehavior: no interest gate or question; rotatingActivation: activation counted; no survey question; groceryStore: no merchant-exclusion question; grocery category receives supermarket rates; phonePlanShare: no phone-plan share question; phone/utilities category receives phone rates; memberships: []; biltCashAnnualUse: not modeled; old flat housing points instead; travel.bags: one checked bag per trip when bag perks apply; travel.lounges: no; travel.hotelNights: 0 paid nights (trips × 2 when unanswered); travel.hotelChoice: none; travel.booking: direct; travel.companions: 0; travel.hotelBudget: unanswered; estimator fallback; travel.hotelMarkup: 0.08; travel.hotelTaxes: 0.15; travel.breakfast: 0; travel.onProperty: false; travel.stayStyle: unanswered; estimator fallback; travel.airlinePerks: not specified; bag perks counted by default; credit.score: unknown, no score restriction; credit.newCards24mo: 0; spend: {"flights":0,"hotels":0,"rentals":0} | Not implemented |
 | P29 | After | freedom-flex / downgrade | freedom-unlimited, freedom-flex | $412 | wants: you want cash back; maxCards: a limit of six cards; newCardComfort: at most three new cards; isStudent: student eligibility is unconfirmed; student cards are excluded; canAffordDeposit: deposit affordability is unconfirmed; secured cards are excluded; paymentBehavior: payment habits are unconfirmed; rewards shown before any interest; rotatingActivation: you will not activate quarterly categories; groceryStore: grocery merchants are unconfirmed; no supermarket bonus; phonePlanShare: bills are unconfirmed; no phone-plan bonus; memberships: no paid memberships; biltCashAnnualUse: Bilt Cash only has value for unlocking housing points; travel.bags: you check no bags; travel.lounges: you do not want lounge access; travel.hotelNights: you have no paid hotel nights; travel.hotelChoice: no hotel program unless you choose one; travel.booking: you book directly; travel.companions: no lounge guests; travel.hotelBudget: hotel prices use an estimated budget until you enter yours; travel.hotelMarkup: estimated hotel prices include 8% portal markup; travel.hotelTaxes: estimated hotel prices include 15% taxes and fees; travel.breakfast: breakfast has no extra value; travel.onProperty: no on-property spending; travel.stayStyle: hotel stay style is unconfirmed; travel.airlinePerks: no unselected airline perks; credit.score: credit is unknown; only cards needing 670 or less are considered; credit.newCards24mo: recent applications are unknown; confirm Chase 5/24 eligibility before applying; spend: unanswered spending categories are $0 | travel.hotelNights (impact $189/yr); paymentBehavior (impact $0/yr) |
 | P31 | Before | marriott-boundless (first proposed application) | marriott-boundless, freedom-flex, united-explorer, csr | $707 | wants: both; maxCards: 6; newCardComfort: 3; isStudent: no student eligibility gate or question; canAffordDeposit: no deposit affordability gate or question; paymentBehavior: no interest gate or question; rotatingActivation: activation counted; no survey question; groceryStore: no merchant-exclusion question; grocery category receives supermarket rates; phonePlanShare: no phone-plan share question; phone/utilities category receives phone rates; memberships: []; biltCashAnnualUse: not modeled; old flat housing points instead; travel.bags: one checked bag per trip when bag perks apply; travel.lounges: no; travel.hotelNights: 4 paid nights (trips × 2 when unanswered); travel.hotelChoice: auto (marriott); travel.booking: direct; travel.companions: 0; travel.hotelBudget: unanswered; estimator fallback; travel.hotelMarkup: 0.08; travel.hotelTaxes: 0.15; travel.breakfast: 0; travel.onProperty: false; travel.stayStyle: unanswered; estimator fallback; travel.airlinePerks: not specified; bag perks counted by default; credit.newCards24mo: 0; spend: {"flights":0,"hotels":0,"rentals":0} | Not implemented |
