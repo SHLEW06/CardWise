@@ -33,20 +33,30 @@ const workbook = JSON.parse(readFileSync(WORKBOOK, "utf8")).hotels;
 const geocode = existsSync(GEOCODE) ? JSON.parse(readFileSync(GEOCODE, "utf8")) : {};
 const cacheKey = (h) => `${String(h.name).toLowerCase().trim()}|${String(h.city).toLowerCase().trim()}|${String(h.country).toLowerCase().trim()}`;
 
+/* Brand / chain is a plain fact. Names are folded to one spelling per company;
+   chains with fewer than 8 hotels are grouped as "Other brands". */
+const BRAND_ALIAS = { "ihg hotels & resorts": "IHG", ihg: "IHG", omni: "Omni Hotels & Resorts", "ennismore (accor)": "Accor", sofitel: "Accor", other: "Independent", independent: "Independent", "": "Independent" };
+const brandOf = (raw) => BRAND_ALIAS[clean(raw)] || String(raw).trim();
+
 const merged = new Map();
-const add = (h, coords, coordKind, cityOnly = false) => {
+const add = (h, coords, coordKind, cityOnly = false, brandRaw = "") => {
   const progs = (h.programs || []).filter((p) => PROGRAMS.includes(p));
   if (!progs.length) return;
   const k = identity(h);
-  const cur = merged.get(k) || { name: h.name, city: h.city, country: h.country, region: null, programs: new Set(), property: null, workbook: null, cityCentre: null, names: new Set() };
+  const cur = merged.get(k) || { name: h.name, city: h.city, country: h.country, region: null, brand: null, programs: new Set(), property: null, workbook: null, cityCentre: null, names: new Set() };
   progs.forEach((p) => cur.programs.add(p));
   cur.region ||= h.region || null;
+  if (brandRaw && !["other", "independent"].includes(clean(brandRaw))) cur.brand ||= brandOf(brandRaw); else if (brandRaw) cur.brandWeak ||= "Independent";
   cur.names.add(h.name);
   if (coords && validCoords(coords[0], coords[1])) { if (!cityOnly) cur[coordKind] ||= coords; else cur.cityCentre ||= coords; }
   merged.set(k, cur);
 };
-for (const h of LOCAL_HOTELS.properties) add(h, h.coords === "property" || h.coords === "city centre" ? [h.lat, h.lng] : null, "property", h.coords === "city centre");
-for (const h of workbook) add(h, h.coords, "workbook");
+for (const h of LOCAL_HOTELS.properties) add(h, h.coords === "property" || h.coords === "city centre" ? [h.lat, h.lng] : null, "property", h.coords === "city centre", h.chain);
+for (const h of workbook) add(h, h.coords, "workbook", false, h.brand);
+
+const brandCount = new Map();
+for (const m of merged.values()) { m.brand ||= m.brandWeak || "Independent"; brandCount.set(m.brand, (brandCount.get(m.brand) || 0) + 1); }
+for (const m of merged.values()) if (m.brand !== "Independent" && brandCount.get(m.brand) < 8) m.brand = "Other brands";
 
 const hotels = [];
 for (const [k, m] of merged) {
@@ -62,7 +72,7 @@ for (const [k, m] of merged) {
   }
   hotels.push({
     id: `ph-${createHash("sha1").update(k).digest("hex").slice(0, 10)}`,
-    name: m.name, city: m.city, country: m.country, region: m.region,
+    name: m.name, city: m.city, country: m.country, region: m.region, brand: m.brand,
     programs: PROGRAMS.filter((p) => m.programs.has(p)),
     lat: precision ? round(lat) : null, lng: precision ? round(lng) : null, precision,
   });
@@ -92,6 +102,7 @@ const metadata = {
   generatedAt: prev && JSON.stringify(prev.hotels) === JSON.stringify(hotels) ? prev.metadata.generatedAt : new Date().toISOString(),
   total: hotels.length,
   counts: { edit: count((h) => h.programs.includes("edit")), fhr: count((h) => h.programs.includes("fhr")), thc: count((h) => h.programs.includes("thc")), multiple: count((h) => h.programs.length > 1) },
+  brands: Object.fromEntries([...new Map(hotels.map((h) => [h.brand, 0])).keys()].map((b) => [b, count((h) => h.brand === b)]).sort((a, b) => b[1] - a[1])),
   precision: { property: count((h) => h.precision === "property"), geocoded: count((h) => h.precision === "geocoded"), city: count((h) => h.precision === "city"), none: count((h) => !h.precision) },
   attribution: ["List via AwardHelper (awardhelper.com)", "Edit list via edithotelsearch.com", "Geocoding © OpenStreetMap contributors (Nominatim, ODbL)"],
 };

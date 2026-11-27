@@ -4,7 +4,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const ALLOWED = ["id", "name", "city", "country", "region", "programs", "lat", "lng", "precision"];
+const ALLOWED = ["id", "name", "city", "country", "region", "programs", "lat", "lng", "precision", "brand"];
 const read = (p) => readFileSync(resolve(root, p), "utf8");
 
 describe("public hotel directory data boundary", () => {
@@ -48,3 +48,32 @@ describe("public hotel directory data boundary", () => {
     expect(explorer).toMatch(/import\("\.\.\/\.\.\/data\/hotels\/programHotels\.public\.json"\)/);
   });
 });
+
+describe("public hotel photo data boundary (Wikidata / Wikimedia Commons)", () => {
+  const PHOTO_KEYS = ["src", "page", "author", "license", "licenseUrl", "match"];
+  const photos = JSON.parse(read("src/data/hotels/programHotelPhotos.public.json"));
+  const ids = new Set(JSON.parse(read("src/data/hotels/programHotels.public.json")).hotels.map((h) => h.id));
+  const FREE = /^(CC0( 1\.0)?|Public domain|PD[ -].*|CC[ -]BY(-SA)?( \d(\.\d)?)?( [A-Za-z]+)?)$/i;
+  it("has its own allowed keys and only known hotel ids", () => {
+    expect(photos.metadata.source).toBe("Wikidata + Wikimedia Commons");
+    for (const [id, p] of Object.entries(photos.photos)) {
+      expect(ids.has(id)).toBe(true);
+      expect(Object.keys(p).sort()).toEqual([...PHOTO_KEYS].sort());
+      expect(["name", "coords"]).toContain(p.match);
+      expect(p.src).toMatch(/^https:\/\/(upload|thumb)\.wikimedia\.org\//);
+      expect(p.page).toMatch(/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+      expect(p.author.length).toBeGreaterThan(0);
+      expect(p.author).not.toMatch(/<[a-z/]/i);
+    }
+  });
+  it("only keeps free licenses (CC0, public domain, CC BY, CC BY-SA)", () => {
+    for (const p of Object.values(photos.photos)) {
+      expect(p.license).toMatch(FREE);
+      expect(p.license).not.toMatch(/\b(NC|ND)\b|GFDL|fair use|non-?free/i);
+    }
+  });
+  it("the photo file stays out of the facts-only hotel file", () => {
+    expect(read("src/data/hotels/programHotels.public.json")).not.toContain("wikimedia.org");
+  });
+});
+

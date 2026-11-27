@@ -167,3 +167,23 @@ owner's workbook.
   Nominatim could not find uses its city centre and is drawn as approximate.
 - Still outstanding: written permission from AwardHelper and edithotelsearch.
   On a takedown request, remove the affected entries and rebuild.
+
+## Hotel photos (Wikidata/Commons)
+
+`npm run hotels:photos` (`scripts/fetch-program-hotel-photos.mjs`) → `src/data/hotels/programHotelPhotos.public.json`.
+Only Wikidata and Wikimedia Commons are used, because they host free content only: Wikidata items that are a hotel
+(or resort) with an image (P18), via the public SPARQL endpoint (at most one request every 2 s), then Commons file
+metadata (batches of 50 titles, at most one request per second), with a generic client name and no personal data.
+Raw responses are cached in the git-ignored `.cache/hotel-photos/wiki/`, so a rerun is offline.
+
+- **How a photo is matched** (conservative, no fuzzy guessing): tier `name` = exact normalised hotel name (accents,
+  punctuation, "the", "hotel", "and" ignored) and the same country or within 2 km; tier `coords` = within 150 m of a
+  property-precision position and name-token overlap of at least 0.6. If several Wikidata items fit one hotel, or one
+  item fits several hotels, no photo is used.
+- **Licenses accepted:** CC0, public domain, CC BY and CC BY-SA (any version). Everything else (NC, ND, GFDL-only, fair
+  use, unknown) is rejected and `hotelPublicBoundary.test.js` fails if one slips in.
+- **Attribution shown** wherever a photo appears (directory rows and the map city card): "Photo: {author} · {license}
+  via Wikimedia Commons", linked to the Commons file page. The file stores the 640 px thumbnail URL, file page, author,
+  license and license URL; the photo itself is hot-linked from upload.wikimedia.org, never copied into the repo.
+- **Takedown:** delete the hotel's entry from `programHotelPhotos.public.json` (and rerun nothing; it is only
+  regenerated on request). A file removed from Commons simply falls back to the placeholder.

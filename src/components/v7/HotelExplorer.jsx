@@ -5,15 +5,15 @@
    formula at their budget) and "I'd stay here / Too expensive / Not my
    style". The hotel-style question sits at the top. Prices are dated, never
    live; the person can add "I saw $___ a night". */
-import React, { lazy, Suspense, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
+import React, { lazy, memo, startTransition, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { Building2, MapPin } from "lucide-react";
 import Choice from "../v5/Choice.jsx";
 import { HOTEL_PROPERTIES, HOTEL_DB_LOG, HOTEL_SOURCE, PROGRAM_NAME, TIER_NAME, realisticRate, valueToYou, markOf, hotelMarksWith, googleHotelsUrl } from "../../engine/v5/hotelDb.js";
 import { destinationsOf, minimumNights } from "../../engine/v5/hotelCredits.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../../engine/profileDefaults.js";
 import { matchHotel } from "../../../extension/lib/rate.js";
-import HotelMapView from "./HotelMapView.jsx";
+import HotelMapView, { photoCredit, usePhotoSrc } from "./HotelMapView.jsx";
 import { buildMarkers } from "../../engine/v5/hotelWorld.js";
 import { programLabel, programInfo, programBadge, PROGRAM_INFO, PROGRAM_MENU_LABEL, PROGRAM_MENU_NOTE } from "../../engine/v5/hotelPrograms.js";
 import { walletValue, benefitsForCard } from "../../engine/v5/methodology.js";
@@ -91,86 +91,151 @@ function CreditCards({ profile }) {
 }
 
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const DIR_PROGRAMS = [["all", "All programs"], ["edit", null], ["fhr", null], ["thc", null], ["multi", "In more than one"]];
+const DIR_TOGGLES = ["edit", "fhr", "thc"]; // independent, any combination; none chosen = every program
 const CONTINENTS = ["North America", "Caribbean & Latin America", "Europe", "Middle East & Africa", "Asia Pacific"];
 const hasPos = (h) => h.lat != null && h.lng != null;
+const posOf = (h) => (hasPos(h) ? [h.lat, h.lng] : null);
+const fmt = (n) => n.toLocaleString("en-US");
+const NO_PHOTOS = {};
 
-/** Every hotel in the three card programs: facts only (name, place, program, position). */
-function ProgramDirectory() {
-  const [data, setData] = useState(null), [failed, setFailed] = useState(false);
-  const [q, setQ] = useState(""), [prog, setProg] = useState("all"), [country, setCountry] = useState(""), [region, setRegion] = useState("");
+/** Does a hotel pass the filters? `skip` leaves one group out, to count what a chip would add. */
+function passes(h, f, skip) {
+  if (skip !== "prog") {
+    if (f.multi && h.programs.length < 2) return false;
+    if (f.progs.length && !h.programs.some((p) => f.progs.includes(p))) return false;
+  }
+  if (skip !== "brand" && f.brand && h.brand !== f.brand) return false;
+  if (f.country && h.country !== (f.country === "_" ? "" : f.country)) return false;
+  if (f.region && h.region !== f.region) return false;
+  return !f.t || norm(`${h.name} ${h.city} ${h.country}`).includes(f.t);
+}
+
+/** A hotel's thumbnail: lazy, fixed aspect ratio, a placeholder when there is no (working) photo. */
+function RowThumb({ photo }) {
+  const [src, fail] = usePhotoSrc(photo);
+  if (src) return <img className="hdir-thumb" src={src} alt="" width="96" height="64" loading="lazy" decoding="async" onError={fail} />;
+  return <span className="hdir-thumb is-empty" aria-hidden="true"><Building2 size={18} /></span>;
+}
+
+const DirectoryRows = memo(function DirectoryRows({ rows, photos }) {
   const [shown, setShown] = useState(60);
+  useEffect(() => setShown(60), [rows]);
+  return (
+    <>
+      {!rows.length && <li className="t-caption">No hotel matches these filters.</li>}
+      {rows.slice(0, shown).map((h) => {
+        const ph = photos[h.id];
+        return (
+          <li key={h.id} className="hdir-row" data-testid={`dir-${h.id}`}>
+            <RowThumb photo={ph} />
+            <div className="hdir-body">
+              <p className="hotel-name"><strong>{h.name}</strong>{h.brand && h.brand !== "Independent" && h.brand !== "Other brands" ? <span className="t-caption"> · {h.brand}</span> : null}</p>
+              <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {[h.city, h.country].filter(Boolean).join(", ")}{h.precision === "city" ? " · position approximate" : !h.precision ? " · not on the map" : ""}</p>
+              <div className="hdir-progs">
+                {h.programs.map((p) => (
+                  <div key={p} className="t-caption hdir-prog">
+                    <span className="tag hdir-badge" style={{ "--pc": PROGRAM_INFO[p].color }} title={`Part of ${programLabel(p)}`}>{programBadge(p)}</span>
+                    <span>{creditLines(p).map((c) => c.text).join(" · ")}</span>
+                  </div>
+                ))}
+              </div>
+              {ph && <a className="t-caption hdir-credit" href={ph.page} target="_blank" rel="noreferrer noopener" title={photoCredit(ph)}>{photoCredit(ph)}</a>}
+            </div>
+          </li>
+        );
+      })}
+      {rows.length > shown && <li><button type="button" className="link" onClick={() => setShown((n) => n + 60)}>Show more ({fmt(rows.length - shown)} left)</button></li>}
+    </>
+  );
+});
+
+/** Every hotel in the three card programs: facts only (name, place, program, position, brand) plus a free-licensed photo where one exists. */
+function ProgramDirectory() {
+  const [data, setData] = useState(null), [failed, setFailed] = useState(false), [photos, setPhotos] = useState(NO_PHOTOS);
+  const [q, setQ] = useState(""), [progs, setProgs] = useState([]), [multi, setMulti] = useState(false), [brand, setBrand] = useState(""), [country, setCountry] = useState(""), [region, setRegion] = useState("");
   const listTop = useRef(null);
   useEffect(() => {
     let on = true;
     import("../../data/hotels/programHotels.public.json").then((m) => on && setData(m.default || m)).catch(() => on && setFailed(true));
+    import("../../data/hotels/programHotelPhotos.public.json").then((m) => on && setPhotos((m.default || m).photos || NO_PHOTOS)).catch(() => {}); // photos are optional
     return () => { on = false; };
   }, []);
   const hotels = data?.hotels;
   const dq = useDeferredValue(q);
+  const t = useMemo(() => norm(dq).trim(), [dq]);
+  const filter = useMemo(() => ({ t, progs, multi, brand, country, region }), [t, progs, multi, brand, country, region]);
   const countries = useMemo(() => {
     const m = new Map();
     for (const h of hotels || []) m.set(h.country, (m.get(h.country) || 0) + 1);
     return [...m].sort((a, b) => (!a[0] - !b[0]) || a[0].localeCompare(b[0]));
   }, [hotels]);
-  const rows = useMemo(() => {
-    const t = norm(dq).trim();
-    return (hotels || []).filter((h) => (prog === "all" || (prog === "multi" ? h.programs.length > 1 : h.programs.includes(prog)))
-      && (!country || h.country === (country === "_" ? "" : country)) && (!region || h.region === region)
-      && (!t || norm(`${h.name} ${h.city} ${h.country}`).includes(t)));
-  }, [hotels, dq, prog, country, region]);
-  const { markers, unmapped } = useMemo(() => buildMarkers(rows, (h) => (hasPos(h) ? [h.lat, h.lng] : null)), [rows]);
+  /* every figure below is computed from the filter object only, so a map pan or zoom never recomputes it */
+  const rows = useMemo(() => (hotels || []).filter((h) => passes(h, filter)), [hotels, filter]);
+  const { markers } = useMemo(() => buildMarkers(rows, posOf), [rows]);
   const noPos = useMemo(() => rows.filter((h) => !hasPos(h)).length, [rows]);
-  useEffect(() => setShown(60), [dq, prog, country, region]);
-  const counts = data?.metadata.counts;
-  const per = (p) => rows.filter((h) => h.programs.includes(p)).length;
-  const toList = (text) => { setQ(text); setProg("all"); setCountry(""); setRegion(""); listTop.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); };
+  const progCounts = useMemo(() => { // what each chip would show with the other filters kept
+    const c = { edit: 0, fhr: 0, thc: 0, multi: 0 };
+    for (const h of hotels || []) if (passes(h, filter, "prog")) { for (const p of h.programs) c[p]++; if (h.programs.length > 1) c.multi++; }
+    return c;
+  }, [hotels, filter]);
+  const brandCounts = useMemo(() => {
+    const m = new Map();
+    for (const h of hotels || []) if (passes(h, filter, "brand")) m.set(h.brand || "Independent", (m.get(h.brand || "Independent") || 0) + 1);
+    return [...m].sort((a, b) => (a[0] === "Other brands") - (b[0] === "Other brands") || b[1] - a[1] || a[0].localeCompare(b[0]));
+  }, [hotels, filter]);
+  const per = useMemo(() => ({ edit: rows.filter((h) => h.programs.includes("edit")).length, fhr: rows.filter((h) => h.programs.includes("fhr")).length, thc: rows.filter((h) => h.programs.includes("thc")).length }), [rows]);
+  const photoOf = useCallback((h) => photos[h.id], [photos]);
+  const toList = useCallback((text) => { setQ(text); setProgs([]); setMulti(false); setBrand(""); setCountry(""); setRegion(""); listTop.current?.scrollIntoView?.({ behavior: "smooth", block: "start" }); }, []);
+  const onShowCity = useCallback((m) => toList(m.name), [toList]);
+  const onPickHotel = useCallback((h) => toList(h.name), [toList]);
+  /* chips and selects update at once; the map and the list follow as a transition */
+  const toggleProg = (p) => startTransition(() => setProgs((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p])));
+  const allPrograms = () => startTransition(() => { setProgs([]); setMulti(false); });
+  const photoCount = useMemo(() => rows.reduce((n, h) => n + (photos[h.id] ? 1 : 0), 0), [rows, photos]);
 
   if (failed) return <p className="t-caption" role="alert">The hotel directory could not be loaded. Reload the page to try again.</p>;
   if (!hotels) return <p className="t-caption" data-testid="dir-loading">Loading the hotel directory…</p>;
+  const total = data.metadata.total;
   return (
     <div className="hdir" data-testid="hotel-directory">
       <div className="panel hdir-filters">
         <input className="hotels-search" type="search" aria-label="Search the directory" placeholder="Hotel, city or country" value={q} onChange={(e) => setQ(e.target.value)} data-testid="dir-search" />
-        <div className="chip-wrap" role="radiogroup" aria-label="Program">
-          {DIR_PROGRAMS.map(([k, label]) => <Choice key={k} radio pill selected={prog === k} onSelect={() => setProg(k)}>
-            {label || programLabel(k)} <small>({(k === "all" ? data.metadata.total : k === "multi" ? counts.multiple : counts[k]).toLocaleString("en-US")})</small>
-          </Choice>)}
+        <div className="hdir-programs" data-testid="program-toggles">
+          <p className="t-caption" id="hdir-prog-label">Programs (choose any combination; none chosen shows all)</p>
+          <div className="chip-wrap" role="group" aria-labelledby="hdir-prog-label">
+            {DIR_TOGGLES.map((p) => (
+              <Choice key={p} pill selected={progs.includes(p)} onSelect={() => toggleProg(p)} data-testid={`program-toggle-${p}`} style={{ "--pc": PROGRAM_INFO[p].color }}>
+                <i className="hdir-dot" aria-hidden="true" />{programLabel(p)} <small data-testid={`program-count-${p}`}>({fmt(progCounts[p])})</small>
+              </Choice>
+            ))}
+            <Choice pill selected={multi} onSelect={() => startTransition(() => setMulti((m) => !m))} data-testid="program-toggle-multi">In more than one <small>({fmt(progCounts.multi)})</small></Choice>
+            {(progs.length > 0 || multi) && <button type="button" className="link" onClick={allPrograms} data-testid="program-toggle-all">Show all programs</button>}
+          </div>
         </div>
         <div className="hdir-selects">
-          <select aria-label="Country" value={country} onChange={(e) => setCountry(e.target.value)}>
+          <select aria-label="Brand" value={brand} onChange={(e) => startTransition(() => setBrand(e.target.value))} data-testid="brand-filter">
+            <option value="">All brands</option>
+            {brandCounts.map(([b, n]) => <option key={b} value={b}>{b} ({fmt(n)})</option>)}
+            {brand && !brandCounts.some(([b]) => b === brand) && <option value={brand}>{brand} (0)</option>}
+          </select>
+          <select aria-label="Country" value={country} onChange={(e) => startTransition(() => setCountry(e.target.value))}>
             <option value="">All countries</option>
             {countries.map(([c, n]) => <option key={c || "_"} value={c || "_"}>{c || "Country not listed"} ({n})</option>)}
           </select>
-          <select aria-label="Region" value={region} onChange={(e) => setRegion(e.target.value)}>
+          <select aria-label="Region" value={region} onChange={(e) => startTransition(() => setRegion(e.target.value))}>
             <option value="">All regions</option>
             {CONTINENTS.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
         </div>
       </div>
       <p className="t-caption hdir-counts" data-testid="dir-counts" aria-live="polite">
-        <strong>{rows.length.toLocaleString("en-US")}</strong> of {data.metadata.total.toLocaleString("en-US")} hotels · The Edit {per("edit").toLocaleString("en-US")} · Fine Hotels + Resorts {per("fhr").toLocaleString("en-US")} · The Hotel Collection {per("thc").toLocaleString("en-US")} · {noPos.toLocaleString("en-US")} not on the map
+        <strong>{fmt(rows.length)}</strong> of {fmt(total)} hotels · The Edit {fmt(per.edit)} · Fine Hotels + Resorts {fmt(per.fhr)} · The Hotel Collection {fmt(per.thc)} · {fmt(noPos)} not on the map{photoCount ? ` · ${fmt(photoCount)} with a photo` : ""}
       </p>
-      <HotelMapView markers={markers} unmapped={noPos} unmappedText={`${noPos.toLocaleString("en-US")} hotel${noPos === 1 ? "" : "s"} not on the map (no position found yet); ${noPos === 1 ? "it is" : "they are"} still in the list below.`}
+      <HotelMapView markers={markers} unmapped={noPos} unmappedText={`${fmt(noPos)} hotel${noPos === 1 ? "" : "s"} not on the map (no position found yet); ${noPos === 1 ? "it is" : "they are"} still in the list below.`}
         testId="directory-map" ariaLabel="Map of every hotel in The Edit, Fine Hotels + Resorts and The Hotel Collection"
-        onShowCity={(m) => toList(m.name)} onPickHotel={(h) => toList(h.name)} />
+        onShowCity={onShowCity} onPickHotel={onPickHotel} photoOf={photoOf} />
       <ul className="rows hdir-rows" aria-label="Directory hotels" ref={listTop}>
-        {!rows.length && <li className="t-caption">No hotel matches these filters.</li>}
-        {rows.slice(0, shown).map((h) => (
-          <li key={h.id} className="hdir-row" data-testid={`dir-${h.id}`}>
-            <p className="hotel-name"><strong>{h.name}</strong></p>
-            <p className="t-caption"><MapPin size={12} aria-hidden="true" /> {[h.city, h.country].filter(Boolean).join(", ")}{h.precision === "city" ? " · position approximate" : !h.precision ? " · not on the map" : ""}</p>
-            <div className="hdir-progs">
-              {h.programs.map((p) => (
-                <div key={p} className="t-caption hdir-prog">
-                  <span className="tag hdir-badge" style={{ "--pc": PROGRAM_INFO[p].color }} title={`Part of ${programLabel(p)}`}>{programBadge(p)}</span>
-                  <span>{creditLines(p).map((c) => c.text).join(" · ")}</span>
-                </div>
-              ))}
-            </div>
-          </li>
-        ))}
-        {rows.length > shown && <li><button type="button" className="link" onClick={() => setShown(shown + 60)}>Show more ({(rows.length - shown).toLocaleString("en-US")} left)</button></li>}
+        <DirectoryRows rows={rows} photos={photos} />
       </ul>
     </div>
   );

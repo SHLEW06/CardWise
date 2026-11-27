@@ -25,6 +25,7 @@
     "calibrate": "npm --prefix connector run calibrate --",
     "brands": "node scripts/build-brands.mjs",
     "hotels:public": "node scripts/build-program-hotels.mjs",
+    "hotels:photos": "node scripts/fetch-program-hotel-photos.mjs",
     "test:connector": "CHROME_CHANNEL=${CHROME_CHANNEL:-chrome} npm --prefix connector test",
     "test:extension": "node --test extension/test/*.test.js",
     "test:all": "npm test && npm run test:extension && npm run test:connector",
