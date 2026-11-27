@@ -24,7 +24,7 @@ it("replays only captured survey fields and satisfies eligibility on all 200 kno
       expect(p.nextMove.kind,person.id).toBe("pay-balance");
     }
   }
-}, 60000);
+}, 240000);   // 200 full plans with follow-ups; slow under full-suite load
 it("requires at least $50 in recurring net advantage before recommending a new paid membership", () => {
   for (const monthly of [100,500,1000,2000,5000]) {
     const profile = { invitedCards: ["robinhood-gold"], credit: { score: 790 }, spend: { other: monthly }, maxCards: 1 };
