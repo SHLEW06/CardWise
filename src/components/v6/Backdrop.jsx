@@ -19,7 +19,7 @@
      4. grain    2.5% film grain
    No glows, lattices or sheen; panels sit on top as translucent navy.
    ========================================================================== */
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BACKGROUND_MANIFEST } from "../../data/cardArtManifest.js";
 import { BY_ID } from "../../data/cards/index.js";
 import { FocalStandIn } from "../v7/FocalImage.jsx";
@@ -68,18 +68,38 @@ function StandIn({ slot }) {
   return <svg className="bd-standin-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">{scenes[slot] || scenes.explore}</svg>;
 }
 
+/* Cross-fade between slot photos: the outgoing photo stays mounted for the fade
+   (CSS .bd-photo.is-leaving, <= 400 ms, off under prefers-reduced-motion). */
+function usePhotoLayers(photo) {
+  const [leaving, setLeaving] = useState(null);
+  const last = useRef(photo);
+  useEffect(() => {
+    if (last.current === photo) return undefined;
+    const out = last.current;
+    last.current = photo;
+    if (!out) return undefined;
+    setLeaving(out);
+    const t = setTimeout(() => setLeaving(null), 450);
+    return () => clearTimeout(t);
+  }, [photo]);
+  return leaving && leaving !== photo ? leaving : null;
+}
+
 export default function Backdrop({ slot = "home", card = null }) {
   const photo = BACKGROUND_MANIFEST?.[slot] || null;
+  const leaving = usePhotoLayers(photo);
   const hero = card && (typeof card === "string" ? BY_ID[card] : card);
   const cardArt = slot === "card" ? hero?.image?.localImage : null;
   return (
     <div className={`backdrop bd-${slot}${photo ? " has-photo" : ""}`} aria-hidden="true" data-slot={slot} data-source={photo ? "photo" : cardArt ? "card" : "stand-in"}>
       <div className="bd-ground" />
-      <div className="bd-image">
-        {photo ? <img src={photo} alt="" decoding="async" /> : cardArt ? <img src={cardArt} alt="" decoding="async" className="bd-card-art" /> : <StandIn slot={slot} />}
+      {leaving && <div className="bd-image bd-photo is-leaving" key={`out-${leaving}`}><img src={leaving} alt="" decoding="async" /></div>}
+      <div className={`bd-image${photo ? " bd-photo" : ""}`} key={photo || slot}>
+        {photo ? <img src={photo} alt="" decoding="async" fetchpriority="low" width="1920" height="1200" /> : cardArt ? <img src={cardArt} alt="" decoding="async" className="bd-card-art" /> : <StandIn slot={slot} />}
       </div>
       <div className="bd-tint" />
       <div className="bd-pool" />
+      <div className="bd-vignette" />
       <div className="bd-grain" />
     </div>
   );

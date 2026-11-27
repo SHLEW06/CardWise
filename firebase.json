@@ -2,7 +2,7 @@
   "hosting": {
     "site": "credit-card-optimizer-19762",
     "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "backgrounds/**"],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "backgrounds/focal-*", "backgrounds/*.@(avif|jpg|jpeg|png)"],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }
     ],

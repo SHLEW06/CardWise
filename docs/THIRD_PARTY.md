@@ -187,3 +187,25 @@ Raw responses are cached in the git-ignored `.cache/hotel-photos/wiki/`, so a re
   license and license URL; the photo itself is hot-linked from upload.wikimedia.org, never copied into the repo.
 - **Takedown:** delete the hotel's entry from `programHotelPhotos.public.json` (and rerun nothing; it is only
   regenerated on request). A file removed from Commons simply falls back to the placeholder.
+
+## Background photos
+
+Seven blurred photographs sit behind the app screens (`<Backdrop slot="…">`). All are **CC0 1.0 / public-domain dedication**
+files from Wikimedia Commons, so they may be redistributed on the public site without permission or attribution; we still
+credit them. The originals are never committed: `scripts/backgrounds/build.mjs` downloads each once into the git-ignored
+`.cache/backgrounds/`, blurs (gaussian sigma 38 at 1920 px), tints toward the night navy, and writes `public/backgrounds/<slot>.webp`
+(5-15 KB each, about 80 KB in total). Machine-readable record: `scripts/backgrounds/sources.json`.
+
+| Slot | Photographer | License | Source page |
+|---|---|---|---|
+| home (warm evening light on a lake) | blickpixel (via Pixabay) | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Sunset_at_lake_Constance.jpg |
+| explore (northern lights over Lofoten) | Johannes Groll (followhansi, Unsplash) | CC0 1.0 on Commons | https://commons.wikimedia.org/wiki/File:Lofoten,_Norway_(Unsplash).jpg |
+| checkout (old-town street at night) | Wilfredor | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Petit_Champlain_at_night,_Quebec_city.jpg |
+| offers (colourful bokeh lights) | Gabriel Santiago (gabrielssantiago, Unsplash) | CC0 1.0 on Commons | https://commons.wikimedia.org/wiki/File:Bokeh_effect_(Unsplash).jpg |
+| lab (city and bridge lights at night) | Jebulon | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Saint_Peter%27s_Basilica,_Sant%27Angelo_bridge,_by_night,_Rome,_Italy.jpg |
+| survey (soft lights at dusk) | Steve Shreve (steveshreve, Unsplash) | CC0 1.0 on Commons | https://commons.wikimedia.org/wiki/File:Lights_(Unsplash).jpg |
+| profile (aircraft wing over clouds) | Shocksingularity | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Clouds_disappearing_into_a_darkening_blue_sky_over_an_airplane_wing.jpg |
+
+Only these seven `*.webp` names are un-ignored in `.gitignore` and published by `firebase.json`; any other file placed in
+`public/backgrounds/` (AI renders, `focal-*`, avif/jpg/png) stays local and is excluded from hosting.
+**Takedown:** delete the slot's entry in `sources.json` and its `.webp`, rerun `npm run art`; the procedural CSS scene returns.

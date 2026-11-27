@@ -24,7 +24,7 @@ const CARDS_DIR = resolve(ROOT, "public/cards");
 const BACKGROUNDS_DIR = resolve(ROOT, "public/backgrounds");
 /* v6 §18 Backdrop slots; a photo public/backgrounds/<slot>.avif|webp wins over
    the procedural scene. */
-export const BACKDROP_SLOTS = ["home", "checkout", "offers", "lab", "explore", "survey", "card"];
+export const BACKDROP_SLOTS = ["home", "checkout", "offers", "lab", "explore", "survey", "card", "profile"];
 /* v7 §9.11 focal images: public/backgrounds/focal-<slot>.avif|webp|jpg|png
    (one art-directed photo or render per hero; CSS/SVG stand-in until then). */
 export const isFocalSlot = (slot) => /^focal-[a-z0-9-]+$/.test(slot);

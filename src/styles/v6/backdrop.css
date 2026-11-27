@@ -26,3 +26,35 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>");
   background-size: 240px 240px;
 }
+
+/* ---- Licensed photos (public/backgrounds/<slot>.webp, pre-blurred in the build) ----
+   A soft colour field: ~45% opacity over the navy ground, no CSS blur needed, edges
+   fade into the ground, the left/top text-safe area is pulled back to the page base. */
+.v5 .bd-image.bd-photo {
+  inset: 0;
+  filter: none;
+  opacity: .55;
+  -webkit-mask-image: radial-gradient(130% 110% at 62% 55%, #000 25%, transparent 82%);
+  mask-image: radial-gradient(130% 110% at 62% 55%, #000 25%, transparent 82%);
+  animation: bd-photo-in .4s ease-out both;
+}
+.v5 .bd-image.bd-photo.is-leaving { animation: bd-photo-out .4s ease-in both; }
+@keyframes bd-photo-in { from { opacity: 0; } to { opacity: .55; } }
+@keyframes bd-photo-out { from { opacity: .55; } to { opacity: 0; } }
+.v5 .backdrop.has-photo .bd-tint {
+  background:
+    linear-gradient(90deg, rgba(11, 18, 34, .72) 0%, rgba(11, 18, 34, .38) 42%, rgba(11, 18, 34, 0) 75%),
+    linear-gradient(180deg, rgba(11, 18, 34, .45) 0%, rgba(11, 18, 34, .2) 35%, rgba(11, 18, 34, .65) 100%);
+}
+/* Refined vignette: warm-black corners (Radix-style warm neutral, not pure black). */
+.v5 .bd-vignette { background: radial-gradient(135% 120% at 50% 40%, transparent 55%, rgba(12, 10, 8, .55) 100%); }
+/* Film grain: fractal noise, desaturated and warm-tinted, blended so it breaks banding in the blur. */
+.v5 .bd-grain {
+  opacity: .06; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix values='.33 .33 .33 0 .06  .33 .33 .33 0 .04  .33 .33 .33 0 .02  0 0 0 1 0'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .v5 .bd-image.bd-photo, .v5 .bd-image.bd-photo.is-leaving { animation: none; }
+  .v5 .bd-image.bd-photo.is-leaving { display: none; }
+}

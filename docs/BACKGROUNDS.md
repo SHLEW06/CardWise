@@ -1,4 +1,21 @@
-# Backdrops — one per screen (v6 §18)
+# Backdrops — one per screen
+
+**Current state (2026-11-27): licensed photos.** `public/backgrounds/<slot>.webp` for `home, checkout, offers, lab,
+explore, survey, profile` are CC0 photographs, blurred and tinted by `node scripts/backgrounds/build.mjs`
+(needs `ffmpeg` and `cwebp`; sources and credits in `scripts/backgrounds/sources.json` and `docs/THIRD_PARTY.md`).
+They render at ~55% opacity under a left/top text-safe tint, a warm vignette and film grain, with a 400 ms
+cross-fade between screens (none under `prefers-reduced-motion`). `card` has no photo (the card art is blurred
+behind it). A slot with no file falls back to the procedural scene.
+
+To swap a photo: edit its entry in `scripts/backgrounds/resolve-sources.mjs` (a CC0/PD Commons file title), run it to
+refresh `sources.json`, delete `.cache/backgrounds/orig/<slot>.jpg`, run `build.mjs`, then `npm run art`. Only CC0/public-domain
+or Unsplash/Pexels-licensed files whose terms allow redistribution may be used; record the license in THIRD_PARTY.md.
+`.gitignore` and `firebase.json` publish only the seven built `.webp` names; everything else here stays local.
+
+The art-direction notes below are the original AI-render briefs, kept for reference; they are not what ships.
+
+---
+
 
 `<Backdrop slot="…">` (`src/components/v6/Backdrop.jsx`) loads
 `public/backgrounds/<slot>.avif` (or `.webp`) when the file exists — the

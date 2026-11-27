@@ -21,8 +21,17 @@ src/data/cardArtManifest.js
 # for commercial use, see docs/THIRD_PARTY.md); kept out of git by the v6/v7 rule
 public/fonts/
 
-# generated photo backgrounds — personal use only until licensed
-public/backgrounds/
+# photo backgrounds: only the CC0 photos built by scripts/backgrounds/build.mjs
+# are published (see docs/THIRD_PARTY.md); any other file in this folder
+# (focal-*, avif/jpg/png, AI renders) stays local until it is licensed
+public/backgrounds/*
+!public/backgrounds/home.webp
+!public/backgrounds/checkout.webp
+!public/backgrounds/offers.webp
+!public/backgrounds/lab.webp
+!public/backgrounds/explore.webp
+!public/backgrounds/survey.webp
+!public/backgrounds/profile.webp
 
 # vite writes these next to the config when it bundles it
 vite.config.js.timestamp-*
