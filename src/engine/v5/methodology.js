@@ -767,7 +767,7 @@ export function heldCardVerdicts(rawProfile) {
   const profile = normalizeProfile(rawProfile);
   const held = profile.cardsHeld.filter((id) => BY_ID[id]);
   const all = walletValue(held, profile, { normalized: true });
-  return held.map((id) => {
+  const verdicts = held.map((id) => {
     const card = BY_ID[id];
     const without = walletValue(held.filter((x) => x !== id), profile, { normalized: true });
     const adds = all.N - without.N;          // what this card adds to their wallet
@@ -779,6 +779,33 @@ export function heldCardVerdicts(rawProfile) {
       .sort((a, b) => b.n - a.n);
     if (downs.length && downs[0].n > all.N) return { cardId: id, action: "downgrade", to: downs[0].to, adds, fee, gain: downs[0].n - all.N };
     return { cardId: id, action: "cancel", adds, fee, gain: without.N - all.N };
+  });
+  return enforceFeeLimit(verdicts, held, profile);
+}
+
+/* A fee limit is strict for held cards too (the card's own yearly fee; a
+   store membership a held card needs is not a card fee): keep the fee cards
+   that add the most until the limit is reached; the rest switch to a product within the
+   limit (or are left out), each marked overLimit with what keeping it would
+   have added — screens say so instead of silently keeping the fee. */
+function enforceFeeLimit(verdicts, held, profile) {
+  const limit = profile.feeLimit;
+  if (limit == null) return verdicts;
+  const own = (id) => BY_ID[id]?.annualFee || 0;
+  let used = verdicts.filter((v) => v.action === "downgrade").reduce((t, v) => t + own(v.to), 0);
+  const kept = verdicts.filter((v) => v.action === "keep" && own(v.cardId) > 0).sort((a, b) => b.adds - a.adds);
+  const over = new Set();
+  for (const v of kept) { if (used + own(v.cardId) <= limit + 1e-9) used += own(v.cardId); else over.add(v.cardId); }
+  if (!over.size) return verdicts;
+  return verdicts.map((v) => {
+    if (!over.has(v.cardId)) return v;
+    const card = BY_ID[v.cardId];
+    const rest = held.filter((x) => x !== v.cardId);
+    const downs = (card.downgradeOptionIds || []).filter((d) => BY_ID[d] && !held.includes(d) && BY_ID[d].availabilityStatus !== "closed" && used + own(d) <= limit + 1e-9)
+      .map((d) => ({ to: d, n: walletValue([...rest, d], profile, { normalized: true }).N }))
+      .sort((a, b) => b.n - a.n);
+    if (downs.length) { used += own(downs[0].to); return { ...v, action: "downgrade", to: downs[0].to, overLimit: true, keepAdds: v.adds, gain: 0 }; }
+    return { ...v, action: "cancel", overLimit: true, keepAdds: v.adds, gain: 0 };
   });
 }
 

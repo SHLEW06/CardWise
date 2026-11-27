@@ -63,6 +63,15 @@ export default function PlanAdvice({ plan, onEdit, hideFirstAction = false }) {
       </ul>
     </details>}
     {plan.warnings.map(x => <p className="t-caption" key={x.key}>{x.message}</p>)}
+    {nm?.runnerUp?.cardId && nm.runnerUp.diff >= 0 && <p className="t-caption" data-testid="plan-runner-up">Next best instead of the {nameOf(nm.cardId)}: the {nameOf(nm.runnerUp.cardId)}, {nm.runnerUp.diff > 0 ? `${usd(nm.runnerUp.diff)} a year less` : "worth the same"}.</p>}
+    {plan.tilts?.length > 0 && <details className="plan-assume" data-testid="plan-tilts">
+      <summary><span>{plan.tilts.length} built-in preference{plan.tilts.length === 1 ? "" : "s"} · {usd(plan.tilts.reduce((t, x) => t + x.cost, 0))} a year</span><span className="plan-assume-cta">Why</span></summary>
+      <ul className="plan-assume-list">
+        {plan.tilts.map(x => <li key={x.key}>
+          <span className="plan-assume-label">{x.label}. Costs {usd(x.cost)} a year{x.instead.length ? ` vs. ${x.instead.map(nameOf).filter(Boolean).join(" + ")}` : ""}.</span>
+        </li>)}
+      </ul>
+    </details>}
     {plan.waitlist?.map(x => <p className="t-caption" key={x.cardId}><a href={x.url} target="_blank" rel="noreferrer">{x.label}</a> · {cardDisplayName(BY_ID[x.cardId])} · Your recommended plan above is available without it.</p>)}
   </div>;
 }

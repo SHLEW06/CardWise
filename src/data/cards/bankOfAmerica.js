@@ -78,6 +78,14 @@ export const CARDS = [
     id: "boa-customized", name: "BoA Customized Cash Rewards", issuer: "Bank of America", network: "VISA",
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
     earnRates: { Choice: 3, Groceries: 2, Wholesale: 2, General: 1 }, portalMultipliers: {},
+    /* Issuer terms: 3% in ONE chosen category, 2% at grocery stores and
+       wholesale clubs; the 3% and 2% share $2,500 a quarter, then 1%.
+       "Online shopping" includes cable, internet, phone and streaming. */
+    choices: [{ key: "Choice", rate: 3, options: {
+      gas: ["gas", "gasCostco", "ev"], online: ["online", "streaming", "phone"], dining: ["dining"],
+      travel: ["flights", "hotels", "rentals"], drugstores: ["drugstores"],
+    } }],
+    earnCaps: [{ keys: ["Choice", "Groceries", "Wholesale"], annual: 10000, after: 1 }],
     credits: [],
     benefits: ["3% in your chosen category (gas, online, dining, travel, drug stores, home improvement)", "2% groceries & wholesale (to $2,500 combined/quarter)", "Preferred Rewards boost up to 75% more", "No annual fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

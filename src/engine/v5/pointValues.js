@@ -25,6 +25,7 @@ import { PARTNER_CPP, PARTNER_VALUATIONS_SOURCE } from "../../data/partnerValuat
 import { transferRatio } from "../transferValue.js";
 import { programCpp, DEFAULT_VALUE_MODE } from "../../data/valueModes.js";
 import { STAY_STYLE_FACTOR } from "../../data/benefitUsage.js";
+import { annualSpend } from "../profileDefaults.js";
 const HOTEL_PROGRAMS = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", "wyndham"]);
 
 /* v7 Part B1: the person's valuation mode (Conservative / Typical /
@@ -33,9 +34,42 @@ const HOTEL_PROGRAMS = new Set(["marriott", "hilton", "hyatt", "ihg", "choice", 
 const modeOf = (profile) => profile?.valueMode || DEFAULT_VALUE_MODE;
 
 export const CASH_CPP = 1.0;
-// A cash goal never silently uses travel redemption estimates. Unknown
-// cash-out routes count $0 until verified (see docs/DATA_TODO.md).
-export const CASH_OUT_CPP = { cash: 1, robinhood: 1, chase: 1, amex: 0.6, citi: 0, wf: 1, c1: 0, bilt: 0 };
+// A cash goal (or a skipped goal) never uses transfer-partner estimates, only
+// a redemption anyone can make:
+//   chase / wf   1¢ cash
+//   amex         0.6¢ statement credit
+//   citi         0.75¢ cash (Strata Premier since Aug 2025); 1¢ when a Double
+//                Cash or Custom Cash shares the ThankYou account
+//   c1           0.5¢ cash, or 1¢ against travel purchases ("cover travel")
+//                — 1¢ for the share their own travel spending can absorb
+//   bilt         $0 (no cash-out route on file; see docs/DATA_TODO.md)
+export const CASH_OUT_CPP = { cash: 1, robinhood: 1, chase: 1, amex: 0.6, citi: 0.75, wf: 1, c1: 0.5, bilt: 0 };
+export const C1_TRAVEL_ERASE_CPP = 1.0;
+/* Miles a Capital One wallet earns, as dollars at 1¢, per dollar of spend:
+   Venture / Venture X earn 2x on everything, so 2% bounds it from above —
+   an under-estimate of how much travel spending can absorb is conservative. */
+const C1_EARN_SHARE = 0.02;
+const TRAVEL_KEYS = ["flights", "hotels", "rentals"];
+
+/** Cash-goal value of Capital One miles: 1¢ on the share their yearly travel
+    spending can absorb ("cover travel purchases"), 0.5¢ cash beyond it. */
+export function c1CashGoalCpp(profile) {
+  if (!profile?.spend) return CASH_OUT_CPP.c1;
+  const a = annualSpend(profile);
+  const travel = TRAVEL_KEYS.reduce((t, k) => t + (a[k] || 0), 0);
+  const miles = Object.values(a).reduce((t, v) => t + (v || 0), 0) * C1_EARN_SHARE;
+  const share = miles > 0 ? Math.min(1, travel / miles) : 0;
+  return CASH_OUT_CPP.c1 + (C1_TRAVEL_ERASE_CPP - CASH_OUT_CPP.c1) * share;
+}
+function cashGoalValue(cur, profile, wallet) {
+  if (cur === "citi" && ids(wallet).some((id) => ["citi-double-cash", "citi-custom-cash"].includes(id))) return { cpp: 1, note: "Valued at 1¢ cash: a Double Cash or Custom Cash on the account cashes ThankYou points out at 1¢." };
+  if (cur === "c1") {
+    const cpp = c1CashGoalCpp(profile);
+    return { cpp, note: cpp > CASH_OUT_CPP.c1 + 1e-9 ? `Valued at ${cpp.toFixed(2)}¢: 1¢ each against your travel purchases, 0.5¢ as cash for the rest.` : "Valued at 0.5¢ cash; 1¢ each if you use them to cover travel purchases." };
+  }
+  const cpp = CASH_OUT_CPP[cur] ?? 0;
+  return { cpp, note: cpp === 0 ? "No verified cash-out rate on file; travel redemption value is not counted for your cash goal." : "Valued at the cash-out rate you would use." };
+}
 export const FLEX_CURRENCIES = ["chase", "amex", "c1", "citi", "bilt", "wf"];
 export const CASH_LIKE = new Set(["cash", "robinhood"]);
 export { PARTNER_VALUATIONS_SOURCE };
@@ -85,7 +119,7 @@ export function partnerOptions(cur, wallet = [], profile = null) {
  *          shown, never priced in.
  */
 export function currencyValue(cur, profile, wallet = []) {
-  if (profile?.wants === "cash") return { cpp: cur === "citi" && ids(wallet).some(id => ["citi-double-cash", "citi-custom-cash"].includes(id)) ? 1 : CASH_OUT_CPP[cur] ?? 0, basis: "cash", unlocked: false, partners: [], upTo: null, note: (CASH_OUT_CPP[cur] ?? 0) === 0 ? "No verified cash-out rate on file; travel redemption value is not counted for your cash goal." : "Valued at the cash-out rate you would use." };
+  if (profile?.wants === "cash") { const v = cashGoalValue(cur, profile, wallet); return { cpp: v.cpp, basis: "cash", unlocked: false, partners: [], upTo: null, note: v.note }; }
   if (!cur || CASH_LIKE.has(cur)) return { cpp: CASH_CPP, basis: "cash", unlocked: false, partners: [], upTo: null, note: null };
   const rule = TRANSFER_RULES[cur];
   if (!rule) {

@@ -28,8 +28,14 @@ function buildPlanCore(raw = {}, options = {}) {
     return down ? { ...t, how: "downgrade", from: down.cardId, month: 0, notes: ["Product-change your existing account; no rewards application."] } : t;
   });
   const original = heldCardVerdicts(profile);
+  /* The optimizer may re-judge a kept fee card beside the final plan
+     (recheck): its decision wins over the held-only verdict. */
+  const rejudged = Object.fromEntries([...recommendation.keep, ...recommendation.skip].filter(k => k.recheck).map(k => [k.cardId, k]));
   const heldAdvice = original.map(v => {
     if (wallet.includes(v.cardId)) return { ...v, action: "keep" };
+    const r = rejudged[v.cardId];
+    if (r?.action === "downgrade" && wallet.includes(r.downgradeTo)) return { ...v, action: "downgrade", to: r.downgradeTo, gain: r.gain, recheck: true };
+    if (r?.action === "cancel") return { ...v, action: "cancel", gain: r.gain, recheck: true };
     const upgrade = timeline.find(t => t.how === "upgrade" && BY_ID[t.cardId]?.cardFamily === BY_ID[v.cardId]?.cardFamily);
     if (upgrade) return { ...v, action: "upgrade", to: upgrade.cardId };
     if (v.action === "downgrade" && wallet.includes(v.to)) return v;
@@ -50,6 +56,15 @@ function buildPlanCore(raw = {}, options = {}) {
       when: first.month ? `${timelineLabel(first)}. ${first.notes.join(" ")}` : null, context: wallet.filter(id => id !== first.cardId) };
   }
   const assumptions = assumptionsFor(profile), warnings = [];
+  /* Fee limits are strict; say what it costs when it moves a held card. */
+  const overLimit = heldAdvice.filter(v => v.overLimit);
+  if (overLimit.length) {
+    const names = overLimit.map(v => cardDisplayName(BY_ID[v.cardId]));
+    /* What the limit costs: the best plan without it, minus this one. */
+    const open = optimizeWallet({ ...profile, feeLimit: null }, CARDS, { practical: options.practical });
+    const adds = Math.max(0, Math.round(open.totals.net - value.net));
+    warnings.push({ key: "fee-limit", message: `Your $${profile.feeLimit.toLocaleString("en-US")} fee limit leaves out the yearly fee on your ${names.join(" and ")}.${adds > 0 ? ` Keeping ${overLimit.length > 1 ? "them" : "it"} would add about $${adds.toLocaleString("en-US")} a year.` : ""}${adds > 0 ? ` Raise the limit to keep ${overLimit.length > 1 ? "them" : "it"}.` : " Here that costs nothing: your plan would be worth the same without the limit."}` });
+  }
   const interestCost = carries && profile.averageBalance != null && profile.apr != null ? Math.round(profile.averageBalance * profile.apr) : null;
   const needsDepositAnswer = !wallet.length && profile.newCardComfort > 0 && !carries && (profile.credit.noHistory || profile.credit.score != null && profile.credit.score < SECURED_BELOW) && profile.canAffordDeposit !== true;
   let deposit = null;
@@ -70,8 +85,17 @@ function buildPlanCore(raw = {}, options = {}) {
     .map(c => ({ cardId: c.id, action: "waitlist", label: "Join waitlist", url: c.availabilitySource || c.verifiedSource }));
   const score = profile.cardsHeld.length ? scoreFrom(current.net, value.net) : null;
   const scoreText = score == null ? "Add your first card to see a wallet score." : `You're getting ${score}% of your best annual net value: $${current.net.toLocaleString("en-US")} now ÷ $${value.net.toLocaleString("en-US")} with the recommended wallet, after fees.`;
-  const result = { profile, current, best, wallet, nextMove, timeline, score, scoreText, assumptions, warnings, heldAdvice, interestCost, waitlist, deposit };
+  const tilts = recommendation.tilts || [];
+  const result = { profile, current, best, wallet, nextMove, timeline, score, scoreText, assumptions, warnings, heldAdvice, interestCost, waitlist, deposit, tilts };
   if (options.summaryOnly) return result;
+  /* Runner-up for the next card: the best plan without it, and the yearly
+     difference — so every recommendation shows what it beat and by how much. */
+  if (nextMove?.kind === "apply" && nextMove.cardId) {
+    const sameRules = !profile.cardsHeld.length && profile.maxCards === 1 && profile.feeLimit == null ? (c) => !(c.annualFee > 0) : () => true;
+    const alt = optimalWallet({ ...profile, cardsHeld: recommendation.baseHeld }, { mode: "wallet", catalog: CARDS.filter(c => c.id !== nextMove.cardId && sameRules(c)), maxCards: recommendation.maxCards });
+    const instead = alt.wallet.filter(id => !wallet.includes(id) && !profile.cardsHeld.includes(id));
+    nextMove.runnerUp = { cardId: instead[0] || null, wallet: alt.wallet, diff: Math.round(value.net - walletValue(alt.wallet, profile).net) };
+  }
   const previewWallet = options.wallet || (options.mode === "scratch" ? optimalWallet(profile, { maxCards: Math.min(profile.maxCards, profile.cardsHeld.length + profile.newCardComfort) }).wallet : wallet);
   const previewValue = previewWallet === wallet ? value : walletValue(previewWallet, profile);
   const previewDrops = previewWallet === wallet ? heldAdvice.filter(x => x.action !== "keep").map(x => ({ ...x, effect: Math.max(0, x.gain || -x.adds), reason: x.action === "left out" ? "This no-fee card is not needed for earning; keeping the account open costs nothing." : `The recommended wallet leaves out this account${x.fee ? ` with its $${x.fee} yearly fee` : ""}.` })) : heldNotKept(previewWallet, profile);

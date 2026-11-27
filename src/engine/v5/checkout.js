@@ -20,7 +20,7 @@ import { offerMatchesMerchant } from "../offers/findRewards.js";
 import { isLive, offerValueFor, describeOffer } from "../offers/offerModel.js";
 import { CARDS, BY_ID } from "../../data/cards/index.js";
 import { normalizeProfile } from "../profileDefaults.js";
-import { earnRate, cardCpp, creditUsage } from "./value.js";
+import { cardCpp, creditUsage, purchaseRate, allocateSpend } from "./value.js";
 import { PERK_BRANDS, brandsForCredit, isBrandCredit } from "../../data/creditBrands.js";
 import { eligibility } from "./methodology.js";
 
@@ -154,22 +154,48 @@ export function storeCredit(card, store, profile) {
 /* ── ranking ────────────────────────────────────────────────────────────── */
 
 const STORE_KEY = { amazon: "Amazon", target: "Target", walmart: "Walmart", "whole foods": "WholeFoods" };
-const isVisa = (c) => String(c.network || "").toUpperCase() === "VISA";
+const network = (c) => String(c.network || "").toUpperCase();
+const isVisa = (c) => network(c) === "VISA";
+/* Costco.com lists Visa and Mastercard (plus debit and Shop Cards); no
+   American Express or Discover. In warehouses and at Costco gas: Visa only. */
+const COSTCO_ONLINE = new Set(["VISA", "MASTERCARD"]);
 
-/** Points per $ on this purchase, and whether the card works there at all. */
-export function rateAt(card, store, channel, profile) {
+/** The plan's category picks for this wallet (Custom Cash top category, BoA
+    and Cash+ chosen categories) — the same picks the yearly plan uses. */
+export function walletChoices(wallet, profile) {
+  const cards = wallet.map((id) => BY_ID[id]).filter(Boolean);
+  if (!cards.length) return {};
+  try { return allocateSpend(cards, profile).choice || {}; } catch { return {}; }
+}
+
+/** Points per $ on this purchase, and whether the card works there at all.
+    Same lanes as the plan (purchaseRate): `upside` is a higher rate that
+    depends on what we can't see at the register. */
+export function rateAt(card, store, channel, profile, choice = {}) {
   const online = channel === "online" || (channel === "any" && !store.inStore);
   const bucket = online ? store.onlineBucket : store.bucket;
-  if ((store.costco || store.club === "costco") && !online && !isVisa(card)) return { rate: 0, bucket, blocked: "Costco takes only Visa in its stores" };
+  const costco = store.costco || store.club === "costco";
+  if (costco && !online && !isVisa(card)) return { rate: 0, bucket, blocked: "Costco takes only Visa in its stores" };
+  if (costco && online && !COSTCO_ONLINE.has(network(card))) return { rate: 0, bucket, blocked: "Costco.com takes Visa and Mastercard, not American Express or Discover" };
   let p = profile;
-  if (store.club) p = { ...p, warehouseClub: store.club };
+  if (store.club) p = { ...p, warehouseClub: store.club, costcoOnline: costco && online };
   if (store.airline) p = { ...p, brands: { ...p.brands, airlines: [store.airline] } };
   if (store.hotel) p = { ...p, brands: { ...p.brands, hotels: [store.hotel] } };
-  let rate = earnRate(card, bucket === "gas" && store.costco ? "gasCostco" : bucket, { ...p, gasAt: "regular" });
+  const b = bucket === "gas" && store.costco ? "gasCostco" : bucket;
+  const r = purchaseRate(card, b, { ...p, gasAt: "regular" }, choice);
+  let rate = r.rate;
   const own = store.store && STORE_KEY[store.store];
   if (own && card.earnRates?.[own] != null) rate = Math.max(rate, card.earnRates[own]);
-  return { rate, bucket };
+  const upside = r.upside && r.upside.rate > rate ? r.upside : null;
+  return { rate, bucket, upside, capped: r.capped };
 }
+
+export const UPSIDE_WORDS = {
+  rotating: "if it's one of this quarter's 5% categories and you've activated",
+  top: "if this is your top spending category this billing cycle",
+  choice: "if this is the category you picked",
+  brand: "when you book with the card's own brand",
+};
 
 /**
  * input: { store, amount, channel: "any"|"in"|"online" }
@@ -184,9 +210,10 @@ export function rankPurchase(input, rawProfile, offers = [], { today = new Date(
   const live = (offers || []).filter((o) => isLive(o, today));
   const matching = live.filter((o) => offerMatchesMerchant(o, { brandKey: store.source === "curated" ? store.key : null, merchantNorm: normalizeMerchant(store.name) }));
   let bucket = store.bucket;
+  const choice = walletChoices(wallet, profile);
   const rows = wallet.map((id) => {
     const card = BY_ID[id];
-    const r = rateAt(card, store, channel, profile);
+    const r = rateAt(card, store, channel, profile, choice);
     bucket = r.bucket;
     const cpp = cardCpp(card, profile, wallet);
     const pct = r.rate * cpp;
@@ -195,7 +222,8 @@ export function rankPurchase(input, rawProfile, offers = [], { today = new Date(
       .sort((a, b) => b.math.value - a.math.value || b.math.potential - a.math.potential);
     const top = mine[0] || null;
     const total = Math.round(((spend * pct) / 100 + (top ? top.math.value : 0)) * 100) / 100;
-    return { cardId: id, pct, rate: r.rate, cpp, total, blocked: r.blocked || null, offer: top?.offer || null, offerMath: top?.math || null, needsActivation: !!(top && top.offer.status === "available"), otherOffers: mine.length - (top ? 1 : 0), credit: storeCredit(card, store, profile) };
+    const upside = r.upside ? { ...r.upside, pct: r.upside.rate * cpp, words: UPSIDE_WORDS[r.upside.kind] } : null;
+    return { cardId: id, pct, rate: r.rate, cpp, total, upside, capped: !!r.capped, blocked: r.blocked || null, offer: top?.offer || null, offerMath: top?.math || null, needsActivation: !!(top && top.offer.status === "available"), otherOffers: mine.length - (top ? 1 : 0), credit: storeCredit(card, store, profile) };
   });
   /* Money first when there is an amount, then % back; a card that can't pay
      there goes last (A5). */

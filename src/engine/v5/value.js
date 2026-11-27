@@ -17,6 +17,7 @@
    use" 0.5, promo 0.5, hard-to-use 0.6, portal / airline / hotel trip
    factors, split 0.6, free-night 0.85, companion 0.6, status $) are no longer
    read by this engine — METHODOLOGY §3, 5b table. */
+import { exactAllocate } from "./exactAllocate.js";
 import {
   UNCAPPED_FREE_NIGHT_POINTS, LOUNGE_VISIT_VALUE, LOUNGE_INTEREST, LOUNGE_RETAIL_CAP, AIRLINE_LOUNGES,
   BAG_FEE, SPLIT_MIN_NIGHTS, PROTECTIONS,
@@ -126,7 +127,8 @@ export function earnRate(card, category, profile) {
 /** Is this card usable at all for this spend? Costco takes only Visa in store. */
 function usable(card, bucket, profile) {
   if (bucket === "gasCostco") return isVisa(card);
-  if (bucket === "warehouse" && profile.warehouseClub === "costco") return isVisa(card);
+  /* Costco.com (checkout only) also takes Mastercard. */
+  if (bucket === "warehouse" && profile.warehouseClub === "costco") return isVisa(card) || (profile.costcoOnline && String(card.network || "").toUpperCase() === "MASTERCARD");
   return true;
 }
 
@@ -189,7 +191,22 @@ export function lanesFor(card, profile, spend = buckets(profile)) {
     if (has(r, "Top") && TOP_ELIGIBLE.includes(bucket === "gasCostco" ? "gas" : bucket)) {
       const ti = capFor(card, "Top");
       const cap = ti >= 0 ? card.earnCaps[ti] : { annual: Infinity };
-      out.push({ cardId: card.id, bucket, rate: r.Top, pools: [{ id: `${card.id}#top`, cap: cap.annual }], exclusive: `${card.id}#top` });
+      out.push({ cardId: card.id, bucket, rate: r.Top, pools: [{ id: `${card.id}#top`, cap: cap.annual }], exclusive: `${card.id}#top`, option: bucket === "gasCostco" ? "gas" : bucket });
+    }
+    /* Pick-your-category cards (BoA Customized Cash, US Bank Cash+): each
+       `choices` spec is one (or `picks`) category chosen from a list; an
+       option may cover several buckets. The exact router tries every pick.
+       A cap listed in earnCaps under the spec's key is shared (BoA's 3% and
+       2% share $2,500 a quarter). */
+    for (const spec of card.choices || []) {
+      for (const [opt, bks] of Object.entries(spec.options)) {
+        if (!bks.includes(bucket) || (bucket === "groceries" && profile.groceryStore !== "supermarket")) continue;
+        const ci = capFor(card, spec.key);
+        const pools = ci >= 0 ? [{ id: `${card.id}#cap${ci}`, cap: card.earnCaps[ci].annual }] : [];
+        for (let k = 0; k < (spec.picks || 1); k++) {
+          out.push({ cardId: card.id, bucket, rate: spec.rate, bonus: true, pools, exclusive: `${card.id}#${spec.key}#${k}`, option: opt, distinct: (spec.picks || 1) > 1 ? `${card.id}#${spec.key}` : null, choice: spec.key });
+        }
+      }
     }
     /* Rotating 5% (Freedom Flex, Discover it, Chase Freedom): a share of each
        eligible category, $1,500 a quarter. */
@@ -284,28 +301,16 @@ export function allocateSpend(cards, profile, opts = {}) {
      at Costco over a flat 2% card), then bigger buckets, then card id. */
   lanes.sort((a, b) => b.pct - a.pct || (b.bonus ? 1 : 0) - (a.bonus ? 1 : 0) || (spend[b.bucket] - spend[a.bucket]) || (a.cardId < b.cardId ? -1 : a.cardId > b.cardId ? 1 : 0));
   const left = { ...spend };
-  const poolLeft = {};
-  const exclusiveUsed = {};
   const byBucket = {};
   const perCard = Object.fromEntries(cards.map((c) => [c.id, { value: 0, dollars: 0 }]));
   let total = 0;
-  for (const l of lanes) {
-    if (!opts.optimistic && l.bucket === "rent" && cards.find(c => c.id === l.cardId)?.pointCurrency === "bilt") continue;
-    if (!(left[l.bucket] > 0) || l.pct <= 0) continue;
-    if (l.exclusive) {
-      const used = exclusiveUsed[l.exclusive];
-      if (used && used !== l.bucket) continue;
-    }
-    let room = left[l.bucket];
-    for (const pl of l.pools) {
-      if (!(pl.id in poolLeft)) poolLeft[pl.id] = pl.cap;
-      room = Math.min(room, poolLeft[pl.id]);
-    }
-    if (room <= 0) continue;
-    const value = (room * l.pct) / 100;
+  /* Exact routing (exactAllocate.js): a linear program over the same lanes,
+     caps and pools, with every one-category choice enumerated. */
+  const eligible = lanes.filter((l) => opts.optimistic || !(l.bucket === "rent" && cards.find(c => c.id === l.cardId)?.pointCurrency === "bilt"));
+  const sol = exactAllocate(eligible, left);
+  const ordered = [...sol.rows].sort((a, b) => b.lane.pct - a.lane.pct || (a.lane.cardId < b.lane.cardId ? -1 : 1));
+  for (const { lane: l, dollars: room, value } of ordered) {
     left[l.bucket] -= room;
-    for (const pl of l.pools) poolLeft[pl.id] -= room;
-    if (l.exclusive) exclusiveUsed[l.exclusive] = l.bucket;
     (byBucket[l.bucket] ||= []).push({ cardId: l.cardId, dollars: room, rate: l.rate, cpp: cpp[l.cardId], pct: l.pct, value, rotating: !!l.rotating, capped: l.pools.length > 0 });
     perCard[l.cardId].value += value;
     perCard[l.cardId].dollars += room;
@@ -346,7 +351,34 @@ export function allocateSpend(cards, profile, opts = {}) {
     // search: it must never underestimate a feasible Bilt extension.
     total += Math.min(profile.biltCashAnnualUse || 0, bilts.reduce((t,c) => t + (perCard[c.id]?.dollars || 0) * 0.04, 0));
   }
-  return { total, byBucket, perCard, cpp, unallocated: left };
+  return { total, byBucket, perCard, cpp, unallocated: left, choice: sol.choice };
+}
+
+/**
+ * Checkout and the plan share one set of rate rules: the card's lanes for
+ * this purchase's bucket.
+ *   choice   the plan's picks for this wallet (allocateSpend(...).choice):
+ *            Custom Cash's top category, BoA / Cash+ chosen categories.
+ * → { rate, upside: { rate, kind } | null, capped }
+ *   rate     what this purchase is sure to earn (points per $)
+ *   upside   a higher rate it MAY earn, when that depends on something we
+ *            don't know at the register: this quarter's rotating category,
+ *            a top / chosen category the plan didn't pick for it, or a
+ *            co-brand's own-brand share. Screens show both outcomes.
+ *   capped   the sure rate is a capped bonus (room left isn't tracked)
+ */
+export function purchaseRate(card, bucket, profile, choice = {}) {
+  const lanes = lanesFor(card, profile, { [bucket]: 100 }).filter((l) => !l.store);
+  let rate = 0, capped = false, upside = null;
+  const better = (r, kind) => { if (r > rate + 1e-9 && (!upside || r > upside.rate)) upside = { rate: r, kind }; };
+  for (const l of lanes) {
+    if (l.rotating) { better(l.rate, "rotating"); continue; }
+    if (l.brandShare != null) { better(l.rate, "brand"); continue; }
+    if (l.exclusive && choice[l.exclusive] !== (l.option ?? l.bucket)) { better(l.rate, l.choice ? "choice" : "top"); continue; }
+    if (l.rate > rate) { rate = l.rate; capped = l.pools.length > 0; }
+  }
+  if (upside && upside.rate <= rate + 1e-9) upside = null;
+  return { rate, upside, capped };
 }
 
 /* ── v5-compatible helpers (rewards for one card) ───────────────────────── */

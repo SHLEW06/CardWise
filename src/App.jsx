@@ -6,6 +6,7 @@ import AppShell from "./components/v5/AppShell.jsx";
 import Survey from "./components/v5/survey/Survey.jsx";
 import { hydrateV5Record } from "./state/v5Profile.js";
 import { toLegacyProfile } from "./state/legacyBridge.js";
+import { shareHash, profileFromShareHash, SHARE_VERSION } from "./state/shareLink.js";
 import Home from "./components/v6/Home.jsx";
 import Profile from "./components/v6/Profile.jsx";
 import Offers from "./components/v6/offers/Offers.jsx";
@@ -101,6 +102,7 @@ function profileFromHash() {
   if (!hash.startsWith("#p=")) return null;
   try {
     const raw = JSON.parse(atob(hash.slice(3)));
+    if (raw?.v === SHARE_VERSION) return null;   // a v5 share link: profileFromShareHash
     /* Legacy payloads have no `v` tag. Flag them so the UI can show the
        "sharpen your inputs" nudge, and rehydrate currentWallet from ids. */
     if (raw.v == null) {
@@ -152,6 +154,19 @@ export default function App() {
       const [p, w, vo, offs, rec] = await Promise.all([
         loadProfile(), loadWallet(), loadValOverrides(), loadOffers(), hydrateV5Record(),
       ]);
+      /* A v5 share link (#p=, v3) shows the sender's wallet and plan. It is
+         only a view: nothing is saved here until this person edits it. */
+      const shared = profileFromShareHash(window.location.hash);
+      if (shared) {
+        setV5(shared);
+        setWallet(shared.cardsHeld);
+        setProfile(withAnchors({ ...toLegacyProfile(shared), valOverrides: vo || {} }));
+        setHasPlan(true);
+        if (offs && offs.length) setOffers(offs);
+        setTab("home");
+        setReady(true);
+        return;
+      }
       setV5(rec.profile);
 
       // URL hash takes priority (shareable link); a finished v5 survey next.
@@ -170,15 +185,16 @@ export default function App() {
     })();
   }, []);
 
-  // Sync URL hash when profile changes
+  // Sync URL hash when profile changes: the v5 profile once there is a plan
+  // (what every screen reads), so a copied link opens the same wallet.
   useEffect(() => {
     if (screen === "app" && profile) {
-      const hash = profileToHash(profile);
+      const hash = hasPlan && v5 ? shareHash(v5) : profileToHash(profile);
       if (hash && window.location.hash !== hash) {
         window.history.replaceState(null, "", hash);
       }
     }
-  }, [profile, screen]);
+  }, [profile, screen, hasPlan, v5]);
 
   /* One place that applies a changed v5 profile everywhere. */
   const applyV5 = useCallback((next) => {

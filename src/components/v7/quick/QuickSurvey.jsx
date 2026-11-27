@@ -1,4 +1,4 @@
-/* The front-page Quick Survey (Welcome). Seven short steps in the order that
+/* The front-page Quick Survey (Welcome). Eight short steps in the order that
    changes the advice most (docs/data/question-value.json, 800 held-out
    simulated people): paying in full, cards you hold, spending, flying,
    memberships, credit, subscriptions. Every step can be skipped. A live
@@ -48,6 +48,14 @@ export const PAY_OPTIONS = [
   { key: "sometimes", label: "Sometimes carry a balance", sub: "Now and then I leave some unpaid." },
   { key: "usually", label: "Usually carry a balance", sub: "I most often pay only part of it." },
 ];
+/* Rewards goal. Skipped (or "Not sure"), points are valued at what anyone
+   can redeem them for — never at transfer-partner estimates. */
+export const GOAL_OPTIONS = [
+  { key: "cash", label: "Cash back", sub: "Money back on my bill or in my bank." },
+  { key: "travel", label: "Travel", sub: "Points and miles for flights and hotels." },
+  { key: "both", label: "A mix of both", sub: "Some cash, some travel." },
+  { key: "unsure", label: "Not sure", sub: "We'll count points at what they cash out for." },
+];
 export const TRIP_CHOICES = [
   { key: "never", label: "Never", trips: 0 }, { key: "1-2", label: "1–2 trips", trips: 1.5 }, { key: "3-5", label: "3–5 trips", trips: 4 },
   { key: "6-10", label: "6–10 trips", trips: 8 }, { key: "11+", label: "11 or more", trips: 12 },
@@ -91,7 +99,9 @@ export const STEPS = [
   { id: "credit", title: "What is your credit score?", short: "Credit",
     why: <>Some cards only approve good credit. It changes the plan for about 1 in 5 people. This is never a credit check: a guess is fine.</> },
   { id: "subs", title: "Which of these do you already pay for?", short: "Subscriptions",
-    why: <>Some cards refund Disney+, Uber, DoorDash and more. If you already pay for them, that refund is real money. It changes the plan for about 1 in 9 people.</> },
+    why: <>Some cards refund Disney+, Uber, DoorDash and more. If you already pay for them, that refund is real money. It changes the plan for about 1 in 10 people.</> },
+  { id: "goal", title: "What do you want your rewards to be?", short: "Rewards goal",
+    why: <>Points are worth more when you move them to airlines and hotels, but only if you'd book that way. Without an answer we count every point at what it cashes out for. It changes the plan for about 1 in 15 people.</> },
 ];
 
 /** Apply one answer to the draft. Only the keys in `answered` leave
@@ -162,6 +172,7 @@ export default function QuickSurvey({ onFinish, onFullSurvey, onRefine }) {
             {step.id === "fly" && <FlyStep d={d} done={done.fly} onPick={(c) => answer("fly", { travel: { ...d.travel, trips: c.trips } }, ["travel.trips"])} />}
             {step.id === "member" && <MemberStep d={d} done={done.member} onChange={(memberships) => answer("member", { memberships }, ["memberships"])} />}
             {step.id === "credit" && <CreditStep d={d} done={done.credit} onPick={(k) => answer("credit", { credit: { ...d.credit, score: SCORE_BUCKETS[k], noHistory: k === "none" } }, k === "unsure" ? [] : ["credit.score"], k === "unsure" ? ["credit.score"] : [])} />}
+            {step.id === "goal" && <GoalStep d={d} done={done.goal} onPick={(k) => answer("goal", k === "unsure" ? { wants: "cash" } : { wants: k }, k === "unsure" ? [] : ["wants"], k === "unsure" ? ["wants"] : [])} />}
             {step.id === "subs" && <SubsStep d={d} done={done.subs} onChange={(habits) => answer("subs", { brands: { ...d.brands, perks: [], perksMaybe: [], perksUse: undefined, perksSpend: undefined, habits } })} />}
           </div>
         </div>
@@ -184,6 +195,20 @@ export default function QuickSurvey({ onFinish, onFullSurvey, onRefine }) {
 }
 
 /* ── steps ───────────────────────────────────────────────────────────── */
+
+function GoalStep({ d, done, onPick }) {
+  const assumed = (d.assumedFields || []).includes("wants");
+  const sel = !done ? null : assumed ? "unsure" : d.wants;
+  return (
+    <>
+      <div className="qk-stack" role="radiogroup" aria-label="What do you want your rewards to be?">
+        {GOAL_OPTIONS.map((o) => <Choice key={o.key} radio selected={sel === o.key} sub={o.sub} onSelect={() => onPick(o.key)}>{o.label}</Choice>)}
+      </div>
+      <p className="qk-help">Cash back is simple and never loses value. Travel points can be worth 1.5–2¢ each when moved to the right airline, or about 1¢ booked through a bank's travel site.</p>
+      <TermRow keys={["transfer"]} />
+    </>
+  );
+}
 
 function PayStep({ d, onPick }) {
   return (

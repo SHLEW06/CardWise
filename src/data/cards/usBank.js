@@ -84,6 +84,14 @@ export const CARDS = [
     id: "usb-cash-plus", name: "US Bank Cash+ Visa Signature", issuer: "US Bank", network: "VISA",
     annualFee: 0, currency: "Cash back", pointCurrency: "cash",
     earnRates: { Choice5a: 5, Choice5b: 5, Choice2: 2, General: 1 }, portalMultipliers: {},
+    /* Issuer terms: 5% on TWO different categories from the list (shared
+       $2,000 a quarter, then 1%), 2% on ONE everyday category (no cap).
+       Only list categories that map onto our spend lines are modeled. */
+    choices: [
+      { key: "Choice5", rate: 5, picks: 2, options: { phone: ["phone"], tvStreaming: ["streaming"], utilities: ["utilities"], ground: ["transit"] } },
+      { key: "Choice2", rate: 2, options: { gas: ["gas", "gasCostco", "ev"], groceries: ["groceries"], dining: ["dining"] } },
+    ],
+    earnCaps: [{ keys: ["Choice5"], annual: 8000, after: 1 }],
     credits: [],
     benefits: ["Pick 2 categories for 5% (to $2,000 combined/quarter)", "Pick 1 everyday category for 2%", "1% on everything else", "No annual fee"],
     transferAccess: [], loungeAccess: null, hotelStatus: null, airlineStatus: null,

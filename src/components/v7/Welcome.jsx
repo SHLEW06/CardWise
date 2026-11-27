@@ -50,7 +50,7 @@ export default function Welcome({ onStart, onGo, onOpenCard, onQuickDone, onRefi
       <section className="welcome-hero reveal">
         <p className="t-eyebrow">CardWise</p>
         <h1 className="t-hero">Get paid more for what you already buy.</h1>
-        <p className="t-lead">Seven short questions, about a minute. Skip anything you're not sure about. Your best wallet builds as you answer, and every screen then uses your own numbers.</p>
+        <p className="t-lead">Eight short questions, about a minute. Skip anything you're not sure about. Your best wallet builds as you answer, and every screen then uses your own numbers.</p>
         <QuickSurvey onFinish={onQuickDone} onRefine={onRefine} onFullSurvey={onStart} />
         <div className="welcome-actions">
           <button className="btn btn-quiet" onClick={onStart} data-testid="welcome-start">Take the full survey <ArrowRight size={16} aria-hidden="true" /></button>

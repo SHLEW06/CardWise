@@ -184,6 +184,8 @@ function Result({ r, profile, onOpenCard, onMarkAdded }) {
               <span className="rank-label">{i === 0 && !row.blocked ? "Best card" : `#${i + 1}`}</span>
               <span className="rank-name">{cardDisplayName(BY_ID[row.cardId])}</span>
               {row.blocked && <span className="t-caption">{row.blocked}</span>}
+              {!row.blocked && row.upside && <span className="t-caption" data-testid={`upside-${row.cardId}`}>{pct(row.upside.pct)} {row.upside.words}; {pct(row.pct)} otherwise</span>}
+              {!row.blocked && !row.upside && row.capped && <span className="t-caption">Bonus rate until its spending cap; then the base rate</span>}
               {row.credit && <span className="t-caption">{row.credit.picked ? `Its ${row.credit.label.replace(/\s*\(.*$/, "")} applies here — ≈ $${row.credit.value} a year to you` : `Has a ${row.credit.label.replace(/\s*\(.*$/, "")} here (you didn't pick this brand, so we count $0)`}</span>}
               {row.offer && <span className="t-caption">+ {row.offer.merchant}: {row.offerMath?.value > 0 ? `${money(row.offerMath.value)} offer` : row.offerMath?.note || "offer on this card"}{row.needsActivation ? " (add it first)" : ""}</span>}
             </div>

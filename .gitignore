@@ -54,3 +54,7 @@ src/data/hotels/properties.local.generated.js
 # the public site ships facts only via programHotels.public.json)
 src/data/hotels/workbook.generated.json
 docs/data/hotel-workbook/
+
+# Independent routing oracle outputs (scripts/oracle)
+scripts/oracle/scenarios.json
+scripts/oracle/results.json
