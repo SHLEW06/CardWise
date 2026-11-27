@@ -1,21 +1,15 @@
 /* ============================================================================
    fonts.css — v6 type (docs/REDESIGN_SPEC.md §9.9, §16.2).
    ----------------------------------------------------------------------------
-   PP Editorial New (display) + PP Neue Montreal (UI) load from
-   public/fonts/*.woff2 when the licensed files are there (gitignored). Until
-   then the stacks fall through to system serif / sans fallbacks.
+   Boska (display serif) + Switzer (UI) + Archivo Expanded (labels) load from
+   public/fonts/*.woff2 (gitignored; `npm run fonts`). Without the files the
+   stacks fall through to system serif / sans fallbacks.
    The two most-used weights are preloaded by the Vite plugin in
    vite.config.js, only when the files exist.
    Rules: display 300–400, never bold; nothing above 500; no monospace
    anywhere; numbers use the UI face with tabular figures.
    ========================================================================== */
 
-@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Ultralight.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
-@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2"); font-weight: 300; font-style: italic; font-display: swap; }
-@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "PP Editorial New"; src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
-@font-face { font-family: "PP Neue Montreal"; src: url("/fonts/PPNeueMontreal-Book.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "PP Neue Montreal"; src: url("/fonts/PPNeueMontreal-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
 
 :root {
   /* v7b acceptance A4: the legacy names now point at the v7 faces — no

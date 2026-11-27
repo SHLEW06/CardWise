@@ -26,7 +26,8 @@ export const EXAMPLE_PROFILE = {
   spend: SPEND_PRESETS.typical, wants: "both", brands: { airlines: ["flyingblue"] }, credit: { score: 760, newCards24mo: 0 },
   travel: { trips: 4, lounges: "sometimes", hotelNights: 6 }, paymentBehavior: "always",
 };
-const monthly = Object.values(SPEND_PRESETS.typical).reduce((t, v) => t + v, 0);
+export const EXAMPLE_MONTHLY = Object.values(SPEND_PRESETS.typical).reduce((t, v) => t + v, 0);
+const monthly = EXAMPLE_MONTHLY;
 const money = (n) => `${n < 0 ? "−" : ""}$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
 
 export default function Welcome({ onStart, onGo, onOpenCard }) {

@@ -20,15 +20,24 @@ const NO_EXT = { installed: false, linked: false, banks: [] };
 
 export const MODE_LABEL = { extension: "Chrome extension", server: "Sign in here" };
 
+/* Asking a public page to reach localhost makes Chrome show visitors a
+   "local network access" prompt, so the connector is only checked on its
+   own for someone who has used it before (or in development / tests). */
+const SEEN_KEY = "cardwise.connector.seen";
+const seenBefore = () => { try { return localStorage.getItem(SEEN_KEY) === "1"; } catch { return false; } };
+
 export default function ConnectedBanks({ client = connector, bridge = extensionBridge(), onConnected, compact = false }) {
-  const [state, setState] = useState({ status: "checking", banks: [], connections: [] });
+  const autoCheck = client !== connector || import.meta.env.DEV || seenBefore();
+  const [state, setState] = useState({ status: autoCheck ? "checking" : "idle", banks: [], connections: [] });
   const [ext, setExt] = useState(bridge?.info || NO_EXT);
   const [intro, setIntro] = useState(null);     // bank being introduced (claims first)
   const [sheet, setSheet] = useState(null);     // bank being connected
   const [install, setInstall] = useState(false);
   const refresh = async () => {
+    setState((s) => ({ ...s, status: "checking" }));
     const up = await client.health();
     if (!up) return setState({ status: "offline", banks: [], connections: [] });
+    try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* storage blocked */ }
     try {
       const [banks, connections] = await Promise.all([client.banks(), client.connections().catch(() => [])]);
       setState({ status: "ready", banks, connections: connections || [] });
@@ -36,7 +45,7 @@ export default function ConnectedBanks({ client = connector, bridge = extensionB
       setState({ status: e.code === "NOT_SIGNED_IN" ? "signin" : "error", banks: [], connections: [], error: e.message });
     }
   };
-  useEffect(() => { refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (autoCheck) refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => (bridge ? bridge.subscribe(setExt) : undefined), [bridge]);
   const conn = (id) => state.connections.find((c) => (c.bankId || c.bank || c.id) === id);
   const modeOf = (b) => (b.mode === "extension" ? "extension" : "server");
@@ -81,6 +90,9 @@ export default function ConnectedBanks({ client = connector, bridge = extensionB
 
   return (
     <div className="banks">
+      {state.status === "idle" && (
+        <p className="t-caption">Bank sync runs through the CardWise connector on your own computer. <button className="link" onClick={refresh} data-testid="connector-check">Check for the connector</button></p>
+      )}
       {state.status === "checking" && <p className="t-caption">Checking your bank connections…</p>}
       {state.status === "offline" && (
         <p className="t-caption">The CardWise connector isn't running on this computer. In development, start the app with <code>npm run dev:all</code>.</p>

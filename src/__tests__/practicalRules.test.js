@@ -124,3 +124,15 @@ describe("Welcome: popular strategy examples", () => {
     expect(value("chase-trifecta-csp")).toBeGreaterThan(value("simple-2pct-dining"));   // transfers beat 2% here
   });
 });
+
+describe("Strategies before any answers", () => {
+  it("values sets for the stated example spender with the same figure as the Welcome page", async () => {
+    const { EXAMPLE_PROFILE } = await import("../components/v7/Welcome.jsx");
+    const { rankStrategies } = await import("../engine/v5/strategies.js");
+    const p = normalizeProfile(EXAMPLE_PROFILE);
+    const rows = rankStrategies(p).rows.map((x) => ({ key: x.key, value: x.E + x.U - x.F }));
+    const trifecta = rows.find((x) => x.key === "chase-trifecta-csp");
+    expect(trifecta.value).toBe(walletValue(["csp", "freedom-flex", "freedom-unlimited"], p).net);
+    expect(rows.find((x) => x.key === "simple-2pct-dining").value).toBeGreaterThan(0);
+  });
+});

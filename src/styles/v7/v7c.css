@@ -125,4 +125,5 @@
 .v5 .strategy-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .v5 .strategy-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 18px; margin: 10px 0; }
 .v5 .strategy-facts dt { opacity: .7; }
+.v5 .strategy-facts dd { margin: 2px 0 0; font-size: 1rem; color: var(--ink, #f5f3ee); font-variant-numeric: tabular-nums; }
 .v5 .strategy-actions { display: flex; gap: 14px; align-items: center; margin-top: 8px; }

@@ -8,7 +8,8 @@ import { BY_ID } from "../../data/cards/index.js";
 import CardFace from "../v5/CardFace.jsx";
 import { cardDisplayName } from "../../data/cardNames.js";
 import { rankStrategies } from "../../engine/v5/strategies.js";
-import { normalizeProfile } from "../../engine/profileDefaults.js";
+import { normalizeProfile, totalAnnualSpend } from "../../engine/profileDefaults.js";
+import { EXAMPLE_PROFILE, EXAMPLE_MONTHLY } from "./Welcome.jsx";
 import { walletValue } from "../../engine/v5/methodology.js";
 import BenefitsStrip, { benefitRowsFromValue } from "./BenefitsStrip.jsx";
 
@@ -17,22 +18,37 @@ const signed = (n) => `${n >= 0 ? "+" : "−"}${money(n)}`;
 const names = (ids) => ids.map((id) => cardDisplayName(BY_ID[id])).join(", ") || "—";
 
 export default function Strategies({ profile: raw, onSaveProfile, onGo, onOpenCard }) {
-  const profile = useMemo(() => normalizeProfile(raw), [raw]);
-  const r = useMemo(() => rankStrategies(profile), [profile]);
+  const own = useMemo(() => normalizeProfile(raw), [raw]);
+  /* Before any spending is entered, value every set for the same stated
+     example spender as the Welcome page instead of showing $0 earnings. */
+  const example = totalAnnualSpend(own) === 0;
+  const profile = useMemo(() => (example ? normalizeProfile({ ...EXAMPLE_PROFILE, cardsHeld: own.cardsHeld, targetStrategy: own.targetStrategy }) : own), [own, example]);
+  /* Example mode shows each set's own yearly value (earning + credits − fees),
+     the same figure as the Welcome page, ranked by it; a real profile keeps
+     the planner's measure (gain over your cards, after the cost of applying). */
+  const r = useMemo(() => {
+    const ranked = rankStrategies(profile);
+    if (!example) return ranked;
+    const rows = ranked.rows.map((x) => ({ ...x, net: x.E + x.U - x.F, needsText: null })).sort((a, b) => b.net - a.net).map((x, i) => ({ ...x, best: i === 0 }));
+    return { ...ranked, rows };
+  }, [profile, example]);
   const [open, setOpen] = useState(null);
-  const use = (key) => { onSaveProfile?.({ ...profile, targetStrategy: key }); onGo?.("lab"); };
+  const use = (key) => { onSaveProfile?.({ ...own, targetStrategy: key }); onGo?.("lab"); };
   return (
     <section className="page strategies" data-testid="strategies">
       <header className="hotels-head">
         <p className="t-eyebrow">Strategies</p>
-        <h1 className="t-d2">Card sets that work together, ranked for you.</h1>
-        <p className="t-caption">Each one's yearly value: points at the value the set unlocks, the credits you'd use, minus fees and the cost of applying. Your current cards are kept where they still add something.</p>
+        <h1 className="t-d2">{example ? "Card sets that work together." : "Card sets that work together, ranked for you."}</h1>
+        {example && <p className="t-caption" data-testid="strategies-example">{`Example values for someone spending about $${EXAMPLE_MONTHLY.toLocaleString("en-US")} a month and flying 4 times a year. Answer the spending questions and these re-rank for you.`}</p>}
+        <p className="t-caption">{example
+          ? "Each set's yearly value: points at the value the set unlocks plus the credits a typical person would use, minus annual fees."
+          : "Each one's yearly value: points at the value the set unlocks, the credits you'd use, minus fees and the cost of applying. Your current cards are kept where they still add something."}</p>
       </header>
       <ol className="strategy-list mo-stagger">
         {r.rows.map((s) => (
           <li key={s.key} className="panel strategy" data-testid={`strategy-${s.key}`}>
             <div className="strategy-head">
-              <h2 className="t-h3">{s.label} {s.best && <span className="tag" data-testid="best-for-you">Best for you</span>}{profile.targetStrategy === s.key && <span className="tag">Your target</span>}</h2>
+              <h2 className="t-h3">{s.label} {s.best && <span className="tag" data-testid="best-for-you">{example ? "Top example" : "Best for you"}</span>}{profile.targetStrategy === s.key && <span className="tag">Your target</span>}</h2>
               <span className="num-ui strategy-net">{signed(s.net)} a year</span>
             </div>
             <p className="t-caption">{s.recipe}</p>
@@ -48,8 +64,8 @@ export default function Strategies({ profile: raw, onSaveProfile, onGo, onOpenCa
             <dl className="strategy-facts t-caption">
               <div><dt>Earnings</dt><dd>{money(s.E)}</dd></div>
               <div><dt>Credits you'd use</dt><dd>{money(s.U)}</dd></div>
-              <div><dt>Fees</dt><dd>−{money(s.F)}</dd></div>
-              <div><dt>Applying</dt><dd>−{money(s.hurdle)}</dd></div>
+              <div><dt>Fees</dt><dd>{s.F ? `−${money(s.F)}` : "$0"}</dd></div>
+              <div><dt>Applying</dt><dd>{s.hurdle ? `−${money(s.hurdle)}` : "$0"}</dd></div>
               <div><dt>Value per point</dt><dd>{s.cpp.toFixed(2)}¢{s.transfers ? ` · opens ${s.transfers} transfer partners` : ""}</dd></div>
               <div><dt>New cards</dt><dd>{s.newCards ? `${s.newCards}, over ${s.months} months` : "none"}{s.blocked.length ? ` · ${names(s.blocked)} waits for 5/24` : ""}</dd></div>
             </dl>

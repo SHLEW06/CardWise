@@ -118,14 +118,14 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
 
   return (
     <section className="page lab">
-      <PlanAdvice plan={shared} onEdit={onEditAnswers || (() => setDrawer(true))} />
+      <div className="lab-top">
       <Reveal as="header" className="lab-head">
         {score != null && <ScoreDial score={score} caption="Score" label={`Wallet Score, ${sameAsHeld ? "your wallet" : "suggested setup"}`} />}
         <div className="lab-numbers">
           {/* v7c 5d-2.1: say which mode the page is in. */}
           {target && <p className="t-caption" data-testid="lab-target">Target: {target.label} · <button type="button" className="link" onClick={() => onSaveProfile?.({ ...normalizeProfile(saved), targetStrategy: null })}>Clear target</button></p>}
-          <h1 className="t-d2 lab-title">Simulate your wallet</h1>
           <p className="t-eyebrow" data-testid="lab-mode">Wallet Lab · {mode === "wallet" && p.cardsHeld.length ? `Built from your ${p.cardsHeld.length} card${p.cardsHeld.length === 1 ? "" : "s"}` : "Starting from zero"}</p>
+          <h1 className="t-d2 lab-title">Simulate your wallet</h1>
           <p className="lab-now"><span className="t-big"><CountUp value={value.net} display /></span><span className="lab-unit">a year, {sameAsHeld ? "your wallet" : "this suggested setup"}</span></p>
           <p className="sim-delta-line"><DeltaChip delta={change} suffix="a year" />{!sameAsHeld && Math.round(vsNow) !== 0 && <span className="t-caption" data-testid="lab-vs-now">{signed(vsNow)} a year vs your wallet now</span>}</p>
           <p className="t-caption lab-basis">{shared.scoreText}</p>
@@ -135,6 +135,8 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
           </dl>
         </div>
       </Reveal>
+      <aside className="lab-advice" aria-label="What your plan depends on"><PlanAdvice plan={shared} onEdit={onEditAnswers || (() => setDrawer(true))} /></aside>
+      </div>
 
       <Reveal i={1} className="panel lab-controls">
         <div className="lab-toggles">

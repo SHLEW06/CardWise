@@ -25,6 +25,9 @@ export function categoryOf(offer) {
   return s?.bucket || "other";
 }
 
+/* Only reach for the local connector if this person has used it before (a public page that probes localhost triggers Chrome's network prompt). */
+const connectorKnown = (c) => { try { return c !== connector || import.meta.env.DEV || localStorage.getItem("cardwise.connector.seen") === "1"; } catch { return false; } };
+
 export default function Offers({ offers = [], setOffers, profile, client = connector }) {
   const wallet = profile.cardsHeld;
   const [prefs, setPrefsState] = useState(loadPrefs);
@@ -80,7 +83,7 @@ export default function Offers({ offers = [], setOffers, profile, client = conne
     } finally { setBusy(null); }
   };
   /* On open: sync if the last one is older than 6 hours (and the connector is up). */
-  useEffect(() => { (async () => { if (shouldAutoSync() && (await client.health())) sync(); })(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { (async () => { if (!connectorKnown(client) || !shouldAutoSync()) return; if (await client.health()) sync(); })(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const available = live.filter((o) => o.status === "available");
   return (

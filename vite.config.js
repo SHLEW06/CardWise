@@ -61,7 +61,7 @@ function cardArtManifest() {
 /* Fonts (§16.2): preload the two most-used weights, but only when the licensed
    files are actually in public/fonts/ — a preload of a missing file is a
    wasted request and a console warning. */
-const PRELOAD_FONTS = ["PPEditorialNew-Regular.woff2", "PPNeueMontreal-Book.woff2"];
+const PRELOAD_FONTS = ["Switzer-Regular.woff2", "Boska-Light.woff2"];
 function fontPreload() {
   return {
     name: "cardwise-font-preload",
