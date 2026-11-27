@@ -209,3 +209,23 @@ credit them. The originals are never committed: `scripts/backgrounds/build.mjs` 
 Only these seven `*.webp` names are un-ignored in `.gitignore` and published by `firebase.json`; any other file placed in
 `public/backgrounds/` (AI renders, `focal-*`, avif/jpg/png) stays local and is excluded from hosting.
 **Takedown:** delete the slot's entry in `sources.json` and its `.webp`, rerun `npm run art`; the procedural CSS scene returns.
+
+## Editorial photography (public/photos/)
+
+Photos in `public/photos/` come from Wikimedia Commons files whose licence field (checked through the Commons API, imageinfo extmetadata) is CC0 or public domain. They are fetched and verified by `scripts/photos/fetch.mjs` (record: `scripts/photos/sources.json`), cropped to 3:2 and converted to WebP by `scripts/photos/process.mjs`, and listed in `src/data/photos.js`. Originals (2400px renditions) stay in the git-ignored `.cache/photos/`. Files whose Commons title carries "(Unsplash)" were uploaded to Commons under CC0; Commons shows them as CC0. CC0 needs no attribution, but each picture is credited in the app.
+
+| id | Subject | Author | Licence | Source |
+|---|---|---|---|---|
+| paris-dusk | Light trails on a Paris road at dusk with the Eiffel Tower on the horizon | Pierre Blaché from Paris, France | CC0 | https://commons.wikimedia.org/wiki/File:Light_trails_near_Paris,_27_May_2022.jpg |
+| kyoto-gion | Cherry blossom over a lit restaurant terrace in Gion, Kyoto, at night | Yiannis Theologos Michellis | CC0 | https://commons.wikimedia.org/wiki/File:Night_view_of_a_restaurant_in_Gion,_Kyoto,_Japan_20170408132934_(33795012790).jpg |
+| positano | Pastel houses stacked up the hillside at Positano on the Amalfi Coast | Stephanie Krist | CC0 | https://commons.wikimedia.org/wiki/File:Positano,_Italy.jpg |
+| amalfi-sunset | Sun setting over the sea beside the cliffs of the Amalfi Coast | Ricardo Gomez Angel ripato | CC0 | https://commons.wikimedia.org/wiki/File:Positano's_sunset_(Unsplash).jpg |
+| maldives-pool | Infinity pool and a villa under a sunset sky in the Maldives | Amilla Maldives | CC0 | https://commons.wikimedia.org/wiki/File:Amilla_Maldives_Resort_Pool_Sunset.jpg |
+| maldives-blue | A lone swimmer in clear turquoise water seen from above | Jcob Nasyr jcobnasyr | CC0 | https://commons.wikimedia.org/wiki/File:In_to_the_blue_(Unsplash).jpg |
+| nyc-harbor | Lower Manhattan towers at dusk from the Hudson with a sailboat in front | Frank Winkler | CC0 | https://commons.wikimedia.org/wiki/File:New_York_by_Winkler.jpg |
+| nyc-midtown | Midtown Manhattan skyline with the Empire State Building under a clear sky | Storylanding | CC0 | https://commons.wikimedia.org/wiki/File:New_York_City_skyline_with_Empire_State_Building_1.jpg |
+| alps-hut | A mountain lodge on a snowy ridge in the Tateyama Kurobe Alps | lumoplank | CC0 | https://commons.wikimedia.org/wiki/File:Tateyama_Kurobe_Alpine_Route_-_AlpineRoute6302.jpg |
+| dinner-candle | A single candle lantern glowing on a dinner table at night | Sabalo22 | CC0 | https://commons.wikimedia.org/wiki/File:Dinner_candle_on_table_at_night.jpg |
+| twa-lounge | The red sunken lounge of the TWA Flight Center at JFK, with the departures board | w_lemay | CC0 | https://commons.wikimedia.org/wiki/File:Sunken_Lounge,_TWA_Flight_Center,_John_F._Kennedy_International_Airport,_Jamaica,_Queens,_New_York_City,_NY_-_48581261732.jpg |
+| pool-hoshinoya | A long blue hotel pool in front of a timber-clad resort in the hills | Moran Tsai | CC0 | https://commons.wikimedia.org/wiki/File:Swimming_pool_at_Hoshinoya_Guguan.jpg |
+| pool-palms | A hotel pool framed by palm trees and sun loungers in Morocco | Mustang Joe | CC0 | https://commons.wikimedia.org/wiki/File:Swimming_pool_of_the_Berbere_Palace_Hotel,_Ouarzazate,_Morocco.jpg |

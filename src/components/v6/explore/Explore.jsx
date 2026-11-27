@@ -8,6 +8,8 @@
 import { formatPctBack } from "../../../engine/v5/valuation.js";
 import CompareTable from "../../v7/CompareTable.jsx";
 import React, { useDeferredValue, useMemo, useRef, useState } from "react";
+import PhotoBand from "../../v7/PhotoBand.jsx";
+import { PHOTO_SETS } from "../../../data/photos.js";
 import { Search, X, SlidersHorizontal, FlaskConical, ChevronDown, ExternalLink } from "lucide-react";
 import { useFlip, CrossFade } from "../../v7/motion/motion.jsx";
 import { queueLabAdd } from "../lab/labHandoff.js";
@@ -52,6 +54,8 @@ export default function Explore({ profile: raw, onOpenCard, onGo }) {
         <p className="t-eyebrow">Explore</p>
         <h1 className="t-d2">{chip === "foryou" ? "Cards ranked by what they'd add for you." : CATEGORY_CHIPS.find((c) => c.key === chip).label}</h1>
       </Reveal>
+
+      <PhotoBand ids={PHOTO_SETS.explore} variant="strip" className="explore-band" testId="explore-photo-band" />
 
       <div className="explore-bar">
         <label className="field explore-search">
@@ -100,6 +104,12 @@ export default function Explore({ profile: raw, onOpenCard, onGo }) {
 
       <p className="t-caption explore-count">{rows.length} card{rows.length === 1 ? "" : "s"}{chip === "foryou" ? " · ranked by what each adds to your wallet a year, after its fee" : ""}</p>
 
+      {!rows.length && (
+        <div className="empty-state" data-testid="explore-empty">
+          <img src="/photos/maldives-blue-sm.webp" width="600" height="400" alt="" loading="lazy" decoding="async" />
+          <p>No cards match. Clear a filter or the search to see more.</p>
+        </div>
+      )}
       <ul className="explore-grid" aria-label="Cards" ref={gridRef}>
         {rows.map((r, k) => (
           <li key={r.card.id} data-flip={r.card.id} style={{ "--i": Math.min(k, 12) }} className="reveal-now">

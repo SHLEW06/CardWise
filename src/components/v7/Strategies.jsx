@@ -4,6 +4,7 @@
    "which card for what". "Use this strategy" makes it the target in the
    Wallet Lab and the plan. Replaces the Lab's sample wallets. */
 import React, { useMemo, useState } from "react";
+import { PhotoHeader } from "./PhotoBand.jsx";
 import { BY_ID } from "../../data/cards/index.js";
 import CardFace from "../v5/CardFace.jsx";
 import { cardDisplayName } from "../../data/cardNames.js";
@@ -44,6 +45,7 @@ export default function Strategies({ profile: raw, onSaveProfile, onGo, onOpenCa
           ? "Each set's yearly value: points at the value the set unlocks plus the credits a typical person would use, minus annual fees."
           : "Each one's yearly value: points at the value the set unlocks, the credits you'd use, minus fees and the cost of applying. Your current cards are kept where they still add something."}</p>
       </header>
+      <PhotoHeader id="amalfi-sunset" caption="Plan the set, then the trip" />
       <ol className="strategy-list mo-stagger">
         {r.rows.map((s) => (
           <li key={s.key} className="panel strategy" data-testid={`strategy-${s.key}`}>

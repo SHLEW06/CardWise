@@ -1,0 +1,223 @@
+[
+  {
+    "id": "paris-dusk",
+    "place": "Paris",
+    "alt": "Light trails on a Paris road at dusk with the Eiffel Tower on the horizon",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Light trails near Paris, 27 May 2022.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Light_trails_near_Paris,_27_May_2022.jpg",
+    "author": "Pierre Blaché from Paris, France",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 5920,
+    "originalHeight": 3330,
+    "cached": ".cache/photos/paris-dusk.jpg"
+  },
+  {
+    "id": "kyoto-gion",
+    "place": "Kyoto",
+    "alt": "Cherry blossom over a lit restaurant terrace in Gion, Kyoto, at night",
+    "focus": [
+      0.4,
+      0.5
+    ],
+    "commonsTitle": "File:Night view of a restaurant in Gion, Kyoto, Japan 20170408132934 (33795012790).jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Night_view_of_a_restaurant_in_Gion,_Kyoto,_Japan_20170408132934_(33795012790).jpg",
+    "author": "Yiannis Theologos Michellis",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 5451,
+    "originalHeight": 3066,
+    "cached": ".cache/photos/kyoto-gion.jpg"
+  },
+  {
+    "id": "positano",
+    "place": "Amalfi Coast",
+    "alt": "Pastel houses stacked up the hillside at Positano on the Amalfi Coast",
+    "focus": [
+      0.5,
+      0.45
+    ],
+    "commonsTitle": "File:Positano, Italy.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Positano,_Italy.jpg",
+    "author": "Stephanie Krist",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 6016,
+    "originalHeight": 4016,
+    "cached": ".cache/photos/positano.jpg"
+  },
+  {
+    "id": "amalfi-sunset",
+    "place": "Amalfi Coast",
+    "alt": "Sun setting over the sea beside the cliffs of the Amalfi Coast",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Positano's sunset (Unsplash).jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Positano's_sunset_(Unsplash).jpg",
+    "author": "Ricardo Gomez Angel ripato",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 8624,
+    "originalHeight": 5501,
+    "cached": ".cache/photos/amalfi-sunset.jpg"
+  },
+  {
+    "id": "maldives-pool",
+    "place": "Maldives",
+    "alt": "Infinity pool and a villa under a sunset sky in the Maldives",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Amilla Maldives Resort Pool Sunset.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Amilla_Maldives_Resort_Pool_Sunset.jpg",
+    "author": "Amilla Maldives",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 1400,
+    "originalHeight": 840,
+    "cached": ".cache/photos/maldives-pool.jpg"
+  },
+  {
+    "id": "maldives-blue",
+    "place": "Maldives",
+    "alt": "A lone swimmer in clear turquoise water seen from above",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:In to the blue (Unsplash).jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:In_to_the_blue_(Unsplash).jpg",
+    "author": "Jcob Nasyr jcobnasyr",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 5476,
+    "originalHeight": 3651,
+    "cached": ".cache/photos/maldives-blue.jpg"
+  },
+  {
+    "id": "nyc-harbor",
+    "place": "New York",
+    "alt": "Lower Manhattan towers at dusk from the Hudson with a sailboat in front",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:New York by Winkler.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:New_York_by_Winkler.jpg",
+    "author": "Frank Winkler",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 7087,
+    "originalHeight": 4724,
+    "cached": ".cache/photos/nyc-harbor.jpg"
+  },
+  {
+    "id": "nyc-midtown",
+    "place": "New York",
+    "alt": "Midtown Manhattan skyline with the Empire State Building under a clear sky",
+    "focus": [
+      0.55,
+      0.5
+    ],
+    "commonsTitle": "File:New York City skyline with Empire State Building 1.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:New_York_City_skyline_with_Empire_State_Building_1.jpg",
+    "author": "Storylanding",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 2700,
+    "originalHeight": 1800,
+    "cached": ".cache/photos/nyc-midtown.jpg"
+  },
+  {
+    "id": "alps-hut",
+    "place": "Japan Alps",
+    "alt": "A mountain lodge on a snowy ridge in the Tateyama Kurobe Alps",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Tateyama Kurobe Alpine Route - AlpineRoute6302.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tateyama_Kurobe_Alpine_Route_-_AlpineRoute6302.jpg",
+    "author": "lumoplank",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 4789,
+    "originalHeight": 3192,
+    "cached": ".cache/photos/alps-hut.jpg"
+  },
+  {
+    "id": "dinner-candle",
+    "place": "Dinner",
+    "alt": "A single candle lantern glowing on a dinner table at night",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Dinner candle on table at night.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dinner_candle_on_table_at_night.jpg",
+    "author": "Sabalo22",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 6000,
+    "originalHeight": 4000,
+    "cached": ".cache/photos/dinner-candle.jpg"
+  },
+  {
+    "id": "twa-lounge",
+    "place": "JFK, New York",
+    "alt": "The red sunken lounge of the TWA Flight Center at JFK, with the departures board",
+    "focus": [
+      0.5,
+      0.45
+    ],
+    "commonsTitle": "File:Sunken Lounge, TWA Flight Center, John F. Kennedy International Airport, Jamaica, Queens, New York City, NY - 48581261732.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sunken_Lounge,_TWA_Flight_Center,_John_F._Kennedy_International_Airport,_Jamaica,_Queens,_New_York_City,_NY_-_48581261732.jpg",
+    "author": "w_lemay",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 4032,
+    "originalHeight": 3024,
+    "cached": ".cache/photos/twa-lounge.jpg"
+  },
+  {
+    "id": "pool-hoshinoya",
+    "place": "Taiwan",
+    "alt": "A long blue hotel pool in front of a timber-clad resort in the hills",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Swimming pool at Hoshinoya Guguan.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Swimming_pool_at_Hoshinoya_Guguan.jpg",
+    "author": "Moran Tsai",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 4928,
+    "originalHeight": 3264,
+    "cached": ".cache/photos/pool-hoshinoya.jpg"
+  },
+  {
+    "id": "pool-palms",
+    "place": "Morocco",
+    "alt": "A hotel pool framed by palm trees and sun loungers in Morocco",
+    "focus": [
+      0.5,
+      0.5
+    ],
+    "commonsTitle": "File:Swimming pool of the Berbere Palace Hotel, Ouarzazate, Morocco.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Swimming_pool_of_the_Berbere_Palace_Hotel,_Ouarzazate,_Morocco.jpg",
+    "author": "Mustang Joe",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "originalWidth": 6016,
+    "originalHeight": 4016,
+    "cached": ".cache/photos/pool-palms.jpg"
+  }
+]

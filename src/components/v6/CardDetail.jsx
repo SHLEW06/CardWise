@@ -34,6 +34,8 @@ import { SLOT_DEFS } from "../../engine/v5/methodology.js";
 import { habitMathLines, creditDraws } from "../../data/perkHabits.js";
 import { ticketComparison } from "../../engine/v5/tickets.js";
 import HotelCreditUses from "../v7/HotelCreditUses.jsx";
+import { PhotoHeader } from "../v7/PhotoBand.jsx";
+import { photoForCard } from "../../data/photos.js";
 import BenefitsStrip, { benefitRowsFromUsed } from "../v7/BenefitsStrip.jsx";
 
 const money = (n) => `$${Math.round(Math.abs(n)).toLocaleString("en-US")}`;
@@ -160,6 +162,8 @@ export default function CardDetail({ cardId, profile: raw, onClose, onToggleOwn,
               <Choice selected={d.inWallet.has} onSelect={() => onToggleOwn(c.id)}>{d.inWallet.has ? "In my wallet" : "I have this card"}</Choice>
             )}
           </Reveal>
+
+          <PhotoHeader id={photoForCard(c).id} className="detail-photo" />
 
           {slotKey && context && <OtherForSlot cardId={c.id} slotKey={slotKey} setup={context} profile={profile} onOpenCard={onOpenCard} />}
           <Reveal i={2} className="panel detail-block detail-why">

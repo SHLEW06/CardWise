@@ -40,6 +40,7 @@ import { Reveal, CountUp } from "../motion.jsx";
 import CompareTable from "../../v7/CompareTable.jsx";
 import PlanTimeline from "../../v7/PlanTimeline.jsx";
 import { SpendRow } from "../../v5/survey/Survey.jsx";
+import PhotoBand from "../../v7/PhotoBand.jsx";
 import { formatPctBack } from "../../../engine/v5/valuation.js";
 import { partnerShortName } from "../../../engine/v5/pointValues.js";
 
@@ -270,6 +271,8 @@ export default function WalletLab({ profile: saved, onSaveProfile, onOpenCard, o
           <PortalCalculator profile={p} wallet={setup} />
         </Fold>
       </div>
+
+      <PhotoBand ids={["maldives-blue"]} variant="hero" className="lab-band" testId="lab-photo-band" />
 
       {sheet && <SlotSheet slotKey={sheet} setup={setup} profile={p} onClose={() => setSheet(null)} onSwap={swap} onOpenCard={(id) => openCard(id, sheet)} />}
       {drawer && <SpendDrawer draft={draft} setDraft={setDraft} onClose={() => setDrawer(false)} />}

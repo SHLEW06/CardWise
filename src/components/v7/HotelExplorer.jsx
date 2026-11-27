@@ -19,6 +19,8 @@ import { buildMarkers } from "../../engine/v5/hotelWorld.js";
 import { programLabel, programInfo, programBadge, PROGRAM_INFO, PROGRAM_MENU_LABEL, PROGRAM_MENU_NOTE } from "../../engine/v5/hotelPrograms.js";
 import { walletValue, benefitsForCard } from "../../engine/v5/methodology.js";
 import "../../styles/v7/hotelDirectory.css";
+import PhotoBand from "./PhotoBand.jsx";
+import { PHOTO_SETS } from "../../data/photos.js";
 
 const money = (n) => `$${Math.round(n).toLocaleString("en-US")}`;
 const HOTEL_ATTRIBUTION = ["List via AwardHelper (awardhelper.com)", "Edit list via edithotelsearch.com", "Geocoding © OpenStreetMap contributors (Nominatim, ODbL)"];
@@ -383,6 +385,7 @@ function LegacyHotelExplorer({ profile: raw, onSaveProfile, filter = null, onBro
         <p className="t-caption">Each card's hotel credit only works at hotels in its own program: The Edit for the Sapphire Reserve, and Fine Hotels + Resorts or The Hotel Collection for the Platinum. This is every hotel in those three programs.</p>
       </header>
       <CreditCards profile={profile} />
+      <PhotoBand ids={PHOTO_SETS.hotels} variant="mosaic" eyebrow="Where these credits take you" title="Pools, coastlines and mountain lodges" note="The Edit, Fine Hotels + Resorts and The Hotel Collection reach resorts like these." testId="hotels-photo-band" />
       <section className="hdir-section" aria-labelledby="hdir-title">
         <h2 className="t-h2" id="hdir-title">Every hotel in the three programs</h2>
         <ProgramDirectory />
